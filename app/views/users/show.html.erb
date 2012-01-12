@@ -1,0 +1,23 @@
+<p>
+  <b>Display Name:</b>
+  <%=h @user.display_name %>
+</p>
+
+<p>
+  <b>Group:</b>
+  <%=h @user.group ? @user.group.name : "" %>
+</p>
+
+<p>
+  <b>Permission:</b>
+  <%=h @user.permission_id %>
+</p>
+
+<p>
+  <b>Lock version:</b>
+  <%=h @user.lock_version %>
+</p>
+
+
+<%= link_to 'Edit', edit_user_path(@user) %> |
+<%= link_to 'Back', :action=>"index" %>

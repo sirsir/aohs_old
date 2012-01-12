@@ -1,0 +1,44 @@
+
+body {
+	background-color: #7CB1CD;
+}
+a:link,a:hover, a:visited, a:active{color:#4C6D7E;}
+
+#header{
+	background-color: #0A2D40; 
+}
+
+#container{
+	background-color: #F8F6EA;
+	background-image: none;
+}
+
+dl.comments dt{
+
+	background-color: #E4E4D2;
+
+}
+dl.comments dd{
+
+	background-color: #E4E4D2;
+
+}
+
+dl.comments dt.owner 
+{
+	background-color: #c2c2b0;
+}
+dl.comments dd.owner
+{
+	background-color: #c2c2b0;
+}
+
+.tagcloudlarge
+{
+
+   background-color: #E4E4D2;
+
+}
+.tagcloud a:hover{
+	background-color: #E4E4D2;
+}

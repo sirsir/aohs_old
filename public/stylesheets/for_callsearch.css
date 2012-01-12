@@ -1,0 +1,24 @@
+/*
+call direction
+*/
+
+.cd-color-i {
+  color: #00CC00;
+}
+.cd-color-o {
+  color: #316AC5;
+}
+.cd-color-u {
+  color: #F39814;
+}
+.cd-color-e {
+  color:#F39814;
+}
+
+/*
+ keyword
+*/
+
+.ngword {color:red;}
+.mustword {color:green;}
+.bookmark {color:teal;}

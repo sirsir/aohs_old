@@ -1,0 +1,45 @@
+<style>
+  .sname{
+    font-size:13pt;
+    font-weight:bolder;
+  }
+  label {
+    font-weight:bold;
+  }
+  .txtbox {
+    width:200px;
+  }
+  .btnok {
+    margin-top:10px;
+    padding:2px;
+  }
+</style>
+
+<div align="center" style="margin-top:5%">
+  <span class="sname">AmiVoice Operator's Help Register User</span><br><br>
+  <p><span style="color:gray;"><i>Note! You need to be autherized after registeration by Administrator.</i></span></p>
+</div>
+
+<div align="center" style="margin-top:15px">
+<% form_for :user, :url => accounts_path do |f| -%>
+  <center>
+  <table cellspacing="2">
+    <tr><td align="left"><label for="login">Login</label></td></tr>
+    <tr><td align="left"><%= f.text_field :login %></td></tr>
+    <tr><td align="left"><label for="display_name">Name</label></td></tr>
+    <tr><td align="left"><%= f.text_field :display_name %></td></tr>
+    <tr><td align="left"><label for="group">Group</label></td></tr>
+    <tr><td align="left"><%= f.collection_select "group_id",Group.find(:all), :id, :name %></td></tr>
+    <tr><td align="left"><label for="password">Password</label></td></tr>
+    <tr><td align="left"><%= f.password_field :password %></td></tr>
+    <tr><td align="left"><label for="password_confirmation">Confirm Password</label></td></tr>
+    <tr><td align="left"><%= f.password_field :password_confirmation %></td></tr>
+    <tr><td>
+      <% @rid = Role.find_by_sql("select id from roles where name = 'None'")   %>
+      <%= f.hidden_field :role_id, :value => @rid[0].id %>
+      <%= f.hidden_field :type,:value => "Manager" %>
+    </td></tr>
+    <tr><td><%= submit_tag 'Sign up',{:class => 'btnok'} %></td></tr>
+  </table></center>
+<% end %>
+</div>

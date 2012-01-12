@@ -1,0 +1,52 @@
+<% content_for :header do %>
+
+<% end %>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',{:controller => "permission",:action => "index"}) %></li>
+            <li><%= link_image_tag('Reset','reset.png',{:controller => "permission",:action => 'new_role'}) %> </li>
+          </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+
+<div id="frmInfo">
+  <table class="tblfrm" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td class="frmtitle">Create new role</td>
+    </tr>
+    <tr>
+      <td class="frmname">Role infomation</td>
+    </tr>
+    <tr>
+      <td class="frmmain">
+        <% form_for :role, :url => {:controller => "permission",:action => 'create_role'} do |f| %>
+          <table class="frmdetail" cellpadding="0" cellspacing="0">
+            <tr>
+              <td><label for="group">Role :</label></td>
+              <td><%= f.text_field(:name,:size => 25,:maxsize => 50) %></td>
+            </tr>
+            <tr>
+              <td><label for="group">Description :</label></td>
+              <td><%= f.text_field(:description,:size => 25,:maxsize => 50) %></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><%= submit_tag " Create role ",{:class => 'btnok'} %></td>
+            </tr>
+            </table>
+        <% end %>
+      </td>
+    </tr>
+  </table>
+</div>

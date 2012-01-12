@@ -1,0 +1,495 @@
+<% content_for :header do %>
+
+<%= stylesheet_src_path '/jquery/jquery.timepickr/ui-timepickr/dist/themes/default/ui.timepickr.css' %>
+
+<style type="text/css">
+
+    .ygtvcheck0 { background: url(../../YUI.2.7/build/treeview/assets/check0.gif) 0 0 no-repeat; width:14px; height:17px; cursor:pointer }
+    .ygtvcheck1 { background: url(../../YUI.2.7/build/treeview/assets/check2.gif) 0 0 no-repeat; width:14px; height:17px; cursor:pointer }
+    .ygtvcheck2 { background: url(../../YUI.2.7/build/treeview/assets/check1.gif) 0 0 no-repeat; background-position:center; width:14px; height:17px; cursor:pointer }
+
+    #treediv table,tr {
+      border-collapse:collapse;
+      text-align:left;
+    }
+    #expandcontractdiv {
+      font-size:8pt;
+      background-color:#ccffff;
+      border-bottom:1px solid #99cccc;
+      width:100%;
+      text-align:center;
+      display:block;
+    }
+    .ico-site {
+      font-weight:bold;
+      color:lime;
+    }
+    .ctlbtn {
+        padding-left:5px;
+        padding-right:5px;
+        padding-top:5px;
+        padding-bottom:5px;
+        margin-top:10px;
+    }
+    .btn1 {
+        padding-left:5px;
+        padding-right:5px;
+        margin-top:10px;
+        font-weight:bold;
+        margin-left:2px;
+        margin-right:2px;
+        padding-top:2px;
+        padding-bottom:2px;
+    }
+    .span-view { font-weight:bold;}
+    #grp-tree { border:1px solid #cccccc; overflow:scroll; height:400px;}
+  #notuse {
+    display:none;
+  }
+
+</style>
+<%= render :partial => 'shared/group_tree2' %>
+<script type="text/javascript">
+    var th = null;
+    var tree = null;
+    function tabManagerSelect(tabNo){
+        switch(tabNo){
+          case 1: {
+            $("#div-block-groups").css("display","none");
+            $("#tabli-2").removeClass("tabmenu-li-selected");
+            $("#div-block-manager").css("display","block");
+            $("#tabli-1").addClass("tabmenu-li-selected");  
+            break;  
+          }
+          case 2: {
+            $("#div-block-groups").css("display","block");
+            $("#tabli-2").addClass("tabmenu-li-selected");
+            $("#div-block-manager").css("display","none");
+            $("#tabli-1").removeClass("tabmenu-li-selected");  
+            break;  
+          }
+          default : {
+            $("#div-block-groups").css("display","block");
+            $("#tabli-2").addClass("tabmenu-li-selected");
+            $("#div-block-manager").css("display","none");
+            $("#tabli-1").removeClass("tabmenu-li-selected")
+          }
+        }  
+    }
+
+    function del_manager(id,name){
+        $("#delDialog").text("");
+        $("#delDialog").append("Are you sure to delete manager \"<b>" + name + "</b>\"");
+        $("#delDialog").dialog("open");
+        $("#delDialog").dialog({
+          bgiframe: true,
+          title: "Deleting manager...",
+          modal: true,
+          buttons:{
+            "Cancel": function(){ $(this).dialog("close"); },
+            "Ok": function(){ window.location = "<%= url_for(:controller => 'managers',:action => 'delete') %>/" + id ; }
+          }
+        });
+    }
+
+    $(document).ready(function(){
+
+       expandSelectedTeam();
+       <%sts = 1%>
+       <%if @manager.state.to_s == 'active'%>
+       <%sts = 2%>
+       <%end%>
+         $("#manager_state<%=sts%>").attr("checked",true);
+         $("#manager_expired_date").datepicker({ showAnim: 'fold' ,dateFormat: 'yy-mm-dd'});
+         $("#commitgroup").click(function(){
+            managegroup();
+         });
+        $("#mg-tabs ul li").mouseover(function(){
+            $(this).addClass('tabmenu-li-hover');
+        }).mouseout(function(){
+            $(this).removeClass('tabmenu-li-hover');
+        });        
+    });
+
+    function remove_member(){
+      del_member();
+      $("#box1View option:selected").appendTo("#box2View");sortoptions('2');
+    }
+    function add_member(){
+
+      check_member();
+      $("#box2View option:selected").appendTo("#box1View");sortoptions('1');
+    }
+    function check_member(){
+      $("#box2View option:selected").each(function(){
+        var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");  
+        var select_for_expand = tree.getNodeByProperty("label",ct);
+        if(select_for_expand != null)
+        {
+            select_for_expand.check();
+            var expanded = select_for_expand.parent;
+            while(expanded != null)
+            {
+              expanded.showChildren();
+              expanded = expanded.parent;
+            }
+        }
+      });
+     
+    }
+
+	function changeUserTypeToAgent(){
+		var group_id = $("select[name=agent-group] option:selected").val();
+		window.location = "<%= url_for(:controller => 'users', :action => 'change_type',:id => params[:id], :type => params[:controller] ) %>" + "&group_id=" + group_id;
+	}
+	
+	function onChangeUserType(id){
+		$("#change-usertype-dialog").dialog('destroy');
+		$("#change-usertype-dialog").dialog({
+			modal: true,
+			bgiframe: true,
+			width: '450',
+			buttons: {
+				"No": function(){ $(this).dialog('close'); },
+				"Yes": function(){ $(this).dialog('close'); changeUserTypeToAgent();}
+			}
+		});
+	}
+
+    function del_member(){
+      $("#box1View option:selected").each(function(){
+        var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");
+        var select_for_expand = tree.getNodeByProperty("label",ct);
+        if(select_for_expand != null)
+        {
+           select_for_expand.uncheck();
+           //  var expanded = select_for_expand.parent;
+           if(select_for_expand != null)
+           {
+            select_for_expand.check();
+           }
+        }
+      });
+    }
+	
+    function uncheckAll()
+    {
+      var topNodes = tree.getRoot().children;
+                for(var i=0; i<topNodes.length; ++i) {
+                    topNodes[i].uncheck();
+      }
+    }
+    function clear_all(){
+      $("#box1View option").each(function(){
+        $(this).appendTo("#box2View");
+      });
+      $("#box1View").empty();
+      sortoptions("2");
+      uncheckAll();
+    }
+    function checkval()
+    {
+      $("#box1View option").each(function(){
+        alert($(this).val());
+        alert($(this).text());
+      });
+    }
+    function sortoptions(chele)
+    {
+      var my_options = $("#box"+chele+"View option")
+      my_options.sort(function(a,b) {
+        if (a.text > b.text) return 1;
+        else if (a.text < b.text) return -1;
+        else return 0
+      });
+      $("#box"+chele+"View").empty().append(my_options);
+    }
+    
+    function managegroup(){
+   
+      var group_mem_array = new Array();      
+      var group_mem_parse = $("#groupsList").text();
+      var mglist = $("#managerList").text();
+      
+      $.post("<%= url_for(:controller=>'managers', :action=>'manage_group_member',:id=>params[:id])%>",
+      {
+          group_mem: group_mem_parse,
+          mglist: mglist
+      },function(result){
+         
+          if(result == 'ok')
+            {
+              sysMessage("Save change of access level was successfully!");
+            }else
+            {
+              sysMessage("Save change of access level was fail!");
+            }
+       });
+    }
+
+    function expandSelectedTeam()
+    {
+
+      var managers = [<%= (@grp_managers.map { |m| "'#{m.manager.login}'" }).join(',') %>];
+      for(var i=0; i < managers.length; i++ ){
+        var ct = managers[i];
+        var select_for_expand = tree.getNodesByProperty("label",ct);
+		for (var j= 0; j < select_for_expand.length; j++) {
+			if ((select_for_expand[j] != null) && (select_for_expand[j].data.NodeType == "agent")) {
+				select_for_expand[j].check();
+				var expanded = select_for_expand[j].parent;
+				while (expanded != null) {
+					expanded.showChildren();
+					expanded = expanded.parent;
+				}
+			}
+		}  
+      }
+        
+      $("#box1View option").each(function(){
+        var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");
+        var select_for_expand = tree.getNodesByProperty("label",ct);
+		for (var j = 0; j < select_for_expand.length; j++) {
+			if ((select_for_expand[j] != null) && (select_for_expand[j].data.NodeType == "group")) {
+				select_for_expand[j].check();
+				var expanded = select_for_expand[j].parent;
+				while (expanded != null) {
+					expanded.showChildren();
+					expanded = expanded.parent;
+				}
+			}
+		}
+      });
+    }
+	
+    var modeView = 0;
+    function switchView(){
+       if(modeView == 0){
+         modeView = 1;
+         $("#ac-treeview").css("display","none");
+         $("#ac-classicview").css("display","block");
+         $("#switchbtn").html("switch to treeview");
+       }else{
+         modeView = 0
+         $("#ac-treeview").css("display","block");
+         $("#ac-classicview").css("display","none");
+         $("#switchbtn").html("switch to group view");  
+       }
+    }
+</script>
+<% end %>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',managers_path,{:title => 'Back to manager list'}) %></li>
+            <li><%= link_image_tag('Manager details','detail.png',{:controller => "managers",:action=>"show", :id => @manager.id},{:title => 'Show details'}) %></li>
+            <li><%= link_image_tag('Delete manager','delete.png','#',{:onclick => "del_manager(#{@manager.id},\"#{@manager.display_name}\")",:title => 'Delete'}) %></li>          
+            <li><%= link_image_tag('Change user type','urole.png','#',{:onclick => "onChangeUserType(#{@manager.id})",:title => 'Change from manager to user'}) %></li>
+		  </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+
+<div id="change-usertype-dialog" style="display:none;">
+	<div>
+		<span>Are you sure to change user type from "Manager" to "Agent"?</span></br></br>
+		<span style="font-style:italic;">If you click "Yes" then information about group leader and access level of this user will be reset.</span>
+		</br></br>Please choose group for agent.
+		<div style="padding-top:5px;">
+		<select name="agent-group">
+		<% Group.find(:all,:order => 'name').each do |r| %>
+			<option value="<%=r.id %>"><%=r.name %></option>	
+		<% end %>
+		</select>
+		</div>
+	</div>
+</div>
+
+<div class="div-tabmenu-style1" id="mg-tabs"  style="display:<%= !permission_by_name('managers-access') ? "none" : "block" %>">
+  <ul class="tabmenu-ul">
+     <li id="tabli-1" class="tabmenu-li tabmenu-li-selected"><a href="#" onclick="tabManagerSelect(1)">Manager</a></li>
+    <li id="tabli-2" class="tabmenu-li"><a href="#" onclick="tabManagerSelect(2)">Access levels</a></li>
+  </ul>
+</div>
+
+<div id="div-block-manager">
+   <div class="div-form-default-style1">
+     <% form_for(@manager) do |f| %>
+        <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td><span class="span-form-name">Manager infomation</span></td>
+        </tr>
+        <tr>
+            <td>
+            <%=display_frm_error(flash[:message]) %>  
+            <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="130px" align="left" valign="top"><label>Username:</label></td>
+              <td width="300px"><%= f.text_field :login,{:class =>'input-text',:size => 20,:maxsize => 30} %><span class="span-require">*</span>
+              <br><span class="note">Username must have a minimum of 4 characters</span></td>
+            </tr>
+            <tr>
+              <td><label>Display name:</label></td>
+              <td><%= f.text_field :display_name,{:class =>'input-text',:size => 20,:maxsize => 30} %><span class="span-require">*</span></td>
+            </tr>
+            <tr>
+              <td><label>E-mail:</label></td>
+              <td><%= f.text_field :email,{:class =>'input-text',:size => 20,:maxsize => 100} %></td>
+            </tr>			
+            <tr>
+              <td><label>CTI Agent ID:</label></td>
+              <td><%= f.text_field :cti_agent_id,{:class => 'input-text',:size => 20,:maxsize => 30} %></td>
+            </tr>
+			<!-- ID CARD-->			
+            <tr>
+              <td><label>Citizen ID:</label></td>
+              <td><%= f.text_field :id_card,{:class => 'input-text',:size => 20,:maxsize => 30} %></td>
+            </tr>		
+				
+            <tr>
+              <td><label for="sex">Sex:</label></td>
+              <td><%= f.select "sex", [["Undefine","u"], ["Female","f"], ["Male","m"]] %><span class="span-require">*</span></td>
+            </tr>
+            <tr>
+              <td><label>Role:</label></td>
+              <td><%= f.collection_select "role_id", Role.find(:all,:order => 'name'), :id, :name %><span class="span-require">*</span></td>
+            </tr>
+            <tr>
+              <td valign="top"><label>Account expired date:</label></td>
+              <td><%= f.text_field :expired_date,{:class => 'input-text'}%>
+              <br><span class="note">Format date is "yyyy-mm-dd"</span></td>
+            </tr>
+            <tr>
+              <td><label>Status</label></td>
+              <td>
+                <input type="radio" id="manager_state1" name="manager[state]" value="passive" checked="true">Inactive
+                <input type="radio" id="manager_state2" name="manager[state]" value="active">Active
+              </td>
+            </tr>
+          </table>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="span-form-name">Authentication detail</span></td>
+    </tr>
+    <tr>
+      <td>
+        <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+            <tr>
+              <td valign="top" width="130px"><label>Password:</label></td>
+              <td>
+                <%= f.password_field :password, :size => 25, :maxsize => 20,:class =>'input-text' %><span class="span-require">*</span>
+                <br><span class="span-field-note">Password must have a minimum of 6 characters</span>
+              </td>
+            </tr>
+            <tr>
+              <td><label>Confirm Password:</label></td>
+              <td><%= f.password_field :password_confirmation, :size => 25, :maxsize => 20,:class =>'input-text' %><span class="span-require">*</span></td>
+            </tr>
+            <tr>
+            <tr>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><%= submit_tag "Update manager",{:class => 'btnAccept'} %></td>
+            </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  <% end %>
+</div>
+</div>
+
+<div id="div-block-groups" style="display:none">
+   <div class="div-form-default-style1">
+     <% form_tag do %>
+     <%=display_frm_error(flash[:message]) %>
+        <table width="100%" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td colspan="2">
+            <span class="span-form-name">Manager Access Levels</span>
+          </td>
+        </tr>
+        <tr>
+            <td valign="top" width="200px" style="padding-left:15px;">
+              <br>
+              <!--(<a href="#" id="switchbtn" onclick="switchView()">switch to group view</a>)<br><br>-->
+              <span class="note">Note: Access levels default by role and group's leader.</span>
+            </td>
+            <td align="left" valign="top" style="padding-left:50px;">
+           <div id="ac-treeview">
+              <span class="span-view">Tree view</span>
+              <div id="grp-tree" style="width:400px"><%= render :partial => 'shared/group_tree2_css' %></div>
+            </div>
+            <div id="ac-classicview" style="display:none">
+              <span class="span-view">Group(s) view</span>
+            <table cellpadding="0" cellspacing="0" width="50%">
+               <tr>
+                 <td width="30%" valign="top" align="center"><span class="span-form-name">Selected Groups</span></td>
+                 <td align="center" rowspan="2">
+                   <button type="button" class="ctlbtn" name="btntoAll" onclick="remove_member();"><%=image_tag("trights.png",:align=>'abmiddle',:alt=>"Remove group")%></button><br>
+                   <button type="button" class="ctlbtn" name="btntoMember" onclick="add_member();"><%=image_tag("tlefts.png",:align=>'abmiddle',:alt=>"Add group")%></button>
+                 </td>
+                 <td width="30%" valign="top" align="center"><span class="span-form-name">All Groups</span></td>
+               </tr>
+               <tr>
+                 <td width="30%">
+                   <select id="box1View" multiple="multiple" style="height:250px;width:200px;">
+                     <%
+                        unless @handler_group.nil?
+                            @handler_group.each do |hcg|
+                              title = []
+                              @group_details.each do |gd|
+                                title << gd.value if gd.group_id == hcg.id
+                              end
+                              %><option title="<%= title.join(" ") %>" value="<%=hcg.id%>"><%=hcg.name%> [<%=  hcg.leader.blank? ? "-" : hcg.leader.display_name%>]</option><%
+                            end
+                        end
+                     %>
+                   </select>
+                 </td>
+                 <td width="10%">
+                   <select id="box2View" multiple="multiple" style="height:250px;width:200px;">
+                     <% unless @all_group.nil?
+                          @all_group.each do |g|
+                            title = []
+                            @group_details.each do |gd|
+                             title << gd.value if gd.group_id == g.id
+                            end
+                            %><option title="<%=title.join(" ")%>" value="<%=g.id%>"><%=g.name%> [<%= g.leader.nil? ? "-" : g.leader.display_name %>]</option><%
+                          end
+                        end
+                      %>
+                   </select>
+                 </td>
+               </tr>
+            </table>
+            </div>
+            <div>
+               <button type="button" id="box1Clear" class="btn1" onclick="clear_all();">Clear select</button>
+               <button type="button" id="commitgroup" class="btn1" name="commit">Save change</button>
+               <br>
+            </div>
+            </td>
+        </tr>
+        </table>
+      </td>
+    </tr>
+  </table> 
+  <% end %>
+</div>
+</div>
+
+

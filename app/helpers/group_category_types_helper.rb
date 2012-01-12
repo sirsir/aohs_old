@@ -1,0 +1,2 @@
+module GroupCategoryTypesHelper
+end

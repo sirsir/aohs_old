@@ -1,0 +1,32 @@
+<h1>Editing user</h1>
+
+<% form_for(@user) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :display_name %><br />
+    <%= f.text_field :display_name %>
+  </p>
+  <p>
+    <%= f.label :account_name %><br />
+    <%= f.text_field :account_name %>
+  </p>
+  <p>
+    <%= f.label :group_id %><br />
+    <%= f.text_field :group_id %>
+  </p>
+  <p>
+    <%= f.label :permission_id %><br />
+    <%= f.text_field :permission_id %>
+  </p>
+  <p>
+    <%= f.label :lock_version %><br />
+    <%= f.text_field :lock_version %>
+  </p>
+  <p>
+    <%= f.submit "Update" %>
+  </p>
+<% end %>
+
+<%= link_to 'Show', :action=>"show", id=>@user.id %> |
+<%= link_to 'Back', :action=>"index" %>

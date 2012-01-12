@@ -1,0 +1,110 @@
+<% content_for :header do %>
+<script type="text/javascript">
+
+    var kwgroup_del = null;
+        kwgroup_del = new Array();
+  
+    function del_keyword(id,name){
+      $("#delDialog").text("");
+      $("#delDialog").append("Are you sure to delete keyword \"<b>" + name + "</b>\"");
+      $("#delDialog").dialog("open");
+      $("#delDialog").dialog({
+        bgiframe: true,
+        title: "Deleting keyword...",
+        modal: true,
+        buttons:{
+          "Cancel": function(){ $(this).dialog("close"); },
+          "Ok": function(){ window.location = "<%=url_for(:controller => 'keywords',:action => 'delete')%>/" + id ; }
+        }
+      });
+    }
+	var no = 0
+	
+	function addPattern(){
+      no++;
+	  var html = "<span class=\"patternList\"><input type=\"text\" name=\"patterns[new" + no + "]\" size=\"50\" maxsize=\"100\"><span class=\"span-require\">*</span> <a href=\"#\"  class=\"patternListRemove\" >Remove</a><br/></span>";
+	  $("#span-pattern").append(html);
+	  removePattern();
+	}
+	function removePattern(){
+		$(".patternListRemove").click(function(){
+			if(confirm("Are you sure to delete this pattern?")){
+				$(this).parent().remove();
+				if($("#span-pattern").html().length <= 0)
+					addPattern();				
+			}
+		});
+	}
+	$(document).ready(function(){
+		removePattern();
+	});
+</script>
+<% end %>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',{:controller=>'keywords',:action => 'index'}) %></li>
+            <li><%= link_image_tag('Delete keyword','delete.png','#',{:onclick => "del_keyword('#{@keyword_group.name}',\"#{@keyword_group.name}\")"}) %></li>
+          </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+
+<div id="div-block-keyword">
+
+<div class="div-form-default-style1">
+  <table  class="tblfrm" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td><span class="span-form-title">Edit Keyword</span></td>
+    </tr>
+    <tr>
+      <td><span class="span-form-name">Keyword infomation</span></td>
+    </tr>
+    <tr>
+      <td class="frmmain">
+        <% form_tag url_for(:controller => 'keywords', :action => 'update_group', :id => @keyword_group.id) do %>
+        <%= display_frm_error(flash[:message]) %>
+          <table  class="tbl-frm-details" cellpadding="0" cellspacing="0">
+            <tr>
+              <td valign="top" width="150px"><label>Name:</label></td>
+              <td><%= text_field_tag :keyword_group,@keyword_group.name,{:size => 50,:maxsize => 100} %><span class="span-require">*</span>
+			  <br><span class="note">Name must be contain only alphabet, without special charactor</span></td>
+            </tr>   	
+            <tr>
+              <td valign="top" width="150px"><label>Pattern(s)</label></td>
+              <td><span id="span-pattern">
+              	<% k_type = "n" %>
+              	<% @keyword.each do |k| %>
+				<% k_type = k.keyword_type %>
+              	<span class="patternList"><%= text_field_tag "patterns[#{k.id}]",k.name,{:size => 50,:maxsize => 100} %><span class="span-require">*</span> <a href="#" class="patternListRemove">Remove</a><br/></span>
+			    <% end %>
+			  </span>
+			  <br/><a href="#" onclick="addPattern()">Add new pattern</a><br/><span class="note">Pattern must be contain only alphabet without space and special charactor</span></td>
+            </tr>
+            <tr>
+              <td><label>Type</label></td>
+              <td>
+              	<%= radio_button_tag('keyword_type','n',k_type == 'n' ? true : false) %> NG Word
+				<%= radio_button_tag('keyword_type','m',k_type == 'm' ? true : false) %> Must Word
+				<%= radio_button_tag('keyword_type','a',k_type == 'a' ? true : false) %> Action Word
+              </td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><%= submit_tag "Update keyword",{:class => 'btnOk'} %></td>
+            </tr>
+            </table>
+        <% end %>
+      </td>
+    </tr>
+  </table> 
+</div></div>

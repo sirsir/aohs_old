@@ -1,0 +1,41 @@
+# configurations
+# note! seprate by TAB
+# note! varible name,description,varible type,default value
+
+#server.qlogger:
+
+#server.loggermq:
+
+#server.speechserver:
+
+#server.ctimq:
+
+#server.keyworddetector:
+
+client.aohs_web:
+mysqlDbConnectionString	"mysql database connection string"	string	"Server=192.168.1.15;Database=amivoice_operators_help;Uid=mysqladmin;Pwd=password;Port=3306"
+activeId	"active id"	integer	1
+serverRootUrl	"server root url"	string	"http://192.168.1.17:8080/AohsWeb"
+#audioBaseUrl	"audio base url"	string	""
+number_of_display_list	"number of record(s) can display of each page"	integer	20
+number_of_display_voice_logs	"number of record(s) can display of voice logs page"	integer	20
+number_of_daily	"maximum number of day(s) can display of daily tab"	integer	15
+number_of_weekly	"maximum number of week(s) for display of weekly tab"	integer	10
+number_of_monthly	"maximum number of month(s) for display of monthly tab"	integer	8
+#number_of_custsearch	"number of record(s) can display of customer page"	integer	20
+number_of_max_timeline	"number of record(s) can display on timeline [set 0 to disable]"	integer	100000
+number_of_max_calls_export	"number of records(s) can print or export"	integer	100000
+beginning_of_week	"beginning day of week"	string[mo,tu,we,th,fr,sa,su]	mo
+beginning_of_month	"begining day of month"	integer	1
+#keepLogDays	"number of days for keep application log [set 0 to disable]"	integer	90
+enableCallsTimeline	"enable(1)/disable(0) calls timeline"	integer	1
+reportHeaderName	"company name or report header name"	string	"AmiVoice Thai Co.,Ltd."
+#reportHeaderLogo	"logo images path [../rail_root/public]"	string	"ami.png"
+#activeCheckerPath	"file path for check active logger"	string	"/opt/checker-1.0/active.conf"
+reportUserNameDisplay	"show login name(0) or display name(1) in report"	integer	1
+#alwayShowFilterWhenSearch	"show(t)/hide(f) when filter is using"	boolean	"f"
+callBrowserShotcut	"Call Browser application shotcut url"	string	"http://192.168.1.162/start.jar"
+autoUpdateReportToday	"time for refresh report data (miniutes), set o to disable"	integer	2
+maxNumberOfCallPerPage	"maximum number of calls can show per page (web)"	integer	100
+
+#client.call_browser:

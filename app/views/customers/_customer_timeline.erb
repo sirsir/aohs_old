@@ -1,0 +1,65 @@
+<% content_for :header do %>
+
+<%= javascript_src_path '/javafx/dtfx.js' %>
+
+<script type="text/javascript">
+
+    var curtlUrl = "";
+
+    function makeTimeLine(strUrl){
+      <% if @tl_enabled %>
+      var amiTimeLineFx = document.getElementById("amiTimeLineFx");  
+      $("#timelineLoading").css("display","inline-block");  
+      try{
+        var strSrc = "<%=get_root_url %>/timeline/timeline_calls?tl=cucalls&user_id=" + "<%= current_user.id %>" + "&" + strUrl;
+        strSrc = strSrc.replace(/^\s*|\s*$/g,'');
+        $("#urltest").val(strSrc);
+        amiTimeLineFx.script.makeTimeLine(strSrc);
+        $("#timelineLoading").css("display","none");
+      } catch(e){
+        //alert(e.message);
+        $("#timelineLoading").css("display","none");  
+      }
+      <% end %>
+    }
+
+    function initial_vl_timeline(srcUrl){
+       curtlUrl = srcUrl; 
+       makeTimeLine(srcUrl);
+    }
+
+    function reloadTimeLine(){
+       initial_vl_timeline(curtlUrl);
+    }
+        
+</script>
+<style>
+  #timelineLoading { padding-left: 3px;}
+</style>
+<input type="text" id="urltest" style="display:none">
+<% end %>
+<input type="button" name="Refresh" value="Refresh Timeline" onclick="reloadTimeLine()" class="btnStyle1" style="margin-top:2px;">
+<span id="timelineLoading" style="display:none;"><%= image_tag('page_ctrl/load.gif',{:align => 'absmiddle'}) %> Loading ...</span>
+<table width="100%">
+  <tr>
+    <td align="center">
+        <div id="jfx-amiTimeLine">
+        <% if @tl_enabled %>
+        <script>
+                javafx({
+                        archive: "<%="#{get_root_url}/javafx/amiTimeLine/amiTimeLine.jar" %>",
+                        draggable: true,
+                        width: 800,
+                        height: 650,
+                        code: "amitimeline.timeline",
+                        name: "amiTimeLine",
+                        id: "amiTimeLineFx",
+			   			extPackages: "javafx.ext.swing"
+                    }
+                );
+        </script>
+        <% end %>      
+        </div>
+    </td>
+  </tr>
+</table>

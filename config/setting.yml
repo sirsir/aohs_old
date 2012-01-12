@@ -1,0 +1,4 @@
+config:
+ startup_env: production
+ logger_active_fpath: /opt/qlogger-1.1/conf/active_logger.conf
+ vl_checker_fpath: /opt/checker-1.0/active.conf

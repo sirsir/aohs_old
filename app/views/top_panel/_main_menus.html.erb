@@ -1,0 +1,148 @@
+<% content_for :header do %>
+<script type="text/javascript">
+	  var redirect_to = true;
+      function goto_select_calldate(choice){
+          if(choice == 1){
+		  	 window.location = "<%= url_for(:controller => 'voice_logs',:period => 'today') %>";
+          }
+          else if(choice == 2) {
+             window.location = "<%= url_for(:controller => 'voice_logs',:period => 'yesterday') %>";
+          }
+          else {
+             recent_days = $("input[name=recentDays]").val();
+			 window.location = "<%= url_for(:controller => 'voice_logs',:period => 'day_ago') %>?recents=" + recent_days;
+          }
+      }
+	$(document).ready(function(){
+		$(".div-sub-mn").mouseover(function(){
+			$(this).addClass('hover');
+		}).mouseout(function(){
+			$(this).removeClass('hover');
+		}).click(function(){
+			if(redirect_to){
+				var url = $(this).attr("url");
+				var openwith = $(this).attr("openwith");
+				if(openwith=="dialog"){
+					var call_browser_page = window.open(url,"call_browser","status=yes,toolbar=no,location=no,menubar=no,resizable=yes,width=1000,height=600");
+                                        call_browser_page.moveTo((screen.width - 1000)/2, (screen.height - 600)/2);
+				} else {
+					window.setTimeout("window.location = \"" + url + "\";",300);
+				}
+			}
+				
+		});
+		$("#recentDays").click(function(){
+			redirect_to = false;
+		}).blur(function(){
+			redirect_to = true;
+		});
+	});
+</script>
+<% end %>
+<div class="home-main-menu">
+	<div class="title">Check activities of agents, Calls search, stats, you can define keyword.</div>
+	<div class="sub-mn">
+		<% if permission_by_name("calls_browser") %>
+		<div class="div-sub-mn" url="<%=url_for(:controller => 'call_browser',:action => 'index')%>" openwith="dialog">
+		<table cellpadding="0" cellspacing="0">
+			<tr>
+				<td rowspan="2" width="30px" align="center"><%= image_tag("menu_icon/call_browser.png") %></td>
+				<td><span class="mn-name">Call Browser</span></td>
+			</tr>
+			<tr>
+				<td><span class="title2">Agent's call monitoring</span></td>
+			</tr>
+		</table>
+		</div>
+        <% end %>
+		
+		<% if link_permission_require('voice_logs','index') %>
+		<div class="div-sub-mn" url="<%=url_for(:controller => 'voice_logs',:action => 'index')%>">
+		<table cellpadding="0" cellspacing="0">
+			<tr>
+				<td rowspan="2" width="30px" align="center"><%= image_tag "menu_icon/operator.png" %></td>
+				<td><span class="mn-name">Agent Calls Search</span></td>
+			</tr>
+			<tr>
+				<td>
+					<span class="title2">
+					<a href="#" title="Calls's today" class="shotcutch" onclick="goto_select_calldate(1)">Today</a>&nbsp;&bull;
+            		<a href="#" title="Calls's yesterday" class="shotcutch" onclick="goto_select_calldate(2)">Yesterday</a>&nbsp;&bull;
+            		<input type="text" title="Number of recent days" name="recentDays" id="recentDays" class="shotcutch" length="3" maxlength="3" value="3"> <a href="#" class="shotcutch" title="Agents calls" onclick="goto_select_calldate(3)">Days ago</a>
+					</span>
+				</td>
+			</tr>
+		</table>
+		</div>
+        <% end %>	
+
+		<% if link_permission_require('favorites','index') %>
+		<div class="div-sub-mn" url="<%=url_for(:controller => 'favorites',:action => 'index')%>">
+		<table cellpadding="0" cellspacing="0">
+			<tr>
+				<td rowspan="2" width="30px" align="center"><%= image_tag "menu_icon/calltag.png" %></td>
+				<td><span class="mn-name">Tag Calls Search</span></td>
+			</tr>
+			<tr>
+				<td><span class="title2">Search agent calls by call tags</span></td>
+			</tr>
+		</table>
+		</div>
+        <% end %>
+		
+		<% if link_permission_require('customers','index') %>
+		<div class="div-sub-mn" url="<%=url_for(:controller => 'customers' ,:action => 'index')%>">
+		<table cellpadding="0" cellspacing="0">
+			<tr>
+				<td rowspan="2" width="30px" align="center"><%= image_tag "menu_icon/customer.png" %></td>
+				<td><span class="mn-name">Customer Calls Search</span></td>
+			</tr>
+			<tr>
+				<td><span class="title2">View customer's calls and manage customer details</span></td>
+			</tr>
+		</table>
+		</div>
+        <% end %>
+
+		<% if link_permission_require('statistics','index') %>
+		<div class="div-sub-mn" url="<%=url_for(:controller => 'statistics', :action => 'index')%>">
+		<table cellpadding="0" cellspacing="0">
+			<tr>
+				<td rowspan="2" width="30px" align="center"><%= image_tag "menu_icon/statistic.png" %></td>
+				<td><span class="mn-name">Agents Report</span></td>
+			</tr>
+			<tr>
+				<td><span class="title2">Show calls or keywords report for each agent</span></td>
+			</tr>
+		</table>
+		</div>
+        <% end %>
+
+		<% if link_permission_require('keywords','index') %>
+		<div class="div-sub-mn" url="<%=url_for(:controller => 'keywords',:action => 'index')%>">
+		<table cellpadding="0" cellspacing="0">
+			<tr>
+				<td rowspan="2" width="30px" align="center"><%= image_tag "menu_icon/keyword.png" %></td>
+				<td><span class="mn-name">Keywords Report</span></td>
+			</tr>
+			<tr>
+				<td><span class="title2">Show keyword statistics and maintenance keywords</span></td>
+			</tr>
+		</table>
+		</div>
+        <% end %>
+	        <% if permission_by_name('exports-calls') %>
+		<div class="div-sub-mn" url="<%="#{Aohs::VOICE_EXPORT_AUTH_URL}?wauth=#{VoiceExportKey.strkey(current_user.login)}&login=#{current_user.id}" %>">
+		<table cellpadding="0" cellspacing="0">
+			<tr>
+				<td rowspan="2" width="30px" align="center"><%= image_tag "menu_icon/export-voices.png" %></td>
+				<td><span class="mn-name">Export Calls</span></td>
+			</tr>
+			<tr>
+				<td><span class="title2">Export calls data to your customer.</span></td>
+			</tr>
+		</table>
+		</div>		
+		<% end %>
+	</div>
+</div>

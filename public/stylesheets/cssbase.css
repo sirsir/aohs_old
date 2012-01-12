@@ -1,0 +1,192 @@
+
+/* body style */
+
+body,html {
+    font-size: 8pt;
+    font-family: sans-serif;
+    background-color: white;
+    overflow:hidden;
+}
+
+html {
+	overflow-y:scroll;
+}
+
+html,body,form,h1,h2,h3,h4,h5,p,label,input,select {
+    margin:0px 0px 0px 0px;
+    padding:0px 0px 0px 0px;
+}
+
+input, select, label {
+	font-size: 8pt;
+}
+
+#header {
+    background-image:url('../images/navigation-bkg.jpg');
+    border-bottom:2px solid orange;
+	padding-right:5px;
+}
+
+.web-name {
+    font-size:10pt;
+    color:white;
+    font-weight:bold;
+    padding-bottom:5px;
+    padding-top:2px;
+    font-family: Verdana;
+}
+
+#ctrl-menu {
+    margin-top:0px;
+}
+
+#ctrl-menu ul {
+    list-style: none;
+    margin: 0px 0px 0px 5px;
+}
+
+#ctrl-menu li {
+    float: left;
+    padding-left:6px;
+    padding-right:6px;
+    padding-top:2px;
+    padding-bottom:2px;
+    margin-left:3px;
+}
+li.selected {
+    background-image:url(../images/bg019.png);
+    background-position:center;
+    border-top:1px solid #ffdb6e;
+    border-left:1px solid #ffdb6e;
+    border-right:1px solid #ffdb6e;
+    color:white;
+    font-weight:bold;
+}
+
+a,a:visited {
+    text-decoration: none;
+    color:#0066cc;
+}
+a:hover {
+    text-decoration:underline;
+}
+
+a.link01,a.link01:visited {
+    color:white;
+    text-decoration:none;
+}
+a.link01:hover {
+    color:white;
+    text-decoration:underline;
+}
+
+a.link02,a.link02:visited {
+    color:white;
+    text-decoration:none;
+	font-weight:bold;
+}
+a.link02:hover {
+    color:white;
+    text-decoration:underline;
+	font-weight:bold;
+}
+
+a.link03,a.link03:visited {
+    color:white;
+    text-decoration:none;
+}
+a.link03:hover {
+    color:white;
+    text-decoration:underline;
+}
+
+.login-name {
+    font-weight:bold;
+}
+
+#submenu {
+    margin-bottom:1px;
+    margin-top:1px;
+}
+
+#submenu td {
+    padding-right:5px;
+}
+
+#submenu ul {
+    list-style: none;
+    margin: 0px 0px 0px 5px;
+}
+
+#submenu li {
+    float: left;
+    padding-left:4px;
+    padding-right:4px;
+    padding-top:2px;
+    padding-bottom:2px;
+}
+
+#body {
+    background-color:white;
+    padding-bottom:5px;
+}
+
+/* jquery widget style */
+
+.ui-dialog-content {
+    font-size:12px;
+}
+.ui-dialog-buttonpane {
+    font-size:12px;
+}
+.ui-dialog-titlebar {
+    font-size:12px;
+}
+.menuSelect {
+    cursor:pointer;
+    background-image:url('../images/gradient-mod.png');
+    background-repeat:repeat-x;
+}
+
+.menuUnselect {
+    cursor:default;
+    background:none;
+}
+
+#tblmenulist td{
+    padding-left:5px;
+}
+
+#defaultTabsStyle1 {
+  margin-top:0px;
+  padding-top:0px;
+  margin-left:2px;
+  margin-right:2px;
+}
+#defaultTabsStyle1 ul {
+  list-style: none;
+  margin-left:10px;
+  margin-bottom:-1px;
+  margin-top:0px;
+  padding-top:0px;
+}
+#defaultTabsStyle1 li {
+  float:left;
+  padding-top:2px;
+  padding-left:8px;
+  padding-right:8px;
+  padding-bottom:2px;
+  margin-left:5px;
+  border:1px solid #b4e1ff;
+  margin-bottom:-1px;
+  font-weight:bold;
+  background-color:white;
+  cursor:pointer;
+}
+.defaultliselected{
+  background-image:url('../images/bg003.png');
+  background-position:bottom;
+}
+.defaultlihover {
+  background-image:url('../images/bg012.png');
+}

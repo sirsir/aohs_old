@@ -1,0 +1,146 @@
+<% content_for :header do %>
+  <%= stylesheet_src_path 'for_callsearch.css' %>
+  <%#= stylesheet_src_path '/jquery/jquery.contextMenu/jquery.contextMenu.css'%>
+  <%#= stylesheet_src_path '/jquery/jquery.menu/menu.css' %>
+  <%= stylesheet_src_path('/jquery/jquery.treeview/jquery.treeview.css')%>
+  <%#= stylesheet_src_path '/jquery/jquery-tooltip/jquery.tooltip.css' %>    
+  <%= javascript_src_path('/jquery/jquery.treeview/jquery.treeview.js') %>
+  <%= javascript_src_path('/jquery/jquery.treeview/lib/jquery.cookie.js') %>
+  <%#= javascript_src_path '/jquery/jquery.contextMenu/jquery.contextMenu.js'%>
+  <%#= javascript_src_path '/jquery/jquery.menu/jquery.menu.js' %>
+  <%= javascript_src_path '/jquery/js/jquery.download.js' %>
+  <%= javascript_src_path '/jquery/js/jquery.numeric.js' %>  
+  <%#= javascript_src_path '/jquery/jquery-tooltip/jquery.tooltip.js' %>
+  <%#= javascript_src_path '/jquery/jquery-tooltip/lib/jquery.bgiframe.js'%>
+  <%#= javascript_src_path '/jquery/jquery-tooltip/lib/jquery.dimensions.js'%>
+  <%= javascript_src_path 'webtoolkit.url.js' %>
+
+  
+<style type="text/css">
+
+  html,body {
+      overflow:hidden;
+  }
+
+  #ami-viewer {
+        margin-top:2px;
+        margin-left:2px;
+        border:1px solid #cccccc;
+        background-color: #ffffff;
+  }
+  #voicelog-tbl {
+        margin-top:2px;
+        margin-left:2px;
+        border:1px solid #b4e1ff;
+  }
+        
+</style>
+  
+<script type="text/javascript">
+  
+  var loadTlWithPage = false;
+
+  function loadTimeLine()
+  {}
+  function centerTimeline()
+  {}
+
+  function searchtag()
+  {
+    $("#searchTags").dialog("open");
+      $("#searchTags").dialog({
+        bgiframe: true,
+        modal: true,
+        buttons:{
+          "Close": function(){ $(this).dialog("close"); },
+          "Search": function(){
+            tags = $("input[name=txbsearch]").val();
+            get_tag_list(tags);
+            $(this).dialog("close");
+          }
+        }
+      });
+  }
+
+
+     function resizeWindow(e) {
+        var intBrowserHeight = $(window).height();
+        var intBrowserWidth = $(window).width();
+        var confTreeWidth = $("#conftree").width();
+        $("#conftree").css("height",intBrowserHeight-$("#header").height()-15);
+        $("#ami-viewer").css("width",intBrowserWidth-confTreeWidth-8);
+        $("#div-tblCtrl").css("width",intBrowserWidth-confTreeWidth);
+        var divTblOuter = $("#div-tbl-outer");
+        var divTblInner = $("#div-tbl-inner");
+        divTblOuter.css("width",intBrowserWidth-confTreeWidth+11);
+        divTblOuter.css("height",intBrowserHeight-$("#ami-viewer").height()-$("#header").height()-35);
+        divTblInner.css("height",divTblOuter.height()-$("#div-tblCtrl").height());
+        divTblInner.css("width",$(".tbl-header").width()+14);
+      }
+  
+    $(document).ready(function(){
+
+        $(window).bind("resize", resizeWindow);
+        resizeWindow();
+
+        $("#loading").css("display","none");
+        $("#now_tag").css("display","none");
+
+        $("#ultree").treeview({collapsed: true });
+
+     });
+
+     function gettaged(textTag)
+     {
+       $("#tagname").val(textTag);
+     }
+
+      function refreshTag(vc_id,el){
+      $.post("<%= url_for(:controller => 'voice_logs',:action => 'voice_log_tags') %>",{
+            tags_action: "show",
+            voice_id: vc_id
+      },function(data){
+        //
+        el.attr("tooltipText","Tag - " + data);
+        $("#treelist").load("<%=url_for(:controller=> 'favorites',:action => 'tree_update')%>",function(){
+          $("#ultree").treeview({collapsed: false
+            });
+            get_tag_list(tags);
+        });
+      });
+    }
+
+</script>
+
+<% end %>
+
+<div id="searchTags" title="Search Voice Info by Tag" style="display:none">
+  <table cellspacing="0">
+    <tr>
+      <td><label>Tags:</label></td>
+    </tr>
+    <tr>
+      <td><input type="text" name="txbsearch" id="txbsearch" size="30" maxlength="30"></td>
+    </tr>
+    <tr>
+      <td><i>Find more than one tag with delimeter ',' Example : notebook,note </i></td>
+    </tr>
+  </table>
+</div>
+
+<%= render :partial => 'shared/voice_log_rmenu' %>
+<%= render :partial => 'favorites/tag_cond' %>
+<%= render :partial => 'favorites/tag_dialog' %>
+
+<table cellspacing="0" cellpadding="0" width="100%">
+  <tr>
+    <td valign="top" style="padding:0px" style="background-color: #f0efef;">
+      <div style="padding-left:0px;" style="overflow:hidden; width:207" id="divSearchPanel"><div id="treelist"><%= render :partial => 'favorites/tag_list' %></div></div>
+	  <div style="overflow:hidden; width:16px;" id="divBtnShowPanel" style="display:none; padding-top:3px; padding-left:2px; padding-right:2px; "><a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a></div>
+    </td>
+    <td valign="top" style="padding:0px;">
+      <div id="ami-viewer"><%= render :partial => 'shared/amiviewer' %></div>
+      <div id="voicelog-tbl"><%= render :partial => 'shared/voice_logs_tbl' %></div>
+   </td>
+   </tr>
+</table>

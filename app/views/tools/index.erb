@@ -1,0 +1,68 @@
+<% content_for :header do %>
+<style>
+  .sysInfo {
+      border:1px solid #6699ff;
+      background: #ddeaff;
+      margin-top:6px;
+      margin-bottom:6px;
+      margin-left:6px;
+      margin-right:6px;
+      padding:5px;
+  }
+  .sysInfo-title {
+      font-weight:bold;
+      color: #006699;
+      font-size:8pt;
+  }
+  .sysInfo-detail {
+      margin-top:3px;
+      margin-left:5px;
+  }
+  .rlabel {
+      font-weight:bold;
+      padding-left:5px;
+  }
+  .stitle {
+      font-weight:bold;
+      font-size:9pt;
+      display:block;
+      padding-top:5px;
+      padding-left:5px;
+  }
+</style>
+<% end %>
+<span class="stitle">Tool</span>
+<div id="dbInfo" class="sysInfo">
+<span class="sysInfo-title">Application:</span><br/>
+  <div class="sysInfo-detail">
+  <label class="mlabel">Host name:</label><label class="rlabel"><%="-" %></label><br/>
+  <label class="mlabel">Root path:</label><label class="rlabel"><%=RAILS_ROOT %></label><br/>
+  <label class="mlabel">Enviroment:</label><label class="rlabel"><%=RAILS_ENV %></label><br/>
+  </div>
+</div>
+<div id="dbInfo" class="sysInfo">
+<span class="sysInfo-title">Current database connection:</span><br/>
+  <div class="sysInfo-detail">
+  <label class="mlabel">Adaptor:</label><label class="rlabel"><%=@db_info[:adapter] %></label><br/>  
+  <label class="mlabel">Database:</label><label class="rlabel"><%=@db_info[:dbname] %></label><br/>
+  <label class="mlabel">Host IP:</label><label class="rlabel"><%=@db_info[:host] %></label><br/>
+  <label class="mlabel">Port:</label><label class="rlabel">3306</label>  
+  </div>  
+</div>
+<div id="lgInfo" class="sysInfo">
+<span class="sysInfo-title">ActiveLogger:</span><br/>
+  <div class="sysInfo-detail">  
+  <label class="mlabel">ActiveLoggerId:</label><label class="rlabel"><%=@loggerid %></label><br/>
+  <label class="mlabel">VoiceLogs:</label><label class="rlabel"><%="voice_logs_#{@loggerid}" %></label><br/>
+  </div>
+</div>
+<div id="lgInfo" class="sysInfo">
+<span class="sysInfo-title">JFX Runtime Certificate:</span><br/>
+  <div class="sysInfo-detail">
+  <label class="mlabel">Source 1:</label><label class="rlabel">JFXRuntimeCer.cer <a href="<%=get_root_url %>/resources/cert/JFXRuntimeCer.cer">[Download]</a></label><br/>
+  <label class="mlabel">Source 2:</label><label class="rlabel">LatestCRL.crl <a href="<%=get_root_url %>/resources/cert/LatestCRL.crl">[Download]</a></label><br/>
+  <label class="mlabel">Source 3:</label><label class="rlabel">pca2-g2.crl <a href="<%=get_root_url %>/resources/cert/pca2-g2.crl">[Download]</a></label><br/>
+  <label class="mlabel">Source 4:</label><label class="rlabel">SunMicrosystemsIncRootCA.crl <a href="<%=get_root_url %>/resources/cert/SunMicrosystemsIncRootCA.crl">[Download]</a></label><br/>    
+  <label class="mlabel">Source 5:</label><label class="rlabel">Import Cert Script.vbs <a href="<%=get_root_url %>/resources/cert/importcert.vbs">[Download]</a></label><br/> 
+  </div>
+</div>

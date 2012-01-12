@@ -1,0 +1,80 @@
+<% content_for :header do %>
+  <script type="text/javascript">
+    var mode = 0;
+    $(document).ready(function(){
+
+      $(function(){
+        $("#diddetail tr").mouseover(function(){
+          $(this).addClass('tr-selected');
+        }).mouseout(function(){
+          $(this).removeClass('tr-selected');
+        });
+      });
+    });
+
+      function del_did(id,ext){
+        $("#delDialog").text("");
+        $("#delDialog").append("Are you sure to delete dids number \"<b>" + ext + "</b>\"");
+        $("#delDialog").dialog("open");
+        $("#delDialog").dialog({
+          bgiframe: true,
+          title: "Deleting Extension...",
+          modal: true,
+          buttons:{
+            "Cancel": function(){ $(this).dialog("close"); },
+            "Ok": function(){ window.location = "<%= url_for(:controller => 'extension',:action => 'delete_did') %>/" + id ; }
+          }
+        });
+     }
+    </script>
+<% end %>
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',{:controller => "extension",:action => 'edit',:id => @did.extension_id},{:title => 'Back to extension.'}) %></li>
+            <li><%= link_image_tag('Delete did','delete.png','#',{:onclick => "del_did(#{@did.id},\"#{@did.number}\")",:title => 'Delete'}) %></li>
+          </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+<div class="div-form-default-style1">
+     
+     <% form_for(@did,:url=>{:controller=>'extension',:action=>'update_did',:id => @did.id})  do |f| %>
+        <%=display_frm_error(flash[:message])%>
+        <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td><span class="span-form-name">Did infomation</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <%=display_frm_error(flash[:message]) %>
+            <%=display_frm_success(flash[:notice]) %>
+            <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="130px">Extension number:</td>
+              <td width="300px"><%= @did.extension.number %></td>
+            </tr>
+            <tr>
+              <td width="130px" align="left" valign="top"><label>Did number:</label></td>
+              <td width="300px"><%= f.text_field :number,{:class =>'input-text',:size => 20,:maxsize => 20} %><span class="span-require">*</span>
+              <%= f.hidden_field :extension_id%>
+            </tr>
+            <tr>
+              <td></td>
+              <td><%= submit_tag "Update did",{:class => 'btnAccept'} %></td>
+            </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  <% end %>
+</div>

@@ -1,0 +1,64 @@
+/* resource references  --  http://www.w3.org/TR/CSS2/page.html  */
+/*  */
+
+@page {
+	margin-top: 1cm;
+	margin-bottom: 1cm;
+	margin-left: 1cm;
+	margin-right: 1cm;
+	size: A4 landscape;
+}
+
+html,body,td,th {
+    font-family:sans-serif;
+    font-size:10px;
+}
+
+.printHeader {
+	page-break-before: always;
+}
+.printFooter {
+    margin-bottom:10px;
+}
+.report-name {
+    font-size:13px;
+    font-weight:bold;
+}
+.report-title {
+    font-size:10px;
+}
+.repeot-note {
+    font-size:12px;
+}
+.tblbody {
+    width:100%;
+    border-top:1px solid #666666;
+    border-left:1px solid #666666;
+    border-bottom:1px solid #666666;
+}
+.tblbody th {
+    border-right:1px solid #666666;
+    border-bottom:1px solid #666666;
+    text-align:center;
+    background-color: #f0efef;
+}
+.tblbody td {
+    border-right:1px solid #666666;
+    border-bottom:1px solid #666666;
+    padding-left:2px;
+    padding-right:2px;
+}
+.int {
+   text-align:right;
+   width:45px;
+}
+.string {
+   text-align:left;
+   width:50px; 
+}
+.odd {
+
+}
+.even {
+    background-color: #f5f4f4;
+}

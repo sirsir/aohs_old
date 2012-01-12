@@ -1,0 +1,152 @@
+<%
+  edit = link_permission_require('managers','edit')
+  delete = link_permission_require('managers','delete')
+%>
+<% content_for :header do %>
+  <script type="text/javascript">
+    function del_manager(id,name){
+		Msg.confirm("Are you sure to delete \"" + name + "\"?",function(){
+			window.location = "<%= url_for(:controller => 'managers',:action => 'delete') %>/" + id ;
+		},function(){
+			//NO
+		});
+    }
+	function getfilterKeys(){
+		return {
+			login: $("input[name=manager-login]").val(),
+			name: $("input[name=manager-name]").val(),
+			role: $("select[name=manager-role] option:selected").val(),
+			agent_id: $("input[name=manager-id]").val(),
+			id_card: $("input[name=manager-id_card]").val(),
+			status: $("select[name=manager-status] option:selected").val()
+		}
+	}
+    function sort_link(name){
+	  var d = getfilterKeys();
+	  d.col = name;
+	  d.sort = App.switch_order("<%=params[:sort] %>");
+      window.location = "<%= url_for(:controller => 'managers',:action => 'index') %>?" + App.make_query(d);
+    }
+    function showFilter(){
+         if($("#div-FilterBox-manager").css("display") == "none"){
+            $("#div-FilterBox-manager").css("display","block");
+         } else {
+            $("#div-FilterBox-manager").css("display","none");  
+         }
+    }
+    function filterClear(){
+		$("input[name=manager-id]").val("");
+		$("input[name=manager-id_card]").val("");
+        $("input[name=manager-login]").val("");
+        $("input[name=manager-name]").val("");
+        var tmp = $("select[name=manager-role]").html();
+        $("select[name=manager-role]").children().remove();
+        $("select[name=manager-role]").append(tmp.replace("selected",""));
+    }
+    function filterApply(){
+        window.location.href = "<%= url_for(:controller => 'managers',:action => 'index') %>?" + App.make_query(getfilterKeys());
+    }
+    function showImport(){
+        var rurl = "<%=url_for(:controller => 'data',:action => 'import',:q => 'Users')%>";
+        var window1 = window.open(rurl,"",'menubar=no,scrollbars=yes,location=yes,resizable=yes,width=500,height=270');
+    }
+    function showExport(){
+		var rurl = "<%=url_for(:controller => 'data',:action => 'export',:q => 'users', :m => 'managers') %>";
+		window.location = rurl;
+	}
+	$(document).ready(function(){
+		validInputNumeric();
+	});
+  </script>
+<% end %>
+
+<div class="div-menu-block">
+	<div class="menu-block">
+		<table width="100%" cellpadding="0" cellspacing="0">
+		<tr>
+			<td align="left">
+			<ul>
+				<% if link_permission_require('managers','new') %>
+					<li><%= link_image_tag('Add manager','new.png',{:controller => "managers",:action => 'new'}) %></li>
+				<% end %>
+				<% if permission_by_name('data-users') %>
+					<li><%= link_image_tag('Import','import.png',"#",{:onclick => "showImport()",:title => 'Import users from *.csv'}) %></li> 
+					<li><%= link_image_tag('Export','export.png',"#",{:onclick => "showExport()",:title => 'Export users to *.csv'}) %></li> 
+				<% end %>
+				<li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Search manager'}) %></li>
+			</ul>
+			</td>
+			<td align="right">
+				<%= will_paginate(@managers) %>
+			</td>
+		</tr>
+		</table>
+	</div>
+	<div id="div-FilterBox-manager" class="filter-block">
+		<fieldset>
+		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		  	<tr>
+		  		<td align="left">
+				  <label>Agent ID:</label> <input class="input-int" type="text" maxlength="10" style="width:40px;" name="manager-id" value="<%=params[:agent_id] %>">
+				  <label>Citizen ID:</label> <input class="input-int" type="text" maxlength="13" style="width:80px;" name="manager-id_card" value="<%=params[:id_card] %>">
+				  <label>Username:</label> <input class="input-text" type="text" maxlength="50" name="manager-login" value="<%=params[:login] %>">
+				  <label>Name:</label> <input class="input-text" type="text" maxlength="100" name="manager-name" value="<%=params[:name] %>">
+				  <label>Role:</label> <select name="manager-role"><option value=""></option><%= @roles.map { |r| r == params[:role] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" } %></select>		  		
+		  		  <label>Status:</label> <select name="manager-status"><%= ['','Active','Inactive'].map { |r| r == params[:status] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" } %></select>	
+				</td>
+				<td align="right">
+					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
+					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
+				</td>
+			</tr>
+		  </table>
+		</fieldset>		
+	</div>	
+</div>
+
+<div id="tbl-managers" class="div-default-table">
+  <table cellpadding="0" cellspacing="0" class="tbl-hover">
+    <tr class="tname">
+      <td colspan="11">Managers</td>
+    </tr>
+    <tr class="thead">
+      <th>No</th>
+	  <th><a href="#" class="linksort" onclick="sort_link('cti_agent_id')">Agent ID</a></th>
+	  <th><a href="#" class="linksort" onclick="sort_link('id_card')">Citizen ID</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('login')">Username</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('name')">Display name</a></th>
+	  <th><a href="#" class="linksort" onclick="sort_link('sex')">Sex</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('email')">E-mail</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('role')">Role</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('state')">Status</a></th>      
+      <th><a href="#" class="linksort" onclick="sort_link('expired_date')">Expired date</a></th>
+	  <th class="tool">Action</th>
+    </tr>
+    <% unless @managers.empty? %>
+    <% @managers.each_with_index do |manager,i| %>
+    <tr class="<%= cycle('odd','even') %>">
+      <td class="no"><%= row_no(i,@page,$PER_PAGE) %></td>
+	  <td class="string" width="60px"><%= manager.cti_agent_id.blank? ? "-" : display_cti_id(manager.cti_agent_id) %></td>
+	  <td class="string" width="100px"><%= blk(manager.id_card2) %></td>
+      <td class="string" width="100px"><%= blk(manager.login) %></td>
+      <td class="string" width="170px"><%= blk(manager.display_name) %></td>
+	  <td class="string" width="70px"><%= blk(manager.sex2)  %></td>
+	  <td class="string" width="170px"><%= blk(manager.email) %></td>	  
+      <td class="string" width="100px"><%= blk(manager.role_name) %></td>
+      <td class="string <%= manager.state_name.downcase %>" width="55px"><%= manager.state_name %></td>
+      <td class="string"><%= blkd(manager.expired_date) %></td>
+      <td class="tool">
+      	<%= link_image_tag('','detail.png',{:controller => "managers",:action=>"show", :id => manager.id},{:title => 'More detail'}) %>
+      	<%= link_image_tag('','edit.png',{:controller => "managers",:action=>"edit", :id => manager.id},{:title => 'Edit'}) if edit  %>
+      	<%= link_image_tag('','delete.png',"#",{:onclick => "del_manager(#{manager.id},\"#{manager.display_name}\")",:title => 'Delete'}) if delete %>
+      </td>
+    </tr>
+    <% end %>
+    <% else %>
+    <tr>
+      <td class="no">&nbsp;</td>
+      <td colspan="10" class="no-rec">No Record.</td>
+    </tr>
+    <% end %>
+  </table>	
+</div>

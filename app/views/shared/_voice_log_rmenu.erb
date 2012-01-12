@@ -1,0 +1,196 @@
+<% content_for :header do %>
+
+<style type="text/css">
+  #tagsList,#tagsList2 {
+      width:270px;
+  }
+</style>
+
+<script type="text/javascript">
+
+    var ins_el;
+    var ins_vc;
+
+    function loadTagList(call_id){
+		var call_id = call_id || null;
+        $("select[name=tagsList]").html("");
+        $("select[name=tagsList2]").html("");
+		
+        $.getJSON("<%=url_for(:controller => 'call_tags', :action => 'tags')%>",{voice_id: call_id},function(data){
+            var a = ""
+            if(data.length > 0){
+                do {
+                   var g = data.pop();
+                   a += "<OPTGROUP LABEL=\"" + g['name']  + "\">";
+                   if((g['tags']!=null) && (g['tags'].length > 0)){ 
+                       do {
+                         var h = g['tags'].pop();
+                         var i = h.split(",");
+                         a += "<option value=\"" + i[1] + "\">" + i[1] + "</option>"
+                       } while(g['tags'].length > 0)
+                       a += "</OPTGROUP>"
+                   }
+                } while(data.length > 0)
+            }
+            if(call_id==null)
+              $("select[name=tagsList]").html(a);
+            else
+              $("select[name=tagsList2]").html(a);
+        });
+    }
+
+    function TagMessage(msg){
+        $("#call_tag_dialog").text(msg);
+        $("#call_tag_dialog").dialog("open");
+        $("#call_tag_dialog").dialog({
+          bgiframe: true,
+          modal: true,
+          buttons:{
+            "Close": function(){ $(this).dialog("close"); }
+          }
+        });
+    }
+    
+    function refreshTag(vc_id,row){
+      var row_no = row || 0;
+      $.post("<%= url_for(:controller => 'tag', :action => 'manage') %>",
+	  {
+          tags_action: "show",
+		  voice_id: vc_id
+      },
+	  function(data)
+	  {
+	  	  var t = $(".myToolTip",$("#rowAt" + row));
+		  if (t) {
+		  	t.attr("tooltipText", "Tag - " + data);
+		  } else {
+		  	alert("Error: tag element of call not found");
+		  }
+      });
+    }
+
+    function loadAudioFile(vc_id){
+        $.download("<%=url_for(:controller => 'voice_logs',:action => 'download') %>",{ voice_id: vc_id },function(){ });
+    }
+    
+	function openAddTagDialog(vc_id,row) {
+		
+		  var vc_id = vc_id;
+		  var row = row || 0;
+		  
+          loadTagList();
+		  $("#AmiAdvw").css("display","none");
+          $("#addTags").dialog({
+            bgiframe: true,
+            modal: true,
+			position: 'center',
+            buttons: {
+                "Add Tag": function(){
+                    var tags = $("select[name=tagsList] option:selected").val();
+                    if(tags.length > 0){
+                        $.post("<%= url_for(:controller => 'tag',:action => 'manage') %>",{
+                            tags_action: "add",
+                            new_tags: tags,
+                            voice_id: vc_id
+                        },function(data){
+                            if(data == "success"){
+								refreshTag(vc_id,row);
+                                $("input[name=newTags]").val("");
+								$("#addTags").css("display","none");
+                                $("#addTags").dialog("destroy");
+								$("#AmiAdvw").css("display","block");
+                            } else {
+                                TagMessage("System cannot save tag for this call. Please try again.")
+                            }
+                        });
+                    }
+                },
+				"Close": function(){ 
+					$("#AmiAdvw").css("display","block");
+					$(this).dialog("close"); 
+				}
+            }
+          });
+	}
+	
+	function removeTagDialog(vc_id,row){
+		  var vc_id = vc_id;
+		  var row = row || 0
+            loadTagList(vc_id);    
+			
+            $("#AmiAdvw").css("display","none");
+            $("#editTags").dialog({
+                bgiframe: true,
+                modal: true,
+                buttons:{
+                    "Close": function(){
+						$("#AmiAdvw").css("display","block"); 
+						$(this).dialog("close"); 
+					},
+                    "Remove": function(){
+                        var tags = $("select[name=tagsList2] option:selected").val();
+                        if((tags != null) && (tags.length > 0)){
+                            $.post("<%= url_for(:controller => 'tag',:action => 'manage') %>",{
+                                tags_action: "remove",
+                                new_tags: tags,
+                                voice_id: vc_id
+                            },function(data){
+                                if(data == "success"){
+									refreshTag(vc_id,row);
+                                    $("input[name=oldTags]").val("");
+									$("#addTags").css("display","none");
+                                    $("#editTags").dialog("destroy");
+									$("#AmiAdvw").css("display","block");
+                                } else {
+                                    TagMessage("System cannot save tag for this call. Please try again.")
+                                }
+                            });
+                    }},
+                    "Remove all": function(){
+                        $.post("<%= url_for(:controller => 'tag',:action => 'manage') %>",{
+                            tags_action: "remove_all",
+                            voice_id: vc_id
+                        },function(data){
+							refreshTag(vc_id,row);
+							$("#AmiAdvw").css("display","block");
+                            $("#editTags").dialog("destroy");
+							$("#addTags").css("display","none"); 
+                        });
+
+                    }
+                }
+             });	
+	}
+    </script>
+
+<% end %>
+
+<div id="call_tag_dialog" title="Call Tags" style="display:none"></div>
+<!-- tag dialog -->
+<div id="addTags" title="Call Tags - Add" style="display:none;">
+  <table cellspacing="0">
+    <tr>
+      <td><label>Tags:</label></td>
+    </tr>
+    <tr>
+      <td><select name="tagsList" id="tagsList" size="10"></select></td>
+    </tr>
+    <tr>
+      <td><i>You can choose call tag from tags list.</i></td>
+    </tr>
+  </table>
+</div>
+
+<div id="editTags" title="Call Tags - Remove" style="display:none">
+  <table cellspacing="0">
+    <tr>
+      <td><label>Tags:</label></td>
+    </tr>
+    <tr>
+      <td><select name="tagsList2" id="tagsList2" size="10"></select></td>
+    </tr>
+    <tr>
+      <td><i>Please choose tag that you need to remove.</i></td>
+    </tr>
+  </table>
+</div>

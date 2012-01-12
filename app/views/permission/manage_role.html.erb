@@ -1,0 +1,125 @@
+<% content_for :header do %>
+<script type="text/javascript">
+  $(document).ready(function(){
+    loadoption();
+  });
+
+  function loadoption()
+  {
+    $("#roleView").empty();
+    var opthtml = "";
+    <%unless @all_role.nil?%>
+    <%@all_role.each_with_index do |ar,i|%>
+      opthtml += "<option id=\"idx<%=i+1%>\" value=\"<%=ar.id%>\"><%=ar.name%></option>"
+    <%end%>
+    <%end%>
+    $("#roleView").append(opthtml);
+  }
+
+  function moveup()
+  {
+    var curpos = "#roleView option:selected";
+    var order = parseInt($(curpos).attr("id").toString().substr(3,1));
+    var tmpid = $(curpos).attr("id");
+    var tmpval = $(curpos).val();
+    var tmptext = $(curpos).text();
+    var uppos = "#roleView option[id=idx"+(order-1).toString()+"]";
+    $(curpos).attr("id","");$(curpos).attr("id",$(uppos).attr("id"));
+    $(curpos).val("");$(curpos).val($(uppos).val());
+    $(curpos).text("");$(curpos).text($(uppos).text());
+    $(uppos).attr("id","");$(uppos).attr("id",tmpid);
+    $(uppos).val("");$(uppos).val(tmpval);
+    $(uppos).text("");$(uppos).text(tmptext);
+    $(uppos).attr("selected","seleted");
+  }
+  function movedown()
+  {
+    var order = parseInt($("#roleView option:selected").attr("id").toString().substr(3,1));
+    var tmpid = $("#roleView option:selected").attr("id");
+    var tmpval = $("#roleView option:selected").val();
+    var tmptext = $("#roleView option:selected").text();
+    var uppos = "#roleView option[id=idx"+(order+1).toString()+"]";
+    $("#roleView option:selected").attr("id",$(uppos).attr("id"));
+    $("#roleView option:selected").val($(uppos).val());
+    $("#roleView option:selected").text($(uppos).text());
+    $(uppos).attr("id",tmpid);
+    $(uppos).val(tmpval);
+    $(uppos).text(tmptext);
+    $(uppos).attr("selected","seleted");
+  }
+  
+</script>
+ <style>
+    #selection, .selection {
+      font-size:16px;
+      width:250px;
+      color:blue;
+      height:150px;
+    }
+    #click-up {
+      width:70px;
+      margin-left:10px;
+    }
+    #click-down {
+      width:70px;
+      margin-left:10px;
+    }
+    #click-reset {
+      width:70px;
+      margin-left:10px;
+      margin-top:5px;
+    }
+  </style>
+<% end %>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',{:controller => "permission",:action => "index"}) %></li>
+          </ul>
+        </td>
+        <td align="right">
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+
+<div id="div-block-tree">
+    <div class="div-form-default-style1">
+  <table class="tblfrm" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+        <td><span class="span-form-title">Categories List</span></td>
+    </tr>
+    <tr>
+        <td><span class="span-form-name">Categories List</span></td>
+    </tr>
+    <tr>
+      <td>
+        <table class="tbl-frm-details">
+          <tr>
+            <td colspan="2"><span class="span-field-description">Use order button to order categories list for display in agents tree.</span></td>
+          </tr>
+          <tr>
+            <td>
+               <select id="roleView" multiple="multiple" style="height:250px;width:200px;">
+               
+               </select>
+            </td>
+            <td align="center">
+              <input type="button" value="Up" id="click-up" onClick="moveup();"><br>
+              <input type="button" value="Down" id="click-down" onClick="movedown();"><br>
+              <input type="button" value="Reset" id="click-reset" onClick="loadoption();" disabled>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2"><%= submit_tag('Save change',{:class => 'btnAccept'}) %></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div> </div>

@@ -1,0 +1,18 @@
+<div class="div-menus">
+	<ul>
+		<%= create_header_link('Control Panel',{:controller => "control_panel",:action => "index"},'Goto control panel.',controller.controller_name,["control_panel"]) if link_permission_require('control_panel','index') %>
+		<%= create_header_link('Manager',{ :controller => "managers", :action => "index" },'Manager',controller.controller_name,["managers"]) if link_permission_require('managers','index') %>
+		<%= create_header_link('Agent',{ :controller => "agents", :action => "index" },'Agent',controller.controller_name,["agents"]) if link_permission_require('agents','index')%>
+		<%= create_header_link('Group',{ :controller => "groups", :action => "index" },'Group',controller.controller_name,['groups']) if link_permission_require('groups','index') %>
+		<%= create_header_link('Category',{ :controller => "group_category", :action => "index" },'Category',controller.controller_name,['group_categories','group_category_types']) if link_permission_require('group_categories','index') %>
+		<%= create_header_link('Call Tags',{ :controller => "call_tags", :action => "index" },'Call Tag',controller.controller_name,["call_tags"]) if link_permission_require('call_tags','index') %>
+		<%= create_header_link('Extensions',{ :controller => "extension", :action => "index" },'Extension',controller.controller_name,["extension"]) if link_permission_require('extension','index') %>
+		<%#= create_header_link('DnisAgent',{ :controller => "dnis_agents", :action => "index"} ,'DID',controller.controller_name,["dnis_agents"]) if link_permission_require('dnis_agents','index') %>
+		<%= create_header_link('Customers',{ :controller => "customer", :action => "index" },'Customer',controller.controller_name,["customer"]) if link_permission_require('customer','index') %>
+		<%= create_header_link('Permission',{ :controller => "permission", :action => "index" },'Permission',controller.controller_name,["permission"]) if link_permission_require('permission','index') %>
+		<%= create_header_link('Log',{ :controller => "log", :action => "index" },'Log',controller.controller_name,["log"]) if link_permission_require('log','index') %>	
+		<%#= create_header_link('Event',{ :controller => "event", :action => "index" },'Event',controller.controller_name,["event"]) if link_permission_require('event','index') %>	
+		<%= create_header_link('Computer Log',{ :controller => "computer_log", :action => "index" },'Computer Log',controller.controller_name,["computer_log"]) if link_permission_require('computer_log','index') %>	
+		<%= create_header_link('Configuration',{ :controller => "configurations", :action => "index" },'Configuration',controller.controller_name,["configurations"]) if link_permission_require('configurations','index') %>							
+	</ul>
+</div>

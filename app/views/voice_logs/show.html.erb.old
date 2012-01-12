@@ -1,0 +1,1829 @@
+<% content_for :header do %>
+<%= javascript_src_path '/jquery/jquery-ui-1.7.2/development-bundle/ui/ui.slider.js' %>
+<%= javascript_src_path '/jquery/jquery.selectToUISlider/js/selectToUISlider.jQuery.js' %>
+<%= stylesheet_src_path '/jquery/jquery.selectToUISlider/css/ui.slider.extras.css' %>
+<%= javascript_src_path('/jquery/jquery.autocomplete/jquery.autocomplete.js') %>
+<%= javascript_src_path('/jquery/jquery.autocomplete/lib/jquery.dimensions.js') %>
+<%= stylesheet_src_path('/jquery/jquery.autocomplete/jquery.autocomplete.css') %>
+<style>
+  .input_button { font-weight:bold; padding-left:8px; padding-right:8px; padding-top:2px; padding-bottom:2px;}
+  .img_act {
+  	cursor:hand;
+  }
+  #body {
+  	background-color:#EEEEEE;
+  }
+  .tab-default {
+  	cursor: hand;
+  }
+  .btnPlayer {
+  	font-weight:bold;
+	border:2px; solid #CCCCCC;
+	padding:2px;
+  }
+        .ui-slider {
+            background: #e9f4ff;
+			border:1px;
+        }
+        .ui-slider .ui-slider-handle {
+			border:2px;
+			border-color:#93B2CC;
+        }  
+</style>
+<% @keywords_str_ary = [] if @keywords_str_ary.blank? %>
+<script type="text/javascript">
+     var myhome = "<%= params.has_key?(:home) ? "&home=true" : "" %>";
+     var current_tab = 0;
+     var current_edited = 0;
+     var curspeed_pos = 4;
+     var curvolumn_pos = 11;
+     var ruleStr = [<%= @keywords_str_ary.join(',')  %>];
+     var bookmark_remove_store = new Array();
+     var keyword_remove_store = new Array();
+     var tmp_edit = "";
+     var cindex = 0;
+     var net = "";
+     var nst = "";
+     var tnet = "";
+     var tnst = "";
+     var tmp_theme = "";
+     var edit_mode = false;
+     var theme_f = ["edit_field_body","edit_field_body_h","edit_field_body_e","edit_field_title","edit_field_title_h","edit_field_title_e"];
+     var volumn_val = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,2.0,2.5,3.0,4.0,5.0,7.0,10.0];
+     var speed_val = [0.5,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4];
+     
+    function backPage(){
+    	window.history.go(-1);
+   	}
+	
+   	var current_voice_id = <%= @voice_log.id %>;
+   
+   function resizeScrollTable(){
+   		var winHeight = $(window).height();
+		$(".divTblScrollbar").css('height',winHeight-310 + parseInt("<%= params.has_key?(:home) ? 0 : 25 %>"));
+   }
+   $(document).ready(function(){
+   		resizeScrollTable();
+		$(window).bind('resize',resizeScrollTable);
+   });
+   
+   function change_tabs(name){
+
+      tab_ids = ["#all_list", "#keyword_list", "#call_info_list", "#bookmark_list"];
+
+      name = name - 1;
+      var i = 1;
+      for(tab in tab_ids){
+        if(tab == name){
+          $(tab_ids[tab]).css("display","block");
+          $("#vctab"+i).addClass('liselected');
+          loadSegments(name);
+          current_tab = name;
+        }
+        else{
+          $(tab_ids[tab]).css("display","none");
+          $("#vctab"+i).removeClass('liselected');
+        }
+        i++;
+      }
+
+      AmiAdvw.SetFocus(0,0);
+	  
+    }
+   
+   function goToSegmentAt(st){		
+		var c = 0;
+		var n = AmiAdvw.GetSegmentInfoCount(0) || 0;
+		var i = 0;
+		while(i<n){
+			 var r = (AmiAdvw.GetSegmentInfo(i,0,0,"",0)).toString().split(/ /);
+			 if(parseFloat(st).toFixed(3)==r[0]){
+				AmiAdvw.SetFocus(i,0);
+				break;
+			 }
+			i++;	 
+		}
+   }
+   function exitEdit()
+   {
+         loadSegments(1);
+
+        $("#detailkeyword tr").each(function(indx){
+            if($(this).css("background"))
+            {
+             if($(this).css("background").toString() == "#ccffff")
+             {
+             $(this).css("background","");
+             $("#kwType"+(indx + 1).toString()).css("display","none");
+             $("#ktype"+(indx + 1).toString()).css("display","block");
+             eleobj = "#edf_name"+(indx + 1).toString();
+             $(eleobj).attr("class","edit_name");
+             $(eleobj).attr("readOnly",true);
+             $("#kwType"+(indx + 1).toString()).css("display","none");
+              kwt = $("#kwType"+(indx + 1).toString()+" option:selected").text().toString();
+             $("#ktype"+(indx + 1).toString()).text(kwt);
+             $("#ktype"+(indx + 1).toString()).css("display","block");
+             }
+            }
+        });
+   }
+ 
+    function exitEditb()
+   {
+         loadSegments(3);
+
+        $("#detailbookmark tr").each(function(indx){
+             $(this).css("background","");
+             eleobj = "#edf_title"+(indx + 1).toString();
+             $(eleobj).attr("class","edit_title");
+             $(eleobj).attr("readOnly",true);
+             eleobj2 = "#edf_body"+(indx + 1).toString();
+             $(eleobj2).attr("class","edit_body");
+             $(eleobj2).attr("readOnly",true);
+        });
+
+       $("#btnbookmark").attr("disabled","");
+   }
+  
+    function loadSegments(type)
+    {
+
+      var segmentsCK = "";
+      var segmentsCB = "";
+      var segmentsCC = "";
+      var segmentsCA = "";
+      var listOfKeyword = new Array();
+      var listOfCallInfo = new Array();
+      var listOfBookmark = new Array();
+      var listOfAll = new Array();
+      
+      //-- load keyword to array base
+           tmpKeywordArr = new Array();
+		try{
+	      $("#detailkeyword tr").each(function(ind){
+	          if($(this).children(':eq('+(1)+')').text() != "None result.")
+	           {
+	           var starttime = $(this).children(':eq(' + (4) + ')').text();
+	           var endtime = $(this).children(':eq(' + (5) + ')').text();
+	          // var starttime = $(this).children(':eq(' + (2) + ')').find(':input').val();
+	         //  var endtime = $(this).children(':eq(' + (3) + ')').find(':input').val();
+	           var segmenttext = $(this).children(':eq(' + (8) + ')').find(':input').val();
+	           var segments = starttime + " " + endtime + " " + segmenttext;
+	           segmentobj = {"starttime" : starttime,"endtime" : endtime,"segmentinfo" : segmenttext};
+	           if(segmenttext != "#remove#")
+	           {tmpKeywordArr.push(segments);listOfKeyword.push(segmentobj);}
+	           }
+	      });	
+           if(tmpKeywordArr.length != 0)
+           segmentsCK = tmpKeywordArr.join("\n");
+		
+		}catch(e){}
+		   
+	try {
+      // -- end load keyword
+      // -- load call info
+           tmpCallInfoArr = new Array();
+         $("#detailcallinfo tr").each(function(ind){
+           if($(this).children(':eq('+(1)+')').text() != "None result.")
+           {
+           var starttime = $(this).children(':eq(' + (2) + ')').text();
+           var endtime = $(this).children(':eq(' + (3) + ')').text();
+           var segmenttext = $(this).children(':eq(' + (6) + ')').text();
+           // var segmenttext = $(this).children(':eq(' + (3) + ')').find(':input').val();
+           var segments = starttime + " " + endtime + " " + segmenttext;
+           segmentobj = {"starttime" : starttime,"endtime" : endtime,"segmentinfo" : segmenttext};
+           tmpCallInfoArr.push(segments);
+           listOfCallInfo.push(segmentobj);
+           }
+      });
+           if(tmpCallInfoArr.length != 0)
+           segmentsCC = tmpCallInfoArr.join("\n");		
+	} catch(e){
+		
+	}
+
+     try {
+      // -- end call info
+      // -- load bookmark
+           tmpBookmarkArr = new Array();
+           $("#detailbookmark tr").each(function(ind){
+           if($(this).children(':eq('+(1)+')').text() != "None result.")
+           {
+           var starttime = $(this).children(':eq(' + (2) + ')').text();
+           var endtime = $(this).children(':eq(' + (3) + ')').text();
+           var title = $(this).children(':eq(' + (6) + ')').find(':input').val();
+           var content = $(this).children(':eq(' + (7) + ')').find(':input').val();
+           var segmenttext = "[" + title + "] "+content;
+           var segments = starttime + " " + endtime + " " + segmenttext;
+           segmentobj = {"starttime" : starttime,"endtime" : endtime,"segmentinfo" : segmenttext};
+           if(title != "#remove#")
+            {
+           tmpBookmarkArr.push(segments);
+           listOfBookmark.push(segmentobj);
+            }
+           }
+        }); 	
+          if(tmpBookmarkArr.length != 0)
+           segmentsCB = tmpBookmarkArr.join("\n");		 	
+	 } catch(e){}
+
+    try {
+      // -- end bookmark
+      // -- load all
+           tmpAllArr = new Array();
+           $("#detailAll tr").each(function(ind){
+           if($(this).children(':eq('+(1)+')').text() != "None result.")
+           {
+           var starttime = $(this).children(':eq(' + (2) + ')').text();
+           var endtime = $(this).children(':eq(' + (3) + ')').text();
+           var segmenttext = $(this).children(':eq(' + (6) + ')').text();
+           var segments = starttime + " " + endtime + " " + segmenttext;
+           segmentobj = {"starttime" : starttime,"endtime" : endtime,"segmentinfo" : segmenttext};
+           tmpAllArr.push(segments);
+           listOfAll.push(segmentobj);
+           }
+        });
+           if(tmpAllArr.length != 0)
+           segmentsCA = tmpAllArr.join("\n");		
+	} catch(e){}
+	
+
+      // -- end load all
+      // -- add segments text to voice file
+	  try {
+	  	
+         switch (type)
+         {
+           case 1 : //keyword load
+              AmiAdvw.LoadFromSegmentFileData(segmentsCK,0);
+              var i = 0;
+              while(i < listOfKeyword.length)
+              {
+               //  alert("Starttime= "+listOfKeyword[i].starttime+"endtime= "+listOfKeyword[i].endtime+"textis "+listOfKeyword[i].segmentinfo)
+               AmiAdvw.SetSegmentInfo(i,listOfKeyword[i].starttime,listOfKeyword[i].endtime,listOfKeyword[i].segmentinfo,0);
+               i++;
+              }
+              break;
+           case 2 : //CallInfo
+              AmiAdvw.LoadFromSegmentFileData(segmentsCC,0);
+              var i = 0;
+              while(i < listOfCallInfo.length)
+              {
+               AmiAdvw.SetSegmentInfo(i,listOfCallInfo[i].starttime,listOfCallInfo[i].endtime,
+               listOfCallInfo[i].segmentinfo,0);
+               i++;
+              }
+              break;
+           case 3 :
+              AmiAdvw.LoadFromSegmentFileData(segmentsCB,0);
+              var i = 0;
+              while(i < listOfBookmark.length)
+              {
+               AmiAdvw.SetSegmentInfo(i,listOfBookmark[i].starttime,listOfBookmark[i].endtime,
+               listOfBookmark[i].segmentinfo,0);
+               i++;
+              }
+              break;
+           default : //tab All
+              AmiAdvw.LoadFromSegmentFileData(segmentsCA,0);
+              var i = 0;
+              while(i < listOfAll.length)
+              {
+              
+               AmiAdvw.SetSegmentInfo(i,listOfAll[i].starttime,listOfAll[i].endtime,
+               listOfAll[i].segmentinfo,0);
+               i++;
+              }
+         }		
+		
+	  } catch(e) {}
+
+      // -- end add segments
+    }
+   
+    function loadVoice(){
+      AmiAdvw.LoadFromFile("<%= audio_src_path(@voice_log.disposition) %>");
+      AmiAdvw.SegmentGuideVisible = 4;
+      AmiAdvw.SetSegmentGuideRange(-10,-60);
+      AmiAdvw.SegmentGuideTextSizeLevel=-1;
+    }
+
+    function manageBookmark()
+    {
+     var url = "<%=url_for(:controller=>'voice_logs',:action=>'show')%>"+"/"+current_voice_id.toString();
+     //var recent_bookmark = $('textarea[name="newbookmark"]').attr('value').toString();
+     var recent_bookmark = $('textarea[name="bookmark"]').attr('value').toString();
+     $.get("<%=url_for(:controller=>'bookmark',:action=>'update')%>",{list: recent_bookmark,voice_id:current_voice_id },
+          function(urlv){
+            window.location.reload();
+        });
+    }
+
+    function LTrim(VALUE){
+      var w_space = String.fromCharCode(32);
+      if(v_length < 1){
+      return"";
+      }
+      var v_length = VALUE.length;
+      var strTemp = "";
+
+      var iTemp = 0;
+
+      while(iTemp < v_length){
+        if(VALUE.charAt(iTemp) == w_space){
+        }
+        else{
+          strTemp = VALUE.substring(iTemp,v_length);
+          break;
+        }
+        iTemp = iTemp + 1;
+      } //End While
+      return strTemp;
+    }
+
+    function addBookmark()
+    {
+       //alert($("#detailbookmark tr:last").html());
+       var new_row_no = (parseInt($("#detailbookmark tr:last").children(':eq(' + (0) + ')').text()) + 1).toString();
+       new_row_no = (parseInt($("#bnum").text()) <= 0 ? 1 : new_row_no);
+       AmiAdvw.SelectedChannel = 3;
+       AmiAdvw.AddSegmentInfo();
+       if(((nst != 0) && (net != 0)) && (nst != net))
+       {
+        //  check dup segment
+	   var i = 0;
+	   var n = AmiAdvw.GetSegmentInfoCount(0) || 0;
+	   var dup = false;
+	   var dup_c = 0;
+	   
+	   while(i<n){
+	   	    var r = (AmiAdvw.GetSegmentInfo(i,0,0,"",0)).toString().split(/ /);
+			if((parseFloat(nst).toFixed(1) == parseFloat(r[0]).toFixed(1)) && (parseFloat(net).toFixed(1) == parseFloat(r[1]).toFixed(1))){
+				dup_c++;
+				if(dup_c >= 2){
+					alert("Duplicate segment, please choose new segment or delete before.");
+					dup = true;
+					AmiAdvw.RemoveSegmentInfo();	
+					break;			
+				}
+			} else {
+				if(((nst >= parseFloat(r[0])) && (nst <= parseFloat(r[1]))) || ((net >= parseFloat(r[0])) && (net <= parseFloat(r[1])))){
+					alert("Overlap segment, please choose new segment or delete before.");
+					dup = true;	
+					AmiAdvw.RemoveSegmentInfo();
+					break;
+				}			
+			}
+			i++;
+	   }
+	   if(dup==false){
+	       new_row_html1 = "<tr onclick=\"goToSegmentAt('" + nst + "')\" class=\"trbookmark\"><td class=\"no\">"+new_row_no+"<input type=\"hidden\" id=\"fid0\" value=\"0\"></td>"+
+	                       "<td>Bookmark</td>"+
+	                       "<td style=\"display:none;\">"+ nst +"</td>"+
+	                       "<td style=\"display:none;\">"+ net +"</td>"+
+	                       "<td>"+tnst+"</td><td>"+tnet+"</td>";
+	       new_row_html1 += "<td><input class=\"edit_title\" type=\"text\" id=\"edf_title"+
+	       new_row_no+"\" name=\"edftitle\" value=\"type new title here.\"";
+	       new_row_html1 += " readonly=\"true\"/></td>"
+	       new_row_html1 += "<td><input class=\"edit_body\" type=\"text\" id=\"edf_body"+
+	       new_row_no+"\" name=\"edfbody\" value=\"type new bookmark here.\" ";
+	       new_row_html1 += " readonly=\"true\"/>";
+	       new_row_html1 += "</td><td align=\"center\"><img src=\"<%=image_path('edit.png')%>\" name=\"edit\" onclick=\"allowEditb('k"+new_row_no+"')\">";
+	       new_row_html1 += "&nbsp;&nbsp;&nbsp;&nbsp;<img src=\"<%=image_path('delete.png')%>\" name=\"del\" onclick=\"delBookmark('k"+new_row_no+"')\"></td></tr>"
+	       $("#detailbookmark").html($("#detailbookmark").html() + new_row_html1);
+	       $("#bnum").text(new_row_no);
+	      // $("#detailbookmark tr:last").css("background","#CCFFFF");
+	       loadSegments(3);
+	       //$("#btnbookmark").attr("disabled","disabled");	
+		   $(".input-btn-add").attr('disabled','disabled');	   	
+	   }		
+
+       }else
+        alert("Please drag area that you need to create new bookmark.")
+    }
+   
+    function delBookmark(stxtid)
+    {
+		
+		if(confirm("Are you sure to delete this bookmark?")){
+        var deleted = false;
+        var edt_f = stxtid.toString().substr(0,1);
+        var row_id = stxtid.toString().substr(1,1);
+
+        if(parseInt($("#bnum").text()) > 0)
+        {
+           try{
+                $("#detailbookmark tr").each(function(idx){
+                if((idx+1) == parseInt(row_id))
+                {
+                 $("#bnum").text((parseInt($("#bnum").text())-1).toString());
+                 var id = $(this).children(':eq(' + (0) + ')').find(':input').val();
+                 var  sttime = $(this).children(':eq(' + (2) + ')').text();
+                 var  ettime = $(this).children(':eq(' + (3) + ')').text();
+                 var  title = "#remove#";
+                 var  description = $(this).children(':eq(' + (7) + ')').find(':input').val();
+                 bookmark_remove_store.push({"vid":"<%=params[:id]%>","bid":id,"st":sttime,"et":ettime,"title":title,"des":description});
+                 $(this).remove();
+                 AmiAdvw.SetFocus(parseInt(row_id) - 1,0);
+                 AmiAdvw.RemoveSegmentInfo();
+                 deleted = true;
+                 $("#btnbookmark").attr("disabled","");
+                 throw true; //exit when found
+                }
+                });
+            }catch(e){}
+            if(deleted)
+            {
+                $("#detailbookmark tr").each(function(idx){
+               // $(this).children(':eq('+(0)+')').text((idx+1).toString());
+                $(this).children(':eq('+(6)+')').find(':select').attr("id","edf_title"+(idx+1).toString());
+                $(this).children(':eq('+(7)+')').find(':input').attr("id","edf_body"+(idx+1).toString());
+                $(this).children(':eq('+(8)+')').find(':img[name=edit]').click(function(){
+                 allowEditb('k'+(idx+1).toString());
+                });
+                $(this).children(':eq('+(8)+')').find(':img[name=del]').click(function(){
+                 delBookmark('k'+(idx+1).toString());
+                });
+              });
+            }
+        }else
+          alert("You can't delete bookmark. bookmark now empty.");			
+		}
+		
+
+    }
+
+     function allowEditb(stxtid)
+     {
+         edt_f = stxtid.toString().substr(0,1);
+         row_id = stxtid.toString().substr(1,1);
+
+         loadSegments(3);
+
+        $("#detailbookmark tr").each(function(indx){
+           if((indx+1) == row_id)
+           {
+             $(this).css("background","#CCFFFF");
+             eleobj = "#edf_title"+row_id.toString();
+             eleobj2 = "#edf_body"+row_id.toString();
+             $(eleobj).attr("class","edit_title_h");
+             $(eleobj).attr("readOnly",false);
+             $(eleobj2).attr("class","edit_body_h");
+             $(eleobj2).attr("readOnly",false);
+             AmiAdvw.SetFocus(parseInt(row_id-1),0);
+           }else
+           {
+             $(this).css("background","");
+             eleobj = "#edf_title"+(indx+1).toString();
+             eleobj2 = "#edf_body"+(indx+1).toString();
+             $(eleobj).attr("class","edit_title");
+             $(eleobj).attr("readOnly",true);
+             $(eleobj2).attr("class","edit_body");
+             $(eleobj2).attr("readOnly",true);
+           }
+        });
+    }
+
+    function saveBookmark()
+    {
+       var update_set = new Array();
+       $("#btnbookmark").attr("disabled","true");
+       $("#detailbookmark tr").each(function(ind){
+       
+          var id = $(this).children(':eq(' + (0) + ')').find(':input').val();
+          var  sttime = $(this).children(':eq(' + (2) + ')').text();
+          var  ettime = $(this).children(':eq(' + (3) + ')').text();
+          var  title = $(this).children(':eq(' + (6) + ')').find(':input').val();
+          var  description = $(this).children(':eq(' + (7) + ')').find(':input').val();
+          update_set.push(new Array(6));
+          update_set[update_set.length - 1][0] = "<%=params[:id]%>";
+          update_set[update_set.length - 1][1] = id;
+          update_set[update_set.length - 1][2] = sttime;
+          update_set[update_set.length - 1][3] = ettime;
+          update_set[update_set.length - 1][4] = title;
+          update_set[update_set.length - 1][5] = description;
+       });
+
+       if(bookmark_remove_store.length > 0)
+       {
+         var inteval = 0;
+         while(inteval < bookmark_remove_store.length)
+         {
+           update_set.push(new Array(6));
+           update_set[update_set.length - 1][0] = bookmark_remove_store[inteval].vid
+           update_set[update_set.length - 1][1] = bookmark_remove_store[inteval].bid
+           update_set[update_set.length - 1][2] = bookmark_remove_store[inteval].st;
+           update_set[update_set.length - 1][3] = bookmark_remove_store[inteval].et;
+           update_set[update_set.length - 1][4] = bookmark_remove_store[inteval].title;
+           update_set[update_set.length - 1][5] = bookmark_remove_store[inteval].des;
+           inteval++;
+         }
+       }
+       
+       $.post("<%=url_for(:controller=>'bookmark',:action => 'manage_bookmark')%>",
+       {'arrBookmark[]':update_set},function(result_set){
+            if(result_set == 't')
+             {  alert("Update bookmark has been successfully.");
+                window.location.href = "<%=url_for :controller=>'voice_logs',:action => 'show',:id => params[:id],:ct => 2 %>" + myhome;
+             }
+            else
+            {
+               alert("Update bookmark has been failed.");
+               $("#btnbookmark").attr("disabled","");
+            }
+        });
+      }
+
+      function addKeyword()
+      {
+
+       var new_row_no = (parseInt($("#detailkeyword tr:last").children(':eq(' + (0) + ')').text()) + 1).toString();
+       new_row_no = (parseInt($("#knum").text()) <= 0 ? 1 : new_row_no);
+       AmiAdvw.SelectedChannel = 3;
+       AmiAdvw.AddSegmentInfo();
+	   
+       if(((nst != 0) && (net != 0)) && (nst != net ))
+       {
+	   	
+       // check dup segment
+	   var n = AmiAdvw.GetSegmentInfoCount(0);
+	   var i = 0;
+	   var dup = false;
+	   var dup_c = 0;
+	   while(i<n){
+	   	    var r = (AmiAdvw.GetSegmentInfo(i,0,0,"",0)).toString().split(/ /);
+			if((parseFloat(nst).toFixed(1) == parseFloat(r[0]).toFixed(1)) || (parseFloat(net).toFixed(1) == parseFloat(r[1]).toFixed(1))){
+				if(dup_c >= 1){
+					alert("Duplicate segment, please choose new segment or delete before.");
+					dup = true;
+					AmiAdvw.RemoveSegmentInfo();	
+					break;	
+				}
+				dup_c++;
+			} else {
+				if(((nst >= parseFloat(r[0])) && (nst <= parseFloat(r[1]))) || ((net >= parseFloat(r[0])) && (net <= parseFloat(r[1])))){
+					alert("Overlap segment, please choose new segment or delete before.");
+					dup = true;
+					AmiAdvw.RemoveSegmentInfo();
+					break;
+				}			
+			}
+			i++;
+	   }
+	   if(dup==false){
+   	
+	       new_row_html1 = "<tr onclick=\"goToSegmentAt('" + nst + "')\"><td class=\"no\">"+ new_row_no + "<input type=\"hidden\" id=\"kid0\" value=\"0\"></td>" + "<td>keyword<input type=\"hidden\" value=\"<%= @voice_log.start_time.strftime("%H:%M:%S")%>\"></td>" + "<td>"+tnst+"</td><td>"+tnet+"</td>" + "<td style=\"display:none;\">"+nst+"</td><td style=\"display:none;\">"+net+"</td>";
+	       new_row_html1 += "<td>" + "<span id=\"ktype"+new_row_no+"\" style=\"display:block\">NG</span>" + "<select id=\"kwType"+new_row_no+"\" style=\"display:none; width:40px;\">" + "<option value=\"n\">NG</option><option value=\"m\">MUST</option><option value=\"a\">ACTION</option>";
+	       new_row_html1 += "</select></td>" + "<td>Undecided group</td>" + "<td><input class=\"edit_name\" type=\"text\" id=\"edf_name"+new_row_no+"\" name=\"edfname\" value=\"enter new keyword\"";
+	       new_row_html1 += " readonly=\"true\"/>" + "</td><td align=\"center\"><img src=\"<%=image_path('edit.png')%>\" name=\"edit\" onclick=\"allowEdit('k"+new_row_no+"')\">";
+	       new_row_html1 += "&nbsp;&nbsp;<img src=\"<%=image_path('delete.png')%>\" name=\"del\" onclick=\"delKeyword('k"+new_row_no+"')\">" + "</td></tr>";
+	       $("#detailkeyword").html($("#detailkeyword").html() + new_row_html1);
+	       $("#knum").text(new_row_no);
+	       loadSegments(1);
+	      $("#detailkeyword input[type='text']").autocomplete(ruleStr,{
+	            minChars: 0,
+	            autoFill: true,
+	            formatItem: function(item) {
+	              return item.name;
+	            }
+	      })
+	     .keydown(function() {
+	        $(this).search(function(result) {
+	        if (!result) {
+	             $("#detailkeyword tr").each(function(indx){
+	              try{
+	              if($(this).css("background").toString() == "#ccffff")
+	              {
+	             //   $("#kwType"+(indx +1).toString()+" option[value="+item.ktype+"]").attr("selected",true);
+	              //  $("#ktype"+(indx +1).toString()).text($("#kwType"+(indx +1).toString()+"option:selected").text());
+	                $(this).children(':eq('+(7)+')').text("Undecided Group");
+	                throw true;
+	              }
+	              }catch(e){}
+	          });
+	        }
+	      });
+	     })
+	      .result(function(event,item){
+	          $("#detailkeyword tr").each(function(indx){
+	              try{
+	              if($(this).css("background").toString() == "#ccffff")
+	              {
+	                $("#kwType"+(indx +1).toString()+" option[value="+item.ktype+"]").attr("selected",true);
+	                $("#ktype"+(indx +1).toString()).text($("#kwType"+(indx +1).toString()+"option:selected").text());
+	                if(item.kgroup.toString() == "")
+	                {
+	                  $(this).children(':eq('+(7)+')').text("Undecided Group");
+	                }
+	                else
+	                {
+	                $(this).children(':eq('+(7)+')').text(item.kgroup.toString());
+	                }
+	                throw true;
+	              }
+	              }catch(e){}
+	          });
+	      }); 
+	     //  alert($("#detailkeyword").html());
+		   $(".input-btn-add").attr('disabled','disabled');	   	
+	   }		
+
+       }else
+        alert("Please drag area that you need to add new keyword.")
+      }
+
+      function allowEdit(stxtid)
+      {
+         edt_f = stxtid.toString().substr(0,1);
+         row_id = stxtid.toString().substr(1,1);
+         exitEdit();
+         loadSegments(1);
+
+        $("#detailkeyword tr").each(function(indx){
+           if((indx+1) == row_id)
+           {
+             $(this).css("background","#CCFFFF");
+             $("#kwType"+row_id).css("display","block");
+             $("#ktype"+row_id).css("display","none");
+             eleobj = "#edf_name"+row_id.toString();
+             $(eleobj).attr("class","edit_name_h");
+             $(eleobj).attr("readOnly",false);
+             //alert($("#ktype"+row_id).text());
+             kwt = $("#ktype"+row_id).text().toString().substring(0,1).toLowerCase();
+            // alert(kwt);
+             $("#kwType"+row_id+" option[value="+kwt+"]").attr("selected",true);
+            // $("#kwType"+row_id+" option[value="+$("#ktype"+row_id)
+            // .text().toString().substr(0,1).toLowerCase()+"]").attr("checked",true);
+             AmiAdvw.SetFocus(parseInt(row_id-1),0);
+           }else
+           {
+           //  $(this).css("background","");
+           //  $("#kwType"+(indx + 1).toString()).css("display","none");
+           //  $("#ktype"+(indx + 1).toString()).css("display","block");
+          //   eleobj = "#edf_name"+(indx + 1).toString();
+          //   $(eleobj).attr("class","edit_name");
+          //   $(eleobj).attr("readOnly",true);
+           //  $("#kwType"+(indx + 1).toString()).css("display","none");
+           //   kwt = $("#kwType"+(indx + 1).toString()+" option:selected").text().toString();
+          //   $("#ktype"+(indx + 1).toString()).text(kwt);
+          //   $("#ktype"+(indx + 1).toString()).css("display","block");
+           }
+        });
+        $("#btnSaveKw").attr("disabled","");
+      }
+
+      function delKeyword(stxtid)
+      {
+	  	
+		if (confirm("Are you sure to delete this keyword?")) {
+		       var deleted = false;
+		        var edt_f = stxtid.toString().substr(0,1);
+		        var row_id = stxtid.toString().substr(1,1);
+				//alert(stxtid.toString());
+				//alert(row_id);
+				//alert($("#knum").text());
+		        if(parseInt($("#knum").text()) > 0)
+		        {
+		            try{
+		                $("#detailkeyword tr").each(function(idx){
+		                if((idx+1) == parseInt(row_id))
+		                {
+		                 $("#knum").text((parseInt($("#knum").text())-1).toString());
+		                 keyword_remove_store.push({
+		                 "vid"  : "<%= params[:id] %>",
+		                 "kid"  : $(this).children(':eq(' + (0) + ')').find(':input').val(),
+		                 "st"   : $(this).children(':eq(' + (4) + ')').text(),
+		                 "et"   : $(this).children(':eq(' + (5) + ')').text(),
+		                 "type" : ($(this).children(':eq('+ (6) +')').text() == null ? "" : $(this).children(':eq('+ (6) +')').find('span').text()),
+		                 "name" : "#remove#"
+		                 });
+		                 $(this).remove();
+		                 AmiAdvw.SetFocus(parseInt(row_id) - 1,0);
+		                 AmiAdvw.RemoveSegmentInfo();
+		                 deleted = true;
+		                 $("#btnbookmark").attr("disabled","");
+		                 throw true; //exit when found
+		                }
+		                });
+		            }catch(e){}
+		            if(deleted)
+		            {
+		               $("#detailkeyword tr").each(function(idx){
+		               // $(this).children(':eq('+(0)+')').find(':span').text((idx+1).toString());
+					    var o = $(this);
+		                o.children(':eq('+(6)+')').find(':span').attr("id","ktype"+(idx+1).toString());
+		                o.children(':eq('+(6)+')').find(':select').attr("id","kwType"+(idx+1).toString());
+		                o.children(':eq('+(8)+')').find(':input').attr("id","edf_name"+(idx+1).toString());
+		                o.children(':eq('+(9)+')').find(':img[name=edit]').click(function(){
+		                 allowEdit('k'+(idx+1).toString());
+		                });
+		                o.children(':eq('+(9)+')').find(':img[name=del]').click(function(){
+		                });
+		               });
+		            }
+					saveKeyword();
+		         $("#btnSaveKw").attr("disabled","");
+		        }else
+		         alert("Can not delete keyword, keyword can not empty.");		
+		}
+ 
+      }
+
+      function saveKeyword()
+      {
+        var keyword_set = new Array();
+        $("#btnSaveKw").attr("disabled","true");
+        $("#detailkeyword tr").each(function(ind){
+        // alert($(this).html());
+         var id = $(this).children(':eq(' + (0) + ')').find(':input').val();
+         var sttime = $(this).children(':eq(' + (4) + ')').text();
+         var ettime = $(this).children(':eq(' + (5) + ')').text();
+         var k_type = ($(this).children(':eq('+ (6) +')').find('span').text() == null ? "" : $(this).children(':eq('+ (6) +')').find('span').text());
+         var kname = $(this).children(':eq(' + (8) + ')').find(':input').val();
+         //alert(id);
+         keyword_set.push(new Array(6));
+         keyword_set[keyword_set.length - 1][0] = "<%=params[:id]%>";
+         keyword_set[keyword_set.length - 1][1] = id;
+         keyword_set[keyword_set.length - 1][2] = sttime;
+         keyword_set[keyword_set.length - 1][3] = ettime;
+         keyword_set[keyword_set.length - 1][4] = k_type;
+         keyword_set[keyword_set.length - 1][5] = kname;
+       }); 
+
+       if(keyword_remove_store.length > 0)
+       {
+         var inteval = 0;
+         while(inteval < keyword_remove_store.length)
+         {
+           keyword_set.push(new Array(6));
+           keyword_set[keyword_set.length - 1][0] = keyword_remove_store[inteval].vid;
+           keyword_set[keyword_set.length - 1][1] = keyword_remove_store[inteval].kid;
+           keyword_set[keyword_set.length - 1][2] = keyword_remove_store[inteval].st;
+           keyword_set[keyword_set.length - 1][3] = keyword_remove_store[inteval].et;
+           keyword_set[keyword_set.length - 1][4] = keyword_remove_store[inteval].type;
+           keyword_set[keyword_set.length - 1][5] = keyword_remove_store[inteval].name;
+           inteval++;
+         }
+       }
+
+       $.post("<%=url_for(:controller=>'keywords',:action => 'manage_keyword')%>",
+       {'arrKeyword[]':keyword_set},function(result_set){
+            if(result_set == 't')
+             {  alert("Update keyword's calls has been successfully.");
+                window.location.href = "<%=url_for :controller=>'voice_logs',:action => 'show',:id => params[:id],:ct => 1 %>" + myhome;
+             }
+            else
+               alert("Update keyword's calls has been failed.");
+                $("#btnSaveKw").attr("disabled","");
+        });
+      }
+
+     
+      $(document).ready(function(){
+   //   AmiAdvw.Reset();
+     //  AmiAdvw.SetProperty("DisableContextMenu",1);
+       loadVoice();
+     //  AmiAdvw.SetProperty("PlayingChannel",-1);
+       loadSegments(0);
+      $("#all_list").css("display","block");
+      $("#keyword_list").css("display","none");
+      $("#call_info_list").css("display","none");
+      $("#bookmark_list").css("display","none");
+
+      $("#slider1").slider({
+			value:4,
+			min: 1,
+			max: 11,
+			step: 1,
+			slide: function(event, ui) {
+				//$("#amount").val('$' + ui.value);
+             //   alert(parseFloat(speed_val[ui.value -1]));
+                AmiAdvw.PlayingSpeed = parseFloat(speed_val[ui.value -1]);
+                curspeed_pos = ui.value;
+			}
+		}); 
+
+         $("#slider2").slider({
+			value:11,
+			min: 1,
+			max: 21,
+			step: 1,
+			slide: function(event, ui) {
+				 AmiAdvw.PlayingVolume = parseFloat(volumn_val[ui.value -1]);
+                 curvolumn_pos = ui.value;
+			}
+		}); 
+
+
+      $("#detailkeyword input[type='text']").autocomplete(ruleStr,{
+            minChars: 0,
+            autoFill: true,
+            formatItem: function(item) {
+              return item.name;
+            }
+      })
+     .keydown(function() {
+        $(this).search(function(result) {
+        if (!result) {
+             $("#detailkeyword tr").each(function(indx){
+              try{
+              if($(this).css("background").toString() == "#ccffff")
+              {
+             //   $("#kwType"+(indx +1).toString()+" option[value="+item.ktype+"]").attr("selected",true);
+              //  $("#ktype"+(indx +1).toString()).text($("#kwType"+(indx +1).toString()+"option:selected").text());
+                $(this).children(':eq('+(7)+')').text("Undecided Group");
+                throw true;
+              }
+              }catch(e){}
+          });
+        }  
+      });
+     })
+      .result(function(event,item){
+           $("#detailkeyword tr").each(function(indx){
+              try{
+              if($(this).css("background").toString() == "#ccffff")
+              {
+                $("#kwType"+(indx +1).toString()+" option[value="+item.ktype+"]").attr("selected",true);
+                $("#ktype"+(indx +1).toString()).text($("#kwType"+(indx +1).toString()+"option:selected").text());
+                $(this).children(':eq('+(7)+')').text(item.kgroup.toString());
+                throw true;
+              }
+              }catch(e){}
+          });
+      });
+
+
+/*      $(function(){
+      
+      });*/
+
+      $("#vctab1").addClass('liselected');
+      <%if params[:ct] == "1"%>
+        change_tabs(2);
+      <%elsif params[:ct] == "2"%>
+        change_tabs(4);
+      <%end%>
+    });
+
+    function setPlay(){
+      
+  
+       AmiAdvw.PlayingVolume = 1.0;
+       AmiAdvw.PlayingSpeed = 1.0;
+       AmiAdvw.PlayingVolume =  parseFloat(volumn_val[curvolumn_pos - 1]);
+       AmiAdvw.PlayingSpeed =  parseFloat(speed_val[curspeed_pos - 1]);
+       document.frmPlayControl.btPlay.disabled="disabled";
+      $("input[name=btPlay]").css("display","none");
+      $("input[name=btPause]").css("display","inline");
+      document.frmPlayControl.btStop.disabled="";
+      document.frmPlayControl.btPause.disabled="";
+      document.frmPlayControl.btResume.disabled="disabled";
+      document.frmPlayControl.btLeft.disabled="";
+      document.frmPlayControl.btRight.disabled="";
+      AmiAdvw.Play();    
+    }
+
+    function setStop(){
+
+     document.frmPlayControl.btPlay.disabled="";
+      $("input[name=btPlay]").css("display","inline");
+      $("input[name=btPause]").css("display","none");
+      document.frmPlayControl.btStop.disabled="disabled";
+      document.frmPlayControl.btPause.disabled="disabled";
+      document.frmPlayControl.btResume.disabled="disabled";
+      document.frmPlayControl.btLeft.disabled="disabled";
+      document.frmPlayControl.btRight.disabled="disabled";
+      AmiAdvw.StopPlaying();
+
+    }
+
+    function setPause(){
+
+     // document.frmPlayControl.btPlay.disabled="";
+    //  $("input[name=btPlay]").css("display","inline");
+    //  $("input[name=btPause]").css("display","none");
+      document.frmPlayControl.btStop.disabled="";
+    //  document.frmPlayControl.btPause.disabled="disabled";
+      document.frmPlayControl.btResume.disabled="";
+    //  document.frmPlayControl.btLeft.disabled="disabled";
+    //  document.frmPlayControl.btRight.disabled="disabled";
+      AmiAdvw.PausePlaying();
+
+    }
+
+    function setResume(){
+
+      //document.frmPlayControl.btPlay.disabled="disabled";
+      document.frmPlayControl.btStop.disabled="";
+      document.frmPlayControl.btPause.disabled="";
+      document.frmPlayControl.btResume.disabled="disabled";
+     // document.frmPlayControl.btLeft.disabled="";
+     // document.frmPlayControl.btRight.disabled="";
+      AmiAdvw.ResumePlaying();
+
+    }
+
+    function setChanel(){
+
+      if(document.frmSelectChanel.chn1.checked && document.frmSelectChanel.chn2.checked){
+        AmiAdvw.SelectedChannel = -1;
+      } else if(document.frmSelectChanel.chn1.checked){
+        AmiAdvw.SelectedChannel = 0;
+      } else if(document.frmSelectChanel.chn2.checked){
+        AmiAdvw.SelectedChannel = 1;
+      } else {
+        AmiAdvw.SelectedChannel = -1;
+      }
+      
+    }
+    function refreshTag(){
+        $.post("<%= url_for(:controller => 'tag',:action => 'manage') %>",{
+          tags_action: "show",
+          voice_id: current_voice_id
+        },function(data){
+          if(data.length > 0)
+            $("#strTags").text(data);
+          else
+            $("#strTags").text("-");
+        });
+    }
+
+    function addTag(){
+          loadTagList(null);
+          $("#addTags").dialog("open");
+          $("#addTags").dialog({
+            bgiframe: true,
+            modal: true,
+            buttons:{
+                "Close": function(){ $(this).dialog("close"); },
+                "Add tags": function(){
+                    var tags = $("select[name=tagsList]:option:selected").val();
+                    if(tags.length > 0){
+                        $.post("<%= url_for(:controller => 'tag',:action => 'manage') %>",{
+                            tags_action: "add",
+                            new_tags: tags,
+                            voice_id: current_voice_id
+                        },function(data){
+                            if(data == "success"){
+                                $("input[name=newTags]").val("");
+                                refreshTag();
+                                $("#addTags").dialog("close");
+                            } else {
+                                TagMessage("Add new tags has been failed. Please try again.")
+                            }
+                        });
+                    }
+                }
+            }//end bt
+          });
+    }
+
+
+    function loadTagList(call_id){
+
+        $("select[name=tagsList]").html("");
+        $("select[name=tagsList2]").html("");
+
+        $.getJSON("<%=url_for(:controller => 'call_tags', :action => 'tags')%>",{voice_id: call_id},function(data){
+            var a = ""
+            if(data.length > 0){
+                do {
+                   var g = data.pop();
+                   a += "<OPTGROUP LABEL=\"" + g['name']  + "\">";
+                   if((g['tags']!=null) && (g['tags'].length > 0)){
+                       do {
+                         var h = g['tags'].pop();
+                         var i = h.split(",");
+                         a += "<option value=\"" + i[1] + "\">" + i[1] + "</option>"
+                       } while(g['tags'].length > 0)
+                       a += "</OPTGROUP>"
+                   }
+                } while(data.length > 0)
+            }
+            if(call_id==null)
+              $("select[name=tagsList]").html(a);
+            else
+              $("select[name=tagsList2]").html(a);
+        });
+    }
+
+
+</script>
+
+<style type="text/css">
+    #block1{
+      width:100%;
+	  background-image:url(<%=image_path('bg010.png')%>);
+    }
+    .td-001 {
+      background-image:url(<%=image_path('bg010.png')%>);
+      color:white;
+      font-weight:bold;
+      padding-top:2px;
+      padding-bottom:3px;
+      border-bottom:1px solid #99ccff;
+	  border-top:1px solid #99ccff;
+    }
+    .td-002 {
+      background-image:url(<%=image_path('bg012.png')%>);
+      background-position:bottom;
+      padding-top:2px;
+      padding-bottom:3px;
+      border-bottom:1px solid #99ccff;
+	  border-top:1px solid #99ccff;
+    }
+    
+    #block2 {
+      width:1018px;
+      padding:3px 3px 3px 3px;
+      background-image:url(<%=image_path('gradient-mod.png')%>);
+      background-repeat:repeat-x;
+      margin-bottom:5px;
+    }
+    #block3 {
+      width:100%;
+      background-image:url(<%=image_path('bg011.png')%>);
+      background-repeat:repeat-x;
+      border-top:1px solid #cccccc;
+    }
+    #tabs {
+      margin-top:0px;
+      padding-top:4px;
+      margin-left:2px;
+      margin-right:2px;
+      border-bottom:1px solid #b4e1ff;
+    }
+    #tabs ul {
+      margin-left:10px;
+      margin-bottom:-1px;
+    }
+    #tabs li {
+      float:left;
+      padding-top:3px;
+      padding-left:10px;
+      padding-right:10px;
+      padding-bottom:3px;
+      margin-left:5px;
+      border:1px solid #b4e1ff;
+      margin-bottom:-1px;
+      background-color:white;
+    }
+    #tabs li:hover {
+      float:left;
+      font-weight:bold;
+      padding-top:3px;
+      padding-left:10px;
+      padding-right:10px;
+      padding-bottom:3px;
+      margin-left:5px;
+      border:1px solid #b4e1ff;
+      margin-bottom:-1px;
+      background:url(<%=image_path('bg011.png')%>);
+    }
+    .liselected {
+      background-image:url(<%=image_path('bg003.png')%>);
+      background-position:bottom;
+    }
+
+    #AmiAdvw
+    {
+      border:gray solid 1px;
+    }
+    
+    #as-slider,#av-slider{
+     border:1px solid #cccccc;
+     height:5px;
+    }
+    .usrname {
+      color:#0066cc;
+    }
+    .txtdetails {
+      font-size:12px;
+    }
+    .edit_body {
+      width:220px;border:0px;background:none;font-size:9px;
+      margin-bottom:1px;padding-bottom:1px;margin-top:0px;margin-bottom:0px;
+    }
+    .edit_body_h
+    {
+      width:220px;border:2px;background:#99FFCC;font-size:9px;margin-bottom:0px;
+      padding-bottom:1px;margin-top:0px;margin-bottom:0px;
+    }
+    .edit_field_body_e
+    {
+      width:220px;border:0px;background:#FF0000;font-size:9px;margin-bottom:0px;
+      padding-bottom:1px;margin-top:0px;margin-bottom:0px;
+    }
+    .edit_title
+    {
+      width:215px;border:0px;background:none;font-size:9px;margin-bottom:0px;padding-bottom:1px;
+      margin-top:0px;margin-bottom:0px;
+     }
+    .edit_title_h
+    {
+      width:215px;border:2px;background:#99FFCC;font-size:9px;margin-bottom:0px;padding-bottom:1px;margin-top:0px;
+      margin-bottom:0px;
+     }
+     .edit_field_title_e
+    {
+      width:215px;border:0px;background:#FF0000;font-size:9px;margin-bottom:0px;padding-bottom:1px;margin-top:1px;
+      margin-bottom:0px;
+     }
+     .edit_name
+    {
+      width:270px;border:0px;background:none;font-size:9px;margin-bottom:1px;padding-bottom:1px;
+      margin-top:0px;margin-bottom:0px;
+     }
+    .edit_name_h
+    {
+      width:270px;border:2px;background:#99FFCC;font-size:9px;margin-bottom:1px;padding-bottom:1px;margin-top:0px;
+      margin-bottom:0px;
+     }
+     .edit_name_e
+    {
+      width:270px;border:0px;background:#FF0000;font-size:9px;margin-bottom:1px;padding-bottom:1px;margin-top:0px;
+      margin-bottom:0px;
+     }
+    .lb001 {
+      font-weight:bold;
+      font-size:11px;
+      color:#0066cc;
+    }
+    .sp001 {
+      font-style:italic;
+      font-size:11px;
+    }
+    .trn{
+      background-color:#FFCCCC;
+    }
+    .trm{
+      background-color:#CCFF99;
+    }
+    .trbookmark{
+      background-color:#DAE5EF;
+    }
+    .trcall_info{
+      background-color:#FBEC88;
+    }
+     .span-slider {
+            display:inline-block;
+            width:100px;
+            height:5px;
+        }
+        .div-slider {
+            width:100px;
+            height:5px;
+            margin-top:2px;
+        }
+
+        .ui-slider {
+            height:6px;
+            background: #e9f4ff;
+        }
+        .ui-slider .ui-slider-handle {
+            height:11px;
+        }
+        .ui-slider span.ui-slider-tic {
+            height:2px;
+            display:none;
+        }
+		#tbl01 td {
+			border-right:1px solid #e9f4ff;
+		}
+</style>
+
+<% end %>
+<div id="addTags" title="Call Tags" style="display:none">
+  <table cellspacing="0">
+    <tr>
+      <td><label>Tags:</label></td>
+    </tr>
+    <tr>
+      <td><select name="tagsList" id="tagsList" size="10" style="width:270px"></select></td>
+    </tr>
+    <tr>
+      <td><i>You can choose call tag from tags list.</i></td>
+    </tr>
+  </table>
+</div>
+<div id="delBookmark" title="Delete bookmark" style="display:none">
+  <table cellspacing="0">
+    <tr>
+      <td><label>Are you sure to delete this bookmark? </label></td>
+    </tr>
+  </table>
+</div>
+
+<div style="width:1023px; border:2px solid #cccccc; background-color:#FFFFFF;">
+	<% if params.has_key?(:home) %>	
+		<div style="padding:3px; padding-left:10px"><a href="<%=url_for(:controller => 'top_panel') %>"><%=image_tag('home.png',{:border => 0, :align => 'absmiddle'}) %> Home</a></div>	
+	<% end %>
+<div id="block1" style="width:1024px;" class="td-000">
+<table cellpadding="0" cellspacing="0" border="0" width="1024px;">
+  <tr>
+    <td align="center" width="100px" class="td-001">Voice details</td>
+    <td align="left" class="td-002">
+      &nbsp;&nbsp;<b>Start time:</b> <%=h @voice_log.start_time.strftime("%Y-%m-%d %H:%M:%S") %>
+      &nbsp;&nbsp;<b>Duration:</b> <%=h format_sec(@voice_log.duration.to_i) %>
+    </td>
+    <td align="right" class="td-002">
+      <b>System Id:</b> <%=h @voice_log.system_id %>&nbsp;&nbsp;
+      <b>Device Id:</b> <%=h @voice_log.device_id %>&nbsp;&nbsp;
+      <b>Channel Id:</b> <%=h @voice_log.channel_id %>&nbsp;&nbsp;
+    </td>
+  </tr>
+</table>
+</div>
+
+<div id="block2">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+  <td valign="top" width="125px">
+    <form name="frmSelectChanel" method="post" action="#">
+    <table>
+      <tr>
+        <td style="padding-bottom:5px;"><input type="checkbox" checked="1" name="chn1" onclick="setChanel();"></td>
+        <td style="padding-bottom:5px;"><%= image_tag "operator.png" %></td>
+        <td style="padding-bottom:5px;">
+          <span class="usrname"><b><%=h @voice_log.user.nil? ? "UnknownAgent" : @voice_log.user.display_name%></b></span><br>
+          <span class="txtdetails"><b>Ext:</b> <%=h @voice_log.extension %></span>
+          <%if @voice_log.call_direction == 'i'%>
+          <br><span class="txtdetails"><!--<b>Dialed Number :</b><br>--><%= @voice_log.dnis %></span>
+          <%else%>
+          <br><span class="txtdetails"><!--<b>Call Number :</b><br>--><%= @voice_log.ani %></span>
+          <%end%>
+        </td>
+       <!-- <td><input type="button" onclick="checkAmiStatus();" value="check"></td> -->
+       <tr>
+         <td align="center" colspan="3">
+           <div align="center">
+           <%if @voice_log.call_direction == 'i'%>
+           <%= image_tag('inbound.png',:align => "center") %>
+           <%elsif @voice_log.call_direction == 'o'%>
+           <%= image_tag('outbound.png',:align => "center") %>
+           <%end%>
+           </div>
+         </td>
+       </tr>
+      </tr>
+      <tr>
+        <td><input type="checkbox" checked="1" name="chn2" onclick="setChanel();"></td>
+        <td><%= image_tag "customer.png" %></td>
+        <td>
+          <span class="usrname"><b>Customer</b></span><br>
+          <%if @voice_log.call_direction == 'i' %>
+          <span class="txtdetails"><!--<b>Call Number :</b><br>--><%= @voice_log.ani %></span>
+          <%else%>
+          <span class="txtdetails"><!--<b>Dialed Number :</b><br>--><%= @voice_log.dnis %></span>
+          <%end%>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td><%= image_tag "padding.png",{:height => '1px', :width => '125px'}  %></td>
+      </tr>
+      <tr><td colspan="3"></td></tr>
+      <tr>
+        <td colspan="1" valign="top"><label class="lb001">Tags:</label></td>
+        <td colspan="2" valign="top">
+          <span class="sp001" id="strTags"><%= @voice_log.tag_list.length > 0 ? @voice_log.tag_list : "-" %></span>
+          <% if permission_by_name('favorites-upd') %>
+          <a href="#" title="Add new tag" onclick="addTag()"><%= image_tag('add_tag.png',{:border => 0,:align => 'absmiddle', :alt => 'Add new tag'}) %></a>
+          <% end %>
+        </td>
+      </tr>
+    </table>
+    </form>
+ </td>
+ <td valign="top">
+   <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td colspan="2">
+       <object id="AmiAdvw" classid="clsid:E95BFCD4-723A-4580-B8A6-ACADCE6DE293" width="100%" height="130px" codebase="http://journey/tools/amiadvw/AmiAdvwCtrl.exe#version=1,0,0,0" onerror="this.outerHTML = '<center><font color=red>Audio Viewer ActiveX Control is not installed yet.</font></center>';" >
+          <param name="MeasureVisible" value="1">
+          <param name="ColorTheme" value="1">
+          <param name="ScrollBarVisible" value="1">
+          <param name="ColorTheme" value="2">
+        </object>
+        <script type="text/javascript" for="AmiAdvw" event="AttributeChanged(target, parameter1, parameter2)">
+           // var strbook;
+            if ((target & 8) != 0) {    
+                var selectedOffsetFrom = AmiAdvw.SelectedOffsetFrom;
+	            var selectedOffsetTo = AmiAdvw.SelectedOffsetTo;
+	            var samplesPerSec = AmiAdvw.SamplesPerSec;
+                nst = (selectedOffsetFrom / samplesPerSec).toString();
+                net = (selectedOffsetTo / samplesPerSec).toString();
+                var snew_date = new Date (new Date().toDateString() +' '+"<%=@voice_log.start_time.strftime("%H:%M:%S")%>");
+                var enew_date = new Date (new Date().toDateString() +' '+"<%=@voice_log.start_time.strftime("%H:%M:%S")%>");
+                var arr_start_time = nst;
+                var arr_end_time = net;
+                snew_date.setSeconds(snew_date.getSeconds()+parseFloat(arr_start_time));
+                enew_date.setSeconds(enew_date.getSeconds()+parseFloat(arr_end_time));
+                var st_hour = snew_date.getHours() >= 10 ? snew_date.getHours().toString() : "0" + snew_date.getHours().toString();
+                var st_minute = snew_date.getMinutes() >= 10 ? snew_date.getMinutes().toString() : "0" + snew_date.getMinutes().toString();
+                var st_second = snew_date.getSeconds() >= 10 ? snew_date.getSeconds().toString() : "0" + snew_date.getSeconds().toString();
+                var et_hour = enew_date.getHours() >= 10 ? enew_date.getHours().toString() : "0" + enew_date.getHours().toString();
+                var et_minute = enew_date.getMinutes() >= 10 ? enew_date.getMinutes().toString() : "0" + enew_date.getMinutes().toString();
+                var et_second = enew_date.getSeconds() >= 10 ? enew_date.getSeconds().toString() : "0" + enew_date.getSeconds().toString();
+                tnst = st_hour+":"+st_minute+":"+st_second;
+                tnet = et_hour+":"+et_minute+":"+et_second;
+                var sindex = AmiAdvw.GetFocus(0);
+
+                if(sindex != -1)
+                {
+				   $(".input-btn-add").attr('disabled','disabled');
+				   
+                  cindex = sindex;
+                  if(current_tab == 3)
+                  {$("#detailbookmark tr").each(function(ind){
+                    if(ind == sindex)
+                    {
+                   // $("#btnbookmark").attr("disabled","");
+                  //  $(this).css("background","#CCFFFF");
+                    $(this).children(':eq(' + (2) + ')').text(nst.toString());
+                    $(this).children(':eq(' + (3) + ')').text(net.toString());
+                    $(this).children(':eq(' + (4) + ')').text(tnst);
+                    $(this).children(':eq(' + (5) + ')').text(tnet);
+                    }else
+                    {
+                    }
+                   });
+                  }
+                  else if(current_tab == 1)
+                  {
+                    $("#detailkeyword tr").each(function(ind){
+                    if(ind == sindex)
+                    {
+                  //   $(this).css("background","#CCFFFF");
+                     $(this).children(':eq(' + (2) + ')').text(tnst);
+                     $(this).children(':eq(' + (3) + ')').text(tnet);
+                     $(this).children(':eq(' + (4) + ')').text(nst);
+                     $(this).children(':eq(' + (5) + ')').text(net);
+                    //alert($(this).children(':eq(' + (2) + ')').text());
+                   
+                    }else
+                    {
+                   //   $(this).css("background","");
+                    }
+                   });
+                   
+                 }
+              /*  if (sindex != -1){
+                  if(($("#psm").val() == "") || ($("#psm").val() != sindex))
+                  {
+                    $("#psm").val(sindex);
+                    arr[i] = {"id":xxx }
+                    temp_get = AmiAdvw.getSegmentInfo(sindex,0,0,"",0);
+                    temp_get_arr = temp_get.split(/ /);
+                    $("#rst").val(temp_get_arr[0].toString());
+                    $("#est").val(temp_get_arr[1].toString());
+                  }else
+                  {
+                    $("#psm").val(sindex);
+                  }*/
+                 // createBookmark(sindex);
+               // }
+			   	    
+                } else {
+					$(".input-btn-add").attr('disabled','')
+				}
+            }
+        </script>
+        <script type="text/javascript" for="AmiAdvw" event="PlayerStarted()">
+             $("input[name=btPlay]").css("display","none");
+             $("input[name=btPause]").css("display","inline");
+             document.frmPlayControl.btStop.disabled="";
+             document.frmPlayControl.btPause.disabled="";
+             document.frmPlayControl.btResume.disabled="disabled";
+             document.frmPlayControl.btLeft.disabled="";
+             document.frmPlayControl.btRight.disabled="";
+        </script>
+        <script type="text/javascript" for="AmiAdvw" event="PlayerStopped()">
+           document.frmPlayControl.btPlay.disabled="";
+           $("input[name=btPlay]").css("display","inline");
+          $("input[name=btPause]").css("display","none");
+          document.frmPlayControl.btStop.disabled="disabled";
+         document.frmPlayControl.btPause.disabled="disabled";
+         document.frmPlayControl.btResume.disabled="disabled";
+         document.frmPlayControl.btLeft.disabled="";
+         document.frmPlayControl.btRight.disabled="";
+        </script>
+    </tr>
+    <tr>
+      <td align="left" style="font-size: xx-small"><%= @voice_log.start_time.strftime("%H:%M:%S") %></td>
+      <td align="right" style="font-size: xx-small"><%= (@voice_log.start_time + @voice_log.duration.to_i).strftime("%H:%M:%S") %></td>
+    </tr>
+    <tr>
+      <td>
+      <form name="frmPlayControl" method="post" action="#">
+        <table width="100%" cellpadding="0" cellspacing="0" >
+          <tr>
+            <td width="50%">
+              <div align="center" style="vertical-align: middle; padding-top:5px; width:275px;">
+                <input type="button" class="btnPlayer"  name="btPlay" value="Play" onclick="setPlay();" style="display:inline;">
+                <input type="button" class="btnPlayer"  name="btPause" value="Pause" onclick="setPause();" style="display:none;">
+                <input type="button" class="btnPlayer"  name="btResume" value="Resume" onclick="setResume();">
+                <input type="button" class="btnPlayer"  name="btStop" value="Stop" onclick="setStop();">
+                <input type="button" class="btnPlayer"  name="btLeft" value="←" onclick="AmiAdvw.MoveFocus(-1);">
+                <input type="button" class="btnPlayer"  name="btRight" value="→" onclick="AmiAdvw.MoveFocus(1);">
+              </div>
+            </td>
+            <td width="20%" style="padding-left:10px;padding-right:10px;">
+              Speed
+             <div id="slider1"></div>
+            </td>
+            <td width="20%" style="padding-left:10px;padding-right:10px;">
+              Volume
+             <div id="slider2"></div>
+            </td>
+           </tr>
+          </table>
+        </form>
+      </td>
+    </tr>
+  </table>
+ </td>
+  </tr>
+ </table>
+</div>
+
+<div id="block3">
+  <div id="tabs">
+  <table cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td>
+      <ul>
+        <li id="vctab1" class="tab-default" onclick="change_tabs(1)">All</li>
+        <li id="vctab2" class="tab-default" onclick="change_tabs(2)">Keywords (<span id="knum"><%=@voice_log.result_keywords.length + @voice_log.edit_keywords.length %></span>)</li>
+        <li id="vctab3" class="tab-default" onclick="change_tabs(3)">Call Infomations (<%=@voice_log.call_informations.length %>)</li>
+        <li id="vctab4" class="tab-default" onclick="change_tabs(4)">Bookmarks (<span id="bnum"><%=@voice_log.bookmarks.length %></span>)</li>
+      </ul>
+    </td>
+  </tr>
+  </table>
+  </div>
+
+  <div id="all_list">
+  	<div style="width:1024px;">
+    <table id="tbl01" cellpadding="0" cellspacing="0">
+    <tr>
+      <th width="30px;">No<br/><%=image_tag('padding.png',{:width=>'32px',:height=>'1px'})%></th>
+      <th width="110px">Information Type<br/><%=image_tag('padding.png',{:width=>'120px',:height=>'1px'})%></th>
+      <th width="70px">Start Time<br/><%=image_tag('padding.png',{:width=>'78px',:height=>'1px'})%></th>
+      <th width="70px">End Time<br/><%=image_tag('padding.png',{:width=>'78px',:height=>'1px'})%></th>
+      <th width="708px">Description<%=image_tag('padding.png',{:width=>'710px',:height=>'1px'})%></th>
+    </tr>
+	</table>	
+	</div>
+  	<div class="divTblScrollbar" style="width:1024px; overflow-y:scroll; height:250px;">
+    <table id="tbl01" cellpadding="0" cellspacing="0">
+    <tr style="display:none;">
+      <th width="30px">No</th>
+      <th width="120px">Type</th>
+      <th width="120px">Start time</th>
+      <th width="120px">End time</th>
+      <th width="625px">Description</th>
+    </tr>
+    <% @tsegment = "" %>
+    <tbody id="detailAll">
+    <% all_rows = 0 %>
+    <% unless @voice_log.annotations.empty? %>
+      <% @voice_log.annotations.each_with_index do |rk,i| %>
+      <tr class="tr<%=rk.keyword_type%>" onclick="goToSegmentAt('<%=rk.start_sec %>')">
+        <td class="no"><%= i+1 %></td>
+        <td><%=h rk.type %></td>
+        <td style="display:none;"><%=h rk.start_sec %></td>
+        <td style="display:none;"><%=h rk.end_sec %></td>
+        <td><%=(@voice_log.start_time + rk.start_sec).strftime("%H:%M:%S") %></td>
+        <td><%=(@voice_log.start_time + rk.end_sec).strftime("%H:%M:%S") %></td>
+        <td><%= rk.description.blank? ? "&nbsp;" : rk.description.gsub("&nbsp;","") %></td>
+      </tr>
+        <% all_rows = i + 1 %>
+      <% end %>
+    <% else %>
+    <% end %>
+      </tbody>
+	<tr>
+		<td><%=image_tag('padding.png',{:width=>'25px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'110px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'70px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'70px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'685px',:height=>'1px'})%></td>
+	</tr>  
+    </table>
+	</div>
+  	<div style="width:1024px;">
+    <table id="tbl01" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <th colspan="5">&nbsp;<%=image_tag('padding.png',{:width=>'1px',:height=>'20px'})%></th>
+    </tr>
+	</table>
+	</div>
+    <input type="hidden" id="tsegments" value="<%=@voice_log.annotations.map { |ca| [ca.type,ca.start_sec, ca.end_sec, ca.description].join(",")}.join("@").toutf8() %>">
+    <!-- keyword data for audio viewer control -->
+    <textarea name="all_list" rows="4" cols="70" id="all_list" style="display:none" >
+    <%= @voice_log.annotations.map { |ca| [ca.type,ca.start_sec, ca.end_sec, ca.description].join(",")}.join("@") %>
+    </textarea>
+    <input type="hidden" id="all_rows" value="<%=all_rows%>">
+  </div>
+  
+  <div id="keyword_list">
+    <div style="width:1024px">
+     <table id="tbl01" name="tblkeyword" cellpadding="0" cellspacing="0">
+      <tr>
+      <th width="30px;">No<br/><%=image_tag('padding.png',{:width=>'32px',:height=>'1px'})%></th>
+      <th width="110px">Information Type<br/><%=image_tag('padding.png',{:width=>'120px',:height=>'1px'})%></th>
+      <th width="70px">Start Time<br/><%=image_tag('padding.png',{:width=>'78px',:height=>'1px'})%></th>
+      <th width="70px">End Time<br/><%=image_tag('padding.png',{:width=>'78px',:height=>'1px'})%></th>
+        <th style="display:none;"></th>
+        <th style="display:none;"></th>
+        <th width="50px">Type<br/><%=image_tag('padding.png',{:width=>'51px',:height=>'1px'})%></th>
+        <th width="305px">Keyword<br/><%=image_tag('padding.png',{:width=>'313px',:height=>'1px'})%></th>
+        <th width="270px">Keyword pattern<br/><%=image_tag('padding.png',{:width=>'278px',:height=>'1px'})%></th>
+        <th width="50px">Edit/Del<br/><%=image_tag('padding.png',{:width=>'67px',:height=>'1px'})%></th>
+      </tr>
+	  </table>
+    </div>
+	<div class="divTblScrollbar" style="width:1024px; overflow-y:scroll; height:250px;">
+    <table id="tbl01" name="tblkeyword" cellpadding="0" cellspacing="0">
+      <tr style="display:none;">
+        <th>No</th>
+        <th width="120px">Type</th>
+        <th width="120px">Start time</th>
+        <th width="120px">End time</th>
+        <th style="display:none;"></th>
+        <th style="display:none;"></th>
+        <th width="70px">Keyword Type</th>
+        <th width="305px">Keyword</th>
+        <th width="270px">Keyword pattern</th>
+        <th width="50px">Edit/Delete</th>
+      </tr>
+      <tbody id="detailkeyword" ondblclick="exitEdit();">
+      <% @j = 0 %>
+      <% unless @voice_log.result_keywords.empty? %>
+      <% @voice_log.result_keywords.each_with_index do |rk,i| %>
+      <% @j = @j + 1 %>
+      <tr onclick="goToSegmentAt('<%=rk.start_sec %>')">
+        <td class="no"><span><%=i+1%></span><input type="hidden" id="fid<%=i%>" value="<%=rk.id%>"></td>
+        <td><%=h "keywords" %></td>
+        <td><%= (@voice_log.start_time + rk.start_sec).strftime("%H:%M:%S") %></td>
+        <td><%= (@voice_log.start_time + rk.end_sec).strftime("%H:%M:%S") %></td>
+        <td style="display:none;"><%=rk.start_sec%></td>
+        <td style="display:none;"><%=rk.end_sec%></td>
+        <td>
+           <span id="ktype<%=i+1%>" style="display:block"><%= rk.keyword.display_keyword_type %></span>
+           <select id="kwType<%=i+1%>" style="display:none; width:40px;">
+           <option value="n">NG</option><option value="m">MUST</option><option value="a">ACTION</option>
+           </select>
+        </td>
+        <td><%if KeywordGroupMap.exists?({:keyword_id => rk.keyword_id})%>
+            <% kwg = KeywordGroupMap.find(:all,:conditions => {:keyword_id => rk.keyword_id})
+               arr_kwg = []
+               kwg.each do |kg|
+               arr_kwg << kg.keyword_group.name unless kg.keyword_group.nil?
+               end %>
+            <%= arr_kwg.join(",") %>
+            <%else%>
+            <%= "UnGroup" %>
+            <%end%>
+        </td>
+        <td><input class="edit_name" type="text" id="edf_name<%=i+1%>" name="edfname" value="<%=h rk.keyword.name %>" readonly="true"/>
+        </td>
+        <td align="center">
+             <% if permission_by_name('callskeyw-upd') %>
+            <img src="<%=image_path('edit.png')%>" class="img_act" name="edit"  onclick="allowEdit('k<%=i+1%>');" />&nbsp;&nbsp;
+            <img src="<%=image_path('delete.png')%>" class="img_act" name="del" onclick="delKeyword('k<%=i+1%>');" />
+            <%end%>
+        </td>
+      </tr>
+      <% end %>
+      <% else %>
+      <% end %>
+       <% unless @voice_log.edit_keywords.empty? %>
+      <% @voice_log.edit_keywords.each_with_index do |rk,i| %>
+      <tr onclick="goToSegmentAt('<%= rk.start_sec %>')">
+        <td class="no"><span><%=@j+i+1%></span><input type="hidden" id="fid<%=@j+i%>" value="<%=rk.result_keyword_id.blank? ? 0 : rk.result_keyword_id%>"></td>
+        <td><%=h "keywords" %></td>
+        <td><%= (@voice_log.start_time + rk.start_sec).strftime("%H:%M:%S") %></td>
+        <td><%= (@voice_log.start_time + rk.end_sec).strftime("%H:%M:%S") %></td>
+        <td style="display:none;"><%=rk.start_sec%></td>
+        <td style="display:none;"><%=rk.end_sec%></td>
+        <td>
+           <span id="ktype<%=@j+i+1%>" style="display:block"><%= to_full_type(rk.keyword.keyword_type) %></span>
+           <select id="kwType<%=@j+i+1%>" style="display:none; width:40px;" >
+           <option value="n">NG</option><option value="m">MUST</option><option value="a">ACTION</option>
+           </select>
+        </td>
+        <td><%if KeywordGroupMap.exists?({:keyword_id => rk.keyword_id})%>
+            <% kwg = KeywordGroupMap.find(:all,:conditions => {:keyword_id => rk.keyword_id})
+               arr_kwg = []
+               kwg.each do |kg|
+               arr_kwg << kg.keyword_group.name unless kg.keyword_group.nil?
+               end %>
+            <%= arr_kwg.join(",") %>
+            <%else%>
+            <%= "UnGroup" %>
+            <%end%>
+        </td>
+        <td><input class="edit_name" type="text" id="edf_name<%=@j+i+1%>" name="edfname" value="<%=h rk.keyword.name %>"
+          readonly="true"/>
+        </td>
+        <td align="center">
+             <% if permission_by_name('callskeyw-upd') %>
+            <img src="<%=image_path('edit.png')%>" name="edit"  class="img_act" onclick="allowEdit('k<%=@j+i+1%>');" />&nbsp;&nbsp;
+            <img src="<%=image_path('delete.png')%>" name="del"  class="img_act" onclick="delKeyword('k<%=@j+i+1%>');" />
+            <%end%>
+        </td>
+      </tr>
+      <% end %>
+      <% else %>
+      <% end %>
+      </tbody>
+		<tr>
+		<td><%=image_tag('padding.png',{:width=>'25px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'110px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'70px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'70px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'44px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'305px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'270px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'40px',:height=>'1px'})%></td>
+	</tr>	  
+      </table>		
+	</div>
+    <div style="width:1024px">
+     <table id="tbl01" name="tblkeyword" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <th colspan="8" align="left">
+         <% if permission_by_name('callskeyw-upd') %>
+         <input type="button" id="btnAddKw" class="input_button input-btn-add" name="btnAddKw" value="Add" onclick="addKeyword();" />
+         <input type="button" id="btnSaveKw" class="input_button" name="btnSaveKw" value="Save" disabled="true" onclick="saveKeyword();" />
+         &nbsp;&nbsp;&nbsp;<span style="font-weight:normal; font-style:italic;">Note: Double click on table to exit edit keyword.</span>
+		 <% end %>            	
+        </th>
+      </tr>
+	  </table> 	
+    </div>
+      <!-- keyword data for audio viewer control -->
+      <textarea name="keywords" rows="4" cols="70" style="display:none">
+        <%= @voice_log.result_keywords.map { |ca| [ca.start_sec, ca.end_sec, ca.keyword.name].join(" ")}.join("\n") %>
+      </textarea>
+  </div>
+
+  <div id="call_info_list">
+  	<div style="width:1024px;">
+    <table id="tbl01" name="tblcallinfo" cellpadding="0" cellspacing="0">
+    <tr>
+      <th width="30px;">No<br/><%=image_tag('padding.png',{:width=>'32px',:height=>'1px'})%></th>
+      <th width="110px">Information Type<br/><%=image_tag('padding.png',{:width=>'120px',:height=>'1px'})%></th>
+      <th width="70px">Start Time<br/><%=image_tag('padding.png',{:width=>'78px',:height=>'1px'})%></th>
+      <th width="70px">End Time<br/><%=image_tag('padding.png',{:width=>'78px',:height=>'1px'})%></th>
+      <th width="710px">Description<%=image_tag('padding.png',{:width=>'710px',:height=>'1px'})%></th>
+    </tr>
+	</table>	
+	</div>
+	<div class="divTblScrollbar" style="width:1024px; height:250px; overflow-y:scroll;">
+	    <table id="tbl01" name="tblcallinfo" cellpadding="0" cellspacing="0">
+	    <tr style="display:none;">
+	      <th>#</th>
+	      <th width="100px">Type</th>
+	      <th width="100px">Start time</th>
+	      <th width="100px">End time</th>
+	      <th width="710px" colspan="3">Description</th>
+	    </tr>
+	    <tbody id="detailcallinfo">
+	    <% unless @voice_log.call_informations.empty? %>
+	    <% @voice_log.call_informations.each_with_index do |ci,i| %>
+	    <tr class="trcall_info" onclick="goToSegmentAt('<%=ci.start_sec %>')">
+	      <td class="no" width="30px"><%= i+1 %></td>
+	      <td><%=h "Call Information" %></td>
+	      <td style="display:none;"><%=h ci.start_sec %></td>
+	      <td style="display:none;"><%=h ci.end_sec %></td>
+	      <td><%= (@voice_log.start_time + ci.start_sec).strftime("%H:%M:%S")   %></td>
+	      <td><%= (@voice_log.start_time + ci.end_sec).strftime("%H:%M:%S")   %></td>
+		  <% agent_name = ( (not User.find(:first,:conditions => {:id => ci.agent_id}).nil?) ? User.find(ci.agent_id).display_name : "-")%>
+	      <td><%=h ci.event %>&nbsp;<%= ci.agent_id.blank? || ci.agent_id == 0 ? "&nbsp;" : ", #{agent_name}" %></td>
+	    </tr>
+	    <% end %>
+	    <% else %>
+	    <% end %>
+	    </tbody>
+		<tr>
+		<td><%=image_tag('padding.png',{:width=>'25px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'110px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'70px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'70px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'685px',:height=>'1px'})%></td>
+	</tr>	
+	    </table>		
+	</div>
+  	<div style="width:850px;">
+    <table id="tbl01" name="tblcallinfo" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <th colspan="5">&nbsp;<%=image_tag('padding.png',{:width=>'1px',:height=>'20px'})%></th>
+    </tr>
+	</table>	
+	</div>
+    <!-- keyword data for audio viewer control -->
+    <textarea name="call_info" rows="4" cols="70" style="display:none">
+      <%= @voice_log.call_informations.map { |ca| [ca.start_sec, ca.end_sec, "\"#{ca.event} #{ca.agent_id} #{ca.agent_id}\""].join(" ")}.join("\n") %>
+    </textarea>
+  </div>
+
+  <div id="bookmark_list">
+  	<div style="width:1024px;">
+     <table id="tbl01" name="tblbookmark" class="tblbookmark" cellpadding="0" cellspacing="0">
+      <tr>
+      <th width="30px;">No<br/><%=image_tag('padding.png',{:width=>'32px',:height=>'1px'})%></th>
+      <th width="110px">Information Type<br/><%=image_tag('padding.png',{:width=>'120px',:height=>'1px'})%></th>
+      <th width="70px">Start Time<br/><%=image_tag('padding.png',{:width=>'78px',:height=>'1px'})%></th>
+      <th width="70px">End Time<br/><%=image_tag('padding.png',{:width=>'78px',:height=>'1px'})%></th>
+      <th width="250px">Title<br/><%=image_tag('padding.png',{:width=>'257px',:height=>'1px'})%></th>
+      <th width="230px">Contents<br/><%=image_tag('padding.png',{:width=>'380px',:height=>'1px'})%></th>
+      <th width="50px">Edit/Del<br/><%=image_tag('padding.png',{:width=>'70px',:height=>'1px'})%></th>
+      </tr>
+	  </table> 		
+  	</div>
+	<div class="divTblScrollbar" style="width:1024px; height:250px; overflow-y:scroll;">
+    <table id="tbl01" name="tblbookmark" class="tblbookmark" cellpadding="0" cellspacing="0">
+      <tr style="display:none;">
+        <th>#</th>
+        <th width="120px">Type</th>
+        <th width="120px">Start time</th>
+        <th width="120px">End time</th>
+        <th width="250px">Title</th>
+        <th width="245px">Contents</th>
+        <th width="80px">Edit/Delete</th>
+      </tr>
+      <tbody id="detailbookmark" ondblclick="exitEditb();">
+      <% rows = 0 %>
+      <% unless @voice_log.bookmarks.empty? %>
+        <% @voice_log.bookmarks.each_with_index do |rk,i| %>
+        <tr class="trbookmark" onclick="goToSegmentAt('<%=rk.start_sec %>')">
+          <td class="no"><%=i+1 %><input type="hidden" id="fid<%=i%>" value="<%=rk.id%>"></td>
+          <td><%=h "bookmarks" %></td>
+          <td style="display:none;"><%=h rk.start_sec %></td>
+          <td style="display:none;"><%=h rk.end_sec %></td>
+          <td><%= (@voice_log.start_time + rk.start_sec).strftime("%H:%M:%S")   %></td>
+          <td><%= (@voice_log.start_time + rk.end_sec).strftime("%H:%M:%S")   %></td>
+          <td width="150px"><input class="edit_title" type="text" id="edf_title<%=i+1%>" name="edftitle" value="<%=h rk.title %>"
+          readonly="true"/>
+          </td>
+          <td width="400px"><input class="edit_body" type="text" id="edf_body<%=i+1%>" name="edfbody" value="<%=h rk.body %>"
+           readonly="true" /></td>
+          <td align="center">
+            <% if permission_by_name('bookmarks-upd') %>
+            <img src="<%=image_path('edit.png')%>" name="edit" class="img_act"  onclick="allowEditb('k<%=i+1%>');" />&nbsp;&nbsp;
+            <img src="<%=image_path('delete.png')%>" name="del"  class="img_act" onclick="delBookmark('k<%=i+1%>');" />
+            <%end%>
+          </td>
+        </tr>
+        <%rows = i + 1%>
+        <% end %>
+
+      <% end %>
+      </tbody>
+		<tr>
+		<td><%=image_tag('padding.png',{:width=>'25px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'110px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'70px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'70px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'250px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'245px',:height=>'1px'})%></td>
+		<td><%=image_tag('padding.png',{:width=>'45px',:height=>'1px'})%></td>
+	</tr>  
+    </table>		
+	</div>
+  	<div style="width:850px;">
+     <table id="tbl01" name="tblbookmark" class="tblbookmark" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <th colspan="6" align="left">&nbsp;
+         <% if permission_by_name('bookmarks-upd') %>
+          <input type="button" class="input_button input-btn-add" id="btnAddBookmark" name="btnAddBookMark" value="Add" onclick="addBookmark();" />
+          <input type="button" class="input_button" id="btnbookmark" name="btnbookmark" value="Save" onclick="saveBookmark();" disabled="true">
+          &nbsp;&nbsp;&nbsp;<span style="font-weight:normal; font-style:italic;">Note: Double click on table to exit edit bookmark.</span>
+		  <%end%>       	
+        </th>
+      </tr>
+	  </table> 		
+  	</div>
+    <!-- keyword data for audio viewer control -->
+    <textarea name="bookmark" rows="4" cols="70" style="display:none">
+      <%= @voice_log.bookmarks.map { |ca| [ca.id,ca.start_sec, ca.end_sec,ca.title,ca.body].join(",")}.join("@") %>
+    </textarea>
+    <textarea name="newbookmark" rows="5" cols="70" style="display:none">
+      <%= @voice_log.bookmarks.map { |ca| [ca.id,ca.start_sec, ca.end_sec,ca.title,ca.body].join(",")}.join("@") %>
+    </textarea>
+    <div id="tempSegmentInfo" style="display:none">  
+    recent starttime <input type="text" id="rst" value=""><br>
+    recent endtime <input type="text" id="est" value=""><br>
+    used segments  <input type="text" id="psm" value=""><br>
+    old content <input type="text" id="oct" value=""><br>
+    old title <input type="text" id="ott" value ="">
+    <input type="hidden" id="rows" value ="<%=rows%>">
+  </div>
+</div>
+</div>
+</div>

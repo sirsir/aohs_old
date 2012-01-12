@@ -1,0 +1,75 @@
+<% content_for :header do %>
+
+<%= javascript_src_path '/javafx/dtfx.js' %>
+<script type="text/javascript">
+
+    var curtlUrl = "";
+
+    function makeTimeLine(strUrl){
+      <% if @tl_enabled %>
+      var amiTimeLineFx = document.getElementById("amiTimeLineFx");  
+      $("#timelineLoading").css("display","inline-block");        
+      try{
+        var strSrc = "<%=get_root_url %>/timeline/timeline_calls?tl=agcalls&user_id=" + "<%= current_user.id %>" + "&" + strUrl;
+        $("#testurl").val(strSrc);
+		
+		amiTimeLineFx.script.makeTimeLine(strSrc);
+		$("#timelineLoading").css("display","none");
+		
+      } catch(e){
+        $("#timelineLoading").css("display","none");
+        //alert(e.message);  
+      }
+      <% end %>  
+    }
+
+    function initial_vl_timeline(srcUrl){
+       curtlUrl = srcUrl;
+    }
+
+    function startLoadTimeLine(){
+          if(!tlLoaded){
+              var srcUrl = "";
+              $.each(searchKey,function(key){
+                srcUrl += key + "=" + searchKey[key] + "&";
+              });
+              if(srcUrl.length > 3) {
+                initial_vl_timeline(srcUrl);
+                makeTimeLine(curtlUrl);
+              }
+          }
+          tlLoaded = true;
+    }
+    function reloadTimeLine(){
+       if(curtlUrl.length > 3) { makeTimeLine(curtlUrl); }
+    }
+
+</script>
+<% end %>
+<input type="text" id="testurl" style="display:none"/>
+<input type="button" name="Refresh" value="Refresh Timeline" onclick="reloadTimeLine();" class="btnStyle1" style="margin-top:2px;"/>
+<span id="timelineLoading" style="display:none;"><%= image_tag('page_ctrl/load.gif',{:align => 'absmiddle'}) %> Loading ...</span>
+<table width="100%">
+  <tr>
+    <td align="center">
+        <div id="jfx-amiTimeLine">
+        <% if @tl_enabled %>
+        <script>
+                javafx(
+                    {
+                        archive: '<%= "#{get_root_url}/javafx/amiTimeLine/amiTimeLine.jar" %>',
+                        draggable: true,
+                        width: 800,
+                        height: 650,
+                        code: "amitimeline.timeline",
+                        name: "amiTimeLine",
+                        id: "amiTimeLineFx",
+			   			extPackages: "javafx.ext.swing"
+                    }
+                );
+        </script>
+        <% end %>      
+        </div>
+    </td>
+  </tr>
+</table>

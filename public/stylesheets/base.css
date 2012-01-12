@@ -1,0 +1,458 @@
+/* Default */
+body,html 
+{
+    font-size: 8pt;
+    font-family: sans-serif;
+    background-color: white;
+    overflow:hidden;
+}
+html,body,form,h1,h2,h3,h4,h5,p,label,input,select,textarea,div 
+{
+    margin:0px 0px 0px 0px;
+    padding:0px 0px 0px 0px;
+}
+html 
+{
+	overflow-y:scroll;
+}
+input, select, label,textarea 
+{
+	font-size: 8pt;
+    font-family: sans-serif;	
+}
+img {
+	border:0px;
+}
+/* Header */
+.div-page-header 
+{
+    background-image:url('../images/navigation-bkg.jpg');
+    border-bottom:2px solid orange;
+	padding-right:5px;
+}
+.div-page-header .hd-name {
+	padding:0px;
+	margin:0px;
+	padding-left:5px;
+	text-align:left;
+}
+.div-page-header .hd-name a,.div-page-header .hd-name a:visited
+{
+	font-family:Verdana;
+	color:#e3e8fb;;
+	font-style:italic;
+	font-weight:bold;
+	text-decoration:none;
+	font-size:9pt;
+}
+.div-page-header .hd-account-bar {
+	margin:0px;
+	padding:0px;
+	padding-right:5px;
+	color:#FFFFFF;
+}
+.div-page-header .div-menus {
+	margin:0px;
+	padding:0px;
+	margin-top:1px;
+} 
+.div-page-header .div-menus ul {
+	margin:0px;
+	padding:0px;	
+	list-style: none;
+	margin-left:10px;
+	margin-top:3px;
+} 
+.div-page-header .div-menus li {
+	margin:0px;
+	padding:0px;	
+    float: left;
+	padding-left:4px;
+	padding-right:4px;
+	padding-bottom:1px;
+	padding-top:1px;
+	margin-right:4px;
+}
+.div-page-header .div-menus li.selected {
+    background-image:url(../images/bg019.png);
+    background-position:center;
+    border-top:1px solid #ffdb6e;
+    border-left:1px solid #ffdb6e;
+    border-right:1px solid #ffdb6e;
+    color:white;
+    font-weight:bold;
+}
+
+/* Body */
+.div-page-body 
+{
+
+}
+/* Footer */
+.div-page-footer 
+{
+
+}
+/* all */
+.div-page-header, .div-page-body, .div-page-footer 
+{
+	width:100%;	
+}
+.act-word {
+	color:#EE6600;
+}
+.must-word {
+	color:#459E00;
+}
+.ng-word {
+	color:#DD0000;
+}
+.inbound-call {
+	color:#0B559B;
+}
+.outbound-call {
+	color:#33AA33;
+}
+
+td.app-aohs {
+	color:#0000FF;	
+}
+td.app-moss {
+	color:#408080;
+}
+
+/* link */
+.a-link-1, .a-link-1:visited {
+	color:#FFFFFF;	
+}
+.a-link-2, .a-link-2:visited {
+	color:#FFFFFF;
+    text-decoration:none;
+	font-weight:bold;
+}
+.a-link-2:hover {
+	color:#FFFFFF;
+    text-decoration:underline;
+	font-weight:bold;
+}
+
+
+
+/* home */
+.home-main-menu {
+	margin-top:20px;
+	margin-left:20px;
+}
+.home-main-menu .title {
+	font-style:italic;
+	font-size:9pt;
+	color:#4a78f2;;
+}
+.home-main-menu .title {
+	font-style:italic;
+	font-size:9pt;
+	color:#6a6a6a;
+}
+.home-main-menu .sub-mn {
+	margin:5px;
+	margin-top:10px;
+	width:360px;
+}
+.home-main-menu .div-sub-mn {
+	border:1px solid #ffffff;
+	padding:5px;
+	margin:5px;
+	margin-left:10px;
+	cursor:pointer;	
+}
+.home-main-menu .div-sub-mn .mn-name {
+	font-weight:bold;
+	color:#6a6a6a;
+	font-size:10pt;
+	padding-left:10px;
+}
+.home-main-menu .div-sub-mn .title2 {
+	font-style:italic;
+	color:#6a6a6a;	
+	padding-left:10px;
+}
+.home-main-menu .div-sub-mn.hover {
+	border:1px solid #ebf0fe;
+	background-image:url('../images/gradient-mod2.png');
+	background-repeat:repeat-x;
+}
+.home-main-menu .div-sub-mn img {
+	width:35px;
+	height:36px;
+}
+.home-main-menu .div-sub-mn input {
+	border:1px solid #c0c0c0;
+	text-align:center;
+	width:23px;
+}
+
+.div-menu-block {
+	padding:2px;
+	padding-top:2px;
+}
+.div-menu-block ul {
+    list-style: none;
+    margin: 0px 0px 0px 5px;
+	padding-left:0px;
+}
+
+.div-menu-block li {
+    float: left;
+    padding-left:4px;
+    padding-right:4px;
+    padding-top:2px;
+    padding-bottom:2px;
+	border:0px solid #FFFFFF;
+	cursor:pointer;	
+}
+.div-menu-block li.hover {
+	border:0px solid #ebebeb;	
+}
+.div-menu-block .filter-block {
+	margin-top:2px;
+	background-color:#f5f5f5;
+	padding:2px;
+	display:none;
+}
+.div-menu-block .filter-block fieldset {
+	padding-top:3px;
+	padding-bottom:2px;
+	padding-left:2px;
+	border:1px solid #c0c0c0;
+}
+
+.div-menu-block2 {
+	padding:2px;
+	padding-top:2px;
+	padding-bottom:0px;
+}
+.div-menu-block2 ul {
+    list-style: none;
+    margin: 0px 0px 0px 5px;
+	margin-bottom:0px;
+	padding:0px;
+}
+.div-menu-block2 li {
+    float: left;
+    padding-left:6px;
+    padding-right:6px;
+    padding-top:3px;
+    padding-bottom:3px;
+	border:1px solid #aad5ff;
+	border-bottom:0px solid #8080c0;
+	cursor:pointer;
+	margin-left:3px;
+	margin-right:3px;
+	margin-bottom:0px;
+/*
+  	background-image:url('../images/gradient-mod2.png');
+  	background-position:bottom;	
+	background-repeat:repeat-x;	
+*/
+	font-weight:bold;	
+	font-size:9pt;
+}
+.div-menu-block2 li:hover, .div-menu-block2 li.hover {
+	border:1px solid #88c4ff;
+	border-bottom:0px solid #8080c0;
+  	background-image:url('../images/bg003.png');
+  	background-position:bottom;	
+	background-repeat:repeat-x;			
+}
+.div-menu-block2 li.selected {
+  	background-image:url('../images/bg003.png');	
+    background-position:bottom;	
+}
+.menu-underline {
+	border-bottom:1px solid #b9b9ff;
+}
+
+.report_info {
+	margin:2px;
+	padding:3px;
+	border:1px solid #FFFFFF;
+	border-bottom:1px solid #CCCCCC;
+}
+.report_info label {
+	font-weight:bold;
+}
+/* VoiceLog Layout */
+.div-history {
+	background-image:url(../images/gradient-mod2.png);
+	background-position:center;
+	background-repeat:repeat-x;
+	border-bottom:1px solid #CCCCCC;
+	padding:5px;
+}
+.div-history .div-btn {
+	cursor:pointer;
+	font-weight:bold;
+	font-size:9pt;
+	border:1px solid #b4b4b4;
+	text-align:center;
+	padding:1px;
+	background-image:url(../images/ui-bg_glass_75_e6e6e6_1x400.png);
+	background-position:center;	
+	
+}
+/*END*/
+
+#ctrl-menu {
+    margin-top:0px;
+}
+
+#ctrl-menu ul {
+    list-style: none;
+    margin: 0px 0px 0px 5px;
+}
+
+#ctrl-menu li {
+    float: left;
+    padding-left:6px;
+    padding-right:6px;
+    padding-top:2px;
+    padding-bottom:2px;
+    margin-left:3px;
+}
+.ctrl-menu .selected {
+    background-image:url(../images/bg019.png);
+    background-position:center;
+    border-top:1px solid #ffdb6e;
+    border-left:1px solid #ffdb6e;
+    border-right:1px solid #ffdb6e;
+    color:white;
+    font-weight:bold;
+}
+
+a,a:visited {
+    text-decoration: none;
+    color:#0066cc;
+}
+a:hover {
+    text-decoration:underline;
+}
+
+a.link01,a.link01:visited {
+    color:white;
+    text-decoration:none;
+}
+a.link01:hover {
+    color:white;
+    text-decoration:underline;
+}
+
+a.link02,a.link02:visited {
+    color:white;
+    text-decoration:none;
+	font-weight:bold;
+}
+a.link02:hover {
+    color:white;
+    text-decoration:underline;
+	font-weight:bold;
+}
+
+a.link03,a.link03:visited {
+    color:white;
+    text-decoration:none;
+}
+a.link03:hover {
+    color:white;
+    text-decoration:underline;
+}
+
+.login-name {
+    font-weight:bold;
+}
+
+#submenu {
+    margin-bottom:1px;
+    margin-top:1px;
+}
+
+#submenu td {
+    padding-right:5px;
+}
+
+#submenu ul {
+    list-style: none;
+    margin: 0px 0px 0px 5px;
+}
+
+#submenu li {
+    float: left;
+    padding-left:4px;
+    padding-right:4px;
+    padding-top:2px;
+    padding-bottom:2px;
+}
+
+#body {
+    background-color:white;
+    padding-bottom:5px;
+}
+
+/* jquery widget style */
+
+.ui-dialog-content {
+    font-size:12px;
+}
+.ui-dialog-buttonpane {
+    font-size:12px;
+}
+.ui-dialog-titlebar {
+    font-size:12px;
+}
+.menuSelect {
+    cursor:pointer;
+    background-image:url('../images/gradient-mod.png');
+    background-repeat:repeat-x;
+}
+
+.menuUnselect {
+    cursor:default;
+    background:none;
+}
+
+#tblmenulist td{
+    padding-left:5px;
+}
+
+#defaultTabsStyle1 {
+  margin-top:0px;
+  padding-top:0px;
+  margin-left:2px;
+  margin-right:2px;
+}
+#defaultTabsStyle1 ul {
+  list-style: none;
+  margin-left:10px;
+  margin-bottom:-1px;
+  margin-top:0px;
+  padding-top:0px;
+}
+#defaultTabsStyle1 li {
+  float:left;
+  padding-top:2px;
+  padding-left:8px;
+  padding-right:8px;
+  padding-bottom:2px;
+  margin-left:5px;
+  border:1px solid #b4e1ff;
+  margin-bottom:-1px;
+  font-weight:bold;
+  background-color:white;
+  cursor:pointer;
+}
+.defaultliselected{
+  background-image:url('../images/bg003.png');
+  background-position:bottom;
+}
+.defaultlihover {
+  background-image:url('../images/bg012.png');
+}

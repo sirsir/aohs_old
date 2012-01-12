@@ -1,0 +1,83 @@
+<%  content_for :header do %>
+<script type="text/javascript">
+    $(document).ready(function(){
+
+      $(function(){
+        $("#extdetail tr").mouseover(function(){
+          $(this).addClass('tr-selected');
+        }).mouseout(function(){
+          $(this).removeClass('tr-selected');
+        });
+      });
+    });
+
+    function del_agent(id,ext){
+        $("#delDialog").text("");
+        $("#delDialog").append("Are you sure to delete keyword group \"<b>" + ext + "</b>\"");
+        $("#delDialog").dialog("open");
+        $("#delDialog").dialog({
+          bgiframe: true,
+          title: "Deleting Keyword Group...",
+          modal: true,
+          buttons:{
+            "Cancel": function(){ $(this).dialog("close"); },
+            "Ok": function(){ window.location = "<%= url_for(:controller => 'keyword_group',:action => 'delete') %>/" + id ; }
+          }
+        });
+    }
+
+</script>
+<%  end %>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',{:controller=>'keywords',:action => 'index'}) %></li>
+            <li><%= link_image_tag('Add keyword group','new.png',{:controller => 'keyword_group',:action => 'new'},{:title => 'Add new keyword group'}) %> </li>
+          </ul>
+        </td>
+        <td align="right">
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+
+<div class="div-tbl-default-style1">
+  <table cellpadding="0" cellspacing="0" width="65%">
+    <thead>
+    <tr>
+      <th>#</th>
+      <th>name</th>
+      <th>Edit</th>
+      <th>Delete</th>
+    </tr>
+    </thead>
+    <tbody id="extdetail">
+      <%unless @keyword_group.empty?%>
+        <% @keyword_group.each_with_index do |kwg,i| %>
+        <tr class="<%= cycle('tr-odd','tr-even') %>">
+        <td class="no" width="25px"><%=(i+1)+($PER_PAGE*((@page.nil? ? 1 : @page).to_i-1)) %></td>
+        <td class="string"><%= kwg.name unless kwg.name.nil? %>&nbsp;</td>
+        <td class="tool" width="100px" align="center" width="100px"><%= link_image_tag('','edit.png',{:controller => 'keyword_group',:action=>"edit", :id => kwg.id},{:title => 'Edit'}) %></td>
+        <td class="tool" width="100px" align="center" width="100px"><%= link_image_tag('','delete.png',"#",{:onclick => "del_agent(#{kwg.id},\"#{kwg.name}\")",:title => 'Delete'}) %></td>
+        </tr>
+       <%end%>
+      <%else%>
+        <tr>
+          <td width="100%" colspan="5" align="center">No record(s).</td>
+        </tr>
+      <%end%>
+    </tbody>
+     <tfoot>
+      <tr>
+        <td colspan="5" class="pages">
+          <%= will_paginate(@keyword_group) %>
+        </td>
+      </tr>
+     </tfoot>
+  </table>
+</div>

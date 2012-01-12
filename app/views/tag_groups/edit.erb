@@ -1,0 +1,51 @@
+<% content_for :header do %>
+
+<% end %>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',{:controller => 'call_tags',:action => 'index',:group_id => @tag_group.id},{:title => 'Back to tag list'}) %></li>
+            </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+
+<div id="div-block-cate_type">
+    <div class="div-form-default-style1">
+  <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+                <td><span class="span-form-name">Group tag infomation</span></td>
+            </tr>
+    <tr>
+      <td class="frmmain">
+        <% form_tag :action => 'update',:id => @tag_group.id do %>
+        <%=display_frm_error(flash[:message]) %>
+          <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="150px" valign="top"><label>Group tag name: </label></td>
+              <td><%= text_field 'tag_group', 'name',{:class => 'input-text' } %><span class="span-require">*</span>
+              <br><span class="note">Name must have a minimum of 4 characters</span></td>
+            </tr>
+            <tr>
+              <td width="150px" valign="top"><label>Description: </label></td>
+              <td><%= text_field 'tag_group', 'description',{:class => 'input-text' } %></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><%= submit_tag "Update Group tag",{:class => 'btnAccept'} %>&nbsp;&nbsp;</td>
+            </tr>
+            </table>
+        <% end %>
+      </td>
+    </tr>
+  </table>
+</div></div>

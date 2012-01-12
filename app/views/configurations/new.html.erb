@@ -1,0 +1,68 @@
+<% content_for :header do %>
+
+<% end %>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',{:controller => 'configurations',:action => 'index'}) %></li>
+          </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+
+<div class="div-form-default-style1">
+  <table class="tblfrm" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td><span class="span-form-title">New Configuration</span></td>
+    </tr>
+    <tr>
+      <td><span class="span-form-name">Configuration infomation</span></td>
+    </tr>
+    <tr>
+      <td class="frmmain">
+        <%=display_frm_error(flash[:message]) %>
+        <% form_for :configuration,:url => {:controller => 'configurations',:action => 'create'} do |f| %>
+          <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="200px" valign="top"><label>Configuration's group</label></td>
+              <td><%= f.collection_select :configuration_group_id,ConfigurationGroup.find(:all,:conditions => {:configuration_type => 'C'},:order => 'name'), :id, :name,{:class =>'input-text'} %><span class="span-require">*</span>
+              <br><span class="note">Password must have a minimum of 4 characters</span></td>
+            </tr>
+            <tr>
+              <td valign="top"><label>Name</label></td>
+              <td><%= f.text_field :variable,:class =>'input-text' %><span class="span-require">*</span>
+              <br><span class="note">Password must have a minimum of 4 characters</span></td>
+            </tr>
+            <tr>
+              <td valign="top"><label>Variable type</label></td>
+              <td><%= f.text_field :variable_type,:class =>'input-text' %><span class="span-require">*</span>
+              <br><span class="note">Format: <br>1. variable_type[ele1,ele2,..,eleN] <br>2. variable_type</span></td>
+            </tr>
+            <tr>
+              <td><label>Default value</label></td>
+              <td><%= f.text_field :default_value,:class =>'input-text' %><span class="span-require">*</span></td>
+            </tr>
+            <tr>
+              <td valign="top"><label>Description</label></td>
+              <td><%= f.text_area :description,:rows => 4,:class =>'input-text' %></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><%= submit_tag "Add configuration",{:class => 'btnAccept'} %>&nbsp;&nbsp;<%#= submit_tag "Reset",{:type => 'Reset',:class => 'btnAccept'} %></td>
+            </tr>
+            </table>
+        <% end %>
+      </td>
+    </tr>
+  </table>
+</div>
+

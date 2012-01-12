@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+	
+<title>Resizable Div (WebFX)</title>
+<!-- WebFX Layout Include -->
+<script type="text/javascript" src="genresize_files/webfxlayout.js"></script><link type="text/css" rel="StyleSheet" href="genresize_files/webfxlayout.css"><link type="text/css" rel="StyleSheet" href="genresize_files/xmenu.css"><script type="text/javascript" src="genresize_files/xmenu.js"></script><script type="text/javascript" src="genresize_files/index.htm"></script>
+<!-- end WebFX Layout Includes -->
+<style>
+* {
+	box-sizing:			border-box;
+	-moz-box-sizing:	border-box;
+}
+
+#testDiv {
+	position: absolute;
+	overflow: hidden;
+	left: 30px;
+	width: 400px;
+	height: 200px;
+	border: 2px outset white;
+	margin: 0;
+	background: buttonface;
+	color: black;
+	padding: 2px;
+	z-index: 2;
+}
+#innerNice {
+	overflow: auto;
+	width: 100%;
+	height: 100%;
+	border: 2px inset white;
+	background: white;
+	color: black;
+	padding: 8px;
+}
+#simple {
+	position: absolute;
+	overflow: hidden;
+	top: 450px;
+	left: 30px;
+	width: 400px;
+	height: 60px;
+	border: 1px solid black;
+	background: white;
+	z-index: 2;
+}
+</style>
+<script language="javascript" src="genresize_files/genresize.js"></script>
+<script language="javascript" src="genresize_files/ieemu.js"></script>
+<script language="javascript">
+if (moz) {
+	extendElementModel();
+	extendEventObject();
+	emulateEventHandlers(["mousemove", "mousedown", "mouseup"]);
+}
+
+</script>
+</head><body onselectstart="return false;">
+<p>Last updated: 2001-03-13, Added IE Emu for Moz and made sure that all style values had a unit.</p>
+
+<p>Notice that this script is not maintained and it contains bugs but due to demand this script
+has been added to available WebFX scripts.</p>
+
+<hr>
+<p>This is just an ordinary &lt;DIV&gt; with some scripting!<br>
+Grab the edges!</p>
+<p class="author">Author: Erik Arvidsson</p>
+
+<div style="cursor: default; height: 225px;" class="resizeMe" id="testDiv">
+<div id="innerNice">
+<p>I added the script <a href="http://webfx.eae.net/dhtml/genresize/genresize.js"><code>genresize.js</code></a> like this:</p>
+<pre>&lt;script language="javascript" src="genresize.js"&gt;&lt;/script&gt;
+</pre>
+
+<p>And then I added the <code>class= "resizeMe"</code> to the div. You should also see that the overflow
+value is either auto (or hidden).</p>
+<p>Don't be blinded by the fancy stuff. I have the overflow: auto in a div inside the resizeable
+div.</p>
+</div>
+</div>
+
+<div style="cursor: default; height: 97px;" class="resizeMe" id="simple">
+	<p>This is just a clean DIV</p>
+</div>
+
+
+</body></html>

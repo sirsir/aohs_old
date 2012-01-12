@@ -1,0 +1,62 @@
+<div id="tbl-statistics" class="div-default-table" style="padding-left:0px; margin-left:0px;">				
+	<table class="tbl-hover-2" id="tblAgReport" width="100%" cellpadding="0" cellspacing="0">
+	<tr class="thead">
+		<th rowspan="2" width="30px" style="padding-top:14px; padding-bottom:14px;">No</th>
+		<th rowspan="2" width="108px"><a href="#" class="linksort" onclick="sort_link('group')">Group</a></th>
+		<th rowspan="2" width="150px"><a href="#" class="linksort" onclick="sort_link('agent')">Agent's name</a></th>
+		<th rowspan="2" width="50px"><a href="#" class="linksort" onclick="sort_link('total')">Total<br/>(<%=(@sub_type =="calls" ? "calls" : "words") %>)</a></th>
+		<td id="divTblSpan" rowspan="<%=@agents.length + 2 + 2 %>" valign="top" style="margin:0; padding:0; background-color:#FFFFFF">
+			<div id="divTblScroll" style="overflow:hidden; overflow-x:scroll; width:300px;">
+				<table cellpadding="0" cellspacing="0" class="div-default-table" style="margin:0; padding:0; border-top:0">
+				<tr class="thead">
+					<% @display_first_labels.each_with_index do |x,i| %>
+					<th colspan="<%= @display_cols_count[i] %>"><%= x %></th>
+				<% end %>
+				</tr>								
+				<tr class="thead">
+					<% @display_second_labels.each_with_index do |m,i| %>
+					<th><a href="#" class="linksort" onclick="sort_link('col-<%= i+1 %>')"><%= m %></a></th>
+					<% end %>								
+				</tr>
+				<% @agents.each_with_index do |agent,i| %>
+				<tr class="tr-at<%=i %> <%= cycle("odd","even")%>" row_no="<%=i %>">
+					<% agent['labels'].each_with_index do |c,i| %>
+					<td class="int"><a href="#" class="cell_report" atype="<%=@sub_type %>" agent_id="<%=agent['id'] %>" period="<%=@period %>" date="<%=@display_columns[i] %>"><%= number_with_delimiter(c) %></a><%=image_tag('padding.png',{:width=> '1px',:height => '14px'})%></td>
+					<% end %>								
+				</tr>
+				<% end %>
+				<% x = @grand_total.shift%>
+				<tr class="tsum">
+				<% @grand_total.each do |gta| %>
+					<td class="int"><%= number_with_delimiter(gta) %><br/><%= image_tag('padding.png',{:width => '30px',:height=> '1px'})%></td>
+				<% end %>
+				</tr>				
+				</table>
+			</div>
+		</td>
+		<th width="0px" rowspan="2">&nbsp;</th>
+	</tr>
+	<tr>
+		<th>&nbsp;</th>
+    </tr>
+	<% st_row = params[:page].to_i <= 0 ? $PER_PAGE : params[:page].to_i * $PER_PAGE %>
+	<% @agents.each_with_index do |agent,i| %>
+		<tr class="tr-at<%=i %> <%= cycle("odd","even")%>" row_no="<%=i %>">
+			<td class="no"><%=(st_row + i+1)-$PER_PAGE %></td>
+			<td title="<%=agent['group'] %>"><%=h limit_string(agent['group'],15) %></td>
+			<td title="<%=agent['agent'] %>"><%=h limit_string(agent['agent'],18) %></td>
+			<td class="int"><a href="#" class="cell_report" atype="<%=@sub_type %>" agent_id="<%=agent['id'] %>" period="<%=@period %>"><%=h number_with_delimiter(agent['total']) %></a><%=image_tag('padding.png',{:width=> '1px',:height => '14px'})%></td>
+			<td><%=image_tag('padding.png',{:width=> '1px'}) %></td>
+		</tr>
+	<% end %>
+	<tr class="tsum">
+		<td class="no"><%= image_tag('padding.png',{:width => '20px',:height=> '1px'})%></td>
+		<td colspan="2" align="center">Total<br/><%= image_tag('padding.png',{:width => '20px',:height=> '1px'})%></td>
+		<td class="int"><%=number_with_delimiter(x.to_i) %></td>
+	</tr>			
+	<tr class="tsum h-scroll">
+		<td class="no"><%=image_tag('padding.png',{:width=> '20px',:height => '10px'})%></td>
+		<td colspan="3"><%= image_tag('padding.png',{:width => '280px',:height=> '1px'})%></td>
+	</tr>						
+	</table>		
+</div>

@@ -1,0 +1,14 @@
+
+.span-active {
+    color: #009933;
+}
+.span-inactive {
+    color: #ff0000;
+}
+
+.span-display-none{
+    display:block;
+    padding-top:2px;
+    padding-bottom:2px;
+    color: #333333;
+}

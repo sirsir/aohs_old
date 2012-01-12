@@ -1,0 +1,115 @@
+<% content_for :header do %>
+  <%= stylesheet_src_path('/YUI.2.7/build/treeview/assets/skins/default/tree.css') %>
+  <%= javascript_src_path('/YUI.2.7/build/yahoo-dom-event/yahoo-dom-event.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/treeview/treeview-min.js') %>
+  
+  <script type="text/javascript">
+  
+  	var tree;
+
+    function checkDisplay(mode){
+        for(var i=1; i<=4; i++){
+            $("#tbody-conf"+i).html("");  
+			if(parseInt(mode)==i){
+				$("#cfDisplay"+i).css("display","block");	
+			} else {
+				$("#cfDisplay"+i).css("display","none");
+			}  
+        }
+    }
+	
+	function loadConfigurationData(node){
+		var p = node.data.NodeParent || "false";
+		if(p != "false"){
+			
+			checkDisplay(node.data.ModeDisp);
+			$("#confInfo" + node.data.ModeDisp).html(p);
+			
+			current_cf = p;
+			
+	        $.getJSON("<%=url_for(:controller => 'configurations',:action => 'get_config') %>",
+	        {q: p},
+	        function(data){
+	           var rows = ""
+	           if((data!=null) && (data.length > 0)){
+	               do {
+	                 var cf = data.pop();
+	                 rows += "<tr><td class=\"no\">" + cf['no'] + "</td><td>" + cf['name'] + "</td><td>" + cf['type'] + "</td>";
+	                 if(node.data.ModeDisp == 1){
+	                    rows += "<td><input class=\"nonEdit\" type=\"text\" value=\"" + nullToEmpty(cf['default']) + "\" readonly></td>";
+	                 }
+	                 else if(node.data.ModeDisp == 3){
+	                    rows += "<td><input class=\"nonEdit\" type=\"text\" value=\"" + nullToEmpty(cf['baseline']) + "\" readonly></td>";
+	                 }
+	                 else if(node.data.ModeDisp == 4){
+	                    rows += "<td><input class=\"nonEdit\" type=\"text\" value=\"" + nullToEmpty(cf['baseline']) + "\" readonly></td>";
+	                    rows += "<td><input class=\"nonEdit\" type=\"text\" value=\"" + nullToEmpty(cf['group']) + "\" readonly></td>";
+	                 }           
+	                 rows += "<td style=\"padding:0px;\" class=\"edit_field\"><input type=\"text\" cf_id=\"" + cf['id'] + "\" cfd_type=\"" + cf['cfd_type'] + "\" cfd_type_id=\"" + cf['cfd_type_id'] + "\" id=\"" + cf['name'].replace(/\./g,"_") + "\" onblur=\"onOutCfTxt('" + cf['name'].replace(/\./g,"_") + "')\" ondblclick=\"ondbClickCfTxt('" + cf['name'].replace(/\./g,"_") + "')\" class=\"input-cf-val\" value=\""+nullToEmpty(cf['val'])+"\" title=\"Double click to edit value\" readonly></td><td>" + cf['desc'] + "</td></tr>";
+				   } while (data.length > 0)
+	               $("#tbody-conf" + node.data.ModeDisp).html(rows);
+	           } 
+	        });			
+		}
+	    	
+	}
+	function nullToEmpty(v){
+		if(v==null)
+			return "";
+		else
+			return jQuery.trim(v);
+	}
+	function loadChildNodes(node){
+		if(node.hasChildren()){
+			if(node.children[0].data.NodeType == "load"){
+				var n = node;
+				$.getJSON("<%= url_for(:controller => 'tree',:action => 'tree_config_member')%>",{
+					'type': n.data.NodeType
+				},function(data){
+					var l = data.length;
+					tree.removeNode(n.children[0]);
+					for(var i=0; i<l; i++){
+						data[i]['NodeParent'] = n.data.NodeParent + "." + data[i]['NodeLabel'];
+						var newNodes = new YAHOO.widget.TextNode(data[i], n, false);	
+					}
+					tree.draw();
+				});
+			}
+		}		
+	}
+	
+  	function rebuildTree(data){
+		
+		tree = new YAHOO.widget.TreeView("cfTree",data);
+		
+		tree.subscribe("expand",function(node){
+			loadChildNodes(node);
+		});
+				
+		tree.subscribe("labelClick", function(node) {
+			loadConfigurationData(node);	
+		});
+		
+		tree.setNodesProperty('propagateHighlightUp',true);
+		tree.setNodesProperty('propagateHighlightDown',true);
+		tree.collapseAll();
+        tree.render();
+			
+	}
+	
+	function initTreeView(){
+        $.getJSON("<%= url_for(:controller => 'tree',:action => 'tree_config')%>",
+		function(data){
+             rebuildTree(data); 
+			 //$("#loadingTree").css("display","none");
+        });		
+	}	
+	
+	$(window).bind("load",function() {
+		initTreeView();
+	});  
+  </script>
+  
+<% end %>
+
+<div id="cfTree"></div>

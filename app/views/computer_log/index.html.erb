@@ -1,0 +1,221 @@
+<% content_for :header do %>
+  <style>
+  	
+	select {
+		width:80px;
+	}
+  </style>
+  <script type="text/javascript">
+  	
+    function getfilterKeys(){
+		return {
+			cname: $("#comp_name").val(),
+			lname: $("#login_name").val(),
+			ip: $("#ip").val(),
+			agid: $("#agent_id").val(),
+			os: $("#os option:selected").val(),
+			jv: $("#java option:selected").val(),
+			aw: $("#aw option:selected").val(),
+			av: $("#av option:selected").val(),
+			cti: $("#cti: option:selected").val(),
+			col: "<%=params[:col] %>",
+			sort: "<%= params[:sort] %>"
+		}
+	}
+
+    function showFilter(){
+      if ($("#div-FilterBox-clog").css("display") == "none"){
+        $("#div-FilterBox-clog").css("display", "block");
+      }else{
+        $("#div-FilterBox-clog").css("display", "none");
+      }
+    }
+
+    function clearFilter(){
+		window.location.href = "<%= url_for(:controller => 'computer_log', :action => 'index') %>";
+    }
+	
+    function applyFilter(){
+      var url = App.make_query(getfilterKeys());
+      window.location.href = "<%= url_for(:controller => 'computer_log', :action => 'index') %>?" + url;
+    }
+
+    function sort_link(name){
+	  var d = getfilterKeys();
+	  d.col = name;
+	  d.sort = App.switch_order("<%=params[:sort] %>");
+	  var url = App.make_query(d);		
+      window.location.href = "<%= url_for(:controller => 'computer_log', :action => 'index') %>?" + url;
+    }
+			  	
+  </script>
+  <style>
+    .failed{
+      color:red;
+    }
+    .success{
+      color:green;
+    }
+    .unknown{
+      color:teal;
+    }
+
+    #start_date, #end_date{
+      width : 75px;
+    }
+    #start_time, #end_time{
+      width : 35px;
+    }
+
+  </style>
+<% end %>
+<div class="div-menu-block">
+	<div class="menu-block">
+	    <table width="100%" cellpadding="0" cellspacing="0">
+	      <tr>
+	        <td align="left">
+	          <ul>
+	            <li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Filtering log'}) %></li>
+	          </ul>
+	        </td>
+			<td align="right">
+				<%= will_paginate(@comp_logs) %>
+			</td>
+	      </tr>
+	    </table>		
+	</div>
+	<div id="div-FilterBox-clog" class="filter-block">
+		<fieldset>
+		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		  	<tr>
+		  		<td align="left">
+					<label> Computer Name:</label>
+					<input type="text" id="comp_name" value="<%= params[:comp_name] %>"/>&nbsp;
+					<label> IP:</label>
+					<input type="text" id="ip" value="<%= params[:ip] %>"/>&nbsp;	
+					<label> AgentID:</label>
+					<input type="text" id="agent_id" value="<%= params[:agid] %>"/>&nbsp;		
+					<label> Logon name: </label>
+					<input type="text" id="login_name" value="<%= params[:login_name] %>"/>&nbsp;
+		  		</td>
+				<td align="right">
+					<%= link_image_tag('Search', 'apply.png', "#", {:onclick => "applyFilter()"}) %>
+					<%= link_image_tag('Clear', 'reset.png', "#", {:onclick => "clearFilter()"}) %>	&nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+				<table>
+					<tr>
+						<td><label> OS:</label></td>
+						<td>
+							<select id="os" name="os">
+							  <option selected value=""></option>
+							  <% @oss.each do |t| %>
+							  <% next if t.version.blank? %>
+							  <option value="<%= t.version %>" <%= params[:os] == t.version ? "selected" : "" %> ><%= t.version %></option>
+							  <%end%>
+							</select>							
+						</td>
+						<td><label> Java:</label></td>
+						<td>
+							<select id="java" name="java">
+							  <option selected value=""></option>
+							  <% @jvs.each do |t| %>
+							  <% next if t.version.blank? %>
+							  <option value="<%= t.version %>" <%= params[:jv] == t.version ? "selected" : "" %> ><%= t.version %></option>
+							  <%end%>
+							</select>								
+						</td>
+						<td><label> Watcher:</label></td>
+						<td>
+							<select id="aw" name="aw">
+							  <option selected value=""></option>
+							  <% @aws.each do |t| %>
+							  <% next if t.version.blank? %>
+							  <option value="<%= t.version %>" <%= params[:aw] == t.version ? "selected" : "" %> ><%= t.version %></option>
+							  <%end%>
+							</select>													
+						</td>
+						<td><label> Viewer:</label></td>
+						<td>
+							<select id="av" name="aw">
+							  <option selected value=""></option>
+							  <% @avs.each do |t| %>
+							  <% next if t.version.blank? %>
+							  <option value="<%= t.version %>" <%= params[:av] == t.version ? "selected" : "" %> ><%= t.version %></option>
+							  <%end%>
+							</select>							
+						</td>
+					</tr>
+					<tr>
+						<td><label> CTI:</label></td>
+						<td>
+							<select id="cti" name="cti">
+							  <option selected value=""></option>
+							  <% @ctis.each do |t| %>
+							  <% next if t.version.blank? %>
+							  <option value="<%= t.version %>" <%= params[:cti] == t.version ? "selected" : "" %> ><%= t.version %></option>
+							  <%end%>
+							</select>								
+						</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>												
+					</tr>
+				</table>	
+				</td>
+			</tr>
+		  </table>
+		</fieldset>		
+	</div>		
+</div>
+
+<div id="div-tbl-list-clog">
+<div class="div-default-table">
+  <table cellpadding="0" cellspacing="0" class="tbl-hover">
+    <tr class="tname">
+      <td colspan="12">Computer Log</td>
+    </tr>
+    <tr class="thead">
+      <th>No</th>
+	  <th><a href="#" class="linksort" onclick="sort_link('comp_name')">Computer's name</a></th>
+	  <th><a href="#" class="linksort" onclick="sort_link('ip')">Remote IP</a></th>	  
+	  <th><a href="#" class="linksort" onclick="sort_link('login')">Logon name</a></th>
+	  <th><a href="#" class="linksort" onclick="sort_link('agid')">Agent ID</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('os')">OS</a></th>
+	  <th><a href="#" class="linksort" onclick="sort_link('jv')">Java</a></th>
+	  <th><a href="#" class="linksort" onclick="sort_link('aw')">Ami Watcher</a></th>
+	  <th><a href="#" class="linksort" onclick="sort_link('av')">Audio Viewer</a></th>
+	  <th><a href="#" class="linksort" onclick="sort_link('cti')">CTI Client</a></th>
+	  <th>Versions</th>	  	
+      <th><a href="#" class="linksort" onclick="sort_link('upd')">Last update</a></th>	 	  
+    </tr>
+    <% unless @comp_logs.empty? %>
+    <% @comp_logs.each_with_index do |log,i| %>
+    <tr class="<%= cycle('odd','even') %>">
+      <td class="no"><%=(i+1)+($PER_PAGE*(@page.to_i-1)) %></td>
+	  <td class="string"><%=h log.computer_name %></td>
+	  <td class="string"><%=h log.remote_ip %>&nbsp;</td>
+	  <td class="string"><%= log.login_name %>&nbsp;</td>
+	  <td class="string"><%=h log.cti_agent_id.blank? ? "" : sprintf("%05d",log.cti_agent_id) %>&nbsp;</td>
+      <td class="string"><%=h log.os_version %>&nbsp;</td>
+      <td class="string"><%=h log.java_version %>&nbsp;</td>
+      <td class="none"><%=h log.watcher_version %>&nbsp;</td>
+      <td class="string"><%=h log.audioviewer_version %>&nbsp;</td>
+      <td class="string"><%=h log.cti_version %>&nbsp;</td>
+	  <td class="string"><%=h log.versions.blank? ? "" : log.versions.gsub(";","; ") %>&nbsp;</td>
+      <td class="string"><%=h log.check_time.strftime("%Y-%m-%d %H:%M:%S") %></td>
+    </tr>
+    <% end %>
+    <% else %>
+    <tr>
+      <td colspan="12" class="no-rec">No record.</td>
+    </tr>
+    <% end %>
+  </table>
+</div>
+</div>

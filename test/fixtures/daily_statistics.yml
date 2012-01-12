@@ -1,0 +1,28 @@
+# == Schema Information
+# Schema version: 20100402074157
+#
+# Table name: daily_statistics
+#
+#  id                 :integer(11)     not null, primary key
+#  start_day          :date            not null
+#  agent_id           :integer(10)
+#  keyword_id         :integer(10)
+#  statistics_type_id :integer(10)     not null
+#  value              :integer(10)
+#  created_at         :datetime
+#  updated_at         :datetime
+#
+
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  start_day: 2009-01-15
+  agent_id: MyString
+  statistics_type_id: 1
+  value: 1
+
+two:
+  start_day: 2009-01-15
+  agent_id: MyString
+  statistics_type_id: 1
+  value: 1

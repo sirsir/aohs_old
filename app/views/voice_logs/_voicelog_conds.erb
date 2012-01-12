@@ -1,0 +1,434 @@
+<% content_for :header do %>
+    
+    <style type="text/css">
+
+      legend,#vcPeriods,#vcFromDate,#vcFromTime,#vcToDate,#vcToTime,#vcExt,.vcCD,#vcDuraCond,#vcLengthStart,#vcLengthEnd,.label-frm,#vcCaller,#vcDialed {
+          font-size:11px;
+      }
+      input {
+          margin-top:0px;
+          margin-bottom:0px;
+      }
+      #vcPeriods {
+          width:190px;
+      }
+      #vcFromDate,#vcToDate {
+          width:101px;
+      }
+      #vcFromTime,#vcToTime {
+          width:65px;
+      }
+      #vcCaller,#vcDialed {
+          width:66px;
+      }
+      #vcExt {
+          width:37px;
+      }
+      #tab-conds {
+          margin-top:3px;
+      }
+      #tab-tree {
+          margin-top:2px;
+      }
+      #vcLengthStart,#vcLengthEnd {
+          width:45px;
+      }
+      #vcDuraCond {
+          width:40px;
+      }
+	  #keyword_name {
+	  	  width:190px;
+	  }
+      .div-line {
+        padding-top:0px;
+        padding-bottom:0px;
+        padding-left:0px;
+        padding-right:0px; 
+
+        margin-top:2px;
+        margin-bottom:2px;
+        width:188px;
+        height:1px;
+        font-size:0px;  
+      }
+      #agent_tree {
+          overflow:scroll;
+          width:190px;
+          background:#ffffff;
+          border:1px solid #cccccc;
+      }
+      .frm-note {
+          font-size:10px;
+          color: #666666;
+      }
+      .btnConditions,.btnStyle1 {
+          border:1px solid #ffffff;
+          background-color: transparent;
+          background-repeat:repeat;
+		  font-weight:bold;
+		  color:#ffffff;
+		  padding:2px;
+          background-image:url('<%=image_src_path('/images/greenbtn.png') %>');
+      }
+      .condName1 {
+          font-size:11.5px;
+          display:block;
+          margin-top:2px;
+      }
+	  #vcFromDate,#vcToDate {
+	  	  background-repeat:no-repeat;
+		  background-position:right;
+	  	  background-image:url('<%=image_src_path('/images/calendar.png') %>');
+	  }
+      #custom-periods { margin-left:8px;}
+      #div-button { border-bottom:1px solid #c7c6c6; padding-bottom:3px;}
+    </style>
+	    
+    <script type="text/javascript">
+
+      var searchKey = {
+        keys: "",
+        periods: "",
+        stdate: "",
+        sttime: "",
+        eddate: "",
+        edtime: "",
+        ext: "",
+        calld: "",
+        stdu: "",
+        eddu: "",
+        dur: "",
+        caller:"",
+        dialed:"",
+		keyword: ""
+      }
+
+      function isBlank(variable){
+          if(variable == null){
+              return true;
+          } else if(variable.length <= 0){
+              return true;
+          } else {
+              return false;
+          }
+      }
+
+      function getSearchKeys(){
+
+		  var xagents = $("#tvOfAgents").val();
+		  var xgroups = $("#tvOfGroups").val();
+		  
+		  var a = isBlank(xagents);
+		  var b = isBlank(xgroups);
+          if(!a){
+             searchKey.keys = "agents=" + xagents;
+          } else {
+             searchKey.keys = "agents=none";
+          }
+          if(!b){
+		  	searchKey.keys += "__groups=" + xgroups;
+		  }
+		  else {
+		  	searchKey.keys += "__groups=none";
+		  }
+		  
+          var periods = $("#vcPeriods option:selected").val();
+          if(periods != null){
+              searchKey.periods = periods;
+          } else {
+              searchKey.periods = ""
+          }
+
+          var stdate = jQuery.trim($("input[name=vcFromDate]").val());
+          if(!isBlank(stdate)){
+              searchKey.stdate = stdate;
+          } else {
+              searchKey.stdate = "";
+          }
+
+          var sttime = jQuery.trim($("input[name=vcFromTime]").val());
+          if(!isBlank(sttime)){
+              searchKey.sttime = sttime;
+          } else {
+              searchKey.sttime = "";
+          }
+
+          var eddate = jQuery.trim($("input[name=vcToDate]").val());
+          if(!isBlank(eddate)){
+              searchKey.eddate = eddate;
+          } else {
+              searchKey.eddate = "";
+          }
+
+          var edtime = jQuery.trim($("input[name=vcToTime]").val());
+          if(!isBlank(edtime)){
+              searchKey.edtime = edtime;
+          } else {
+              searchKey.edtime = "";
+          }
+
+          var extno = jQuery.trim($("input[name=vcExt]").val());
+          if(!isBlank(extno)){
+              searchKey.ext = extno;
+          } else {
+              searchKey.ext = "";
+          }
+
+          var callerNo = jQuery.trim($("input[name=vcCaller]").val());
+          if(!isBlank(callerNo)){
+              searchKey.caller = callerNo;
+          }else{
+              searchKey.caller = "";
+          }
+          var dialedNo = jQuery.trim($("input[name=vcDialed]").val());
+          if(!isBlank(dialedNo)){
+              searchKey.dialed = dialedNo;
+          }else{
+              searchKey.dialed = "";
+          }
+
+		  var keyword = jQuery.trim($("input[name=keyword_name]").val());
+		  if(!isBlank(keyword)){
+		  	  searchKey.keyword = keyword;
+		  } else {
+		  	  searchKey.keyword = "";
+		  }
+		  
+          var cd = "";
+          if($("input[name=vcCD1]").attr("checked"))
+            cd = cd + $("input[name=vcCD1]").val();
+          if($("input[name=vcCD2]").attr("checked"))
+            cd = cd + $("input[name=vcCD2]").val();
+          if($("input[name=vcCD3]").attr("checked"))
+            cd = cd + $("input[name=vcCD3]").val();
+
+          var duration = ""
+          var st_du_val = jQuery.trim($("input[name=vcLengthFrom]").val());
+          var ed_du_val = jQuery.trim($("input[name=vcLengthTo]").val());
+
+          if(!isBlank(st_du_val)){
+              searchKey.stdu = st_du_val;
+          } else {
+              searchKey.stdu = "";
+          }
+          if(!isBlank(ed_du_val)){
+              searchKey.eddu = ed_du_val;
+          } else {
+              searchKey.eddu = "";
+          }
+
+          if(!isBlank(cd)){
+              searchKey.calld = cd;
+          } else {
+              searchKey.calld = "";
+          }
+
+      }
+
+      function searchVoice(){
+
+          progressEnabled(true);
+          
+          $("#mytable tbody").html("");
+
+          onVoiceReset(0);
+          vc_start = true;
+          getSearchKeys();
+
+          $.ajax({ url: "<%= url_for(:controller => 'voice_logs',:action => 'search_voice_log') %>",
+          type: "POST",
+          data:
+          {
+              keys: searchKey.keys,
+              periods: searchKey.periods,
+              stdate: searchKey.stdate,
+              sttime: searchKey.sttime,
+              eddate: searchKey.eddate,
+              edtime: searchKey.edtime,
+              ext: searchKey.ext,
+              calld: searchKey.calld,
+              caller: searchKey.caller,
+              dialed: searchKey.dialed,
+              stdur: searchKey.stdu,
+              eddur: searchKey.eddu,
+			  keyword: searchKey.keyword,
+              page: ctrlPage.selectPage,
+			  perpage: ctrlPage.perPage,
+              sortby: ctrlSort.colName,
+              od: ctrlSort.order
+          },
+          dataType: "json",
+          success: function(data){
+              vc_start = false;
+              loadDataTable(data);
+              VLloadTimeLine();
+          }});
+
+      }
+
+      function VLloadTimeLine(){
+          var srcUrl = "";
+          $.each(searchKey,function(key){
+            srcUrl += key + "=" + searchKey[key] + "&";
+          });
+          initial_vl_timeline(srcUrl);
+      }
+
+      function onLoadCond(){
+          $("input[name=vcCD1]").attr("checked","checked");
+          $("input[name=vcCD2]").attr("checked","checked");
+          $("input[name=vcCD3]").attr("checked","checked");
+      }
+
+      function onbtnSearch(){
+          onSearchVoice('all');
+      }
+
+      function onbtnReset(){
+          onLoadCond();
+          $("input[name=vcFromDate]").val("");
+          $("input[name=vcFromTime]").val("");
+          $("input[name=vcToDate]").val("");
+          $("input[name=vcToTime]").val("");
+          $("input[name=vcExt]").val("");
+          $("input[name=vcLengthFrom]").val("");
+          $("input[name=vcLengthTo]").val("");
+          $("input[name=vcCaller]").val("");
+          $("input[name=vcDialed]").val("");
+      }
+      $(document).ready(function(){
+
+        //onLoadCond();
+         
+        $("#vcPeriods").change(function(){
+          var period_selt = $("#vcPeriods option:selected").val();
+          if(period_selt == 0){
+		  	 if(($("input[name=vcFromTime]").val()).length == 0)
+			 	$("input[name=vcFromTime]").val("00:00");
+		  	 if(($("input[name=vcToTime]").val()).length == 0)
+			 	$("input[name=vcToTime]").val("23:59");
+		  	 if(($("input[name=vcFromDate]").val()).length == 0)
+			 	$("input[name=vcFromDate]").val("<%=Date.today %>");
+		  	 if(($("input[name=vcToDate]").val()).length == 0)
+			 	$("input[name=vcToDate]").val("<%=Date.today %>");
+															 
+             $("#custom-periods").css("display","block");
+          } else {
+             $("#custom-periods").css("display","none");
+          }
+          resizeWindow();  
+        });
+        
+		$(".callDur").click(function(){
+			var o = $(this);
+			o.val(o.val().replace(/:/g,""));
+			o.select();
+		});
+		$(".callTime").click(function(){
+			$(this).select();
+		});
+      });
+
+      $(function(){
+          $("#vcFromDate").datepicker({ showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
+          $("#vcToDate").datepicker({  showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
+		  $(".callTime").mask("99:99");
+		  $("input[name=vcFromDate]").mask("9999-99-99");
+		  $("input[name=vcToDate]").mask("9999-99-99");
+		  $("input[name=vcExt]").mask("9999");
+		  $(".callDur").numeric();
+		  $(".phone").numeric();
+		  $(".callDur").blur(function(){
+		  	var t = $(this);
+			var a = jQuery.trim(t.val());
+			a = a.replace(":","");
+			if(a.length==1){
+				t.val("0" + a + ":00");
+			} else if(a.length == 2){
+				t.val(a + ":00");
+			} else if(a.length >= 3){
+				var b = a.substring(0,2);
+				var c = a.substring(2);
+				if(c.length==1){
+					c = c + "0";
+				}
+				t.val(b + ":" + c);
+			}
+		  });
+		  
+		$("#keyword_name").autocomplete("<%=url_for(:controller => 'keywords',:action => 'autocomplete_list') %>", {
+			width: 190,
+			multiple: true,
+			matchContains: true,
+			multipleSeparator: " "
+		});
+				  
+      });
+    </script>
+    
+<% end %>
+<div id="tab-conds">
+  <div align="right" id="div-button" width="100%">
+    <input type="button" value="Search" class="btnConditions" onclick="onbtnSearch()" name="btnSearch" id="btnSearch">
+    <input type="button" value="Clear" class="btnConditions" onclick="onbtnReset()" name="btnSearch" id="btnClear"> 
+	&nbsp;<a href="#" onclick="ShowOrHidePanel()" title="Hide"><%=image_tag('hide_panel2.png',{:border => 0}) %></a>
+  </div>
+  <div class="condStyle1">
+    <span class="condName1">Period:</span>
+    <select name="vcPeriods" id="vcPeriods">
+      <option value="1" <%= ((@conds == false) ? "selected" : "") %>>Today</option>
+      <option value="2">Yesterday</option>
+      <option value="3">This week</option>
+      <option value="4">Last week</option>
+      <option value="5">This month</option>
+      <option value="6">Last month</option>
+      <option value="7">This year</option>
+      <option value="8">All</option>
+      <option value="0" <%= ((@conds != false) ? "selected" : "") %>>Custom ...</option>
+    </select>
+    <div id="custom-periods">
+    <div class="condStyle1">
+        <span class="condName1">Date/Time from:</span>
+        <input type="text" name="vcFromDate" id="vcFromDate" title="yyyy-mm-dd">
+        <input type="text" alt="time" value="00:00" name="vcFromTime" id="vcFromTime" maxlength="5" class="callTime" title="hh:mm">
+    </div>
+    <div class="condStyle1">
+        <span class="condName1">Date/Time to:</span>
+        <input type="text" name="vcToDate" id="vcToDate" title="yyyy-mm-dd">
+        <input type="text" name="vcToTime" value="23:59" maxlength="5" id="vcToTime" class="callTime" title="hh:mm">
+    </div>
+    <span class="frm-note"><i>Format date: yyyy-mm-dd, Time: hh:mm</i></span>
+    </div>
+  </div>
+  <div class="condStyle1">
+    <table cellspacing="0" cellpadding="0" width="100%">
+        <tr>
+          <td><span class="condName1">Caller:</span></td>
+          <td><span class="condName1">Dialed:</span></td>
+          <td><span class="condName1">Ext:</span></td>
+        </tr>
+        <tr>
+          <td><input type="text" name="vcCaller" id="vcCaller" class="phone" maxlength="10" title="Caller number"></td>
+          <td><input type="text" name="vcDialed" id="vcDialed" class="phone" maxlength="10" title="Dialed number"></td>
+          <td><input type="text" name="vcExt" id="vcExt" title="Extension number"></td>
+        </tr>
+    </table>
+  </div>
+  <div class="condStyle1">
+    <span class="condName1">Call Duration (mm:ss):</span>
+    <input type="text" name="vcLengthFrom" id="vcLengthStart" class="callDur" value="" maxlength="4" title="mm:ss"><label class="label-frm"> To </label><input type="text" class="callDur" name="vcLengthTo" id="vcLengthEnd" maxlength="4" title="mm:ss" value="">
+  </div>
+  <div class="condStyle1">
+    <span class="condName1">Call Direction:</span>
+    <input type="checkbox" name="vcCD1" id="vcCD1" value="i" checked> <label class="vcCD">In</label>
+    <input type="checkbox" name="vcCD2" id="vcCD2" value="o" checked> <label class="vcCD">Out</label>
+    <input type="checkbox" name="vcCD3" id="vcCD3" value="e" checked> <label class="vcCD">Other</label>
+  </div>
+  <div class="condStyle1">
+  	<span class="condName1">Keyword:</span>	
+	<input type="text" name="keyword_name" maxlength="100" id="keyword_name" title="For each words separated by space">
+  </div>
+</div>
+<div id="tab-tree">
+   <div id="agent_tree"><%= render :partial => "/shared/group_and_agents_tree" %></div>
+</div>

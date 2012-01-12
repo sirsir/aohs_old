@@ -1,0 +1,420 @@
+div.table-1 {
+	
+}
+.table-1 {
+	
+}
+.table-1 th {
+	padding:3px;
+	font-size:9pt;
+	color:#646464;
+}
+.table-1 td {
+	padding:3px;
+	padding-top:10px;
+	font-size:10pt;
+}
+.table-1 td.topic {
+	text-align:left;
+}
+.table-1 td.int {
+	text-align:right;
+}
+.table-1 tr.hover {
+	background:#FFFFFF;
+	background-repeat:repeat-x;
+	background-position:bottom;
+	background-image:url('../images/tblbg002.png');
+}
+.table-1 td.none {
+	background:none;
+}
+.div-default-table {
+    width:100%;
+    margin-left:2px;
+    margin-right:0px;
+}
+.div-default-table table {
+    width:100%;
+	border:1px solid #b4e1ff;
+	border-bottom:1px solid #b4e1ff;
+}
+.div-default-table tr.odd {
+	background: #f9f9ff;
+/*
+    background: #f8f8f8;
+*/
+}
+.div-default-table tr.even {
+    background: #ffffff;
+}
+.div-default-table tr.hover {
+	background: #e8e8e8;
+}
+.div-default-table tr.click {
+	background: #d1e8ff;
+}
+.div-default-table tr.current {
+	background: #d0d9fb;
+}
+.div-default-table tr.tname {
+    padding:2px;
+    background-image:url('../images/bg004.png');
+    font-weight:bold;
+	color:#454545;
+}
+.div-default-table tr.thead th {
+    background-image:url('../images/bg002.png');
+    padding-top:3px;
+    padding-bottom:3px;
+    border-bottom:1px #b7dbff solid;
+    border-top:1px #cee7ff solid;
+    border-right:1px #b7dbff solid;
+	text-align:center;
+}
+.div-default-table tr.tsum td {
+    background-image:url('../images/bg002.png');
+    padding-top:3px;
+    padding-bottom:3px;
+    border-bottom:1px #b7dbff solid;
+    border-top:1px #cee7ff solid;
+    border-right:1px #b7dbff solid;
+	font-weight:bold;
+	color:#484848;
+}
+.div-default-table td {
+    padding-top:3px;
+    padding-bottom:3px;
+	padding-left:1px;
+	padding-right:1px;
+    border-bottom:1px #e9f4ff solid;
+    border-right:1px #b4e1ff solid;    
+}
+.div-default-table td.no {
+    border-right:1px #b4e1ff solid;
+    width:20px;
+    font-weight:bold;
+    background-image:url('../images/bg002.png');
+}
+.div-default-table td.tool, .div-default-table th.tool {
+    width:70px;
+    text-align:center;
+}
+.div-default-table td.tool a {
+	margin-right:4px;
+}
+.div-default-table td.string {
+    text-align:left;
+}
+.div-default-table td.int {
+    text-align:right;
+}
+.div-default-table td.symb {
+    text-align:center;
+}
+.div-default-table td.text {
+    text-align:justify;
+}
+.div-default-table td.active {
+    text-align:center;
+	color:#459E00;
+}
+.div-default-table td.inactive {
+    text-align:center;
+	color:#d90d21;
+}
+.div-default-table td.no-rec {
+    text-align:center;
+	color:#838383;
+	padding:10px;
+	font-style:italic;
+}
+
+
+
+
+
+
+
+
+#tblinfo {
+    font-style:italic;
+    color:gray;
+    text-align:center;
+    width:100%;
+}
+
+#tblmenu {
+    margin-left:60px;
+}
+
+#tblmenu td {
+    padding-top:8px;
+    padding-bottom:8px;
+    padding-left:5px;
+}
+
+/* 01 */
+
+#tbl01 {
+    margin-left:2px;
+    margin-right:2px;
+    font-size:8pt;
+}
+#tbl01 table {
+    width:100%;
+    border-left:1px solid #b4e1ff;
+    border-right:1px solid #b4e1ff;
+    border-bottom:1px #b4e1ff solid;
+    border-top:1px #b4e1ff solid;
+}
+#tbl01 th {
+    background-image:url('../images/bg002.png');
+    padding-top:3px;
+    padding-bottom:3px;
+    border-bottom:1px #b4e1ff solid;
+    border-top:1px #b4e1ff solid;
+    border-right:1px #b4e1ff solid;
+}
+
+#tbl01 td {
+    padding-top:3px;
+    padding-bottom:3px;
+    padding-left:4px;
+    padding-right:4px;
+    border-bottom:1px #e9f4ff solid;
+}
+#tbl01 .tblheader {
+    padding-top:2px;
+    padding-bottom:2px;
+    background-image:url('../images/bg004.png');
+    font-weight:bold;
+}
+#tbl01 .pages {
+    text-align:center;
+    height:25px;
+    padding-top:1px;
+    padding-bottom:1px;
+    background-image:url('../images/bg002.png');
+    background-repeat:repeat-x;
+    border-top:1px #b4e1ff solid;
+}
+
+#tbl01 .odd{
+    background-color:#ffffff;
+}
+#tbl01 .even{
+    background-color:#ffffff;
+}
+#tbl01 .rowSelected {
+    background-image:url('../images/bg002.png');
+    background-position:bottom;
+    border-top:1px solid #b4e1ff;
+    border-bottom:1px solid #b4e1ff;
+}
+#tbl01 .no {
+    border-right:1px #b4e1ff solid;
+    width:15px;
+    font-weight:bold;
+    background-image:url('../images/bg002.png');
+}
+#tbl01 .tool {
+    width:35px;
+    text-align:center;
+}
+#tbl01 .string {
+    text-align:left;
+}
+#tbl01 .int {
+    text-align:right;
+}
+#tbl01 .none {
+    text-align:center;
+}
+#tbl01 .text {
+    text-align:justify;
+}
+#tbl01 input,#tbl01 select {
+    font-size:8pt;
+}
+/* 02 */
+
+#tbl02 table {
+    width:100%;
+    border-left:1px solid #b4e1ff;
+    border-right:1px solid #b4e1ff;
+    border-bottom:1px #b4e1ff solid;
+    border-top:1px #b4e1ff solid;
+}
+#tbl02 td {
+    font-size:10px;
+    border-bottom:1px #b4e1ff solid;
+    padding-top:1px;
+    padding-bottom:1px;
+    padding-right:1px;
+    padding-left:1px;
+    border-left:1px solid #b4e1ff;
+}
+#tbl02 .no {
+    border-right:1px #b4e1ff solid;
+    font-weight:bold;
+    background-image:url('../images/bg002.png');
+}
+
+#tbl02 .rowSelected {
+    background-image:url('../images/bg008.png');
+    background-position:bottom;
+    border-top:1px solid #b4e1ff;
+    border-bottom:1px solid #b4e1ff;
+}
+.tblhead th {
+    padding-left:1px;
+    padding-right:1px;
+}
+.tblhead td {
+    padding-left:1px;
+    padding-right:1px;
+}
+
+/* paginate */
+
+
+/* link sort */
+
+a.linksort,a.linksort:visited {
+    color:black;
+    text-decoration:underline;
+}
+a.linksort:hover {
+    color:#0080ff;
+    text-decoration:underline;
+}
+
+/* -- table style 1 -- */
+
+.div-tbl-default-style1 {
+    width:100%;
+    margin-left:2px;
+    margin-right:2px;
+}
+.div-tbl-default-style1 table {
+    width:100%;
+    border-left:1px solid #b4e1ff;
+    border-right:1px solid #b4e1ff;
+    border-bottom:1px #b4e1ff solid;
+    border-top:1px #b4e1ff solid;
+}
+.div-tbl-default-style1 .tbl-td-header {
+    padding-top:2px;
+    padding-bottom:2px;
+    background-image:url('../images/bg004.png');
+    font-weight:bold;
+}
+.div-tbl-default-style1 th {
+    background-image:url('../images/bg002.png');
+    padding-top:3px;
+    padding-bottom:3px;
+    border-bottom:1px #b4e1ff solid;
+    border-top:1px #b4e1ff solid;
+    border-right:1px #b4e1ff solid;
+}
+
+.div-tbl-default-style1 td {
+    padding-top:3px;
+    padding-bottom:3px;
+    padding-left:4px;
+    padding-right:4px;
+    border-bottom:1px #e9f4ff solid;
+    border-right:1px #b4e1ff solid;    
+}
+.div-tbl-default-style1 .no {
+    border-right:1px #b4e1ff solid;
+    width:15px;
+    font-weight:bold;
+    background-image:url('../images/bg002.png');
+}
+.div-tbl-default-style1 .tool {
+    width:35px;
+    text-align:center;
+}
+.div-tbl-default-style1 .string {
+    text-align:left;
+}
+.div-tbl-default-style1 .int {
+    text-align:right;
+}
+.div-tbl-default-style1 .none {
+    text-align:center;
+}
+.div-tbl-default-style1 .text {
+    text-align:justify;
+}
+.div-tbl-default-style1 .tr-odd {
+    background: #f4fcff;
+}
+.div-tbl-default-style1 .tr-even {
+    background: #ffffff;
+}
+.div-tbl-default-style1 .tr-selected {
+    background: #d1e8ff;
+}
+.div-tbl-default-style1 .tr-current {
+    background: #99ccff;
+}
+.div-tbl-default-style1 .pages {
+    text-align:center;
+    padding-top:1px;
+    padding-bottom:1px;
+    background-image:url('../images/bg002.png');
+    background-repeat:repeat-x;
+    border-top:0px #b4e1ff solid;
+}
+.div-tbl-default-style1 .total, .row-total {
+      background-image:url('../images/bg002.png');
+      background-repeat:repeat-x;
+      border-top:1px #b4e1ff solid;
+}
+/* -- table style 3 -- */
+
+.div-tbl-default-style3 {
+    margin-left:10px;
+    margin-right:10px;
+    border:1px solid #cccccc;
+    width:100%;
+}
+.div-tbl-default-style3 table {
+    width:100%;
+}
+.div-tbl-default-style3 th {
+    background-image: url('../images/ui-bg_glass_75_dadada_1x400.png');
+    background-position: center;
+    background-repeat:repeat-x;
+    border-bottom:1px solid #cccccc;
+    padding-top:2px;
+    padding-bottom:2px;
+    border-right:1px solid #cccccc;
+}
+.div-tbl-default-style3 td {
+    padding-top:2px;
+    padding-bottom:2px;
+    border-right:1px solid #cccccc;
+    padding-left:2px;
+    padding-right:2px;
+}
+.div-tbl-default-style3 .tr-odd {
+    background: #f6f4f4;
+}
+.div-tbl-default-style3 .tr-even {
+    background: #ffffff;
+}
+.div-tbl-default-style3 .tr-selected {
+    background: #ccccff;
+}
+
+/* Other */
+
+.div-top-tbl {
+    width:100%;
+    height:2px;
+    background:url('../images/ui-bg_glass_75_dadada_1x400.png');
+}

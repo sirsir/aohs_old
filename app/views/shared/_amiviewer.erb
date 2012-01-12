@@ -1,0 +1,303 @@
+<% content_for :header do %>
+	<%= javascript_src_path '/jquery/jquery-ui-1.8.6.custom/development-bundle/ui/jquery.ui.slider.js' %>
+    <%= javascript_src_path '/jquery/jquery.selectToUISlider/js/selectToUISlider.jQuery.js' %>
+    <%= stylesheet_src_path '/jquery/jquery.selectToUISlider/css/ui.slider.extras.css' %>
+
+    <style type="text/css">
+        #AmiAdvw {
+            border:1px solid #cccccc;
+        }
+        .span-slider {
+            display:inline-block;
+            width:65px;
+            height:5px;
+        }
+        .div-slider {
+            width:65px;
+            height:5px;
+            margin-top:2px;
+        }
+        .ui-slider {
+            height:6px;
+            background: #e9f4ff;
+			border:1px;
+        }
+        .ui-slider .ui-slider-handle {
+            height:9px;
+			border:2px;
+			border-color:#93B2CC;
+        }
+        .ui-slider span.ui-slider-tic {
+            height:2px;
+            display:none;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+      var iconMedia = {
+          enaplay: "<%=image_src_path('media_control/play.png') %>",
+          display: "<%=image_src_path('media_control/play.gif') %>",
+          enastop: "<%=image_src_path('media_control/stop.png') %>",
+          disstop: "<%=image_src_path('media_control/stop.gif') %>",
+          enapaus: "<%=image_src_path('media_control/pause.png') %>",
+          dispaus: "<%=image_src_path('media_control/pause.gif') %>",
+          enanext: "<%=image_src_path('media_control/next.png') %>",
+          disnext: "<%=image_src_path('media_control/next.gif') %>",
+          enaprev: "<%=image_src_path('media_control/previous.png') %>",
+          disprev: "<%=image_src_path('media_control/back.gif') %>"
+      }
+
+      var ctrlAmiV = {
+          currentRow: 0,
+          totalRow: 0,
+          audioSet: false,
+          speed: 0,
+          volume: 0
+      }
+
+      function onVoiceReset(rows_count){
+
+          try{ AmiAdvw.Reset(); } catch(e){ };
+          
+          $("#icon-onplay").attr("src",iconMedia.display);
+          $("#icon-onpause").attr("src",iconMedia.dispaus);
+          $("#icon-onstop").attr("src",iconMedia.disstop);
+          $("#icon-onprev").attr("src",iconMedia.disprev);
+          $("#icon-onnext").attr("src",iconMedia.disnext);
+
+          ctrlAmiV.totalRow = rows_count;
+          ctrlAmiV.currentRow = 0;
+          ctrlAmiV.audioSet = false;
+          setVolumeAndSpeed();
+          
+      }
+
+      function onVoiceLoad(row_no){
+
+          ctrlAmiV.audioSet = false;
+          ctrlAmiV.currentRow = parseInt(row_no);
+
+          var audio_url = $("input[name=audioUrl-" + row_no + "]").val();
+          $("#mytable tr").each(function(index){
+             if((index + 1) == ctrlAmiV.currentRow){
+               $("#rowAt" + (index + 1)).addClass("rowSelectedPlay");
+               try{
+                AmiAdvw.Reset();
+                AmiAdvw.LoadFromFile(audio_url);
+                ctrlAmiV.audioSet = true;
+               }catch(e){ alert("Please install AmiView Player.")};
+               var stdate = $("td:eq(2)",this).text();
+             } else {
+               $("#rowAt" + (index + 1)).removeClass("rowSelectedPlay"); 
+             }
+          });
+
+          if(ctrlAmiV.audioSet == true){
+             onVoicePlay();               
+          }
+      }
+
+      function onVoicePlay(){
+          try {			   
+	          if(ctrlAmiV.audioSet == true){
+	              if(AmiAdvw.PausePlaying()){
+				  	  AmiAdvw.SelectedChannel = -1;
+	                  AmiAdvw.ResumePlaying();
+	              } else {
+					  AmiAdvw.SelectedChannel = -1;
+	                  AmiAdvw.Play();
+	              }
+				  setVolumeAndSpeed();
+	          } else {
+	              $("#icon-onplay").attr("src",iconMedia.display);
+	              $("#icon-onpause").attr("src",iconMedia.dispaus);
+	              $("#icon-onstop").attr("src",iconMedia.disstop);
+	          }
+	          if((ctrlAmiV.currentRow - 1) <= 0){
+	             $("#icon-onprev").attr("src",iconMedia.disprev);
+	          } else {
+	             $("#icon-onprev").attr("src",iconMedia.enaprev);
+	          }
+	          if((ctrlAmiV.currentRow + 1) > ctrlAmiV.totalRow){
+	             $("#icon-onnext").attr("src",iconMedia.disnext);
+	          } else {
+	             $("#icon-onnext").attr("src",iconMedia.enanext);
+	          }
+		  } catch(e) { ctrlAmiV.audioSet == false }
+      }
+
+      function onVoiceStop(){
+          if(ctrlAmiV.audioSet == true){
+              AmiAdvw.StopPlaying();
+          }
+      }
+
+      function onVoiceStop2(){
+          if(ctrlAmiV.audioSet == true){
+              $("#icon-onpause").attr("src",iconMedia.dispaus);
+              $("#icon-onstop").attr("src",iconMedia.disstop);
+              $("#icon-onplay").attr("src",iconMedia.enaplay);
+          }
+      }
+
+      function onVoicePause(){
+          if(ctrlAmiV.audioSet == true){
+              AmiAdvw.PausePlaying();
+          }
+      }
+
+      function onVoicePlayNext(){
+          if(ctrlAmiV.currentRow < ctrlAmiV.totalRow){
+             var nextRow = ctrlAmiV.currentRow + 1;
+             onVoiceLoad(nextRow);
+          }
+      }
+
+      function onVoicePlayPrev(){
+          if(ctrlAmiV.currentRow > 1){
+              var prevRow = ctrlAmiV.currentRow - 1;
+              onVoiceLoad(prevRow);
+          }
+      }
+
+      function setVolumeAndSpeed(){
+        try {
+            var current_volume = $("select[name=AvwVolume] option:selected").val();
+            var current_speed = $("select[name=AvwSpeed] option:selected").val();
+				
+			if(AmiAdvw.Playing){
+				AmiAdvw.PausePlaying();	
+			} else {
+				AmiAdvw.StopPlaying();
+			}
+
+			//AmiAdvw.SelectedChannel = 0;		
+			//AmiAdvw.channels = 1;
+			
+            AmiAdvw.PlayingVolume = 1.0;
+            AmiAdvw.PlayingVolume = parseFloat(current_volume);
+			
+			AmiAdvw.PlayingSpeed = 1.0;
+            AmiAdvw.PlayingSpeed = parseFloat(current_speed);
+			
+			//AmiAdvw.channels = 2;
+			AmiAdvw.SelectedChannel = -1;
+	        
+			if(AmiAdvw.PausePlaying()){
+	              AmiAdvw.ResumePlaying();
+	        } else {
+	              AmiAdvw.Play();
+	        }
+			
+        } catch(e){ alert(e.message()); };
+      }
+
+      function resetVolume(){	
+        $("#AvwVolume").parent().find("DIV").remove();
+        $("select[name=AvwVolume]").find("option").attr("selected",false);
+        $("select[name=AvwVolume]").find("option[value=1.0]").attr("selected",true);
+        try{AmiAdvw.PlayingVolume = 1.0; } catch(e) {}
+        $('#AvwVolume').selectToUISlider({ labels : false });
+      }
+      function resetSpeed(){
+        $("#AvwSpeed").parent().find("DIV").remove();
+        $("select[name=AvwSpeed]").find("option").attr("selected",false);
+        $("select[name=AvwSpeed]").find("option[value=1.0]").attr("selected",true);
+        $("select[name=AvwSpeed]").focus();           
+        try{AmiAdvw.PlayingSpeed = 1.0;}catch(e){}
+        $('#AvwSpeed').selectToUISlider({ labels : false });
+      }
+
+      $(document).ready(function(){
+	  	
+          onVoiceReset(0);
+		  
+          try { AmiAdvw.setProperty("DisableContextMenu",1); } catch(e) { }
+
+          $('#AvwVolume').selectToUISlider({ 
+		  	  labels : false 
+		  });
+          $('#AvwSpeed').selectToUISlider({
+              labels : false
+          });
+          
+      });
+
+    </script>
+<% end %>
+
+<div>
+  <table cellspacing="0" width="100%" cellspacing="0">
+    <tr>
+      <td align="left" style="padding-left:2px;">
+        <object id="AmiAdvw" classid="clsid:E95BFCD4-723A-4580-B8A6-ACADCE6DE293" width="100%" height="45px" codebase="http://journey/tools/amiadvw/AmiAdvwCtrl.exe#version=1,0,0,0" onerror="this.outerHTML = '<center><font color=red>Audio Viewer ActiveX Control is not installed yet.</font></center>';" style="z-index:-2;">
+          <param name="MeasureVisible" value="1">
+		  <param name="MeterVisible" value="0">
+		  <param name="TimeSamplesGuideVisible" value="0">
+          <param name="ColorTheme" value="1">
+          <param name="ScrollBarVisible" value="1">
+          <param name="ColorTheme" value="2">
+        </object>
+        <script type="text/javascript" for="AmiAdvw" event="PlayerStopped()">
+              $("#icon-onpause").attr("src",iconMedia.dispaus);
+              $("#icon-onstop").attr("src",iconMedia.disstop);
+              $("#icon-onplay").attr("src",iconMedia.enaplay);
+        </script>
+        <script type="text/javascript" for="AmiAdvw" event="PlayerStarted()">         
+              $("#icon-onplay").attr("src",iconMedia.display);
+              $("#icon-onpause").attr("src",iconMedia.enapaus);
+              $("#icon-onstop").attr("src",iconMedia.enastop); 
+        </script>
+        <script type="text/javascript" for="AmiAdvw" event="PlayerPaused()">
+              $("#icon-onplay").attr("src",iconMedia.enaplay);
+              $("#icon-onstop").attr("src",iconMedia.enastop);
+              $("#icon-onpause").attr("src",iconMedia.dispaus);
+        </script>
+        <script type="text/javascript" for="AmiAdvw" event="PlayerResumed()">
+              $("#icon-onplay").attr("src",iconMedia.display);
+              $("#icon-onpause").attr("src",iconMedia.enapaus);
+              $("#icon-onstop").attr("src",iconMedia.enastop);
+        </script>
+      </td>
+      <td align="center" width="220px">
+        <div>
+            <a href="#" onclick="onVoicePlay();" title="Play"><img border="0" src="<%=image_path("padding.png")%>" id="icon-onplay" alt="Play"></a>
+            <a href="#" onclick="onVoicePause();" title="Pause"><img border="0" src="<%=image_path("padding.png")%>" id="icon-onpause" alt="Pause"></a>
+            <a href="#" onclick="onVoiceStop();" title="Stop"><img border="0" src="<%=image_path("padding.png")%>" id="icon-onstop" alt="Stop"></a>
+            <a href="#" onclick="onVoicePlayPrev();" title="Previous"><img border="0" src="<%=image_path("padding.png")%>" id="icon-onprev" alt="Previous"></a>
+            <a href="#" onclick="onVoicePlayNext();" title="Next"><img border="0" src="<%=image_path("padding.png")%>" id="icon-onnext" alt="Next"></a>
+        </div>
+        <div>
+            <table cellpadding="2" cellspacing="0">
+              <tr>
+                <td align="right"><span style="font-size:9px;"><a href="#" title="Click here to reset play volume" onclick="resetVolume()">Vol</a></span></td>
+                <td align="left" valign="absmidle"><span class="span-slider">
+                  <select name="AvwVolume" id="AvwVolume" style="display:none">
+                      <% $VOLUME_RANK.each do |x| %>
+                        <% if x == 1.0 %>
+                            <option value="<%=x %>" selected="selected"><%=x %></option>
+                        <% else %>
+                            <option value="<%=x %>"><%=x %></option>
+                        <% end %>
+                      <% end %>
+                  </select></span></td>
+                <td align="right"><span style="font-size:9px;"><a href="#" title="Click here to reset play speed" onclick="resetSpeed()">Speed</a></span></td>
+                <td align="left" valign="absmidle"><span class="span-slider">
+                  <select name="AvwSpeed" id="AvwSpeed" style="display:none">
+                      <% $SPEED_RANK.each do |x| %>
+                        <% if x == 1.0 %>
+                            <option value="<%=x %>" selected="selected"><%=x %></option>
+                        <% else %>
+                            <option value="<%=x %>"><%=x %></option>
+                        <% end %>
+                      <% end %>
+                  </select>
+                </span></td>
+              </tr>
+            </table>
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>

@@ -1,0 +1,222 @@
+<%= stylesheet_src_path('cssreport.css') %>
+<% content_for :header do %>
+<style>
+   .keyword-info {
+       margin-top:5px;
+       margin-bottom:5px;
+       margin-left:15px;
+       margin-right:15px;
+       padding-top:5px;
+       width:100%;
+   }
+   #div-tbl-keywords-agent {
+       margin-left:10px;
+       margin-right:10px;
+   }
+   .grand_total {
+      text-align:right;
+    padding-top:2px;
+    padding-bottom:2px;
+    background-image:url('<%= image_path('bg004.png') %>');
+    font-weight:bold;
+    }
+   .grand_total_title
+   {
+    text-align:center;
+    padding-top:2px;
+    padding-bottom:2px;
+    background-image:url('<%= image_path('bg004.png') %>');
+    font-weight:bold;
+   }
+</style>
+
+<script type="text/javascript">
+
+  var statisticsKey = {
+      type: "<%= params[:type] %>",
+      id: "<%= params[:id] %>",
+      period: "<%= params[:period] %>",
+      d: "<%= params[:d] %>",
+      view: "<%= params[:view]%>",
+      sort: "<%= params[:sort]%>",
+      od: "<%= params[:od] %>",
+	  st: "<%= params[:st] %>",
+	  ed: "<%= params[:ed] %>"
+  }
+
+  function getStatisticsParamsUrl(){
+      var srcUrl = "";
+      $.each(statisticsKey,function(key){
+        srcUrl += key + "=" + statisticsKey[key] + "&";
+      });
+      return srcUrl;
+  }
+
+  function selectview(key){
+     statisticsKey.view = key;
+     var url = "<%= url_for(:controller => 'keywords', :action => 'keywords_agents') %>?"  + getStatisticsParamsUrl();
+     window.location = url;
+  }
+  function onSort(key){
+    statisticsKey.sort = key;
+    if(statisticsKey.od == "desc"){
+      statisticsKey.od = "asc";
+    }else if(statisticsKey.od == "asc"){
+      statisticsKey.od = "desc";
+    }else {
+      statisticsKey.od = "desc";
+    }
+     var url = "<%= url_for(:controller => 'keywords', :action => 'keywords_agents') %>?"  + getStatisticsParamsUrl();
+     window.location = url;
+  }
+  function onPrint(){
+     var url = "<%= url_for(:controller => 'keywords', :action => 'print_agent') %>?" + getStatisticsParamsUrl();
+     //window.open(url,"Print","menubar=yes,location=no,scrollbars=yes");
+	 window.location = url;
+  }
+  function onExport(){
+     var url = "<%= url_for(:controller => 'keywords', :action => 'export_agent') %>?"  + getStatisticsParamsUrl();
+     window.location = url;
+  }
+  function onOpenCallSearch(agent_id,group_id){
+  	 var keyword_id = "<%= (@keywords.map { |k| k.id }).join(',') %>";
+	 var agent_id = agent_id || "";
+	 var group_id = group_id || "";
+	 
+	 var layout = "report";
+  	 var url = "<%=url_for(:controller => 'voice_logs', :action => 'index', :period => params[:period], :agent_id => params[:agent_id], :st => @st_date, :ed => @ed_date) %>";
+	 window.location = url + "&keyword_id=" + keyword_id + "&agent_id=" + agent_id +"&group_id=" + group_id + "&layout=" + layout;
+  }  
+  
+  $(document).ready(function(){
+	$(".btn-calllist").click(function(){
+		onOpenCallSearch($(this).attr('agent_id'),$(this).attr('group_id')); 	
+	});
+  });
+  
+</script>
+
+<% end %>
+
+<div class="report_info">
+	<table width="100%" cellspacing="0" cellpadding="0">
+		<tr>
+			<td>			
+				<% if params[:type] == 'group' %>
+				<b>Keyword group</b> : <%= (@keywordgroups.nil? ? "UnGroup" : @keywordgroups.name) %><br>
+				<% end %>
+				<% unless @keywords.empty? %>
+				<b>Keyword</b> : <%= (@keywords.map { |k| "#{k.name} (#{k.display_keyword_type})" }).join(', ') %>
+				<% else %>
+				<b>Keyword</b> : No Keyword
+				<% end %>&nbsp;&nbsp;&nbsp;&nbsp;
+				<b>Period: </b> <%= @lable_col %>
+			</td>
+			<td align="right">
+				<div class="div-menu-block">
+					<div class="menu-block">
+					    <table cellpadding="0" cellspacing="0">
+					      <tr>
+					        <td align="right">
+					          <ul>
+					            <li><%= link_image_tag('CSV','mimetype/csv.png','#',{:id => 'export',:title => "Text CSV", :onclick => "onExport()"}) %></li>
+					            <li><%= link_image_tag('PDF','mimetype/pdf.png','#',{:id => 'print',:title => "PDF",:onclick => "onPrint()"}) %></li>
+					          </ul>			
+					        </td>
+					      </tr>
+					    </table>		
+					</div>
+				</div>				
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="div-menu-block2">
+	<table width="100%" cellspacing="0" cellpadding="0">
+		<tr>
+			<td>
+				<ul>
+					<!-- <li onclick="onOpenCallSearch();"><span>Call List</span></li> -->
+        			<li onclick="selectview('agent')" class="<%= 'selected' if params[:view] == 'agent' %>">Agents</li>
+       				<li onclick="selectview('group')" class="<%= 'selected' if params[:view] == 'group' %>">Groups</li>
+				</ul>
+			</td>
+			<td align="right">
+				<%= will_paginate(@result) %>
+			</td>
+		</tr>
+	</table>
+</div>
+<div id="tbl-agents" class="div-default-table" style="margin-top:0px;">
+	<table cellpadding="0" cellspacing="0" class="tbl-hover">
+    <tr class="thead">
+      <th>No</th>
+	  <% if params[:view] == 'agent' %>
+	  <th onclick="onSort('name')"><a  class="linksort" href="#">Agent's name</a></th>
+	  <th>Role</th>
+	  <th onclick="onSort('group_name')"><a class="linksort" href="#">Group's name</a></th>
+	  <% else %>
+	  <th onclick="onSort('group_name')"><a class="linksort" href="#">Group's name</a></th>
+	  <th>Number of agent(s)</th>
+	  <% end %>
+	  <th><a href="#" class="linksort" onclick="onSort('words')">Total Words</a></th>
+      <th><a href="#" class="linksort" onclick="onSort('calls')">Total Calls</a></th>
+	  <th>View Calls</th>
+    </tr>
+    <% unless @result.empty? %>
+    <% page = (params[:page].to_i == 0 ? 1 : params[:page].to_i) %>    
+    <% @result.each_with_index do |r,i| %>
+    <tr class="<%= cycle('odd','even') %>">
+      <td class="no"><%= (i + 1) + ((page-1)*$PER_PAGE) %></td>
+	  <% if params[:view] == 'agent' %>
+	  	<td align="left"><%= blk(r.display_name,@unknow_title) %>&nbsp;</td>
+		<td><%= Role.find(:first,:conditions => {:id => r.role_id }).name rescue "Agent" %></td>
+		<td><%=r.group_name %>&nbsp;</td>
+	  <% else %>
+	  	<td align="left"><%= blk(r.group_name,@unknow_title) %>&nbsp;</td>
+		<td align="right"><%= r.agents_count.to_i %></td>
+	  <% end %>
+      <td align="right"><%=r.words_count %></td>
+	  <td align="right"><%=r.calls_count %></td>
+	  <% if params[:view] == 'agent' %>
+	  <% is_open = ((@agents.nil?) ? true : (@agents.include?(r.id.to_i))) %>
+	  <td class="tool">
+	  	<% if is_open %>
+	  		<a href="#" class="btn-calllist" agent_id="<%=r.id %>" group_id=""><%=image_tag('clist.gif') %></a>
+		<% else %>
+		&nbsp;
+		<% end %>
+	  </td>
+      <% else %>
+	  <% is_open = ((@groups.nil?) ? true : (@groups.include?(r.id.to_i)))  %>
+	  <td class="tool">
+	  	<% if is_open %>
+		<a href="#" class="btn-calllist" agent_id="<%= 0 if r.id == 0 %>" group_id="<%=r.id %>"><%=image_tag('clist.gif') %></a>
+		<% else %>
+		&nbsp;
+		<% end %>
+	  </td>	  
+	  <% end %>	
+	</tr>
+    <% end %>
+    <tr class="tsum">
+      <td>&nbsp;</td>
+	  <% if params[:view] == 'agent' %>
+	  	<td colspan="3" align="center">Total</td>
+	  <% else %>
+	  	<td colspan="2" align="center">Total</td>
+	  <% end %>
+      <td align="right"><%= number_with_delimiter(@summary[:words_count]) %></td>
+	  <td align="right"><%= number_with_delimiter(@summary[:calls_count]) %></td>
+	  <td>&nbsp;</td>
+    </tr>  	
+    <% else %>
+    <tr>
+      <td class="no">&nbsp;</td>
+      <td colspan="6" class="no-rec">No record.</td>
+    </tr>
+    <% end %>
+
+  </table>
+</div>
+</div>    

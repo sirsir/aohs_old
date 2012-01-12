@@ -1,0 +1,28 @@
+# == Schema Information
+# Schema version: 20100402074157
+#
+# Table name: call_bookmarks
+#
+#  id           :integer(20)     not null, primary key
+#  voice_log_id :integer(20)     not null
+#  start_msec   :integer(10)
+#  end_msec     :integer(10)
+#  title        :string(255)
+#  body         :string(255)
+#  created_at   :datetime
+#  updated_at   :datetime
+#
+
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  voice_log_id: 1
+  start_msec: 1
+  end_msec: 1
+  title: MyString
+
+two:
+  voice_log_id: 1
+  start_msec: 1
+  end_msec: 1
+  title: MyString

@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <title>
+    AmiVoice Operator's Help: <%= controller.controller_name %>.<%= controller.action_name %>
+  </title>
+
+  <%= stylesheet_link_tag 'cssbase' %>
+  <%= stylesheet_src_path '/jquery/jquery-ui-1.7.2/css/redmond/jquery-ui-1.7.2.custom.css' %>
+  <%= javascript_src_path '/jquery/js/jquery-1.4.4.min.js' %>
+  <%= javascript_src_path '/jquery/jquery-ui-1.7.2/js/jquery-ui-1.7.2.custom.min.js' %>
+  <%= javascript_src_path 'strftime-min.js' %>
+
+  <%= yield :header %>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      clockTitleBar("");
+    });
+    function clockTitleBar(msg) {
+
+	var date = new Date();
+	var year = date.getYear();
+	var month = date.getMonth() + 1;
+	var day = date.getDate();
+	var hour = date.getHours();
+	var minute = date.getMinutes();
+	var second = date.getSeconds();
+	var months = new Array("", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
+
+	var monthname = months[month];
+
+	if (minute < 10) {
+	minute = "0" + minute;
+	}
+
+	if (second < 10) {
+	second = "0" + second;
+	}
+
+	$('span#time').html(msg + monthname + " " + day + ", " + year + " - " + hour + ":" + minute + ":" + second);
+
+	setTimeout("clockTitleBar('" + msg + "')", 1000);
+
+}
+  </script>
+</head>
+<body class='yui-skin-sam'>
+
+  <div id="cb_header" class="header">
+    <div id="header" class="header" style="height: 25px; padding: 4px 0px 0px 10px;">
+      <span class="web-name" style="float: left; display: inline-block; font-style:italic; font-family:Verdana;">AmiVoice<sup>&reg;</sup> Call Browser</span>
+      <span id="time" class="web-name" style="float: right; padding-top: 6px; padding-right: 3px; display: inline-block; font-style:italic; font-family:Verdana; font-size: 10px; color: white; "></span>
+    </div>
+  </div>
+  
+<div id="body" class="body">
+  <%= yield %>
+</div>
+</body>
+</html>

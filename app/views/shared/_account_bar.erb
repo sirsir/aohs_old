@@ -1,0 +1,17 @@
+<script type="text/javascript">
+	function openProfile(){
+		var url = "<%= url_for(:controller => 'users',:action => 'profile', :id => current_user.id) %>";
+		window.location = url;
+    }
+</script>
+<span class="hd-account-bar">
+		<% if link_permission_require('control_panel','index') %>
+		<% if $LAYOUT == "application" %>
+		<%= link_to("Control Panel", {:controller => "control_panel",:action => "index"}, {:class => "a-link-1" ,:title => "Goto system maintenance"}) %>&nbsp;&bull;&nbsp;
+		<% else %>
+		<%= link_to("Home", {:controller => "top_panel",:action => "index"}, {:class => "a-link-1" ,:title => "Goto home"}) %>&nbsp;&bull;&nbsp;		
+		<% end %>
+		<% end %>
+		Welcome, <a href="#" title="My profile" onclick="openProfile();" class="a-link-1"><span class="login-name"><%=h current_user.login %></span></a>&nbsp;&bull;&nbsp;
+		<%= link_to "Logout", logout_path,{:class => "a-link-1", :title => "Logout"} %>											
+</span>

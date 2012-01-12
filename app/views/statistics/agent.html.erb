@@ -1,0 +1,144 @@
+<% content_for :header do %>
+
+<script type="text/javascript">
+
+  var statisticsKey = {
+     agent_id : "<%= params[:agent_id]%>",
+     date: "<%=params[:date] %>",
+     period: "<%=params[:period] %>",
+     type: "<%= params[:type] %>",
+     sort: "<%= params[:sort]%>",
+     od: "<%=params[:od]%>",
+     stdate: "<%=params[:stdate] %>",
+     eddate: "<%=params[:eddate] %>"
+  }
+  
+  function getStatisticsParamsUrl(){
+      var srcUrl = "";
+      $.each(statisticsKey,function(key){
+        srcUrl += key + "=" + statisticsKey[key] + "&";
+      });
+      return srcUrl;
+  }
+  
+  function onClickSort(key){
+
+      statisticsKey.sort = key;
+           if(statisticsKey.od == "desc"){
+        statisticsKey.od = "asc";
+     }else if(statisticsKey.od == "asc"){
+        statisticsKey.od = "desc"
+     } else {
+        statisticsKey.sort = "total"
+        statisticsKey.od = "desc"
+     }
+     var url = getStatisticsParamsUrl();
+     window.location = "<%=url_for(:controller => 'statistics',:action => 'agent') %>?" + url;
+      
+  }
+
+  function onPrint(){
+     var url = "<%=url_for(:controller => 'statistics',:action => 'print_agent') %>?" + getStatisticsParamsUrl();
+     //window.open(url,"Print","menubar=yes,location=no,scrollbars=yes");
+	 window.location = url;
+  }
+  function onExport(){
+     var url = "<%=url_for(:controller => 'statistics',:action => 'export_agent') %>?" + getStatisticsParamsUrl();
+     //window.open(url,"Print","menubar=yes,location=no,scrollbars=yes");
+	 window.location = url;
+  }
+  function onOpenCallSearch(keyword_id) {
+  	 var keyword_id = keyword_id || "";
+	 var layout = "report";
+  	 var url = "<%=url_for(:controller => 'voice_logs', :action => 'index', :period => params[:period], :agent_id => params[:agent_id], :st => @st_date, :ed => @ed_date) %>";
+	 window.location = url + "&keyword_id=" + keyword_id + "&layout=" + layout;
+  }
+  $(document).ready(function(){
+  	$(".btn-calllist").click(function(){
+		onOpenCallSearch($(this).attr('keyword_id')); 	
+	});
+  });
+</script>
+<% end %>
+
+<div class="report_info">
+	<table width="100%" cellspacing="0" cellpadding="0">
+		<tr>
+			<td>
+				<label>Agent's Name: </label><%=@agent_detail.nil? ? "UnknownAgent" : @agent_detail.display_name %>&nbsp;&nbsp;&nbsp;
+				<label>Group: </label> <%= @agent_detail.nil? ? "UnknownGroup" : @agent_detail.group.nil? ? "UnknownGroup" : @agent_detail.group.name %>&nbsp;&nbsp;&nbsp;
+			    <label>Period: </label> <%=@label_col %>
+			</td>
+			<td align="right">
+				<div class="div-menu-block">
+					<div class="menu-block">
+					    <table cellpadding="0" cellspacing="0">
+					      <tr>
+					        <td align="right">
+					          <ul>
+					            <li><%= link_image_tag('CSV','mimetype/spreadsheet.png','#',{:id => 'export',:title => "Text CSV", :onclick => "onExport()"}) %></li>
+					            <li><%= link_image_tag('PDF','mimetype/pdf.png','#',{:id => 'print',:title => "PDF", :onclick => "onPrint()"}) %></li>
+					          </ul>					
+					        </td>
+					      </tr>
+					    </table>		
+					</div>
+				</div>				
+			</td>
+		</tr>
+	</table>	
+</div>
+<div class="div-menu-block2">
+	<table width="100%" cellspacing="0" cellpadding="0">
+		<tr>
+			<td>
+				<ul>
+					<li onclick="onOpenCallSearch();"><span>Call List</span></li>
+					<li class="selected"><span>Keywords Detected</span></li>
+				</ul>				
+			</td>
+			<td align="right">
+				<%= will_paginate(@result) %>
+			</td>
+		</tr>
+	</table>
+</div>
+<div id="tbl-agents" class="div-default-table" style="margin-top:0px;">
+	<table cellpadding="0" cellspacing="0" class="tbl-hover">
+	  <tr class="thead">
+	  	<th>No.</th>
+	    <th><a href="#" class="linksort" onclick="onClickSort('keyword_group');">Keyword</a></th>
+		<th><a href="#" class="linksort" onclick="onClickSort('keyword');">Keyword Pattern</a></th>
+		<th><a href="#" class="linksort" onclick="onClickSort('type');">Keyword Type</a></th>
+		<th><a href="#" class="linksort" onclick="onClickSort('words');">Number of Words</a></th>
+		<th><a href="#" class="linksort" onclick="onClickSort('calls');">Number of Calls</a></th>
+		<th>View Calls</th>
+	  </tr>
+    <% unless @result2.empty? %>
+    <%@result2.each_with_index do |r,i| %>
+    <tr class="<%= cycle('odd','even') %>">
+      <td class="no"><%= row_no(i,params[:page],$PER_PAGE) %></td>
+      <td><%= r[:keyword_group] %></td>
+	  <td><%= r[:name] %></td>
+      <td align="center" class="<%= to_full_type(r[:keyword_type]).downcase %>-word"><%= Keyword.display_keyword_type_name(r[:keyword_type]) %></td>
+      <td align="right"><%=r[:words_count] %></td>
+	  <td align="right"><%=r[:calls_count] %></td>
+	  <td class="tool"><a href="#" class="btn-calllist" keyword_id="<%= r[:id] %>"><%=image_tag('clist.gif') %></a></td>
+    </tr>
+    <% end %>
+    <tr class="tsum">
+      <td>&nbsp;</td>
+      <td colspan="2" class="symb">Total</td>
+	  <td>&nbsp;</td>
+	  <td class="int"><%= number_with_delimiter(@grand_total[:words_count]) %></td>
+      <td class="int"><%= number_with_delimiter(@grand_total[:calls_count]) %></td>
+	  <td>&nbsp;</td>
+    </tr>	
+    <% else %>
+    <tr>
+      <td colspan="6" align="center">No record found.</td>
+    </tr>
+    <% end %>	  
+	</table>
+    <div style="padding:5px;">** Total Calls is <%=number_with_delimiter(@grand_total[:total_calls]) %> calls</div>
+</div>

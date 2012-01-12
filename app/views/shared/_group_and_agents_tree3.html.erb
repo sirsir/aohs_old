@@ -1,0 +1,196 @@
+<% content_for :header do %>
+
+  <%= stylesheet_src_path('/YUI.2.7/build/treeview/assets/skins/default/tree.css') %>
+  <%#= stylesheet_src_path('/YUI.2.7/build/button/assets/skins/sam/button.css') %>
+  <%= javascript_src_path('/YUI.2.7/build/yahoo-dom-event/yahoo-dom-event.js') %>
+  <%#= javascript_src_path('/YUI.2.7/build/animation/animation-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/treeview/treeview-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/examples/treeview/assets/js/TaskNode.js') %>
+  <style>
+    .ygtv-highlight1,.ygtv-highlight2 { background-color:#3399ff; font-weight: bold; color:snow; }
+  </style>
+  <script type="text/javascript">
+	
+	var username = "<%= @username %>";
+	var tree;
+	var iconMode = 0;
+	var tvAgents = [];
+	var tvGroups = [];
+	var previous_node;
+
+        var loading = false;
+        var prvs_node_id = 0;
+
+	function rebuildTree(data){
+		
+		tree = new YAHOO.widget.TreeView("treediv",data);
+						
+        YAHOO.util.Event.on("expand", "click", function(e) {
+            tree.expandAll();
+            YAHOO.util.Event.preventDefault(e);
+        });
+        
+        YAHOO.util.Event.on("collapse", "click", function(e) {
+            tree.collapseAll();
+            YAHOO.util.Event.preventDefault(e);
+        });
+			
+        tree.subscribe("labelClick", function(node) {
+            var node_id = node.data.NodeId;
+            var node_type = node.data.NodeType;
+            
+            if(node_type == 'group') {
+              if(!loading){
+                 if(previous_node){
+                   previous_node.unhighlight();
+                 }
+                 node.toggleHighlight();
+                 previous_node = node;
+
+                 if(prvs_node_id != node_id){
+                   append_agent(node_id);
+                   prvs_node_id = node_id;
+                 }
+              }
+            }
+        });
+
+        function getListOfAgentsX(node){
+            var nodes = node.children, usrs = new Array();
+            var loaded = node.data.loaded || false;
+            var l=nodes.length, i=0;
+            if((l > 0) && loaded){
+              while(i<l){
+                usrs.push(nodes[i].data.NodeId);
+                i++;
+              }              
+            }
+        }
+
+        function loadAgentListNode(node){
+                    if(node.data.NodeType=="group"){
+                            if (parseInt(node.data.NodeId) > 0) {
+                                    try {
+                                            var loaded = node.data.loaded || false;
+                                            if(!loaded){
+                                                    node.data.loaded = true;
+                                                    var n = node;
+                                                    $.getJSON("<%= url_for(:controller => 'tree',:action => 'tree_source_agents')%>?grp=" + node.data.NodeId + "node_type=text", function(data){
+                                                            var m = data.length;
+                                                            tree.removeNode(n.children[0]);
+                                                            for (var j=0; j<m; j++){
+                                                                    var newNodes = new YAHOO.widget.TextNode(data[j], n, false);
+                                                            }
+                                                            tree.draw();
+                                                            getListOfAgentsX(n);
+                                                    });
+                                            }
+                                    }catch(e){
+                                            alert(e);
+                                    }
+                            }
+                    }
+            }
+		
+            tree.subscribe("expand",function(node){
+                    if(node.data.NodeType=="group"){
+                            loadAgentListNode(node);
+                    }
+            });
+
+            function collapseOrExpandNode(nodes){
+                var nodes = nodes || tree.getRoot().children;
+                for(var i=0; i<nodes.length; ++i) {
+                  var n = nodes[i];
+                  if(n.data.NodeType=="cate"){
+                    if(n.hasChildren()){
+                      if(n.children[0].data.NodeType=="group"){
+                        // do not expand
+                        // n.collapse();
+                      } else {
+                        n.expand();
+                        collapseOrExpandNode(n.children);
+                      }
+                    }
+                  } else {
+                    n.collapseAll();
+                  }
+                }
+            }
+
+            tree.setNodesProperty('propagateHighlightUp',false);
+            tree.setNodesProperty('propagateHighlightDown',false);
+            tree.collapseAll();
+            collapseOrExpandNode();
+            tree.render();
+		
+	}
+		
+	function initTreeView(){
+		var agents = $("#firstLoadAgent").val() || "";
+        $.getJSON("<%= url_for(:controller => 'tree',:action => 'tree_source')%>?with_agent=false&node_type=text&unknown=false&mycall=false",
+		{agents: agents },
+		function(data){
+             rebuildTree(data); 
+			 $("#loadingTree").css("display","none");
+        });		
+	}	
+	
+	$(window).bind("load",function() {
+		initTreeView();
+	});
+		
+    $(document).ready(function(){
+		
+    });
+
+  </script>
+
+  <style type="text/css">
+
+    #treediv td{
+      font-family:Sans-serif;  
+      font-size:8pt;
+      padding-left:1px;
+      padding-right:1px;
+    }
+    #treediv {
+      width:250px;
+    }
+    #treediv table,tr {
+      border-collapse:collapse;
+      text-align:left;
+    }
+    #expandcontractdiv {
+      font-size:8pt;
+      background-color:#ccffff;
+      border-bottom:1px solid #99cccc;
+      width:100%;
+      text-align:center;
+      display:block;
+    }
+	
+    .ygtvcheck0 { background: url('<%=image_src_path('/YUI.2.7/build/treeview/assets/check0.gif') %>') 0 0 no-repeat; width:14px; height:17px; cursor:pointer }
+    .ygtvcheck1 { background: url('<%=image_src_path('/YUI.2.7/build/treeview/assets/check2.gif') %>') 0 0 no-repeat; width:14px; height:17px; cursor:pointer }
+    .ygtvcheck2 { background: url('<%=image_src_path('/YUI.2.7/build/treeview/assets/check1.gif') %>') 0 0 no-repeat; background-position:center; width:14px; height:17px; cursor:pointer }
+	
+	.whitebg {
+		background-color:white;
+	}
+
+  </style>
+  
+<% end %>
+<div id="expandcontractdiv" style="display:none;">
+  <a id="expand" href="#"><%= image_tag("tree_icon/expand_all.gif",{:border => 0, :align => 'absmiddle'}) %> Expand all</a> |
+  <a id="collapse" href="#"><%= image_tag("tree_icon/collapse_all.gif",{:border => 0, :align => 'absmiddle'}) %> Collapse all</a>
+</div>
+<div id="loadingTree" style="padding:5px; color:#A6C9D7; text-align:center; width:90%;">Treeview loading ...</div>
+<div id="treediv" class="whitebg ygtv-checkbox" align="left"></div>
+<div id="tree_log" style="position:absolute; display:none;">
+	<%= text_area_tag('checked_nodes','',{:name => 'checked_nodes',:id => 'checked_nodes',:disabled => false}) %>
+	<input type="text" id="tvOfAgents"/>
+	<input type="text" id="tvOfGroups"/>
+</div>
+<div id="treechk" style="display:none;"></div>
+<input type="text" id="firstLoadAgent" value="<%=@conds[:agents_id] if @conds %>" style="display:none;"/>

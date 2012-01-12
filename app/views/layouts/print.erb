@@ -1,0 +1,91 @@
+<%= stylesheet_link_tag 'printpage' %>
+<%= javascript_src_path '/jquery/js/jquery-1.3.2.min.js' %>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    //window.print()
+  });
+</script>
+<% page_at = 0 %>
+<% if !(@report[:details]).empty? %>
+
+  <% while not @report[:details].empty? %>
+      <div id="printHeader<%=page_at %>" class="printHeader">
+        <table width="100%">
+          <tr>
+            <td width="20%">
+              <div class="report-logo"><%#= image_tag('reports/prtlogo.png',{:width => '25px', :height => '25px',:align => 'absmiddle'}) %> AmiVoice Operator's Help</div>
+            </td>
+            <td style="text-align:center" width="60%">
+              <div class="report-name"><%= @report[:name] %></div>
+              <% if not @report[:st_date].blank? and not @report[:fi_date].blank?  %>
+              <div class="report-title">From <%= @report[:st_date] %> To <%= @report[:fi_date] %></div>
+              <% end %>
+            </td>
+            <td width="20%">
+              <div class="repeot-note"></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div id="printDetails<%=page_at %>" class="printDetails">
+        <table class="tblbody" cellpadding="0" cellspacing="0">
+          <thead>
+          <% if @report[:cols].empty? %>
+            <tr>
+              <% @report[:cols1].each do |col| %>
+                <th rowspan="2"><%= col %></th>
+              <% end %>
+              <% @report[:cols2].each_with_index do |col,i| %>
+                <th colspan="<%=@report[:cols_count][i] %>"><%= col %></th>
+              <% end %>
+            </tr>
+            <tr>
+              <% @report[:cols_labels].each do |t| %>
+                <th width="30px"><%= t %></th>
+              <% end %>
+            </tr>
+          <% else %>
+            <tr>
+              <% @report[:cols].each do |col| %>
+                <th><%= col %></th>
+              <% end %>
+            </tr>
+          <% end %>
+          </thead>
+          <tbody>
+            <% row_at = 1 %>
+            <% while (row_at != @report[:break_line]) and not @report[:details].empty?  %>
+              <tr class="<%= cycle('odd','even') %>">
+                <% r = @report[:details].first %>
+                <% r.each do |cell| %>
+                <% style_class = "" %>
+                <% style_class = "int" if is_numeric(cell) and not cell.blank? %>
+                <td class="<%= style_class %>"><%= cell %></td> 
+                <% end %>
+                <% @report[:details].delete(@report[:details].first) %>
+                <% row_at += 1 %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="printFooter<%=page_at %>" class="printFooter">
+        <table width="100%">
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </table>
+      </div>
+      <% page_at += 1 %>
+
+<% end %>
+<% else %>
+
+No result
+
+<% end %>

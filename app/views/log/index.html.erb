@@ -1,0 +1,210 @@
+<% content_for :header do %>
+
+<%= stylesheet_src_path '/jquery/jquery.clockpick/clockpick.css' %>
+<%= stylesheet_src_path '/jquery/jquery.timepickr/ui-timepickr/dist/themes/default/ui.timepickr.css' %>
+<%= javascript_src_path '/jquery/jquery.clockpick/jquery.clockpick.1.2.1.js' %>
+<%= javascript_src_path '/jquery/jquery.bgiframe/jquery.bgiframe.min.js' %>
+<%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
+  <script type="text/javascript">
+  	var appName = "<%= params[:app] %>";
+
+	function getfilterKeys(){
+		return {
+      		st_date: $("#start_date").val(),
+      	    st_time: $("#start_time").val(),
+            ed_date: $("#end_date").val(),
+      		ed_time: $("#end_time").val(),
+			status: $("#status option:selected").val(),
+			user: $("#user").val(),
+			ip: $("#ip").val(),
+			act: $("#action option:selected").val(),
+			col: "<%=params[:col] %>",
+			sort: "<%= params[:sort] %>",
+			app: appName
+		}
+	}
+
+    function showFilter(){
+      if ($("#div-FilterBox-log").css("display") == "none"){
+        $("#div-FilterBox-log").css("display", "block");
+      }else{
+        $("#div-FilterBox-log").css("display", "none");
+      }
+    }
+
+    function applyFilter(){	
+	  var url = App.make_query(getfilterKeys());
+      window.location.href = "<%= url_for(:controller => 'log', :action => 'index') %>?" + url;
+    }
+
+    function clearFilter(){
+      	$("#start_date").val("");
+      	$("#start_time").val("");
+        $("#end_date").val("");
+      	$("#end_time").val("");
+		$("#ip").val("");
+		$("#status").html($("#status").html().replace(/selected/g,""));
+		$("#user").val("");
+		$("#action").html($("#action").html().replace(/selected/g,""));
+    }	
+	
+    function sort_link(name){
+	  var d = getfilterKeys();
+	  d.col = name;
+	  d.sort = App.switch_order("<%=params[:sort] %>");
+	  var url = App.make_query(d);
+	  window.location.href = "<%= url_for(:controller => 'log', :action => 'index') %>?" + url;
+    }
+	
+    $(document).ready(function(){
+
+      $(function(){
+        $("#defaultTabsStyle1 ul li").mouseover(function(){
+            $(this).addClass('defaultlihover');
+        }).mouseout(function(){
+            $(this).removeClass('defaultlihover');
+        });
+      });
+	  
+      $("#start_date").datepicker({ showAnim: 'fold',dateFormat: 'yy-mm-dd' });
+      $("#end_date").datepicker({ showAnim: 'fold',dateFormat: 'yy-mm-dd' });
+      $("#start_time").mask("99:99").click(function(){ $(this).select(); });
+      $("#end_time").mask("99:99").click(function(){ $(this).select(); });
+	
+    });
+
+	function selectLogTab(app){
+		appName = app;
+		applyFilter();	
+	}
+	
+  </script>
+  <style>
+    .failed{
+      color:red;
+    }
+    .success{
+      color:green;
+    }
+    .unknown{
+      color:teal;
+    }
+
+    #start_date, #end_date{
+      width : 75px;
+    }
+    #start_time, #end_time{
+      width : 35px;
+    }
+  </style>
+<% end %>
+<div class="div-menu-block">
+	<div class="menu-block">
+	    <table width="100%" cellpadding="0" cellspacing="0">
+	      <tr>
+	        <td align="left">
+	          <ul>
+	            <li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Filtering log'}) %></li>
+	          </ul>
+	        </td>
+			<td align="right">
+				<%= will_paginate(@logs) %>
+			</td>
+	      </tr>
+	    </table>		
+	</div>
+	<div id="div-FilterBox-log" class="filter-block">
+		<fieldset>
+		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		  	<tr>
+		  		<td align="left">
+				    <label>From: </label>
+				    <input type="text" id="start_date" value="<%= params[:st_date] %>"/>
+				    <input type="text" id="start_time" value="<%= params[:st_time] %>"/>
+				
+				    <label>To: </label>
+				    <input type="text" id="end_date" value="<%= params[:ed_date] %>"/>
+				    <input type="text" id="end_time" value="<%= params[:ed_time] %>"/>
+
+					<label>Action: </label>
+					<select id="action">
+					  <option selected value=""></option>
+					  <% @actions.each do |act| %>
+					  <option value="<%= act.name %>" <%= params[:act] == act.name ? "selected" : "" %> ><%= act.name %></option>
+					  <%end%>
+					</select>
+					
+					<label>Status: </label>
+					<select id="status">
+					  <option selected value="">Both</option>
+					  <% @status.each do |sts| %>
+					  <option value="<%= sts.status %>" <%= params[:status] == sts.status ? "selected" : "" %>><%= sts.status %></option>
+					  <%end%>
+					</select>
+					
+					<label>User: </label>
+					<input type="text" id="user" name="user" value="<%= params[:user] %>"/>
+					
+					<label>IP: </label>
+					<input type="text" id="ip" name="ip" value="<%= params[:ip] %>"/>					
+		  		</td>
+				<td align="right">
+					<%= link_image_tag('Search','apply.png',"#",{:onclick => "applyFilter()"}) %>
+					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "clearFilter()"}) %>&nbsp;
+				</td>
+			</tr>
+		  </table>
+		</fieldset>		
+	</div>		
+</div>
+
+<div id="div-tbl-list-log">
+<% unless @application_list.empty? %>
+<div id="defaultTabsStyle1">
+  <ul>
+  	<li id="tab-id-all" onclick="selectLogTab('all')" class="<%= ((params[:app] == 'all' or params[:app].blank?) ? "defaultliselected" : "")%>">All</li>
+  	<% @application_list.each do |a| %>
+    <li id="tab-id-<%= a.downcase %>" onclick="selectLogTab('<%= a.downcase %>')" class="<%= (params[:app] == a.downcase ? "defaultliselected" : "")%>"><%= a %></li>
+	<% end %>
+  </ul>
+</div>
+<% end %>
+<div id="tbl-agents" class="div-default-table">
+	<table cellpadding="0" cellspacing="0" class="tbl-hover">
+      <tr class="tname">
+      	<td colspan="9">Logs</td>
+    </tr>
+    <tr class="thead">
+      <th>No</th>
+	  <th>Application</th>
+      <th><a href="#" class="linksort" onclick="sort_link('date')">Date/Time</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('act')">Action</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('target')">Target</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('status')">Status</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('user')">User</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('ip')">Remote IP</a></th>
+      <th>Message</th>
+    </tr>
+    <% unless @logs.empty? %>
+    <% @logs.each_with_index do |log,i| %>
+    <tr class="<%= cycle('odd','even') %>">
+      <td class="no"><%=row_no(i,@page,$PER_PAGE) %></td>
+	  <td class="symb app-<%=log.application.downcase %>" width="60px"><%= log.application %></td>
+      <td class="string" width="110px"><%=h log.start_time.strftime("%Y/%m/%d %H:%M:%S") %></td>
+      <td class="string" width="90px"><%=h log.name %></td>
+      <td class="string" width="150px"><%=h log.target %></td>
+      <td class="symb" width="60px"><span class="<%= log.status.downcase %>"><%= log.status %></span></td>
+      <td class="string" width="100px"><%=h log.user %></td>
+      <td class="string" width="80px"><%=h log.remote_ip %></td>
+      <td class="string"><%=h log.message %></td>
+    </tr>
+    <% end %>
+    <% else %>
+    <tr>
+      <td class="no">1</td>
+      <td colspan="8" class="no-rec">No record.</td>
+    </tr>
+    <% end %>
+  </table>
+</div>
+</div>

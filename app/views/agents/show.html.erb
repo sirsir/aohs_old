@@ -1,0 +1,120 @@
+<% content_for :header do %>
+
+<script type="text/javascript">
+    function del_agent(id,name){
+        $("#delDialog").text("");
+        $("#delDialog").append("Are you sure to delete agent \"<b>" + name + "</b>\"");
+        $("#delDialog").dialog("open");
+        $("#delDialog").dialog({
+          bgiframe: true,
+          title: "Deleting agent...",
+          modal: true,
+          buttons:{
+            "Cancel": function(){ $(this).dialog("close"); },
+            "Ok": function(){ window.location = "<%=url_for(:controller => 'agents',:action => 'delete')%>/" + id ; }
+          }
+        });
+    }
+</script>
+
+<% end %>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',{:controller => 'agents',:action => 'index'},{:title => 'Back to agent list'}) %></li>
+            <% if link_permission_require('agents','edit') %>
+            <li><%= link_image_tag('Edit agent','edit.png',{:controller => 'agents',:action=>"edit", :id => @agent.id},{:title => 'Edit agent'}) %></li>
+            <% end %>
+          </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+<div id="div-block-manager">
+    <div class="div-form-default-style2">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+        <td><span class="span-form-name">Agent infomation</span></td>
+    </tr>
+    <tr>
+      <td>
+        <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="130px" align="left"><label>Username:</label></td>
+            <td width="220px"><%=h @agent.login %></td>
+          </tr>
+          <tr>
+            <td><label>Display name:</label></td>
+            <td><%=h @agent.display_name %></td>
+          </tr>
+          <tr>
+            <td><label>CTI Agent Id:</label></td>
+            <td><%=h @agent.cti_agent_id.blank? ? "-" : @agent.cti_agent_id %></td>
+          </tr>
+		  <!-- ID CARD -->
+          <tr>
+            <td><label>Citizen ID:</label></td>
+            <td><%=h @agent.id_card.blank? ? "-" : @agent.id_card %></td>
+          </tr>
+		  		  
+          <tr>
+            <td><label>Sex:</label></td>
+            <td><%=h @agent.sex2 %></td>
+          </tr>
+           <tr>
+            <td><label>Status:</label></td>
+            <td><%=h (@agent.state == 'pending' or @agent.state == 'passive') ? 'Inactive' : @agent.state%></td>
+          </tr>
+           <tr>
+            <td><label>Account expired date:</label></td>
+            <td><%=h @agent.expired_date.nil? ? "-" : @agent.expired_date.strftime('%Y-%m-%d')%></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+          </tr>
+
+          </table>
+      </td>
+    </tr>
+    <tr>
+        <td><span class="span-form-name">Group infomation</span></td>
+    </tr>
+    <tr>
+      <td><div id="tbl-agents" class="div-default-table">
+         <%unless @agent.group.blank? %>
+         <table cellpadding="0" cellspacing="0" class="tbl-hover">
+            <tr class="thead">
+                <th>No</th>
+                <th>Group name</th>
+                <th>Leader</th>
+                <th>Description</th>
+                <% @group_category_type_names.each do |category_type_name|%>
+                    <th width="100px"><label><%=category_type_name%></label></th>
+                <% end %>
+            </tr>
+            <tr>
+              <td class="no">1</td>
+              <td><%= @agent.group.name %></td>
+              <td><%= @agent.group.leader.blank? ? "-" : @agent.group.leader.display_name  %></td>
+              <td><%= blk(@agent.group.description) %></td>
+              <% @group_category_type_names.each_with_index do |gc,i| %>
+              <td><%=@group_details[i]%></td>   <% end %>
+          </tr>          
+            </tr>
+         </table>
+         <%end%>
+      </div>
+      </td>
+    </tr>
+  </table>
+</div>
+</div>

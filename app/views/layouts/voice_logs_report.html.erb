@@ -1,0 +1,52 @@
+<% $LAYOUT = "application" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+  <meta name="description" content="<%= Aohs::WEB_TITLE_NAME %>" />
+  <meta name="author" content="<%= Aohs::WEB_AUTHOR %>" />
+  <title><%= Aohs::WEB_TITLE_NAME %> <%=Aohs::WEB_VERSION %> - <%= controller.controller_name %>.<%= controller.action_name %></title>
+  <link rel="shortcut icon" href="favicon.ico"/>
+  <!-- CSS -->
+  <%= stylesheet_link_tag 'base' %>
+  <%= stylesheet_link_tag 'table' %>
+  <%= stylesheet_link_tag 'qtip' %>
+  <%= stylesheet_src_path '/jquery/jquery-ui-1.8.6.custom/css/ui-lightness/jquery-ui-1.8.6.custom.css' %>
+  <%= stylesheet_link_tag 'will_paginate' %>
+  <%= stylesheet_link_tag 'cssform' %>
+  <!-- JS -->
+  <%= javascript_src_path '/jquery/js/jquery-1.4.2.min.js' %>
+  <%= javascript_src_path '/jquery/js/jquery.bgiframe.min.js' %>
+  <%= javascript_src_path '/jquery/jquery-ui-1.8.6.custom/js/jquery-ui-1.8.6.custom.min.js' %>
+  <%= javascript_src_path 'strftime-min.js' %>
+  <%= javascript_src_path '/jquery/jquery.qTip/qTip.js' %>
+  <%= javascript_src_path 'application.js' %>
+  <%= yield :header %>
+</head>
+<body class='yui-skin-sam'>
+<%= render :partial => 'shared/dialog' %>
+<div class="div-container">
+	<!-- header -->
+	<div class="div-page-header2">
+	</div>
+	<!-- body -->
+	<div class="div-page-body">
+		<div class="div-history">
+			<table cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td><div onclick="history.back(1);" class="div-btn" style="cursor:pointer; width:130px;"><%=image_tag('tlefts2.png',{:align => 'absmiddle'}) %> Back to Report</div></td>
+					<td align="right"><span style="font-weight:bold; font-size:11pt;">Call List</span></td>
+				</tr>
+			</table>
+			
+		</div>
+		<!-- sub menu -->
+		<%= yield :submenu %>	
+		<div id="body" class="body"><%= yield %></div>
+	</div>	
+	<!-- footer -->
+	<div class="div-page-footer">
+	</div>	
+</div>
+</body>
+</html>

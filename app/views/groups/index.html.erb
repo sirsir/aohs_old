@@ -1,0 +1,186 @@
+<% content_for :header do %>
+  <style>
+  	.cate-list {
+  		width:140px;
+  	} 
+  </style>
+  <script type="text/javascript">
+	function getfilterKeys(){
+		return {
+			name: $("input[name=name-filter]").val(),
+			leader: $("input[name=leader-filter]").val(),
+			cate: getCategories()
+		}
+	}	
+    function getCategories(){
+		var cat = new Array();
+		$("#added_filter tr").each(function(){
+			var added_filter_var = $("#" + this.className + " option:selected").val();
+			if (added_filter_var != "") {
+				cat.push(added_filter_var);
+			}
+		});
+		return cat.join(",");
+	}
+    function sort_link(name){
+		var d = getfilterKeys();
+		d.col = name;
+		d.sort = App.switch_order("<%=params[:sort] %>");
+      	window.location = "<%= url_for(:controller => 'groups') %>?" + App.make_query(d);
+    }
+    function add_filter(){
+      try {
+	      var thisFilter = $("#group-filter-selected").val();
+	      $("#added_filter").find("."+thisFilter).css("display", "block");	  	
+	  } catch(e){}
+    }	
+    function del_group(id,name){
+		Msg.confirm("Are you sure to delete group \"<b>" + name + "</b>\"",
+		function(){
+			window.location = "<%=url_for(:controller => 'groups',:action => 'delete')%>/" + id;
+		},
+		function(){
+			// no;
+		});
+    }
+    function showFilter(){
+         if($("#div-FilterBox-group").css("display") == "none"){
+            $("#div-FilterBox-group").css("display","block");
+         }
+         else {
+            $("#div-FilterBox-group").css("display","none");
+         }
+    }
+    function filterClear(){
+      $("input[name=name-filter]").val("");
+      $("input[name=leader-filter]").val("");
+      $("#added_filter tr").each(function(){
+        // Clear Select Box
+        $("#"+this.className).val("");
+        // Disappear filter box
+        $("#added_filter").find("."+this.className).css("display", "none");
+      });	      
+    }
+    function filterApply(){
+	  var url = App.make_query(getfilterKeys());
+      window.location.href = "<%= url_for(:controller => 'groups', :action => 'index') %>?" + url;
+    }    
+  </script>
+
+<% end %>
+
+<div class="div-menu-block">
+	<div class="menu-block">
+	    <table width="100%" cellpadding="0" cellspacing="0">
+	      <tr>
+	        <td align="left">
+	          <ul>
+	            <% if link_permission_require('groups','new') %>
+	            <li><%= link_image_tag('New group','new.png',{:controller => "groups",:action => 'new'},{:title => 'Add new group'}) %> </li>
+	            <% end %>
+	            <li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Filter group list'}) %></li>
+	          </ul>
+	        </td>
+	        <td align="right">
+				<%= will_paginate(@groups) %>
+	        </td>
+	      </tr>
+	    </table>		
+	</div>
+	<div id="div-FilterBox-group" class="filter-block">
+		<fieldset>
+		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		  	<tr>
+		  		<td align="left">
+				  <label>Name: </label><input type="text" name="name-filter" value="<%= params[:name] %>"/>
+				  <label>Leader name: </label><input type="text" name="leader-filter" value="<%= params[:leader] %>"/>
+				  <label>Category: </label>
+				  <select id="group-filter-selected" onchange="add_filter()">
+				    <option value=""></option>
+				    <% @type.each do |t|%>
+				    <option value="<%= t.name %>"> <%= t.name %> </option>
+				    <% end %>
+				  </select>				  
+  				</td>
+				<td align="right">
+					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
+					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+				  <table id="added_filter" cellpadding="0" cellspacing="1" style="margin-top:3px;">
+				    <% @type.each_with_index do |t,idx| %>
+				    <tr class="<%= t.name %>" <%= "style=\"display:none\"" if not @added_fltr[t.name.downcase.to_sym] %>>
+				      <td align="right">
+				        <label><%= t.name %> : </label>
+				      </td>
+				      <td align="left" style="padding-left: 4px;">
+				        <select class="cate-list" id="<%= t.name %>">
+				          <option value=""></option>
+				          <%@filters[idx].each do |filter|%>
+				            <option value="<%= filter.value %>" <%= @select_fltr[t.name.downcase.to_sym] == filter.value ? "selected" : ""  %>><%= filter.value %> </option>
+				          <%end%>
+				        </select>
+				      </td>
+				    </tr>
+				    <%end%>
+				  </table>					
+				</td>
+			</tr>
+		  </table>
+		</fieldset>			
+	</div>	
+</div>
+<%
+  edit = link_permission_require('groups','edit')
+  delete = link_permission_require('groups','delete')
+%>
+
+<div id="tbl-groups" class="div-default-table">
+  <table cellpadding="0" cellspacing="0" class="tbl-hover">
+    <tr class="tname">
+      <td colspan="<%= @group_category_type_names.length + 8 %>">Groups</td>
+    </tr>
+    <tr class="thead">
+      <th>No</th>
+      <th><a href="#" class="linksort" onclick="sort_link('name')">Name</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('leader')">Leader's name</a></th>
+	  <th>Leader's role</th>
+	  <th>Number of Agents</th>
+      <% unless @group_category_type_names.empty? %>
+	  <% @group_category_type_names.each do |gct| %>
+	  	<th class="string" width="90px"><%=gct %></th>
+	  <% end %>
+      <% end %>
+      <th>Action</th>
+    </tr>
+    <% unless @groups.empty? %>
+    <% @groups.each_with_index do |group,i| %>
+    <% categories = {} %>
+    <% group.categories.to_ary.map{|c| categories[c.category_type.name] = c.value } %>
+    <tr class="<%= cycle('odd','even') %>">
+      <td class="no"><%=row_no(i,@page,$PER_PAGE) %></td>
+      <td class="string" width="160px"><%= blk(group.name) %></td>
+      <td class="string"><%= group.leader.nil? ? "-" : blk(group.leader.display_name) %></td>
+	  <td class="string"><%= group.leader.nil? ? "-" : blk(group.leader.role.name) %></td>
+	  <td class="int" width="130px"><%=group.agent_count %>&nbsp;</td>
+	  <% @group_category_type_names.each do |category_type_name| %>
+	  <% gt_name = ( ((categories[category_type_name]).nil?) ? nil : categories[category_type_name]) %>
+	  <td class="string"><%=blk(gt_name) %> </td>
+	  <% end %>
+      <td class="tool">
+      	<%= link_image_tag('','detail.png',{:controller => "groups",:action=>"show", :id => group.id},{:title => 'Show details'}) %>
+      	<%= link_image_tag('','edit.png',{:controller => "groups",:action=>"edit", :id => group.id},{:title => 'Edit'}) if edit %>
+      	<%= link_image_tag('','delete.png','#',{:onclick => "del_group(#{group.id},\"#{group.name}\")",:title => 'Delete'}) if delete %>
+	  </td>
+    </tr>
+    <% end %>
+    <% else %>
+    <tr>
+      <td class="no">&nbsp;</td>
+      <td colspan="<%= @group_category_type_names.length + 7  %>" class="no-rec">No record</td>
+    </tr>
+    <% end %>
+  </table>
+</div>

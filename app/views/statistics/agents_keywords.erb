@@ -1,0 +1,154 @@
+<%= stylesheet_src_path('cssreport.css') %>
+<% content_for :header do %>
+<style>
+   .keyword-info {
+       margin-top:5px;
+       margin-bottom:5px;
+       margin-left:15px;
+       margin-right:15px;
+   }
+   #div-tbl-keywords-agent {
+       margin-left:10px;
+       margin-right:10px;
+   }
+   .grand_total {
+      text-align:right;
+    padding-top:2px;
+    padding-bottom:2px;
+    background-image:url('../images/bg004.png');
+    font-weight:bold;
+    }
+   .grand_total_title
+   {
+    text-align:center;
+    padding-top:2px;
+    padding-bottom:2px;
+    background-image:url('../images/bg004.png');
+    font-weight:bold;
+   }
+</style>
+
+<script type="text/javascript">
+
+  var statisticsKey = {
+     agent_id : "<%= params[:agent_id]%>",
+     date: "<%=params[:date] %>",
+     period: "<%=params[:period] %>",
+     type: "<%= params[:type] %>",
+     sort: "<%= params[:sort]%>",
+     od: "<%=params[:od]%>",
+     stdate: "<%=params[:stdate] %>",
+     eddate: "<%=params[:eddate] %>"
+  }
+  function getStatisticsParamsUrl(){
+      var srcUrl = "";
+      $.each(statisticsKey,function(key){
+        srcUrl += key + "=" + statisticsKey[key] + "&";
+      });
+      return srcUrl;
+  }
+  function onClickSort(key){
+
+      statisticsKey.sort = key;
+           if(statisticsKey.od == "desc"){
+        statisticsKey.od = "asc";
+     }else if(statisticsKey.od == "asc"){
+        statisticsKey.od = "desc"
+     } else {
+        statisticsKey.sort = "total"
+        statisticsKey.od = "desc"
+     }
+     var url = getStatisticsParamsUrl();
+     window.location = "<%=url_for(:controller => 'statistics',:action => 'agents_keywords') %>?" + url;
+      
+  }
+
+  function onPrint(){
+     var url = "<%=url_for(:controller => 'statistics',:action => 'print_agent') %>?" + getStatisticsParamsUrl();
+     window.open(url,"Print","menubar=yes,location=no,scrollbars=yes");
+  }
+  function onExport(){
+     var url = "<%=url_for(:controller => 'statistics',:action => 'export_agent') %>?" + getStatisticsParamsUrl();
+     window.open(url,"Print","menubar=yes,location=no,scrollbars=yes");
+  }
+
+  $(document).ready(function(){
+      
+        $(".tbl-report tr").mouseover(function(){
+          $(this).addClass('tr-selected');
+        }).mouseout(function(){
+          $(this).removeClass('tr-selected');
+        });
+  });
+  
+</script>
+
+<% end %>
+
+<div id="div-keyword-info" class="keyword-info">
+	Agent name : <span><%=@agent_detail.nil? ? "UnknownAgent" : @agent_detail.display_name %></span> &nbsp;&nbsp;&nbsp; Team : <span><%= @agent_detail.nil? ? "UnknownGroup" : @agent_detail.group.nil? ? "UnknownGroup" : @agent_detail.group.name %></span><br>
+</div>
+
+
+<div>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('CSV','mimetype/spreadsheet.png','#',{:id => 'export',:title => "Text CSV", :onclick => "onExport()"}) %></li>
+            <li><%= link_image_tag('PDF','mimetype/pdf.png','#',{:id => 'print',:title => "PDF", :onclick => "onPrint()"}) %></li>
+          </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+  
+  <div>
+  	
+  </div>	
+</div>
+
+
+<div id="div-tbl-keywords-agent">
+<div class="div-tbl-default-style1">
+  <table class="tbl-report" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <th>No</th>
+      <th><a href="#" class="linksort" onclick="onClickSort('name')" >Keyword name</a></th>
+      <th>Keyword Group</th>
+      <th><a href="#" class="linksort" onclick="onClickSort('keyword_type')" >Keyword Type</a></th>
+      <th><a href="#" class="linksort" onclick="onClickSort('total')" ><%= @lable_col %>Total (Words)</a></th>
+	  <th>View Call</th>
+    </tr>
+    <% unless @result2.empty? %>
+    <%@result2.each_with_index do |r,i| %>
+    <tr class="<%= cycle('tr-odd','tr-even') %>">
+      <td class="no"><%= i + 1 %></td>
+      <td><%= r[:name] %></td>
+      <td><%= r[:group] %></td>
+      <td class="keyword_<%=h r[:keyword_type] %>"><%= to_full_type(r[:keyword_type]) %></td>
+      <td align="right"><%=r[:total] %></td>
+	  <td><%=image_tag('clist.gif') %></td>
+    </tr>
+    <% end %>
+    <% else %>
+    <tr>
+      <td colspan="5" align="center">No record found.</td>
+    </tr>
+    <% end %>
+    <tr>
+      <td colspan="4" class="grand_total_title">Total</td>
+      <td class="grand_total"><%= number_with_delimiter(@grand_total_agents) %></td>
+    </tr>
+    <tr>
+        <td colspan="5" class="pages">
+          <%= will_paginate(@result) %>
+        </td>
+    </tr>    
+  </table>
+</div>
+</div>    

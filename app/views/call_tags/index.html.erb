@@ -1,0 +1,119 @@
+<% content_for :header do %>  
+  <script type="text/javascript">
+    function showFilter(){
+         if($("#div-FilterBox-tag").css("display") == "none"){
+            $("#div-FilterBox-tag").css("display","block");
+         }
+         else {
+            $("#div-FilterBox-tag").css("display","none");
+         }
+    }
+
+    function filterClear(){
+        $("input[name=tag-name]").val("");
+    }
+
+    function filterApply(){
+        
+        var strTag = jQuery.trim($("input[name=tag-name]").val());
+
+        var url = "?tag=" + strTag;
+
+        window.location.href = "<%= url_for(:controller => 'call_tags',:action => 'index') %>" + url;
+    }
+    function sort_link(name){
+      window.location = "<%= url_for(:controller => 'call_tags') %>?sort=" + name + "&by=<%=params[:by]%>";
+    }
+    function gotoTagGroup(id){
+      window.location = "<%= url_for(:controller => 'call_tags') %>?group_id=" + id;  
+    }
+    function del_calltag(id,name,calls){
+        $("#delDialog").text("");
+        var str = "";
+        if(calls > 0){
+            str = "This tag was using by some calls <br>"
+        }
+        $("#delDialog").append(str+ "Are you sure to delete tag \"<b>" + name + "</b>\"");
+        $("#delDialog").dialog("open");
+        $("#delDialog").dialog({
+          bgiframe: true,
+          title: "Deleting tag...",
+          modal: true,
+          buttons:{
+            "Cancel": function(){ $(this).dialog("close"); },
+            "Ok": function(){ window.location = "<%= url_for(:controller => 'call_tags',:action => 'delete') %>/" + id ; }
+          }
+        });
+    }
+    function del_grouptag(id,name){
+        $("#delDialog").text("");
+        var str = "";
+        $("#delDialog").append(str+ "Are you sure to delete group \"<b>" + name + "</b> and  all tags in this group?\"");
+        $("#delDialog").dialog("open");
+        $("#delDialog").dialog({
+          bgiframe: true,
+          title: "Deleting tag...",
+          modal: true,
+          buttons:{
+            "Cancel": function(){ $(this).dialog("close"); },
+            "Ok": function(){ window.location = "<%= url_for(:controller => 'tag_groups',:action => 'delete') %>/" + id ; }
+          }
+        });
+    }
+    $(document).ready(function(){
+        $("#group-tag-tree").treeview({collapsed: false});
+    });
+  </script>
+  <style>
+    #div-tree-group-tag {
+        border:1px solid #cccccc;
+        height:700px;
+        overflow:scroll;
+    }
+  </style>
+<% end %>
+
+<div class="div-menu-block">
+	<div class="menu-block">
+	    <table width="100%" cellpadding="0" cellspacing="0">
+	      <tr>
+	        <td align="left">
+	          <ul>
+	            <% if link_permission_require('call_tags','new') %>
+	            <li><%= link_image_tag('Add group tag','new.png',{:controller=>"tag_groups",:action => 'new'}) %></li>
+	            <li><%= link_image_tag('Add tag','new.png',{:controller=>"call_tags",:action => 'new'}) %></li>    
+	            <% end %>
+	            <li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()"}) %></li>
+	          </ul>
+	        </td>
+			<td>
+				<%= will_paginate(@call_tags) %>
+			</td>
+	      </tr>
+	    </table>		
+	</div>
+	<div id="div-FilterBox-tag" class="filter-block">
+		<fieldset>
+		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		  	<tr>
+		  		<td align="left">
+				  <label>Tag name:</label> <input type="text" name="tag-name" value="<%=params[:tag] %>">
+				</td>
+				<td align="right">
+					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
+					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
+				</td>
+			</tr>
+		  </table>
+		</fieldset>				
+	</div>	
+</div>
+<div>
+	<table width="100%" cellpadding="0" cellspacing="0">
+	<tr>
+	  <td valign="top" width="180px"><%=render :partial => 'call_tags/tag_treeview' %></td>
+	  <td valign="top"><%=render :partial => 'call_tags/tag_table' %></td>
+	</tr>
+	</table>	
+</div>
+

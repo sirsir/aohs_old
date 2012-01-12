@@ -1,0 +1,124 @@
+<% content_for :header do %>
+  <script type="text/javascript">
+       function changepassword()
+       {
+          var old_pass = $("#oldpwd").val();
+          var new_pass = $("#newpwd").val();
+          var con_pass = $("#conpwd").val();
+          $("#changepwd").attr("disabled",true);
+          if (old_pass != "" && new_pass != "" && con_pass != "")
+          {
+             if(con_pass == new_pass)
+             {
+             $.get("<%= url_for :controller=>"users",:action => "change_password",:id => current_user.id %>",{opw:old_pass,npw:new_pass},
+             function(result)
+             {
+                var result_set = result.split(",");
+                if (result_set[0].toString() == 't')
+                {
+                  alert("Change password was successfully.");
+                  $("#changepwd").attr("disabled","");
+                  $("#oldpwd").val("");
+                  $("#newpwd").val("");
+                  $("#conpwd").val("");
+				  window.location = "<%=url_for('/') %>";
+                }
+                else
+                {
+                  alert("Change password was failed because "+result_set[1].toString());
+                    $("#changepwd").attr("disabled","");
+                }
+             });
+             }else
+             {
+               alert("Password are not match, Please try again.");
+               $("#conpwd").val("");
+               $("#changepwd").attr("disabled","");
+             }
+          }else
+          {
+            alert("Password can not be blank.");
+            $("#changepwd").attr("disabled","");
+          }
+       }
+   </script>
+   <style type="text/css">
+      .btn1 {
+        padding-left:5px;
+        padding-right:5px;
+        margin-top:10px;
+        font-weight:bold;
+        margin-left:2px;
+        margin-right:2px;
+        padding-top:2px;
+        padding-bottom:2px;
+    }
+   </style>
+<%  end  %>
+
+<div style="border-bottom:1px solid #c0c0c0; margin:10px; padding:5px; background-repeat:repeat-x; background-image:url('<%=image_path('tblbg002.png') %>');">
+	<span style="font-weight:bold; font-size:12pt;">User's profile</span>
+</div>
+<div class="div-form-default-style1">
+  <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+         <td><span class="span-form-name">User Infomation</span></td>
+        </tr>
+        <tr>
+          <td valign="top">
+                <table width="70%" class="tbl-frm-details" style="display:inline;" cellpadding="0" cellspacing="0">
+                   <tr>
+                       <td width="130px" align="left" valign="top"><label>Username:</label></td>
+                       <td><%= current_user.login %></td>
+                   </tr>
+                   <tr>
+                       <td width="130px" align="left" valign="top"><label>Display name:</label></td>
+                       <td><%= current_user.display_name %></td>
+                   </tr>
+				   <tr>
+                       <td width="130px" align="left" valign="top"><label>Role:</label></td>
+                       <td><%= current_user.role.name %></td>				   	
+				   	</tr>				   
+                   <tr>
+                       <td width="130px" align="left" valign="top"><label>Agent ID:</label></td>
+                       <td><%= current_user.cti_agent_id.blank? ? "-" : current_user.cti_agent_id %></td>
+                   </tr>
+                   <tr>
+                       <td width="130px" align="left" valign="top"><label>Citizen ID:</label></td>
+                       <td><%= current_user.id_card.blank? ? "-" : current_user.id_card %></td>
+                   </tr>					   				   
+                </table>  
+				
+          </td>
+        </tr>
+        <tr>
+         <td><span class="span-form-name">Change your password</span></td>
+        </tr>
+        <tr>
+          <td>
+               <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+                   <tr>
+                       <td width="150px" align="left" valign="top"><label>Old password:</label></td>
+                       <td><input  type="password" id="oldpwd" value="" size="20"><span class="span-require">*</span>
+                       <br><span class="span-field-note">Password must have a minimum of 6 characters</span>
+                       </td>
+                   </tr>
+                   <tr>
+                       <td width="150px" align="left" valign="top"><label>New password:</label></td>
+                        <td><input type="password" id="newpwd" value="" size="20"><span class="span-require">*</span>
+                        <br><span class="span-field-note">Password must have a minimum of 6 characters</span>
+                        </td>
+                   </tr>
+                   <tr>
+                        <td width="150px" align="left" valign="top"><label>Confirm new password:</label></td>
+                        <td><input type="password" id="conpwd" value="" size="20"><span class="span-require">*</span>
+                        </td>
+                   </tr>
+                   <tr>
+                      <td colspan="2"><input type="button"  class="btn1" id="changepwd" value="Change password" onclick="changepassword();"></td>
+                   </tr>
+               </table>
+          </td>
+        </tr>
+  </table>
+</div>

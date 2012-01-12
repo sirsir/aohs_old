@@ -1,0 +1,34 @@
+/* 
+    Document   : for_home
+    Created on : Apr 2, 2010, 11:05:53 PM
+    Author     : ball
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+.menu-name {
+    font-weight:bold;
+    font-size: 8pt;
+}
+.menu-title {
+    font-size: 8pt;
+    font-style: italic;
+}
+.tbl-cotain-menu td {
+    padding: 3px;
+}
+.tbl-main-menu {
+    width: 300px;
+    border: 1px solid #FFFFFF;
+}
+.tbl-main-menu-hover {
+    background: url(../images/gradient-mod.png);
+    background-position: center;
+    border: 1px solid #ffffff;
+    cursor:pointer;
+}

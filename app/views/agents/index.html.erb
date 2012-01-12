@@ -1,0 +1,158 @@
+<%
+  edit = link_permission_require('agents','edit')
+  delete = link_permission_require('agents','delete')
+%>
+<% content_for :header do %>
+
+  <script type="text/javascript">
+    function del_agent(id,name){
+		Msg.confirm("Are you sure to delete agent \"<b>" + name + "</b>\"",function(){
+			window.location = "<%= url_for(:controller => 'agents',:action => 'delete') %>/" + id ;
+		},function(){
+			// no
+		});
+    }  	
+  	function getfilterKeys(){
+		return {
+			login: $("input[name=agent-login]").val(),
+			name: $("input[name=agent-name]").val(),
+			group: $("select[name=agent-group]:option:selected").val(),
+			agent_id: $("input[name=agent-id]").val(),
+			id_card: $("input[name=agent-idcard]").val(),
+			col: "<%=params[:col] %>",
+			sort: "<%=params[:sort] %>"
+		}
+	}
+    function sort_link(name){
+	  var d = getfilterKeys();
+	  d.col = name;
+	  d.sort = App.switch_order("<%=params[:sort] %>");
+      window.location = "<%= url_for(:controller => 'agents') %>?" +  App.make_query(d);
+    }
+    function showFilter(){
+         if($("#div-FilterBox-agent").css("display") == "none"){
+            $("#div-FilterBox-agent").css("display","block");
+         }
+         else {
+            $("#div-FilterBox-agent").css("display","none");
+         }
+    }
+    function filterClear(){
+		$("input[name=agent-id]").val("");
+		$("input[name=agent-idcard]").val("");
+        $("input[name=agent-login]").val("");
+        $("input[name=agent-name]").val("");
+        var tmp = $("select[name=agent-group]").html();
+        tmp = tmp.replace("selected","");
+        $("select[name=agent-group]").children().remove();
+        $("select[name=agent-group]").append(tmp);
+    }
+    function filterApply(){
+		var url = App.make_query(getfilterKeys());
+        window.location.href = "<%= url_for(:controller => 'agents',:action => 'index') %>?" + url;
+    }
+    function showImport(){
+        var rurl = "<%=url_for(:controller => 'data',:action => 'import',:q => 'Users')%>";
+        var window1 = window.open(rurl,"",'menubar=no,scrollbars=yes,location=yes,resizable=yes,width=500,height=270');
+    }
+    function showExport(){
+        window.location  = "<%=url_for(:controller => 'data',:action => 'export',:q => 'users', :m => 'agents') %>";
+    }    
+	$(document).ready(function(){
+		validInputNumeric();
+	});
+  </script>
+<% end %>
+
+<div class="div-menu-block">
+	<div class="menu-block">
+	    <table width="100%" cellpadding="0" cellspacing="0">
+	      <tr>
+	        <td align="left">
+	          <ul>
+	          	<% if link_permission_require('agents','new') %>
+	            <li><%= link_image_tag('New agent','new.png',{:controller => 'agents',:action => 'new'}) %> </li>
+	            <% end %>
+	            <% if permission_by_name('data-users') %>
+	            <li><%= link_image_tag('Import','import.png',"#",{:onclick => "showImport()",:title => 'Import users'}) %></li>
+	            <li><%= link_image_tag('Export','export.png',"#",{:onclick => "showExport()",:title => 'Export users'}) %></li>    
+	            <% end %>
+	            <li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Search agents'}) %></li>
+	          </ul>
+	        </td>
+	        <td align="right">
+				<%= will_paginate(@agents) %>
+	        </td>
+	      </tr>
+	    </table>		
+	</div>
+	<div id="div-FilterBox-agent" class="filter-block">
+		<fieldset>
+		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		  	<tr>
+		  		<td align="left">
+				  <label>Agent ID:</label> <input type="text" class="input-int" name="agent-id" style="width:40px;" value="<%=params[:agent_id] %>">
+				  <label>Citizen ID:</label> <input type="text" class="input-int" name="agent-idcard" style="width:80px;" value="<%=params[:id_card] %>">
+				  <label>Username:</label> <input type="text" name="agent-login" value="<%=params[:login] %>">
+				  <label>Name:</label> <input type="text" name="agent-name" value="<%=params[:name] %>">
+				  <label>Group:</label> <select name="agent-group"><option value=""></option><%= @groups.map { |r| r == params[:group] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" } %></select>  	  		
+		  		</td>
+				<td align="right">
+					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
+					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
+				</td>
+			</tr>
+		  </table>
+		</fieldset>		
+	</div>
+</div>
+<div id="tbl-agents" class="div-default-table">
+	<table cellpadding="0" cellspacing="0" class="tbl-hover">
+	  <tr class="tname">
+	    <td colspan="14">Agents</td>
+	  </tr>
+	  <tr class="thead">
+	    <th>No</th>
+		<th><a href="#" class="linksort" onclick="sort_link('cti_agent_id')">Agent ID</a></th>
+		<th><a href="#" class="linksort" onclick="sort_link('id_card')">Citizen ID</a></th>
+	    <th><a href="#" class="linksort" onclick="sort_link('name')">Username</a></th>
+	    <th><a href="#" class="linksort" onclick="sort_link('login')">Display name</a></th>
+		<th><a href="#" class="linksort" onclick="sort_link('sex')">Sex</a></th>
+		<th><a href="#" class="linksort" onclick="sort_link('email')">E-mail</a></th>
+	    <th><a href="#" class="linksort" onclick="sort_link('group')">Group</a></th>		
+		<th><a href="#" class="linksort" onclick="sort_link('role')">Role</a></th>
+	    <th><a href="#" class="linksort" onclick="sort_link('state')">Status</a></th>
+	    <th><a href="#" class="linksort" onclick="sort_link('expired_date')">Expired date</a></th>
+	    <th class="tool">Action</th>
+	  </tr>
+	  <% unless @agents.empty? %>
+	  <% @agents.each_with_index do |agent,i| %>
+	  <tr class="<%= cycle('odd','even') %>">
+	    <td class="no"><%= row_no(i,@page,$PER_PAGE) %></td>
+		<td class="string" width="60px"><%= agent.cti_agent_id.blank? ? "-" : display_cti_id(agent.cti_agent_id) %></td>
+		<td class="string" width="100px"><%= blk(agent.id_card2) %></td>
+	    <td class="string" width="80px"><%= blk(agent.login) %></td>
+	    <td class="string" width="160px"><%= blk(agent.display_name) %></td>
+		<td class="string" width="50px"><%= blk(agent.sex2) %></td>
+		<td class="string" width="150px"><%= blk(agent.email) %></td>
+	    <td class="string" width="90px"><%= agent.group.nil? ? "-" : agent.group.name %></td>
+		<td class="string" width="60px">Agent</td>
+	    <td class="symb <%= agent.state_name.downcase %>" width="60px"><%= agent.state_name %></td>
+	    <td class="string"><%= blkd(agent.expired_date) %></td>
+	    <td class="tool">
+	    	<%= link_image_tag('','detail.png',{:controller => 'agents',:action=>"show", :id => agent.id},{:title => 'Show detail'}) %>
+	    	<%= link_image_tag('','edit.png',{:controller => 'agents',:action=>"edit", :id => agent.id},{:title => 'Edit'}) if edit %>
+	    	<%= link_image_tag('','delete.png',"#",{:onclick => "del_agent(#{agent.id},\"#{agent.login}\")",:title => 'Delete'}) if delete %>
+	    </td>
+	  </tr>
+	  <% end %>
+	  <% else %>
+	  <tr>
+	    <td class="no">&nbsp;</td>
+	    <td colspan="13" class="no-rec">No record.</td>
+	  </tr>
+	  <% end %>
+	</table>	
+</div>
+
+

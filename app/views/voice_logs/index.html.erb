@@ -1,0 +1,197 @@
+<% @tl_enabled = (AmiConfig.get('client.aohs_web.enableCallsTimeline').to_i == 1 ? true : false) %>
+<% content_for :header do %>
+  
+  <%= stylesheet_src_path 'for_callsearch.css' %>
+  <%= stylesheet_src_path '/jquery/jquery.autocomplete/jquery.autocomplete_blue.css' %>
+  <%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
+  <%= javascript_src_path '/jquery/jquery.autocomplete/jquery.autocomplete.min.js' %>
+  <%= javascript_src_path '/jquery/js/jquery.numeric.js' %>
+  <%= javascript_src_path '/jquery/js/jquery.download.js' %>
+  <%= javascript_src_path 'webtoolkit.url.js' %>
+  
+  <style type="text/css">
+
+    .div-cond-ctrl {
+        background-color: #f0efef;
+        border-right:1px solid #cccccc;
+        padding-left:4px;
+        padding-right:4px;
+    }
+    #voice-timeline {
+        margin-top:3px;
+    }
+    #ami-viewer {
+        margin-top:2px;
+        border:1px solid #cccccc;
+        background:url('<%= image_path('gradient-mod.png') %>');
+        width:100%;
+    }
+    #voicelog-tbl {
+        margin-top:2px;
+        border:1px solid #b4e1ff;
+    }
+    body,html {
+      overflow:hidden;
+    }
+    #btnExport ul li {
+      float: left;
+    }
+    #div-voice_log_tabs {
+        margin-top:3px;
+        width:100%
+    }
+    #vc-block1,#vc-block2 {
+       margin-left:2px; 
+    }
+	#btnResizable {
+		height:200px;
+	}
+	.tabmenu-li {
+		font-weight:bold;
+	}
+
+  </style>
+ 
+<script type="text/javascript">
+
+    var current_key = "";
+    var current_sort = "desc";
+    var vc_start = false;
+    var tlLoaded = false;
+	
+    function resizeWindow(e){
+		
+        var intBrowserHeight = $(window).height();
+        var intBrowserWidth = $(window).width();
+        var tabCondsHeight = $("#tab-conds").height();
+        var tabCondsWidth = $("#tab-conds").width();
+        var headerHeight = $("#header").height();
+        
+        $("#agent_tree").css("height", intBrowserHeight-tabCondsHeight-headerHeight-30);
+        $("#ami-viewer").css("width",intBrowserWidth-tabCondsWidth-11);
+		$("#voicelog-tbl").css("width",intBrowserWidth-tabCondsWidth-11);
+        $("#voice-timeline").css("width",intBrowserWidth-tabCondsWidth-8);
+        $("#div-tblCtrl").css("width",intBrowserWidth-tabCondsWidth-11);
+        $("#btnResizable").css("height",intBrowserHeight-headerHeight-4);
+		
+        var divTblOuter = $("#div-tbl-outer");
+        divTblOuter.css("width",intBrowserWidth-tabCondsWidth-10);
+        divTblOuter.css("height",intBrowserHeight-$("#ami-viewer").height()-headerHeight-$("#div-voice_log_tabs").height()-53);
+
+        var divTblInner = $("#div-tbl-inner");
+        divTblInner.css("height",$("#div-tbl-outer").height()-$("#div-tblCtrl").height()-15);
+        divTblInner.css("width",$(".tbl-header").width()+10);
+        
+    }
+    
+    function onSearchVoice(keys){
+        tlLoaded = false;
+        searchKey.keys = keys;
+        pageReset();
+        searchVoice();
+    }
+
+    function SearchWithStartUp(){
+		<% if (@conds != false) %>
+            $("input[name=vcFromDate]").val("<%=@conds[:st] %>");
+            $("input[name=vcToDate]").val("<%=@conds[:ed] %>");
+			$("input[name=keyword_name]").val("<%=@conds[:keywords] %>");
+            $("#custom-periods").css("display","block");
+			$("#tvOfAgents").val("<%=@conds[:agents_id] %>");
+			
+			onSearchVoice("all=all");
+		<% end %>
+    }
+    
+    $(document).ready(function(){	  
+      $(window).bind("resize", resizeWindow);
+      $("#custom-periods").css("display","none");  
+      resizeWindow();
+    
+	  $("#vlrs-tabs ul li").mouseover(function(){
+        $(this).addClass('tabmenu-li-hover');
+      }).mouseout(function(){
+        $(this).removeClass('tabmenu-li-hover');
+      });
+     
+      window.setTimeout("SearchWithStartUp()",1500);
+	  tabVCSelect(1);
+	  
+    });   
+
+    function tabVCSelect(tabNo){
+        switch(tabNo){
+          case 1: {
+            $("#vc-block1").css("display","none");
+            $("#tabli-2").removeClass("tabmenu-li-selected");
+            $("#vc-block2").css("display","block");
+            $("#tabli-1").addClass("tabmenu-li-selected");
+            break;
+          }
+          case 2: {
+            $("#vc-block1").css("display","block");
+            $("#tabli-2").addClass("tabmenu-li-selected");
+            $("#vc-block2").css("display","none");
+            $("#tabli-1").removeClass("tabmenu-li-selected");
+            startLoadTimeLine();
+            break;
+          }
+          default : {
+            $("#vc-block1").css("display","block");
+            $("#tabli-2").addClass("tabmenu-li-selected");
+            $("#vc-block2").css("display","none");
+            $("#tabli-1").removeClass("tabmenu-li-selected")
+          }
+        }
+    }
+
+    function ShowOrHidePanel(){
+		if($('#divSearchPanel').css('display')=="none")
+			$('#divSearchPanel').css('display','block');
+		else
+			$('#divSearchPanel').css('display','none');
+		if($('#divBtnShowPanel').css('display')=="none")
+			$('#divBtnShowPanel').css('display','block');
+		else
+			$('#divBtnShowPanel').css('display','none');  
+		resizeWindow();			
+	}
+	        
+</script>
+<% end %>
+
+<%= render :partial => 'voice_logs/voicelog_dialog' %>
+<%= render :partial => 'shared/voice_log_rmenu' %>
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+    <td class="div-cond-ctrl" valign="top">
+    	<div style="padding-left:0px; width:190px;" style="overflow:hidden;" id="divSearchPanel"><%= render :partial => 'voice_logs/voicelog_conds' %></div>
+		<div style="padding-left:0px; width:9px;" style="overflow:none;" id="divBtnShowPanel" style="display:none; padding-top:3px;"><a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a></div>
+    </td>
+    <td valign="top">
+      <div id="div-voice_log_tabs">
+        <div class="div-tabmenu-style1" id="vlrs-tabs">
+            <ul class="tabmenu-ul">
+              <li id="tabli-1" class="tabmenu-li tabmenu-li-selected"><a href="#" onclick="tabVCSelect(1)">Calls Result</a></li>
+              <% if @tl_enabled %>
+              <li id="tabli-2" class="tabmenu-li"><a href="#" onclick="tabVCSelect(2)">Calls Timeline</a></li>
+              <% end %>    
+            </ul>
+        </div>
+      </div>
+      <div id="vc-block1">
+        <div id="voice-timeline">
+            <%= render :partial => 'voice_logs/voicelog_timeline' %>
+        </div>
+      </div>
+      <div id="vc-block2">
+        <div id="ami-viewer">
+            <%= render :partial => 'shared/amiviewer' %>
+        </div>
+        <div id="voicelog-tbl">
+            <%= render :partial => 'shared/voice_logs_tbl' %>
+        </div>
+      </div>
+    </td>
+  </tr>
+</table>

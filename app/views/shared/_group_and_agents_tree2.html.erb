@@ -1,0 +1,194 @@
+<% content_for :header do %>
+
+  <%= stylesheet_src_path('/YUI.2.7/build/treeview/assets/skins/default/tree.css') %>
+  <%= stylesheet_src_path('/YUI.2.7/build/button/assets/skins/sam/button.css') %>
+  <%= javascript_src_path('/YUI.2.7/build/yahoo-dom-event/yahoo-dom-event.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/animation/animation-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/treeview/treeview-min.js') %>
+  <%#= javascript_src_path('/YUI.2.7/build/event/event-min.js') %>
+  <%#= javascript_src_path('/YUI.2.7/build/dom/dom-min.js') %>
+  <%#= javascript_src_path('/YUI.2.7/build/logger/logger-min.js') %>
+  <%#= javascript_src_path('/YUI.2.7/build/element/element-min.js') %>
+  <%#= javascript_src_path('/YUI.2.7/build/button/button-min.js') %>
+  <%#= javascript_src_path('/YUI.2.7/build/yuiloader/yuiloader-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/examples/treeview/assets/js/TaskNode.js') %>
+
+  <script type="text/javascript">
+    
+	var username = "<%= @username %>";
+    var tree;		
+	
+	function rebuildTree(){
+        
+        $.getJSON("<%= url_for(:controller => 'tree',:action => 'tree_source')%>?with_agent=true&node_type=task&manager=false&mycall=false&managerfilt=false&leader=false&unknown=true",function(data){
+            
+            tree = new YAHOO.widget.TreeView("treediv",data);
+
+            YAHOO.util.Event.on("expand", "click", function(e) {
+                tree.expandAll();
+                YAHOO.util.Event.preventDefault(e);
+            });
+            
+            YAHOO.util.Event.on("collapse", "click", function(e) {
+                tree.collapseAll();
+                YAHOO.util.Event.preventDefault(e);
+            });
+
+            tree.subscribe("labelClick", function(node) {
+                alert("X");
+                var node_id = node.data.NodeId;
+                var node_type = node.data.NodeType;
+                var key_search;
+
+                if(node_type == 'cate'){
+                  key_search = "cate=" + node_id.toString();
+                  var curnode = node.parent;
+                  while(!curnode.isRoot()){
+                     key_search = key_search + "," + curnode.data.NodeId;
+                     curnode = curnode.parent;
+                  }
+                }
+                else if(node_type == 'group') {
+                  key_search = "group=" + node_id.toString();
+                }
+                else if(node_type == 'agent'){
+                  key_search = "agent=" + node_id.toString();
+                }
+
+                try { onSearchVoice(key_search); } catch(e) {}
+
+            });
+
+            tree.subscribe("checkClick", function(node) {
+                $("#checked_nodes").val(getCheckedNodes().join(","));
+            });
+
+            function getCheckedNodes(nodes) {
+                nodes = nodes || tree.getRoot().children;
+                var checkedNodes = [];
+                for(var i=0, l=nodes.length; i<l; i=i+1) {
+                    var n = nodes[i];
+                    if (n.checkState === 2 ||n.checkState === 1) {
+                        if(n.data.NodeType == "agent"){
+                          checkedNodes.push(n.data.NodeId); // just using label for simplicity
+                        }
+                    }
+                    if (n.hasChildren()) {
+                      checkedNodes = checkedNodes.concat(getCheckedNodes(n.children));
+                    }
+                }
+                return checkedNodes;
+            }
+
+            var arrChkAgentId = [];
+            function setCheckedNodes(){
+                var chkAgentId = $("#checked_nodes").text();
+                arrChkAgentId = chkAgentId.split(",");
+                if(arrChkAgentId.length > 0){
+                    checkedSelectedNodes();
+                    //tree.getRoot().expandAll();
+                    collapseOrExpandNode();
+                }
+            }
+
+            function checkedSelectedNodes(nodes){
+              nodes = nodes || tree.getRoot().children;
+                
+              if(arrChkAgentId.length != 0){
+                  var node_arr = arrChkAgentId;
+				  var l=nodes.length, i=0;
+				  while(i<l){
+                    var node_label = nodes[i].data.NodeId;
+                    if(nodes[i].data.NodeType == "agent"){
+                        if(map_label(node_arr,node_label) != -1){
+                            nodes[i].check();
+                        }
+                    }
+                    if(nodes[i].hasChildren()){
+                      checkedSelectedNodes(nodes[i].children);
+                    }				  	
+					i++;
+				  }
+               }
+            }
+
+            function collapseOrExpandNode(nodes){
+                nodes = nodes || tree.getRoot().children;
+				var l=nodes.length, i=0;
+				while(i<l){				
+                  var n = nodes[i];
+                  if(n.checkState === 2 || n.checkState === 1){
+                    n.expandAll();
+                    if(nodes[i].hasChildren()){
+                        collapseOrExpandNode(nodes[i].children);
+                    }
+                  } else {
+                    n.collapseAll();
+                  }
+				  i++;
+                }
+            }
+            
+            function map_label(v,n){
+                var r = -1;
+                for(var i=0; i<v.length;i++){
+                    if(parseInt(v[i]) == parseInt(n)){
+                        r = i;
+                        break;
+                    }
+                }
+                return r;
+            }
+			
+			setCheckedNodes();
+            tree.render();
+            
+        });		
+	}
+ 
+    $(document).ready(function(){
+		rebuildTree();
+	});
+  </script>
+
+  <style type="text/css">
+
+    #treediv td{
+      font-family:Sans-serif;  
+      font-size:8pt;
+      padding-left:0px;
+      padding-right:1px;
+    }
+    #treediv {
+      width:250px;
+    }
+    #treediv table,tr {
+      border-collapse:collapse;
+      text-align:left;
+    }
+    #expandcontractdiv {
+      font-size:8pt;
+      background-color:#ccffff;
+      border-bottom:1px solid #99cccc;
+      width:100%;
+      text-align:center;
+      display:block;
+    }
+    .ico-site {
+      font-weight:bold;
+      color:lime;
+    }
+    .ygtvcheck0 { background: url('<%=image_src_path('/YUI.2.7/build/treeview/assets/check0.gif') %>') 0 0 no-repeat; width:14px; height:17px; cursor:pointer }
+    .ygtvcheck1 { background: url('<%=image_src_path('/YUI.2.7/build/treeview/assets/check2.gif') %>') 0 0 no-repeat; width:14px; height:17px; cursor:pointer }
+    .ygtvcheck2 { background: url('<%=image_src_path('/YUI.2.7/build/treeview/assets/check1.gif') %>') 0 0 no-repeat; background-position:center; width:14px; height:17px; cursor:pointer }
+           
+  </style>
+  
+<% end %>
+<div id="expandcontractdiv">
+  <a id="expand" href="#"><%= image_tag("tree_icon/expand_all.gif",{:border => 0, :align => 'absmiddle'}) %> Expand all</a> |
+  <a id="collapse" href="#"><%= image_tag("tree_icon/collapse_all.gif",{:border => 0, :align => 'absmiddle'}) %> Collapse all</a>
+</div>
+<div id="treediv" align="left"></div>
+<div id="tree_log" style="position:absolute; display:none"><%= text_area_tag('checked_nodes','',{:name => 'checked_nodes',:id => 'checked_nodes',:disabled => false}) %></div>
+<div id="treechk" style="display:none"></div>

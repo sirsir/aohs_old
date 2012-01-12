@@ -1,0 +1,170 @@
+<% content_for :header do %>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+
+      $(function(){
+        $(".tbl-category tr").mouseover(function(){
+          $(this).addClass('tr-selected');
+        }).mouseout(function(){
+          $(this).removeClass('tr-selected');
+        });
+        $("#defaultTabsStyle1 ul li").mouseover(function(){
+            $(this).addClass('defaultlihover');
+        }).mouseout(function(){
+            $(this).removeClass('defaultlihover');
+        });
+      });
+
+    });
+
+  </script>
+  <script type="text/javascript">
+      function del_category(id,name){
+          $("#delDialog").text("");
+
+          $("#delDialog").append("Are you sure to delete category \"<b>" + name + "</b>\"");
+          $("#delDialog").dialog("open");
+          $("#delDialog").dialog({
+            bgiframe: true,
+            title: "Deleting category...",
+            modal: true,
+            buttons:{
+              "Cancel": function(){ $(this).dialog("close"); },
+              "Ok": function(){ window.location = "<%=url_for(:controller => 'group_category',:action => 'delete')%>/" + id ; }
+            }
+          });
+      }
+      function del_category_type(id,name){
+          $("#delDialog").text("");
+          $("#delDialog").append("Are you sure to delete category's type \"<b>" + name + "</b>\"");
+          $("#delDialog").dialog("open");
+          $("#delDialog").dialog({
+            bgiframe: true,
+            title: "Deleting category's type...",
+            modal: true,
+            buttons:{
+              "Cancel": function(){ $(this).dialog("close"); },
+              "Ok": function(){ window.location = "<%=url_for(:controller => 'group_category_types',:action => 'delete') %>/" + id ; }
+            }
+          });
+      }
+      function selectCategoryTab(id){
+          window.location = "<%= url_for(:controller => 'group_category', :action => 'index')%>?tabc=" + id;
+      }
+          
+  </script>
+  <style>
+
+  </style>
+<% end %>
+<%
+  edit_gc = link_permission_require('group_categories','edit')
+  delete_gc = link_permission_require('group_categories','delete')
+  edit_gct = link_permission_require('group_category_types','edit')
+  delete_gct = link_permission_require('group_category_types','delete')
+  new_gct = link_permission_require('group_category_types','new') 
+%>
+
+<div class="div-menu-block">
+	<div class="menu-block">
+	    <table width="100%" cellpadding="0" cellspacing="0">
+	      <tr>
+	        <td align="left">
+	          <ul>
+	            <% if new_gct %>
+	            <li><%= link_image_tag('New Category\'s Type','new.png',{:controller=>"group_category_types",:action => 'new'},{:title => 'Add new category\'s type'}) %></li>
+	            <% end %>
+	            <% if edit_gct %>    
+	            <li><%= link_image_tag('Manage Tree','tree.png',{:controller=>"group_categories",:action => 'display_tree'},{:title => 'Manage display tree'}) %></li>
+	            <% end %>
+	          </ul>
+	        </td>
+	        <td align="right">
+	
+	        </td>
+	      </tr>
+	    </table>				
+	</div>
+</div>
+
+<div>
+<% unless @group_category_types.empty? %>
+	<div id="defaultTabsStyle1">
+  	<ul>
+    	<li id="tab-id0" onclick="selectCategoryTab(parseInt(0))" class="<%= (params[:tabc].to_i == 0 ? "defaultliselected" : "")%>">All</li>
+    	<% @group_category_types_all.each do |group_category_type| %>
+        	<li id="tab-id<%=group_category_type.id %>" class="<%= (params[:tabc].to_i == group_category_type.id ? "defaultliselected" : "")%>" onclick="selectCategoryTab(parseInt('<%=group_category_type.id %>'))"><%= group_category_type.name %></li>
+   	 	<% end %>
+  	</ul>
+</div>
+<% @group_category_types.each do |group_category_type| %>
+<div id="tbl-category" class="div-default-table">
+  <table id="tbl-id<%=group_category_type.id %>" cellpadding="0" cellspacing="0" class="tbl-hover">
+    <tr class="tname">
+      <td colspan="3"><%= group_category_type.name %></td>
+      <td colspan="1" style="border-left:0px;" align="right" width="200px">
+        <span style="font-weight:normal">
+        <% if link_permission_require('group_categories','new') %>
+        <%= link_image_tag('New','new.png',{:controller=>"group_categories",:action => 'new',:type_name => group_category_type.name},{:title => "Add new category"}) %>&nbsp;&nbsp;
+        <% end %>
+        <% if edit_gct %>
+        <%= link_image_tag('Edit','edit.png',{:controller=>"group_category_types", :action=>"edit",:id => group_category_type.id},{:title => 'Edit category type'}) %>&nbsp;&nbsp;
+        <% end  %>
+        <% if delete_gct %>
+        <%= link_image_tag('Delete','delete.png','#',{:onclick => "del_category_type(#{group_category_type.id},\"#{group_category_type.name}\")",:title => "Delete categery type"}) %>&nbsp;&nbsp;&nbsp; 
+        <% end %>
+        </span>
+      </td>
+    </tr>
+    <tr class="thead">
+      <th>No</th>
+      <th>Name</th>
+      <th>Description</th>
+	  <th>Action</th>
+    </tr>
+    <% unless group_category_type.nil? %>
+    <% group_category_type.categories.to_ary.each_with_index do |group_category,i| %>
+    <tr class="<%= cycle('odd','even') %>">
+      <td class="no"><%=i+1 %></td>
+      <td class="string" width="250px"><%=h group_category.value %></td>
+      <td class="string"> <%= group_category.description.blank? ? "-":group_category.description %> </td>
+	  <td align="center">
+      <% if edit_gc %>
+      <%= link_image_tag('','edit.png',{:controller=>"group_categories", :action=>"edit", :id=>group_category.id},{:title => 'Edit category'}) %>
+      &nbsp;&nbsp;&nbsp;<% end %> 
+      <% if delete_gc %>
+      <%= link_image_tag('','delete.png','#',{:onclick => "del_category(#{group_category.id},\"#{group_category.value}\")",:title => 'Delete catecory'}) %>
+      <% end %></td>
+    </tr>
+    <% end %>
+    <% else %>
+    <tr>
+      <td class="no">1</td>
+      <td colspan="4" class="none">Category cannot be found. Please create new category.</td>
+    </tr>
+    <% end %>
+  </table>
+</div>
+<% end %>
+<% else %>
+<div id="tbl01">
+  <table cellpadding="0" cellspacing="0">
+    <tr>
+      <td colspan="5" class="tblheader">Unknow category type</td>
+    </tr>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Edit</th>
+      <th>Delete</th>
+    </tr>
+    <tr>
+      <td class="no">1</td>
+      <td colspan="4" class="none">Category cannot be found. Please create new category.</td>
+    </tr>
+  </table>
+</div>
+<% end %>
+</div>

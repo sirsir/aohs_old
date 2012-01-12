@@ -1,0 +1,162 @@
+<% content_for :header do %>
+
+<% end %>
+
+<% content_for :header do %>
+
+  <script type="text/javascript">
+	
+	function startSync(){
+		Dialog.wait("Please wait while synchronize DnisAgent data.");
+		var url = "<%=url_for(:controller => 'dnis_agents',:action => 'sync') %>";
+		$.get(url,function(data){
+			Dialog.wait();
+			if (data != "true") {
+				alert(data);
+			}else{
+				window.location.reload();
+			}
+		});
+	}
+	
+    $(document).ready(function(){
+      $(function(){
+        $(".tbl-dnis_agent tr").mouseover(function(){
+          $(this).addClass('tr-selected');
+        }).mouseout(function(){
+          $(this).removeClass('tr-selected');
+        });
+      });
+
+    });
+
+    function del_dnis_agents(id,name){
+        $("#delDialog").text("");
+        $("#delDialog").append("Are you sure to delete \"<b>" + name + "</b>\"");
+        $("#delDialog").dialog("open");
+        $("#delDialog").dialog({
+          bgiframe: true,
+          title: "Deleting DnisAgent...",
+          modal: true,
+          buttons:{
+            "Cancel": function(){ $(this).dialog("close"); },
+            "Ok": function(){ window.location = "<%= url_for(:controller => 'dnis_agents',:action => 'delete') %>/" + id ; }
+          }
+        });
+    }
+	
+    function sort_link(name){
+        var url = "?dnis=" + jQuery.trim($("input[name=dnis]").val()) + "&ctilogin=" + jQuery.trim($("input[name=ctilogin]").val()) + "&team=" + jQuery.trim($("input[name=team]").val());
+		url = url + "&col=" + name + "&sort=<%=params[:sort] %>"; 
+        window.location.href = "<%= url_for(:controller => 'dnis_agents',:action => 'index') %>" + url;
+    }
+		
+    function showImport(){
+        var rurl = "<%=url_for(:controller => 'data',:action => 'import',:q => 'dnis_agents')%>";
+        var window1 = window.open(rurl,"",'menubar=no,scrollbars=yes,location=yes,resizable=yes,width=500,height=270');
+    }
+    function showExport(){
+        var rurl = "<%=url_for(:controller => 'data',:action => 'export',:q => 'dnis_agents') %>";
+		window.location = rurl;
+    }
+    function showFilter(){
+         if($("#div-FilterBox-ext").css("display") == "none"){
+            $("#div-FilterBox-ext").css("display","block");
+         }
+         else {
+            $("#div-FilterBox-ext").css("display","none");
+         }
+    }	
+    function filterClear(){
+		$("input[name=dnis]").val("");
+		$("input[name=ctilogin]").val("");
+        $("input[name=team]").val("");
+    }
+
+    function filterApply(){
+        var url = "?dnis=" + jQuery.trim($("input[name=dnis]").val()) + "&ctilogin=" + jQuery.trim($("input[name=ctilogin]").val()) + "&team=" + jQuery.trim($("input[name=team]").val());
+        window.location.href = "<%= url_for(:controller => 'dnis_agents',:action => 'index') %>" + url;
+    }
+  </script>
+  <style>
+
+  </style>
+<% end %>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('New DnisAgent','new.png',{:controller => "dnis_agents",:action => 'new'},{:title => 'New'}) %></li>
+            <li><%= link_image_tag('Import','folderup.png',"#",{:onclick => "showImport()",:title => 'Import users'}) %></li>
+            <li><%= link_image_tag('Export','export.png',"#",{:onclick => "showExport()",:title => 'Export users'}) %></li>
+			<li><%= link_image_tag('Synchronization','sync.png',"#",{:onclick => "startSync();",:title => 'Synchronization Data'}) %></li>
+			<li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Filetering extension'}) %></li>
+          </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+<%
+  edit = link_permission_require('dnis_agents','edit')
+  delete = link_permission_require('dnis_agents','delete')
+%>
+<div id="div-FilterBox-ext" class="div-FilterBox" <%= "style=\"display:none\"" if not @filter_enable %>>
+<fieldset>
+  <legend>DnisAgent Filter</legend>
+  <label>DNIS:</label> <input type="text" name="dnis" value="<%=params[:dnis] %>">
+  <label>CTI Login:</label> <input type="text" name="ctilogin" value="<%=params[:ctilogin] %>">
+  <label>Team:</label> <input type="text" name="team" value="<%=params[:team] %>">
+  &nbsp;&nbsp;&nbsp;<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
+  &nbsp;<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>
+</fieldset>
+</div>
+<div id="div-tbl-list-customer">
+<div class="div-tbl-default-style1">
+  <table class="tbl-dnis_agent" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td colspan="8" class="tbl-td-header">DnisAgents</td>
+    </tr>
+    <tr>
+      <th>No</th>
+	  <th width="140px"><a href="#" class="linksort" onclick="sort_link('dnis')">DNIS</a></th>
+      <th width="140px"><a href="#" class="linksort" onclick="sort_link('cti_login')">CTI Login</a></th>
+	  <th><a href="#" class="linksort" onclick="sort_link('team')">Team</a></th>
+	  <th width="140px"><a href="#" class="linksort" onclick="sort_link('cdate')">Created Date</a></th>
+	  <th width="140px"><a href="#" class="linksort" onclick="sort_link('udate')">Updated Date</a></th>
+      <th width="50px">Edit</th>
+      <th width="50px">Delete</th>
+    </tr>
+    <% unless @dnis_agents.empty? %>
+    <% @dnis_agents.each_with_index do |d,i| %>
+    <tr class="<%= cycle('tr-odd','tr-even') %>">
+      <td class="no"><%=(i+1)+($PER_PAGE*(@page.to_i-1)) %></td>
+      <td class="string"><%= d.dnis %></td>
+      <td class="string"><%= d.ctilogin %>&nbsp;</td>
+	  <td class="string"><%= d.team %>&nbsp;</td>
+	  <td clsss="date"><%= d.created_at.strftime("%Y-%m-%d %H:%M:%S") unless d.created_at.nil? %>&nbsp;</td>
+	  <td clsss="date"><%= d.updated_at.strftime("%Y-%m-%d %H:%M:%S") unless d.updated_at.nil? %>&nbsp;</td>
+      <td class="tool"><%= link_image_tag('','edit.png',{:controller => "dnis_agents",:action=>"edit", :id => d.id},{:title => 'Edit'}) %></td>
+      <td class="tool"><%= link_image_tag('','delete.png',"#",{:onclick => "del_dnis_agents(#{d.id},\"#{d.dnis}-#{d.ctilogin}\")",:title => 'Delete'}) %></td>
+    </tr>
+    <% end %>
+    <% else %>
+    <tr>
+      <td class="no">&nbsp;</td>
+      <td colspan="7" class="none"><span class="span-display-none">No record.</span></td>
+    </tr>
+    <% end %>
+    <tr>
+      <td colspan="8" class="pages">
+        <%= will_paginate(@dnis_agents) %>
+      </td>
+    </tr>
+  </table>
+</div>
+</div>

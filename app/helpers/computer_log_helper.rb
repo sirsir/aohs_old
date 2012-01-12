@@ -1,0 +1,2 @@
+module ComputerLogHelper
+end

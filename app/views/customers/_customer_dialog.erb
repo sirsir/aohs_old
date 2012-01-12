@@ -1,0 +1,108 @@
+<% content_for :header do %>
+
+<script type="text/javascript">
+
+    function InfoDialog(msg){
+		$("#AmiAdvw").css("display","none");
+        $("#cust-message").html(msg);
+        $("#cust-dialog").dialog("open");
+        $("#cust-dialog").dialog({
+            bgiframe: true,
+            modal: true,
+            buttons:{
+               "Close": function(){ $("#AmiAdvw").css("display","block"); $(this).dialog("close"); }
+            }
+        });
+    }
+    
+    function vc_export(type){
+
+        if(type)
+            str_type = "all";
+        else
+            str_type = "some";
+
+        getSearchKeys();
+
+        $.download("<%= url_for(:controller => 'customers',:action => 'export') %>",{
+            cust_name: customer_info.cust_name,
+            cust_id: customer_info.cust_id,
+            cust_phone: searchKey.cust_phone,
+            dateCondition: searchKey.dateCondition,
+            start_date: searchKey.stdate,
+            start_time: searchKey.sttime,
+            end_date: searchKey.eddate,
+            end_time: searchKey.edtime,
+            stdur: searchKey.stdu,
+            eddur: searchKey.eddu,            
+            page: ctrlPage.selectPage,
+			perpage: ctrlPage.perPage,
+            sortby: ctrlSort.colName,
+            od: ctrlSort.order,
+            calld: searchKey.calld,
+            display: str_type
+        });
+
+    }
+
+    function vc_print(type){
+
+      if(type)
+        str_type = "all";
+      else
+        str_type = "some";
+
+      getSearchKeys();
+
+      var params = {
+            cust_name: customer_info.cust_name,
+            cust_id: customer_info.cust_id,
+            cust_phone: searchKey.cust_phone,
+            dateCondition: searchKey.dateCondition,
+            start_date: searchKey.stdate,
+            start_time: searchKey.sttime,
+            end_date: searchKey.eddate,
+            end_time: searchKey.edtime,
+            page: ctrlPage.selectPage,
+			perpage: ctrlPage.perPage,
+            sortby: ctrlSort.colName,
+            stdur: searchKey.stdu,
+            eddur: searchKey.eddu,
+            od: ctrlSort.order,
+            calld: searchKey.calld,
+            display: str_type
+      }
+
+      var url = ""
+      $.each(params,function(key){
+         url += key + "=" + params[key] + "&";
+      });
+
+      window.open("<%= url_for(:controller => 'customers',:action => 'print') %>?" + url,"Print","menubar=yes,scrollbars=yes,location=no");
+  }
+
+</script>
+
+<% end %>
+
+<div id="vc_dialog" title="Customer Calls" style="display:none"></div>
+
+<div id="cust-dialog" title="Search customer" style="display:none;">
+  <span id="cust-message"></span>
+</div>
+<div id="phone-deldialog" title="Deleting" style="display:none;">
+  <span id="cust-message2"></span>
+</div>
+<div id="phone-savedialog" title="Saving" style="display:none;">
+  <span id="cust-message3"></span>
+</div>
+<div id="searchbyphone" title="Enter phone number" style="display:none">
+  <table cellspacing="0">
+    <tr>
+      <td><label>Phone number:</label></td>
+    </tr>
+    <tr>
+      <td><input type="text" name="phonenum" size="15" maxlength="15"></td>
+    </tr>
+  </table>
+</div>

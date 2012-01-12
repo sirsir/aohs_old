@@ -1,0 +1,27 @@
+# == Schema Information
+# Schema version: 20090619045826
+#
+# Table name: module_files
+#
+#  id               :integer(4)      not null, primary key
+#  filename         :string(255)
+#  version          :string(255)
+#  filetype         :string(255)
+#  client_module_id :integer(4)
+#  created_at       :datetime
+#  updated_at       :datetime
+#
+
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  filename: MyString
+  version: MyString
+  filetype: MyString
+  client_module_id: 1
+
+two:
+  filename: MyString
+  version: MyString
+  filetype: MyString
+  client_module_id: 1

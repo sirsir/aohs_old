@@ -1,0 +1,46 @@
+<% @editcf = permission_by_name('configurations-upd') %>
+
+<% content_for :header do %>
+
+  <%= stylesheet_src_path('/jquery/jquery.treeview/jquery.treeview.css') %>
+  <%= javascript_src_path('/jquery/jquery.treeview/jquery.treeview.js') %>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+
+      $(window).bind("resize", resizeWindow);
+      function resizeWindow(e) {
+        var intBrowserHeight = $(window).height();
+        var intBrowserWidth = $(window).width();
+
+        $("#div-confTree").css("height",intBrowserHeight-$("#header").height());
+      }
+      resizeWindow();
+        
+    });
+
+  </script>
+
+  <style>
+
+  </style>
+<% end %>
+
+<% content_for :submenu do %>
+<div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('New Configuration','new.png',{:action => 'new'}) %></li>
+          </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+
+<%= render :partial => 'configurations/client' %>

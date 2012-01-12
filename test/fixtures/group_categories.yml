@@ -1,0 +1,20 @@
+# == Schema Information
+# Schema version: 20100402074157
+#
+# Table name: group_categories
+#
+#  id                     :integer(11)     not null, primary key
+#  group_category_type_id :integer(10)     default(0), not null
+#  value                  :string(255)
+#  description            :string(255)
+#  created_at             :datetime
+#  updated_at             :datetime
+#
+
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  value: MyString
+
+two:
+  value: MyString

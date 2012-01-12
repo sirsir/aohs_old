@@ -1,0 +1,130 @@
+/*Copy of styles exist in AccountCreationSkin.css.
+  Any changes in here must be done in AccountCreationSkin.css as well
+*/
+
+body 
+{
+    background-color:#515151;
+    padding:0px;
+    margin:0px;
+    font-family: verdana, arial, helvetica, sans-serif;
+}
+
+a,a:link,a:visited
+{
+    text-decoration:none;
+    color:#000000;
+    cursor:pointer;
+    cursor:hand;
+}
+    
+a:hover,a:active
+{
+    text-decoration:underline;
+    border:0px
+}
+
+div.Xbcgc 
+{
+    color:#ffffff;
+    width:197px;
+    height:135px;
+    overflow:hidden;
+    margin:3px;
+    background-position:0 -18px;
+}
+
+h3 
+{
+    display:block;
+    height:18px;
+    line-height:18px;
+    font-size:13px;
+    margin:0;
+    padding:0px 0px 0px 7px;
+    color:#000000;
+}
+
+h3.XbcGamertagSilver
+{
+    background-position:0px 0px;
+}
+h3.XbcGamertagGold 
+{
+    background-position:0px -18px;
+}
+.XbcgcInfo 
+{
+    background-position:0px -36px;
+    margin:0;width:197px;
+    height:79px;
+    font-size:10px;
+}
+
+.XbcgcStats 
+{
+    width:124px;
+    float:left;
+    margin-top:10px;
+}
+
+.XbcgcStats p 
+{
+    display:block;
+    font-size:10px;
+    margin:3px 0 3px 0;
+    padding:0px 5px 0px 5px;
+    border-bottom:1px solid #898989;
+    height:15px;
+}
+.XbcgcGamertile
+{
+    margin:3px 0 0 7px;
+    float:left;
+    border:1px solid #AEAEAE;
+}
+
+.XbcgcGames 
+{
+    height:40px;
+    line-height:0px;
+    font-size:10px;
+    margin:0 0 0 1px;
+    font-size:10px;
+}
+
+.XbcgcGames img 
+{
+    margin:2px 0 0 6px;
+    border:0px;
+}
+.XbcFLAL 
+{
+    float:left;
+    text-align:left;
+}
+
+.XbcFRAR 
+{
+    float:right;
+    text-align:right;
+}
+
+.XbcgcContainer div.Xbcgc, .XbcgcContainer h3, .XbcgcContainer .XbcgcInfo
+{
+    background-image:url(/xweb/lib/images/gamercardForumsImagesheet.gif);
+}
+.XbcgcContainer01 div.Xbcgc, .XbcgcContainer01 h3, .XbcgcContainer01 .XbcgcInfo
+{
+    background-image:url(/xweb/lib/images/gamercardForumsImagesheet01.gif);
+}
+
+.XbcgcContainer04 div.Xbcgc, .XbcgcContainer04 h3, .XbcgcContainer04 .XbcgcInfo
+{
+    background-image:url(/xweb/lib/images/gamercardForumsImagesheet04.gif);
+}
+
+.XbcgcContainer05 div.Xbcgc, .XbcgcContainer05 h3, .XbcgcContainer05 .XbcgcInfo
+{
+    background-image:url(/xweb/lib/images/gamercardForumsImagesheet05.gif);
+}

@@ -1,0 +1,28 @@
+# == Schema Information
+# Schema version: 20100402074157
+#
+# Table name: result_keywords
+#
+#  id           :integer(20)     not null, primary key
+#  start_msec   :integer(10)
+#  end_msec     :integer(10)
+#  voice_log_id :integer(20)     not null
+#  keyword_id   :integer(10)     default(0), not null
+#  created_at   :datetime
+#  updated_at   :datetime
+#  edit_status  :string(1)
+#
+
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  voice_log_id: 1
+  start_msec: 1
+  end_msec: 1
+  keyword: MyString
+
+two:
+  voice_log_id: 1
+  start_msec: 1
+  end_msec: 1
+  keyword: MyString

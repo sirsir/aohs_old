@@ -1,0 +1,183 @@
+<%  content_for :header do %>
+<script type="text/javascript">
+	
+    function del_agent(id,ext){
+        $("#delDialog").text("");
+        $("#delDialog").append("Are you sure to delete extension number \"<b>" + ext + "</b>\"");
+        $("#delDialog").dialog("open");
+        $("#delDialog").dialog({
+          bgiframe: true,
+          title: "Deleting Extension...",
+          modal: true,
+          buttons:{
+            "Cancel": function(){ $(this).dialog("close"); },
+            "Ok": function(){ window.location = "<%= url_for(:controller => 'extension',:action => 'delete') %>/" + id ; }
+          }
+        });
+    }
+	
+  	function getfilterKeys(){
+		return {
+			user: $("input[name=username]").val(),
+			agent_id: $("input[name=agent_id]").val(),
+			ext: $("input[name=ext]").val(),
+			dids: $("input[name=dids]").val()
+		}
+	}
+	
+    function sort_link(name){
+	  var d = getfilterKeys();
+	  d.col = name;
+	  d.sort = App.switch_order("<%=params[:sort] %>");
+      window.location = "<%= url_for(:controller => 'extension') %>?" +  App.make_query(d);
+    }
+	
+    function go_export()
+    {
+      if($("#exportchoice").css("display") == "none")
+      {  $("#exportchoice").show("slow");$("#importchoice").css("display","none"); }
+      else
+      {  $("#exportchoice").hide("slow");$("#importchoice").css("display","none"); }
+    }
+
+    function go_import()
+    {
+      if($("#importchoice").css("display") == "none")
+      { $("#importchoice").show("slow");$("#exportchoice").css("display","none"); }
+      else
+      { $("#importchoice").hide("slow");$("#exportchoice").css("display","none");}
+    }
+	
+    function showFilter(){
+         if($("#div-FilterBox-ext").css("display") == "none"){
+            $("#div-FilterBox-ext").css("display","block");
+         }
+         else {
+            $("#div-FilterBox-ext").css("display","none");
+         }
+    }
+
+    function filterClear(){
+		$("input[name=username]").val("");
+		$("input[name=agent_id]").val("");
+        $("input[name=ext]").val("");
+        $("input[name=dids]").val("");
+    }
+
+    function filterApply(){
+		var url = App.make_query(getfilterKeys());
+        window.location.href = "<%= url_for(:controller => 'extension',:action => 'index') %>?" + url;
+    }
+	 
+</script>
+<%  end %>
+<%
+  edit = link_permission_require('extension','edit')
+  delete = link_permission_require('extension','delete')
+%>
+
+<div class="div-menu-block">
+	<div class="menu-block">
+	    <table width="100%" cellpadding="0" cellspacing="0">
+	      <tr>
+	        <td align="left">
+	          <ul>
+	            <% if link_permission_require('extension','new') %>
+	            <li><%= link_image_tag('Add extension','new.png',{:controller => 'extension',:action => 'new'},{:title => 'Add new extension'}) %> </li>
+	            <% end %>
+	            <% if link_permission_require('extension','csv_import') %>
+	            <li><%= link_image_tag('Import','import.png',{:controller => 'extension',:action =>'import'},{:title => 'Import extension'}) %></li>
+	            <% end %>
+	            <% if link_permission_require('extension','export') %>
+	            <li><%= link_image_tag('Export','export.png',{:controller => 'extension',:action => 'export'},{:title => 'Export extension'}) %></li>
+	            <% end %>
+		    <li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Filetering extension'}) %></li>
+		    <li><%= link_to("Mapping Result",{:controller => "extension", :action => "result"},{:target => "_blank"}) %></li>
+	          </ul>
+	        </td>
+	        <td align="right">
+	        	<%= will_paginate(@extension) %>	
+	        </td>
+	      </tr>
+	    </table>		
+	</div>
+	<div id="div-FilterBox-ext" class="filter-block">
+		<fieldset>
+		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		  	<tr>
+		  		<td align="left">
+				    <label>Extension:</label> <input type="text" name="ext" value="<%=params[:ext] %>">
+					<label>Did(s):</label> <input type="text" name="dids" value="<%=params[:dids] %>">
+					<label>Username:</label> <input type="text" name="username" value="<%=params[:user] %>">
+					<label>Agent ID:</label> <input type="text" name="agent_id" value="<%=params[:agent_id] %>">
+  				</td>
+				<td align="right">
+					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
+					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
+				</td>
+			</tr>
+		  </table>
+		</fieldset>		
+	</div>
+</div>	
+
+<div id="tbl-extension" class="div-default-table">
+	<table cellpadding="0" cellspacing="0" class="tbl-hover">
+    <tr class="tname">
+        <td colspan="9" class="tbl-td-header">Phone extension</td>
+    </tr>    
+    <tr class="thead">
+      <th>No</th>
+      <th><a href="#" class="linksort" onclick="sort_link('ext')">Extension number</a></th>
+	  <th>DIDs Number</th>
+      <th>Username</th>
+	  <th>Agent ID</th>
+	  <th>Remote IP</th>
+	  <th>Last update</th>
+      <% if edit or delete %>
+      <th>Action</th>
+      <% end %>   
+    </tr>
+      <%unless @extension.empty?%>
+        <% @extension.each_with_index do |ext,i| %>
+        <tr class="<%= cycle('odd','even') %>">
+        <td class="no"><%=(i+1)+($PER_PAGE*((@page.nil? ? 1 : @page).to_i-1)) %></td>
+        <td width="140px"><%= ext.number unless ext.number.nil? %>&nbsp;</td>
+        <% unless ext.dids.blank?
+              did_list = []
+              ext.dids.each  do |d|
+                  did_list << d.number
+              end
+              did_number = did_list.join(", ")
+              else
+              did_number = "&nbsp;"
+              end%>
+        <td><%= did_number  %></td>		
+        <% uext  = ExtensionToAgentMap.find(:first,:conditions => {:extension => ext.number }) %>
+		<% uif = uext.blank? ? nil : User.find(uext.agent_id) %>
+        <td width="140px"><%= uif.nil? ? "&nbsp;" : uif.login %>&nbsp;</td>
+		<td width="100px"><%= uif.nil? ? "&nbsp;" : uif.cti_agent_id %>&nbsp;</td>
+		<% cws = ext.cws %>
+		<td width="120px"><%= (cws.nil? ? "&nbsp;" : cws.remote_ip) %>&nbsp;</td>
+		<td width="120px"><%= (cws.nil? ? "&nbsp;" : cws.check_time.strftime("%Y-%m-%d %H:%M:%S")) %>&nbsp;</td>
+        <% if edit or delete %>
+        	<td class="tool">
+        	<%= link_image_tag('','edit.png',{:controller => 'extension',:action=>"edit", :id => ext.id},{:title => 'Edit'}) %>
+        	<%= link_image_tag('','delete.png',"#",{:onclick => "del_agent(#{ext.id},\"#{ext.number}\")",:title => 'Delete'}) %>
+			</td>
+        <% end %>
+        </tr>
+       <%end%>
+      <%else%>
+        <tr>
+          <td class="no">&nbsp;</td>
+          <td colspan="7" align="center">No record(s).</td>
+        </tr>
+      <%end%>
+      <tr>
+        <td colspan="9" class="pages">
+          
+        </td>
+      </tr>
+  </table>
+</div>

@@ -1,0 +1,15 @@
+div#qTip {
+ padding: 2px;
+ padding-left:4px;
+ padding-right:4px;
+ border: 1px solid #ffffff;
+ border-right: 1px;
+ border-bottom: 1px;
+ display: none;
+ background: #7aa7ff;
+ color: #FFF;
+ font: normal 9px Verdana, Arial, sans-serif;
+ text-align: left;
+ position: absolute;
+ z-index: 1000;
+}

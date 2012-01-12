@@ -1,0 +1,55 @@
+<% content_for :header do %>
+    <style>
+      body, html { margin: 0; padding: 0 }
+      #div-form-upload {
+        border:1px solid #cccccc;
+        background: #edecec;
+        padding:5px;
+        margin:10px;
+      }
+      .span-upload {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        font-size:14px;
+        display:block;
+        padding:5px;
+        border-bottom:1px solid #cccccc;
+      }
+      #div-ctrl-control {
+        margin: 10px;
+        padding: 5px;
+      }
+      .fupload {
+          width:300px;
+          height:20px;
+      }
+      .btAccept {
+          font-weight: bold;
+          padding-left:5px;
+          padding-right:5px;
+      }
+    </style>
+<% end %>
+<div id="div-form-upload">
+  <span class="span-upload">Import data:</span>
+  <div id="div-ctrl-control">
+    <table>
+      <tr>
+        <th>Files</th>
+        <th>Found record(s)</th>
+      </tr>
+      <% @result.each do |rs| %>
+      <tr>
+        <td><%= rs[:src_name] %></td>
+        <td><%= rs[:records] %></td>
+      </tr>
+      <% end %>
+    </table>
+    <div style="border-top:1px solid #cccccc; padding:5px;">
+      <input type="button" value="Import Data" class="btAccept">&nbsp;&nbsp;&nbsp;<input type="button" value="Cancel">
+    </div>    
+  </div>
+</div>
+
+

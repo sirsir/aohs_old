@@ -1,0 +1,69 @@
+<% content_for :header do %>
+    <style>
+      body, html { margin: 0; padding: 0 }
+      #div-form-upload {
+        border:1px solid #cccccc;
+        background: #edecec;
+        padding:5px;
+        margin:10px;
+      }
+      .span-upload {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        font-size:14px;
+        display:block;
+        padding:5px;
+        border-bottom:1px solid #cccccc;
+      }
+      #div-ctrl-control {
+        margin: 10px;
+        padding: 5px;
+      }
+      .fupload {
+          width:300px;
+          height:20px;
+      }
+      .btAccept {
+          font-weight: bold;
+          padding-left:5px;
+          padding-right:5px;
+          padding-top:3px;
+          padding-bottom:3px;
+      }
+      .div-error {
+          background: #ffe7d0;
+          border:1px solid #ff9933;
+          margin-top:5px;
+          margin-bottom:8px;
+          padding:3px;
+      }
+      .txtfm { font-size:12px;}
+    </style>
+
+<% end %>
+
+<div id="div-form-upload">
+  <span class="span-upload">Import data: <%= @upload_type %></span>
+  <div id="div-ctrl-control">
+    <span>
+      Please choose CSV source file to upload (UTF-8) only. <br> Before import data, please check data, file encoding and file format.<br>
+    </span>
+    <div style="margin-top:10px;">
+      <% if flash.has_key?(:uperror) %>
+      <div class="div-error"><%= flash[:uperror]%></div>
+      <% end %>
+      <% form_tag({:action => 'upload_file',:q => @upload_type},:multipart => true) do |f|  %>
+        <p><label><b>Source file</b></label> :
+        <%= file_field 'upload', 'datafile', {:class => 'fupload'} %></p>
+        <br/>
+        <span class="txtfm"><b>File format :</b> <br/>&nbsp;- The first line of file is a header containing the column names<br/>&nbsp;- Data format : <u><%= @upload_format %></u></span>
+        <br/>
+        <div style="border-top:1px solid #cccccc; padding:5px; margin-top:5px;">  
+        <center><%= submit_tag "Upload", {:class => 'btAccept'} %></center>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+

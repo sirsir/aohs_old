@@ -1,0 +1,21 @@
+# == Schema Information
+# Schema version: 20100402074157
+#
+# Table name: group_categorizations
+#
+#  id                :integer(11)     not null, primary key
+#  group_id          :integer(10)     default(0), not null
+#  group_category_id :integer(10)     default(0), not null
+#  created_at        :datetime
+#  updated_at        :datetime
+#
+
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  group_id: 1
+  group_category_id: 1
+
+two:
+  group_id: 1
+  group_category_id: 1

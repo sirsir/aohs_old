@@ -1,0 +1,422 @@
+<%
+  edit = link_permission_require('keywords','edit')
+  delete = link_permission_require('keywords','delete')
+  if not edit
+      delete_cols = - 1
+  else
+      delete_cols = 0
+  end
+%>
+<% content_for :header do %>
+<%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
+     <%= stylesheet_src_path('cssreport.css') %>
+     <%= javascript_src_path('/jquery/jquery.autocomplete/jquery.autocomplete.js') %>
+     <%= javascript_src_path('/jquery/jquery.autocomplete/lib/jquery.dimensions.js') %>
+     <%= stylesheet_src_path('/jquery/jquery.autocomplete/jquery.autocomplete.css') %>
+	 <%= javascript_src_path('webtoolkit.url.js') %>
+  <style type="text/css">
+    #search_dialog {
+      display:none;
+    }   
+   .tbl-report th a, .tbl-report th a:visited { text-decoration:underline; color:#000000;} 
+   .input-date-picker {
+	  	  background-repeat:no-repeat;
+		  background-position:right;
+	  	  background-image:url('<%=image_src_path('/images/calendar.png') %>');   
+		  width:90px;	
+   }	 
+  </style>
+  <%= javascript_src_path 'webtoolkit.url.js' %>
+<script type="text/javascript">
+  var kwg_list = [<%= @kwg.map{|kwg| "'#{kwg.name}'"}.join(",") %>];
+  var statisticsKey = {
+     period: "<%= @period %>",
+     sec: "<%= params[:sec] %>",
+     sort: "<%= params[:sort] %>",
+     od: "<%= params[:od] %>",
+     stdate: "<%= params[:stdate] %>",
+     eddate: "<%= params[:eddate] %>",
+     page: "<%= params[:page] %>",
+     keywn: "<%= params[:keywn] %>",
+     keywg: "<%= params[:keywg] %>",
+     keywg_id: "<%= params[:keywg_id] %>"
+  }
+
+  function getStatisticsParamsUrl(){
+      var srcUrl = "";
+      $.each(statisticsKey,function(key){
+		  if((key=="keywn") || (key=="keywg")){
+				srcUrl += key + "=" + Url.encode(statisticsKey[key]) + "&";
+			} else {	
+        		srcUrl += key + "=" + statisticsKey[key] + "&"; 
+			}
+      });      
+	  return srcUrl;
+  }
+
+  function sort_link(key){
+      
+     statisticsKey.sort = key;
+     if(statisticsKey.od == "desc"){
+         statisticsKey.od = "asc";
+     }else if(statisticsKey.od == "asc"){
+         statisticsKey.od = "desc";
+     }else {
+         statisticsKey.od = "desc";
+     }
+
+     var url = "<%= url_for(:controller => 'keywords') %>?" + getStatisticsParamsUrl();
+     window.location = url;
+
+   }
+
+  function clickTabPeriod(period){
+    statisticsKey.period = period;
+	statisticsKey.page = 1;
+    var url = getStatisticsParamsUrl();
+    window.location = "<%= url_for(:controller => 'keywords',:action => 'index') %>?" + url;
+  }
+
+  function clickTabType(type){
+    statisticsKey.sec = type;
+	statisticsKey.page = 1;
+    var url = getStatisticsParamsUrl();
+    window.location = "<%= url_for(:controller => 'keywords',:action => 'index') %>?" + url;
+  }
+
+   function csv_export(){
+     var url = "<%=url_for(:controller => 'keywords',:action => 'export')%>?" + getStatisticsParamsUrl();
+     window.location = url;
+       
+   }
+   function pdf_export(){
+     var url = "<%= url_for(:controller => 'keywords',:action => 'print') %>?" + getStatisticsParamsUrl();
+     //window.open(url,"Export","menubar=yes,location=no,scrollbars=yes"); 
+	 window.location = url; 
+   }
+   
+   function find_keyword(){
+      var search_key = $("#key").val();
+   }
+
+   function selectKeywordGroups(kwg_id){
+      statisticsKey.sec = "keywords";
+      statisticsKey.keywg_id = kwg_id; 
+      window.location = "<%= url_for(:controller => 'keywords',:action => 'index') %>?" + getStatisticsParamsUrl();
+   }
+  
+   function del_keyword(id,name){
+      $("#delDialog").text("");
+      $("#delDialog").append("Are you sure to delete keyword \"<b>" + name + "</b>\"");
+      $("#delDialog").dialog("open");
+      $("#delDialog").dialog({
+        bgiframe: true,
+        title: "Deleting keyword...",
+        modal: true,
+        buttons:{
+          "Cancel": function(){ $(this).dialog("close"); },
+          "Ok": function(){ window.location = "<%= url_for(:controller => 'keywords',:action => 'delete') %>/" + id ; }
+        }
+      });
+    }
+  function keywordAgent(sec,kw,p,d){
+     
+	 var st = "";
+	 var ed = "";
+	 
+     if (d == "all") {
+	    st = "<%=@display_columns.first %>";
+		ed = "<%=@display_columns.last %>";
+	 }
+	 
+     var strUrl = "<%=url_for(:controller => 'keywords',:action => 'keywords_agents') %>?type=" + sec + "&id=" + kw + "&period=" + p + "&d=" + d + "&st=" + st + "&ed=" + ed + "&view=agent";
+     window.open(strUrl,"Keywords","menubar=yes,location=no,scrollbars=yes,resizable=yes");
+      
+  }
+    function showFilter(){
+     if($("#div-FilterBox-keywords").css("display") == "none"){
+        $("#div-FilterBox-keywords").css("display","block");
+     }
+     else {
+        $("#div-FilterBox-keywords").css("display","none");
+     }
+    }
+		function resize(){
+			var winWidth = $(window).width();
+			var diff = parseInt("<%= (edit == true ? 35 : 0) %>");
+			$("#tblScoroll").css('width',winWidth-370-diff);
+		}
+   $(document).ready(function(){
+		
+		$(window).bind('resize',resize);
+		resize();
+		
+      $("input[name=keywordGroup]").autocomplete(kwg_list,{
+            minChars: 0,
+            autoFill: true
+      });
+      
+      $(function(){
+        $("#tabsStyle1 ul li").mouseover(function(){
+            $(this).addClass('lihover');
+        }).mouseout(function(){
+            $(this).removeClass('lihover');
+        });
+        $("#tabsStyle2 ul li").mouseover(function(){
+            $(this).addClass('lihover');
+        }).mouseout(function(){
+            $(this).removeClass('lihover');
+        });
+		//$(".div-default-table tr").mouseover(function(){
+		//	var row = $(this).attr("row_no")
+		//	$(".tr-at" + row).addClass("hover");
+		//}).mouseout(function(){
+		//	var row = $(this).attr("row_no")
+		//	$(".tr-at" + row).removeClass("hover");			
+		//});		        
+      });
+
+      $("input[name=keywordDateFrom]").datepicker({ showAnim: null,duration: 0,dateFormat: 'yy-mm-dd' });
+      $("input[name=keywordDateTo]").datepicker({ showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
+      $(".input-date-picker").mask("9999-99-99");
+   }); 
+
+   function filterApply()
+   {
+   	  statisticsKey.page = 1;
+      statisticsKey.keywn = Url.encode(jQuery.trim($("input[name=keywordName]").val()));
+	  try {
+	  	statisticsKey.stdate = jQuery.trim($("select[name=fr] option:selected").val());	
+		statisticsKey.eddate = jQuery.trim($("select[name=to] option:selected").val());	  
+	  } catch(e){
+	  	statisticsKey.stdate = jQuery.trim($("input[name=fr]").val());	
+		statisticsKey.eddate = jQuery.trim($("input[name=to]").val());	  	
+	  }
+      statisticsKey.keywg = Url.encode(jQuery.trim($("#keywordGroup").val()));
+	  if (checkPeriodCond(statisticsKey.stdate, statisticsKey.eddate)) {
+	  	window.location = "<%= url_for(:controller => 'keywords',:action => 'index') %>?" + getStatisticsParamsUrl();
+	  } else {
+	  	alert("Start date must be less than end date, Please check your condition again.");
+	  }
+      
+   }
+   function filterClear()
+   {
+   	  statisticsKey.page = 1;
+      $("input[name=keywordName]").val("");
+      $("input[name=keywordDateFrom]").val("");
+      $("input[name=keywordDateTo]").val("");
+     // $("input[name=keywordGroup]").val("");
+      $("#keywordGroup").val("");
+     // $("#kwgroupselect option[value='']").attr("selected",true);
+      statisticsKey.keywg_id = "";
+      statisticsKey.eddate = "";
+      statisticsKey.stdate = "";
+      statisticsKey.keywg = "";
+      statisticsKey.keywn = ""; 
+   }
+    <% if permission_by_name('data-keywords') %>
+    function showImport(){
+        var rurl = "<%= url_for(:controller => 'data',:action => 'import',:q => 'keywords') %>";
+        var window1 = window.open(rurl,"",'menubar=no,scrollbars=yes,location=yes,resizable=yes,width=500,height=270');
+    }
+    function showExport(){
+        var rurl = "<%=url_for(:controller => 'data',:action => 'export',:q => 'keywords') %>";
+        var window1 = window.open(rurl,"",'menubar=no,scrollbars=yes,location=yes,resizable=yes,width=10,height=10');
+    }
+    <% end %>
+</script>
+<% end %>
+<div class="div-menu-block">
+	<div class="menu-block">
+	    <table width="100%" cellpadding="0" cellspacing="0">
+	      <tr>
+	        <td align="left">
+	          <ul>
+	            <% if link_permission_require('keywords','new') %>
+	            <li><%= link_image_tag('New Keyword','new.png',{:action=>"new"},{:title => 'Add new keyword'})%></li>           
+	            <% end %>
+	            <% if link_permission_require('keywords','export') %>
+	            <li><%= link_image_tag('CSV','mimetype/spreadsheet.png','#',{:id => 'export',:title => "Text CSV", :onclick=>"csv_export()"}) %></li>
+	            <li><%= link_image_tag('PDF','mimetype/pdf.png','#',{:id => 'print',:title => "PDF", :onclick=>"pdf_export()"}) %></li>
+	            <% end %>
+	            <% if permission_by_name('data-keywords') %>
+	            <li><%= link_image_tag('Import','import.png',"#",{:onclick => "showImport()",:title => 'Import keywords ang keyword groups'}) %></li>
+	            <li><%= link_image_tag('Export','export.png',"#",{:onclick => "showExport()",:title => 'Export keywords ang keyword groups'}) %></li>
+	            <% end %>				
+	            <li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Filtering keyword report'}) %></li>
+	          </ul>
+	        </td>
+	        <td align="right">
+				<div id="paging"><%= will_paginate(@keywords2) %></div>
+	        </td>
+	      </tr>
+	    </table>
+	</div>
+	<div id="div-FilterBox-keywords" class="filter-block">
+		<fieldset>
+		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		  	<tr>
+		  		<td align="left">
+      <!--  <label>Keyword:</label> <input type="text" name="keywordName" value="<%=params[:keywn]%>">&nbsp;&nbsp; -->
+        <label>Keyword:</label> <input type="text" id="keywordGroup" name="keywordGroup" value="<%=params[:keywg]%>">&nbsp;&nbsp;		
+        <label><%=@period %> period:</label>
+					 	<% if @period == "weekly" %>
+						<%= weekly_picker(:fr,params[:stdate],@nweeks) %> - <%= weekly_picker(:to,params[:eddate],@nweeks) %>
+						<% end %>
+						<% if @period == "monthly" %>
+						<%= monthly_picker(:fr,params[:stdate],@nmonths) %> - <%= monthly_picker(:to,params[:eddate],@nmonths) %>
+						<% end %>
+						<% if @period == "daily" %>
+  					    <input type="text" class="input-date-picker" name="fr" value="<%= params[:stdate] %>"> - <input class="input-date-picker" type="text" name="to" value="<%= params[:eddate] %>">
+		  				<% end %>
+		  		</td>
+				<td align="right">
+					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
+					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
+				</td>
+			</tr>
+		  </table>
+		</fieldset>		
+	</div>	
+</div>
+
+
+<table cellpadding="0" cellspacing="0" width="100%" class="tbl-report-keywords-layout">
+<tr>
+  <td>
+    <div id="tabsStyle1">
+        <ul>
+            <li id="tab1" onclick="clickTabPeriod('d')" class="<%= 'liselected' if @period == 'daily' %>">Daily</li>
+            <li id="tab2" onclick="clickTabPeriod('w')" class="<%= 'liselected' if @period == 'weekly' %>">Weekly</li>
+            <li id="tab3" onclick="clickTabPeriod('m')" class="<%= 'liselected' if @period == 'monthly' %>">Monthly</li>
+        </ul>
+    </div>
+    <div id="tabsStyle2">
+       <ul>
+         <li id="tab7" onclick="clickTabType('action')" class="<%= 'liselected2' if @sub_type == "action" %>">Action</li>
+         <li id="tab6" onclick="clickTabType('ng')" class="<%= 'liselected2' if @sub_type == "ng" %>">NG</li>
+         <li id="tab5" onclick="clickTabType('must')" class="<%= 'liselected2' if @sub_type == "must" %>">Must</li>
+         <li id="tab4" onclick="clickTabType('keywords')" class="<%= 'liselected2' if @sub_type == "keywords" %>">All Keywords</li>
+      <!--   <li id="tab8" onclick="clickTabType('group')" class="<%= 'liselected2' if @sub_type == "group" %>">Keyword group</li> -->
+       </ul>
+    </div>
+<div id="tbl-keywords" class="div-default-table">
+	<table cellpadding="0" cellspacing="0" class="tbl-hover-2" width="100%">
+        <tr class="thead">
+            <th rowspan="2" style='padding:14px;'>No</th>
+            <% if @sub_type != "group" %>
+			<th rowspan="2" width="220px"><a href="#" class="linksort" onclick="sort_link('name')">Name</a></th>
+         <!--   <th rowspan="2" width="110px"><a href="#" onclick="sort_link('group')">Keyword<br/>Group</a></th> -->
+            <th rowspan="2" width="50px"><a href="#" class="linksort" onclick="sort_link('type')">Type</a></th> 
+			<% else %>
+			<th rowspan="2" width="270px"><a href="#" class="linksort" onclick="sort_link('name')">Name</a></th>
+            <% end %>  
+            <th rowspan="2" width="60px"><a href="#" class="linksort" onclick="sort_link('total')">Total</a></th>
+			<td valign="top" style="padding:0px; margin:0px; background:none;" rowspan="<%= @keywords.length + 3 + 1 %>">
+				<div id="tblScoroll" class="div-default-table" style="margin:0px; overflow:hidden; overflow-x:scroll; width:300px;">
+				<table cellpadding="0" cellspacing="0" width="100%" style="border:0px">
+					<tr>
+			            <% @display_first_labels.each_with_index do |x,i| %>
+			            <th colspan="<%= @display_cols_count[i] %>"><%= x %></th>
+			            <% end %>						
+					</tr>
+					<tr>
+			            <% @display_second_labels.each_with_index do |m,i| %>
+			            <th style="border-top:0px; padding-top:4px;"><a href="#" class="linksort" onclick="sort_link('c<%=i+1%>')"><%= m %></a></th>
+			            <% end %>						
+					</tr>
+			        <% unless @keywords.empty? %>
+			        <% @keywords.each_with_index do |keyword, i| %>
+			        <tr class="tr-at<%=i %> <%= cycle("odd","even")%>" row_no="<%=i %>">
+			            <% keyword['labels'].each_with_index do |c,i| %>
+			                <td class="int"><a href="#" onclick="keywordAgent('<%=@sub_type %>','<%=keyword['id'] %>','<%=@period %>','<%=@display_columns[i] %>')"><%= number_with_delimiter(c) %></a><%=image_tag('padding.png',{:width=> '1px',:height => '14px'})%></td>
+			            <% end %>
+			        </tr>
+					<% end %>
+			        <% end %>
+			        <tr class="tsum">
+			        	<% x = @keywords_total.shift %>
+			            <% @keywords_total.each do |gta| %>
+			                <td class"int" align="right"><%= number_with_delimiter(gta) %><br/><%=image_tag('padding.png',{:width=> '30px',:height => '1px'})%></td>
+			            <% end %>
+			        </tr>										
+				</table>
+				</div>
+			</td>
+            <% if edit %>
+            <th rowspan="2">Edit</th>
+            <% end %>
+			<th>&nbsp;<%#=image_tag('padding.png',{:width=> '1px',:height => '1px'})%></th>
+        </tr>
+        <tr>
+			<th>&nbsp;<%#=image_tag('padding.png',{:width=> '1px',:height => '1px'})%></th>
+        </tr>
+        <% unless @keywords.empty? %>
+        <% @keywords.each_with_index do |keyword, i| %>
+        <tr class="tr-at<%=i %> <%= cycle("odd","even")%>" row_no="<%=i %>">
+            <td class="no"><%= (i+1)+($PER_PAGE*(@page.to_i-1))%></td>
+            <% if @sub_type == "group" %>
+                <td><p class="keywords"><a href="#" onclick="selectKeywordGroups('<%= keyword['keyword_group_id'].blank? ? "null" : keyword['keyword_group_id'] %>')"><%=h keyword['keyword_group'] %></a></p></td>
+            <% else %>
+                <td title="<%=keyword['keyword_group'] %>" style="padding-left:1px padding-right:1px;"><p class="keywords"><%=h limit_string(keyword['keyword_group'],35) %></p></td>
+            <% end %>
+            <% if @sub_type != "group" %>
+         <!--       <td class="string" title="<%=keyword['keyword_group'] %>"><%= limit_string(keyword['keyword_group'],15) %></td> -->
+                <td class="keyword_<%=h keyword['type'] %>"><%=h keyword['display_type'] %></td>
+            <% end %>
+            <td class="int"><a href="#" onclick="keywordAgent('<%=@sub_type %>','<%="#{keyword['id']}"%>','<%="#{@period}"%>','all')"><%=h number_with_delimiter(keyword['total']) %></a><%=image_tag('padding.png',{:width=> '1px',:height => '14px'})%></td>
+            <% if edit %>
+                <% if @sub_type != "group" %>
+                    <td class="tool"><%= link_image_tag('','edit.png',{:controller => 'keywords',:action => 'edit',:id => keyword['id'] }) %></td>
+                <% else %>
+                    <%unless keyword['id'].blank? %>
+                    <td class="tool"><%= link_image_tag('','edit.png',{:controller => 'keyword_group',:action => 'edit',:id => keyword['id'] }) %></td>
+                    <%else%>
+                    <td>&nbsp;</td>
+                    <%end%>
+                <% end %>
+            <% end %>
+        </tr>
+        <% end %>
+        <tr class="tsum">
+        	<td class="no">&nbsp;</td>
+            <td colspan="<%= @sub_type == "group" ? (1) : (2) %>" align="center">Total</td>
+            <td class="int"><%= number_with_delimiter(x) %><br/><%=image_tag('padding.png',{:width=> '50px',:height => '1px'})%></td>
+			<% if edit %>
+			<td><%=image_tag('padding.png',{:width=> '1px',:height => '1px'})%></td>
+			<% end %>
+			<td><%=image_tag('padding.png',{:width=> '1px',:height => '1px'})%></td>
+        </tr>
+		<tr class="tsum row-total">
+			<td class="no"><%=image_tag('padding.png',{:width=> '20px',:height => '10px'})%></td>
+			<td colspan="<%= @sub_type == "group" ? (2) : (3) %>"><%=image_tag('padding.png',{:width=> '320px',:height => '1px'})%></td>			
+			<% if edit %>
+			<td><%=image_tag('padding.png',{:width=> '30px',:height => '1px'})%></td>
+			<% end %>
+			<td><%=image_tag('padding.png',{:width=> '1px',:height => '1px'})%></td>
+	    </tr>
+      <% else %>
+        <tr class="tsum">
+        	<td class="no">&nbsp;</td>
+            <td colspan="<%= @sub_type == "group" ? (1) : (2) %>" align="center">Total</td>
+            <td class="int"><%= number_with_delimiter(x) %><br/><%=image_tag('padding.png',{:width=> '50px',:height => '1px'})%></td>
+			<% if edit %>
+			<td><%=image_tag('padding.png',{:width=> '1px',:height => '1px'})%></td>
+			<% end %>
+			<td><%=image_tag('padding.png',{:width=> '1px',:height => '1px'})%></td>
+        </tr>
+		<tr class="tsum">
+			<td class="no">&nbsp;</td>
+			<td colspan="<%= @sub_type == "group" ? (2) : (3) %>"><%=image_tag('padding.png',{:width=> '360px',:height => '1px'})%></td>			
+			<% if edit %>
+			<td><%=image_tag('padding.png',{:width=> '30px',:height => '1px'})%></td>
+			<% end %>
+			<td><%=image_tag('padding.png',{:width=> '1px',:height => '1px'})%></td>
+	    </tr>
+      <% end %>
+  </table>
+</div>
+</td>
+</tr>
+</table>

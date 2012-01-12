@@ -1,0 +1,52 @@
+<%
+  edit = link_permission_require('call_tags','edit')
+  delete = link_permission_require('call_tags','delete')
+%>
+<div id="tbl-tags" class="div-default-table">
+<table  class="tbl-hover" cellpadding="0" cellspacing="0" width="100%">
+	<tr class="tname">
+		<td align="left" colspan="2">
+			Call Tags <%= @tag_group.nil? ? "" : " - #{@tag_group.name}" %>	
+		</td>
+		<td align="right" colspan="3">
+			<span style="font-weight:normal">
+			<% if not @tag_group.nil? and edit %>
+			<%= link_image_tag('New tag','new.png',{:controller=>"call_tags",:action => 'new',:group_id => @tag_group.id},{:title => 'Add new tag'}) %>&nbsp;&bull;
+			<%= link_image_tag('Edit','edit.png',{:controller=>"tag_groups",:action => 'edit', :id => @tag_group.id},{:title => 'Edit tag \'s group '}) %>&nbsp;&bull;
+			<%= link_image_tag('Delete','delete.png',"#",{:onclick => "del_grouptag(#{@tag_group.id},\"#{@tag_group.name}\")",:title => 'Delete group tag'}) %>&nbsp;
+			<% end %>
+			</span>  			
+		</td>
+	</tr>
+	<tr class="thead">
+		<th>No</th>
+		<th><a href="#" class="linksort" onclick="sort_link('name')">Tag Name</a></th>
+		<th><a href="#" class="linksort" onclick="sort_link('group')">Tag Group</a></th>
+		<th><a href="#" class="linksort" onclick="sort_link('calls')">Number of Calls</a></th>
+		<% if edit or delete %>
+		<th class="tool">Action</th>
+		<% end %>
+	</tr>
+	<% unless @call_tags.empty? %>
+	<% @call_tags.each_with_index do |t,i| %>
+	<tr class="<%= cycle('odd','even') %>">
+		<td class="no"><%= (i+1)+($PER_PAGE*(params[:page].to_i)) %></td>
+		<td class="string"><%= t.name %></td>
+		<td class="string"><%= t.tag_group.nil? ? "-" : t.tag_group.name %></td>
+		<td class="integer"><%= t.taggings.count %></td>
+		<% if edit or delete %>
+		<td class="tool">
+			<%= link_image_tag('','edit.png',{:controller => 'call_tags',:action=>"edit", :id => t.id},{:title => 'Edit'}) %>
+			<%= link_image_tag('','delete.png',"#",{:onclick => "del_calltag(#{t.id},\"#{t.name}\",#{t.taggings.count})",:title => 'Delete'}) %>
+		</td>
+		<% end %>
+	</tr>
+	<% end %>
+	<% else %>
+	<tr>
+		<td class="no">&nbsp;</td>
+		<td colspan="5" align="center">No record.</td>
+	</tr>	
+	<% end %>
+</table>	
+</div>

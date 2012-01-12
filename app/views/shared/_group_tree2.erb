@@ -1,0 +1,131 @@
+<% content_for :header do %>
+
+  <%= stylesheet_src_path('/YUI.2.7/build/treeview/assets/skins/sam/treeview.css') %>
+  <%= stylesheet_src_path('/YUI.2.7/build/button/assets/skins/sam/button.css') %>
+  <%= javascript_src_path('/YUI.2.7/build/yahoo-dom-event/yahoo-dom-event.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/animation/animation-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/treeview/treeview-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/event/event-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/dom/dom-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/logger/logger-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/element/element-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/button/button-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/yuiloader/yuiloader-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/examples/treeview/assets/js/TaskNode.js') %>
+    
+  <script type="text/javascript">
+     //var tree;
+     $(document).ready(function(){
+            tree = new YAHOO.widget.TreeView("treediv",<%=@src_tree%>);
+
+            YAHOO.util.Event.on("expand", "click", function(e) {
+                //YAHOO.log("Expanding all TreeView  nodes.", "info", "example");
+                tree.expandAll();
+                YAHOO.util.Event.preventDefault(e);
+            });
+
+            YAHOO.util.Event.on("collapse", "click", function(e) {
+                //YAHOO.log("Collapsing all TreeView  nodes.", "info", "example");
+                tree.collapseAll();
+                YAHOO.util.Event.preventDefault(e);
+            });
+
+            YAHOO.util.Event.on("uncheck", "click", function(e) {
+                //YAHOO.log("Unchecking all TreeView  nodes.", "info", "example");
+                uncheckAll();
+                YAHOO.util.Event.preventDefault(e);
+            });
+
+            YAHOO.util.Event.on("check", "click", function(e) {
+                //YAHOO.log("Checking all TreeView  nodes.", "info", "example");
+                checkAll();
+                YAHOO.util.Event.preventDefault(e);
+            });
+
+            YAHOO.util.Event.on("checkClick", "click", function(e) {
+                alert("click");
+                //YAHOO.log("Checked nodes: " + YAHOO.lang.dump(getCheckedNodes()), "info", "example");
+                YAHOO.util.Event.preventDefault(e);
+            });
+
+            function checkAll() {
+                var topNodes = tree.getRoot().children;
+                for(var i=0; i<topNodes.length; ++i) {
+                    topNodes[i].check();
+                }
+            }
+            
+			function getCheckedGroupNodes(nodes){
+				
+				var nodes = nodes || tree.getRoot().children;
+				var groups = [], l=nodes.length, i=0;
+									
+				while(i<l){
+					var n = nodes[i];
+					if ((n.data.NodeType == "group") && ((n.checkState == 2) || (n.checkState == 1))) {
+						groups.push(n.data.NodeId);
+					}
+		            if (n.hasChildren()) {
+		                groups = groups.concat(getCheckedGroupNodes(n.children));
+		            }
+					i++;
+				}
+				return groups;
+			}
+			function getCheckedManagerNodes(nodes){
+				
+				var nodes = nodes || tree.getRoot().children;
+				var managers = [], l=nodes.length, i=0;
+									
+				while(i<l){
+					var n = nodes[i];
+					if ((n.data.NodeType == "agent") && ((n.checkState == 2) || (n.checkState == 1))) {
+						managers.push(n.data.NodeId);
+					}
+		            if (n.hasChildren()) {
+		                managers = managers.concat(getCheckedManagerNodes(n.children));
+		            }
+					i++;
+				}
+				return managers;
+			}			
+            tree.subscribe("checkClick", function(node) {
+				 $("#groupsList").text(getCheckedGroupNodes().join(','));
+				 $("#managerList").text(getCheckedManagerNodes().join(','));
+	    	});
+			
+            tree.draw();
+            tree.collapseAll();
+     }); //end ready
+
+  </script>
+  <style type="text/css">
+
+      .ygtvcheck0 { background: url('<%=image_src_path('/YUI.2.7/build/treeview/assets/check0.gif') %>') 0 0 no-repeat; width:14px; height:17px; cursor:pointer }
+      .ygtvcheck1 { background: url('<%=image_src_path('/YUI.2.7/build/treeview/assets/check2.gif') %>') 0 0 no-repeat; width:14px; height:17px; cursor:pointer }
+      .ygtvcheck2 { background: url('<%=image_src_path('/YUI.2.7/build/treeview/assets/check1.gif') %>') 0 0 no-repeat; background-position:center; width:14px; height:17px; cursor:pointer }
+     
+    #treediv td{
+      font-size:8pt;
+    }
+    #treediv table,tr {
+      border-collapse:collapse;
+      text-align:left;
+    }
+    #expandcontractdiv {
+      font-size:11px;
+      background-color:#ccffff;
+      border-bottom:1px solid #99cccc;
+      width:100%;
+      text-align:center;
+      display:block;
+    }
+    .ico-site {
+      font-weight:bold;
+      color:lime;
+    }
+  </style>
+
+<% end %>
+<textarea id="managerList" style="display:none;"><%= (@grp_managers.map { |m| m.manager_id }).join(',') %></textarea>
+<textarea id="groupsList" style="display:none;"><%= (@handler_group.map { |g| g.id }).join(',') %></textarea>

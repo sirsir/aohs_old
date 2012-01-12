@@ -1,0 +1,329 @@
+<% content_for :header do %>
+<%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
+  <%= stylesheet_src_path 'cssreport.css' %>
+  <script type="text/javascript">
+
+  var statisticsKey = {
+     period: "<%= @period %>",
+     group: "<%= @grp_id %>",
+     agent: "<%= @agn_id %>",
+     sec: "<%= params[:sec] %>",
+     sort: "<%= params[:sort] %>",
+     od: "<%= params[:od] %>",
+     stdate: "<%= params[:stdate] %>",
+     eddate: "<%= params[:eddate] %>",
+     page: "<%= params[:page] %>"
+  }
+
+  function getStatisticsParamsUrl(){
+      var srcUrl = "";
+      $.each(statisticsKey,function(key){
+        srcUrl += key + "=" + statisticsKey[key] + "&";
+      });
+      transVarToHiddenF();
+      return srcUrl;
+  }
+
+  function transVarToHiddenF(){
+    statisticsKey.agent = $("#checked_nodes").val();  
+    $("input[name=period]").val(statisticsKey.period);
+    $("input[name=group]").val(statisticsKey.group);  
+    $("input[name=agent]").val(statisticsKey.agent);
+    $("input[name=sec]").val(statisticsKey.sec);
+    $("input[name=sort]").val(statisticsKey.sort);
+    $("input[name=od]").val(statisticsKey.od);
+    $("input[name=stdate]").val(statisticsKey.stdate);
+    $("input[name=eddate]").val(statisticsKey.eddate);
+    $("input[name=page]").val(statisticsKey.page);
+  }
+
+  function csv_export() {
+    var url = getStatisticsParamsUrl();
+    //$("#StaisticsFrm").attr("target","_blank");
+	$("#StaisticsFrm").attr("target","_self");
+    $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'export',:period => @period) %>");
+    $("#StaisticsFrm").submit();
+  }
+
+  function print_report() {
+    var url = getStatisticsParamsUrl();
+    $("#StaisticsFrm").attr("target","_self");
+    $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'print',:period => @period) %>");
+    $("#StaisticsFrm").submit();      
+  }
+
+  function clickTabPeriod(period){
+    statisticsKey.page = 1;
+    statisticsKey.period = period;
+    var url = getStatisticsParamsUrl();
+    $("#StaisticsFrm").removeAttr("target");
+    $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'index') %>/" + period + "?page=" + statisticsKey.page);  
+    $("#StaisticsFrm").submit();
+  }
+   
+  function submitPage(url){
+    var paramsStr = url.split("?")[1];
+    var params = paramsStr.split("&");
+    $("#getHere").html("");
+    for(var i=0; i<params.length; i++){
+      var x = params[i].split("=");
+      var p = x[0];
+      if(p=="page"){
+        statisticsKey.page = x[1];  
+      }
+    }
+      var url = getStatisticsParamsUrl();
+      $("#StaisticsFrm").removeAttr("target");
+      $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'index') %>");  
+      $("#StaisticsFrm").submit();    
+  }
+  
+  function clickTabType(type){
+    statisticsKey.sec = type;
+    var url = getStatisticsParamsUrl();
+    $("#StaisticsFrm").removeAttr("target");  
+    $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'index') %>/" + statisticsKey.period + "?page=" + statisticsKey.page);  
+    $("#StaisticsFrm").submit();
+  }
+
+  function onClickCell(a,b,c,d){
+  	
+	var d = d || "",st="",ed="";
+	if(d.length <= 0){
+		st = "<%=@st_date %>";
+		ed = "<%=@ed_date %>";
+	}
+    var url = "?" + "period=" + c + "&agent_id=" + b + "&date=" + d + "&st=" + st + "&ed=" + ed + "&type=" + a;
+    window.open("<%=url_for(:controller => 'statistics',:action => 'agent') %>" + url,'agents','menubar=yes,location=no,scrollbars=yes,resizable=yes');
+  }
+
+  function reloadStatistics()
+  {
+      statisticsKey.page = 1;
+      var url = getStatisticsParamsUrl();
+      $("#StaisticsFrm").removeAttr("target");
+      $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'index') %>");  
+      $("#StaisticsFrm").submit();
+  }
+  
+     function resizeWindow(e) {
+      var intBrowserHeight = $(window).height();
+	  var intBrowserWidth = $(window).width();
+      $("#agent_tree").css("height",intBrowserHeight-80);
+	  $("#divTblScroll").css('width',intBrowserWidth-$("#agent_tree").width()-320);
+    }
+	 
+  $(document).ready(function(){
+    
+    $("#export").click(csv_export);
+    $("#export-a").click(csv_export);
+    $("#print").click(print_report);
+    $("#print-a").click(print_report);
+      
+    $(".input-date-picker").datepicker({ showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
+	$(".input-date-picker").mask("9999-99-99");
+	
+    $(window).bind("resize", resizeWindow);
+    resizeWindow();
+    
+    $(function(){
+        $("#tabsStyle1 ul li").mouseover(function(){
+            $(this).addClass('lihover');    
+        }).mouseout(function(){
+            $(this).removeClass('lihover'); 
+        });
+        $("#tabsStyle2 ul li").mouseover(function(){
+            $(this).addClass('lihover');
+        }).mouseout(function(){
+            $(this).removeClass('lihover');
+        });
+		//$(".div-default-table tr").mouseover(function(){
+		//	var row = $(this).attr("row_no");
+		//	$(".tr-at" + row).addClass("hover");
+		//}).mouseout(function(){
+		//	var row = $(this).attr("row_no");
+		//	$(".tr-at" + row).removeClass("hover");			
+		//});
+     });
+
+     $("#checked_nodes").text("<%=@agents_id.join(',') %>");
+      
+	 $(".cell_report").click(function(){
+	 	var o = $(this);
+		if(parseInt(o.text().replace(/,/g,"")) > 0){
+			onClickCell(o.attr("atype"),o.attr("agent_id"),o.attr("period"),(o.attr("date") || ''));		
+		}
+	 });
+
+	 $("a",$("#paging")).click(function(){
+	   var url = $(this).attr("href") || "";
+	   if(url.length > 1){
+	     submitPage(url);
+	   }
+	   return false;
+	 });
+   });
+
+   function sort_link(key)
+   {
+     statisticsKey.sort = key;
+     if(statisticsKey.od == "desc"){
+        statisticsKey.od = "asc";
+     }else if(statisticsKey.od == "asc"){
+        statisticsKey.od = "desc"
+     } else {
+        statisticsKey.sort = "total" 
+        statisticsKey.od = "desc"
+     }
+     reloadStatistics();
+   }
+   function onClickStatisticsTree(g)
+   {
+      statisticsKey.group = g.join(',');
+      if(statisticsKey.group.length > 0){
+        var url = getStatisticsParamsUrl();
+        window.location = "<%= url_for(:controller => 'statistics',:action => 'index') %>?" + url;
+      }
+   }
+   function showFilter(){
+	 resizeWindow();
+     if($("#div-FilterBox-keywords").css("display") == "none"){
+        $("#div-FilterBox-keywords").css("display","block");
+     }
+     else {
+        $("#div-FilterBox-keywords").css("display","none");
+     }
+   }
+
+   function filterApply()
+   {
+   	  statisticsKey.page = 1;
+	  try {
+	  	statisticsKey.stdate = jQuery.trim($("select[name=fr] option:selected").val());	
+		statisticsKey.eddate = jQuery.trim($("select[name=to] option:selected").val());	  
+	  } catch(e){
+	  	statisticsKey.stdate = jQuery.trim($("input[name=fr]").val());	
+		statisticsKey.eddate = jQuery.trim($("input[name=to]").val());	  	
+	  }
+	  if (checkPeriodCond(statisticsKey.stdate,statisticsKey.eddate)) {
+	  	reloadStatistics();
+	  } else {
+	  	alert("Start date must be less than end date, Please check your condition again.");
+	  }
+   }
+   function filterClear(){
+   	  statisticsKey.page = 1;
+   }
+</script>
+<style type="text/css">
+   #agent_tree {
+      width:190px;
+      border:1px solid #cccccc;
+      margin-right:3px;
+      background:white;
+      overflow:scroll;
+      height:500px; 
+    }
+   .tab_page_select
+   {
+     background-image:url('<%=image_path("bg003.png")%>');
+   }
+   .tabs-styleA {
+       border-bottom:1px solid #cccccc;
+   }
+   
+   
+   .input-date-picker {
+	  	  background-repeat:no-repeat;
+		  background-position:right;
+	  	  background-image:url('<%=image_src_path('/images/calendar.png') %>');   
+		  width:90px;	
+   }
+</style>
+<% end %>
+
+<div class="div-menu-block">
+	<div class="menu-block">
+	    <table width="100%" cellpadding="0" cellspacing="0">
+	      <tr>
+	        <td align="left">
+	          <ul>
+	            <li><%= link_image_tag('CSV','mimetype/spreadsheet.png','#',{:id => 'export',:title => "Export agents report as CSV file"}) %></li>
+	            <li><%= link_image_tag('PDF','mimetype/pdf.png','#',{:id => 'print',:title => "Export agents report as PDF file"}) %></li>
+	            <li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Filtering keyword report'}) %></li>
+	            <li><%= link_image_tag('Search Report','reset.png',"#",{:onclick => "reloadStatistics()",:title => 'Refresh report view when change selected nodes\'s treeview'}) %></li>
+	          </ul>
+	        </td>
+			<td align="right">
+			<div id="paging"><%= will_paginate(@agents2) %></div>	
+			</td>
+	      </tr>
+	    </table>		
+	</div>
+	<div id="div-FilterBox-keywords" class="filter-block">
+		<fieldset>
+		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		  	<tr>
+		  		<td align="left">
+		  			<label><%= @period.capitalize %> period:</label>
+					 	<% if @period == "weekly" %>
+						<%= weekly_picker(:fr,params[:stdate],@nweeks) %> - <%= weekly_picker(:to,params[:eddate],@nweeks) %>
+						<% end %>
+						<% if @period == "monthly" %>
+						<%= monthly_picker(:fr,params[:stdate],@nmonths) %> - <%= monthly_picker(:to,params[:eddate],@nmonths) %>
+						<% end %>
+						<% if @period == "daily" %>
+  					    <input type="text" class="input-date-picker" name="fr" value="<%= params[:stdate] %>"> - <input class="input-date-picker" type="text" name="to" value="<%= params[:eddate] %>">
+		  				<% end %>
+				</td>
+				<td align="right">
+					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
+					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
+				</td>
+			</tr>
+		  </table>
+		</fieldset>		
+	</div>	
+</div>
+
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+	<tr>
+		<td valign="top" width="170px">
+		  <div id="agent_tree"><%= render :partial => "shared/group_and_agents_tree2" %></div>			
+		</td>
+		<td valign="top" width="90%">
+		  <div>
+		    <div id="tabsStyle1">
+		        <ul>
+		            <li id="tab1" onclick="clickTabPeriod('daily')" class="<%= 'liselected' if @period == 'daily' %>">Daily</li>
+		            <li id="tab2" onclick="clickTabPeriod('weekly')" class="<%= 'liselected' if @period == 'weekly' %>">Weekly</li>
+		            <li id="tab3" onclick="clickTabPeriod('monthly')" class="<%= 'liselected' if @period == 'monthly' %>">Monthly</li>
+		        </ul>
+		    </div>
+		    <div id="tabsStyle2">
+	           <ul>
+	             <li id="tab8" onclick="clickTabType('calls')" class="<%= 'liselected2' if @sub_type == "calls" %>">Calls</li>
+	             <li id="tab4" onclick="clickTabType('keywords')" class="<%= 'liselected2' if @sub_type == "keywords" %>">All Keywords</li>
+	             <li id="tab5" onclick="clickTabType('must')" class="<%= 'liselected2' if @sub_type == "must" %>">Must</li>
+	             <li id="tab6" onclick="clickTabType('ng')" class="<%= 'liselected2' if @sub_type == "ng" %>">NG</li>
+	             <li id="tab7" onclick="clickTabType('action')" class="<%= 'liselected2' if @sub_type == "action" %>">Action</li>
+	           </ul>
+		    </div>
+			<div><%= render :partial => "statistics/statistics" %></div>		
+		  </div> 	
+		</td>
+	</tr>
+</table>
+<div id="divStaisticsFrm" style="display:none">
+<form id="StaisticsFrm" name="StaisticsFrm" action="<%= url_for(:controller => 'statistics', :action => 'index', :page => params[:page]) %>" method="post">
+  <input type="hidden" name="period" value="">
+  <input type="hidden" name="group" value="">
+  <input type="hidden" name="agent" value="">
+  <input type="hidden" name="sec" value="">
+  <input type="hidden" name="sort" value="">
+  <input type="hidden" name="od" value="">
+  <input type="hidden" name="stdate" value="">
+  <input type="hidden" name="eddate" value="">
+  <input type="hidden" name="page" value="">
+</form>
+</div>

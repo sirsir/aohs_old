@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <title><%= Aohs::WEB_TITLE_NAME %> <%=Aohs::WEB_VERSION %> - Sign In</title>
+  <%= stylesheet_link_tag 'cssbase' %>
+  <%= stylesheet_src_path '/jquery/jquery-ui-1.7.2/css/redmond/jquery-ui-1.7.2.custom.css' %>
+  <%= javascript_src_path '/jquery/js/jquery-1.3.2.min.js' %>
+  <%= javascript_src_path '/jquery/jquery-ui-1.7.2/js/jquery-ui-1.7.2.custom.min.js' %>
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $.ui.dialog.defaults.bgiframe = true;
+      $("#msg_alert").dialog({
+        modal: true,
+        buttons:{"OK":function(){$(this).dialog("close")}}
+      });
+    });
+  </script>
+  <%= yield :header %>
+</head>
+<body>
+<div id="flash-info">
+  <% if flash.has_key?(:error) or flash.has_key?(:notice) %>
+    <div id="msg_alert" title="AmiVoice Operator's Help">
+      <% if flash.has_key?(:notice) %>
+        <%= flash[:notice] %>
+      <% else %>
+        <%= flash[:error] %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+<div id="header" class="header" style="display:block; border-bottom:0px solid #FFFFFF; padding:6px;">
+  <div>
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td align="left" class="web-name">
+          <span style="font-style:italic; font-family:Verdana;">&nbsp;&nbsp;AmiVoice<sup>&reg;</sup> Operator's Help System</span>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div id="body" class="body">
+  <%= yield %>
+</div>
+
+<div style="color:#93B2CC; font-size:7pt; position:absolute; bottom:5px;  padding:5px;">
+<table width="100%" style="border-top:0px solid #93B2CC; display:none;">
+	<tr>
+		<td align="left">
+			<div>&copy;<%=Time.new.strftime("%Y") %> AmiVoice Thai Co.,Ltd</div>	
+		</td>
+		<td align="right">
+			<div>AmiVoice Operator's Help System (AOHS) Version <%=Aohs::WEB_VERSION %></div>
+		</td>
+	</tr>
+</table>
+</div>
+</body>
+</html>

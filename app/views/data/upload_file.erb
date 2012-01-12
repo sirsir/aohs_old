@@ -1,0 +1,101 @@
+<% content_for :header do %>
+    <style>
+      body, html { margin: 0; padding: 0 }
+      #div-form-upload {
+        border:1px solid #cccccc;
+        background: #edecec;
+        padding:5px;
+        margin:10px;
+      }
+      .span-upload {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        font-size:14px;
+        display:block;
+        padding:5px;
+        border-bottom:1px solid #cccccc;
+      }
+      #div-ctrl-control {
+        margin: 10px;
+        padding: 5px;
+      }
+      .fupload {
+          width:300px;
+          height:20px;
+      }
+      .btAccept {
+          font-weight: bold;
+          padding-left:5px;
+          padding-right:5px;
+          padding-top:3px;
+          padding-bottom:3px;
+      }
+      .div-error {
+          background: #ffe7d0;
+          border:1px solid #ff9933;
+          margin-top:5px;
+          margin-bottom:8px;
+          padding:3px;
+      }
+    </style>
+
+    <script>
+
+      function startImport(){
+
+          var replace = $("input[name=im-replace]").attr("checked") || 'false';
+          var update = $("input[name=im-update]").attr("checked");
+
+          $("input[name=btnImport]").attr("disabled","disabled");
+          $("input[name=btnImport]").val("Please wailt");
+
+          $.getJSON("<%= url_for(:controller => 'data',:action => 'upload_data')%>",
+          {replace: replace,update: update},function(data){
+             $("input[name=btnImport]").css("display","none");
+			 var rs = data['result'];
+			 var msg = data['msg'];
+             if(rs!="true"){
+                $("input[name=btnClose]").val("Import failed! Please try again.");  
+             }
+             $("input[name=btnClose]").css("display","block");
+			 $("#result").html(msg);
+          });
+      }
+
+      function closeImport(){
+          window.close();
+      }
+    </script>
+<% end %>
+<div id="div-form-upload">
+  <span class="span-upload">Import data:</span>
+  <div id="div-ctrl-control">
+    <table border="1" width="100%">
+      <tr>
+        <td width="100px">File name: </td>
+        <td><%=@file_info[:fname] %></td>
+      </tr>
+      <tr>
+        <td>Size: </td>
+        <td><%=@file_info[:fsize] %> bytes.</td>
+      </tr>
+    </table>
+    <div style="margin-top:4px; margin-bottom:4px;">
+    <input type="checkbox" name="im-update" value="update"> Update data if exist.
+	<% if @replace_option %>
+	<input type="checkbox" name="im-replace" value="replace"> Replace All.
+	<% end %>
+    </div>
+    <div style="border-top:1px solid #cccccc; padding:5px;">
+      <center><input type="button" name="btnImport" value="Import" onclick="startImport()" class="btAccept">
+      <input type="button" name="btnClose" value="Import finished" onclick="closeImport()" class="btAccept" style="display:none"></center>
+    </div>
+	<div style="text-align:center; color:#336699; padding:3px;">
+		<span id="result"></span>
+	</div>
+  </div>
+</div>
+
+
+

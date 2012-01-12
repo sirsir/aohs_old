@@ -1,0 +1,11 @@
+<%#
+# To change this template, choose Tools | Templates
+# and open the template in the editor.
+%>
+<applet name="speechmonitor" id="sp-monit" codebase="<%= Aohs::SITE_ROOT %>/applets/speechmonitor/" width="100%" height="110px">
+  <param name="jnlp_href" value="launch.jnlp"/>
+  <param name="currentUser" value="1" />
+  <param name="site_root" value="<%= Aohs::SITE_ROOT %>" />
+  <param name="configURL" value="<%= Aohs::SITE_ROOT %>/applets/speechmonitor/speechmonitor.conf" />
+  <param name="keyword_available" value="<%= Aohs::MOD_KEYWORDS %>" />
+</applet>

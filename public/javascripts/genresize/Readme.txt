@@ -1,0 +1,1 @@
+http://webfx.eae.net/dhtml/genresize/genresize.html

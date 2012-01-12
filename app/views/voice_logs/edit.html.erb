@@ -1,0 +1,64 @@
+<h1>Editing voice_log</h1>
+
+<% form_for(@voice_log) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :system_id %><br />
+    <%= f.text_field :system_id %>
+  </p>
+  <p>
+    <%= f.label :device_id %><br />
+    <%= f.text_field :device_id %>
+  </p>
+  <p>
+    <%= f.label :channel_id %><br />
+    <%= f.text_field :channel_id %>
+  </p>
+  <p>
+    <%= f.label :ani %><br />
+    <%= f.text_field :ani %>
+  </p>
+  <p>
+    <%= f.label :dnis %><br />
+    <%= f.text_field :dnis %>
+  </p>
+  <p>
+    <%= f.label :extension %><br />
+    <%= f.text_field :extension %>
+  </p>
+  <p>
+    <%= f.label :start_time %><br />
+    <%= f.datetime_select :start_time %>
+  </p>
+  <p>
+    <%= f.label :duration %><br />
+    <%= f.text_field :duration %>
+  </p>
+  <p>
+    <%= f.label :hangup_cause %><br />
+    <%= f.text_field :hangup_cause %>
+  </p>
+  <p>
+    <%= f.label :call_reference %><br />
+    <%= f.text_field :call_reference %>
+  </p>
+  <p>
+    <%= f.label :agent_id %><br />
+    <%= f.text_field :agent_id %>
+  </p>
+  <p>
+    <%= f.label :disposition %><br />
+    <%= f.text_field :disposition %>
+  </p>
+  <p>
+    <%= f.label :customer_id %><br />
+    <%= f.text_field :customer_id %>
+  </p>
+  <p>
+    <%= f.submit "Update" %>
+  </p>
+<% end %>
+
+<%= link_to 'Show', @voice_log %> |
+<%= link_to 'Back', voice_logs_path %>

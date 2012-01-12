@@ -1,0 +1,573 @@
+<%#
+# To change this template, choose Tools | Templates
+# and open the template in the editor.
+%>
+
+<style type="text/css">
+
+  div.agent-icn {
+    float: left;
+    margin-left: 1px;
+    border: 1px solid #CCCCCC;
+    height: 40px;
+    width: 40px;
+  }
+  div.agent-inf {
+    float: left;
+    padding-left: 3px;
+  }
+  div.vc-i { background-color: #33AA33; }
+  div.vc-o { background-color: #0B559B; }
+  div.vc-otr { background-color: gray; }
+  div.vc-dur { float: left; }
+  div.lst-time-sym, div.time-sym {float: left;}
+  div.time-sym {text-align: left;}
+  div.agent-call-inf {
+    float: left;
+    width: 100%;
+  }
+  div.agent-call-inf span { display: inline-block; }
+  div.agent-call-bar {
+    background-color: #D4E9FF;
+    border: 1px solid #85C2FF;
+  }
+  div.agent-call-bar, div.agent-rt-call {
+    padding: 1px 1px 1px 5px;
+  }
+  div.agent-rt-call {display: none;}
+
+  span {line-height: 14px;}
+  span.title {font-weight: bold;}
+  span.call-talking, span.call-idle, span.call-trf {
+    font-family: Verdana;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  span.call-talking { color: #006600; }
+  span.call-idle { color: #a8b1c7; }
+  span.call-trf, span.trfc { color: #FF33CC; }
+  span.head-info { width: 35px; font-weight: bold; }
+  span.head-out { color: #0B559B; }
+  span.head-in, span.head-mst{ color: #298829; }
+  span.head-ng{ color: #990000; }
+
+  table#agent-status-tbl { background-color: #FFFFFF; }
+
+  tr.agent-row-tbl {
+    cursor: pointer;
+    background-color: #FCFCFC;
+    color: #00004C;
+    height: 48px;
+   }
+  tr.hover {background-color: #E8F4FF;}
+  tr.selected {background-color: #FFFFDB;}
+  
+  tr.logout, span.logout {color: #A2A2A2;}
+  
+  td.agent-inf-td, td.agent-sts-td, td.agent-call-sts, td.agent-call-inf-sts {border:1px solid #cccccc;}
+  td.agent-inf-td {width: 220px;}
+  td.agent-call-sts {width: 80px;}
+  td.talking {border-color: red;}
+
+  input.btn {
+    color:#050;
+    width: 50px;
+    height: 15px;
+    font: bold 80% sans-serif;
+    background-color:#fed;
+    border:1px solid;
+    border-color: #696 #363 #363 #696;
+    display: none;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+  var calc_time;
+  var img = new Array();
+      img['FA'] = "<%=image_path('a-female.jpg')%>";
+      img['FL'] = "<%=image_path('a-female-leader.jpg')%>";
+      img['MA'] = "<%=image_path('a-male.jpg')%>";
+      img['ML'] = "<%=image_path('a-male-leader.jpg')%>";
+      img['UA'] = "<%=image_path('a-unknown.jpg')%>";
+      img['UL'] = "<%=image_path('a-unknown-leader.jpg')%>";
+
+  var c_img = new Array();
+      c_img['i'] = "<%=image_path('cb-inbound.png') %>";
+      c_img['o'] = "<%=image_path('cb-outbound.png')%>";
+      c_img['id'] = "<%=image_path('cb-idle.png')%>";
+      c_img['trf-i'] = "<%=image_path('cb-trf-in.png')%>";
+      c_img['trf-o'] = "<%=image_path('cb-trf-out.png')%>";
+
+  function append_agent(group_id) {
+    
+    loading = true;
+    $("#div-loading").css("display","block");
+    $("table#agent-status-tbl").html("");
+
+    $.getJSON("<%= url_for(:controller => 'call_browser', :action => 'get_info') %>", {grp_id: group_id }, function(data){
+
+      var view = "";
+
+      var id, name, type, cti_id, sex, group, ext, login_sts;
+      var total_call, total_in, total_out, total_ng, total_mst;
+      var call_id, call_conn, call_start, call_ani, call_dnis, call_direction, call_duration, call_ng, call_mst, call_diff, call_from, call_to, call_sys, call_dev, call_chn, call_voice_url;
+      var sex_img, call_img;
+      var agent_icn_title;
+      var prev_call;
+
+      var realtime_block, call_status;
+      
+      if(data != null){
+        var data_amount = data.length;
+        var idx = 0;
+        while(idx < data_amount){
+
+          var agent_info = data[idx++];
+
+          id = agent_info.id;
+          name = agent_info.name;
+          sex = (agent_info.sex != null ? agent_info.sex.toUpperCase() : "U");
+          type = agent_info.type.charAt(0).toUpperCase();
+          ext = (agent_info.ext != "" ? agent_info.ext : "-");
+          login_sts = (ext == "-" ? "logout" : "login");
+          cti_id = agent_info.cti;
+          group = agent_info.group;
+          sex_img = img[sex+type];
+
+          agent_icn_title = agent_info.type+": "+name;
+
+          total_call = (agent_info.total_call == null ? "0" : agent_info.total_call);
+          total_in = (agent_info.total_in == null ? "0" : agent_info.total_in);
+          total_out = (agent_info.total_out == null ? "0" : agent_info.total_out);
+          if(keyword_available){
+            total_ng = (agent_info.total_ng == null ? "0" : agent_info.total_ng);
+            total_mst = (agent_info.total_mst == null ? "0" : agent_info.total_mst);
+          }
+
+          call_start = "-:-:-";
+          call_ani = "-";
+          call_dnis = "-";
+          call_ng = "-";
+          call_mst = "-";
+          call_direction = "id";
+          call_from = "-";
+          call_to = "-";
+          call_diff = "-";
+          call_duration = "-:-:-";
+          call_status = "Idle";
+          call_sys = "-";
+          call_dev = "-";
+          call_chn = "-";
+          call_voice_url = "-";
+          call_img = c_img[call_direction];
+
+          realtime_block = "none";
+          prev_call = (ext == "-" ? "disabled" : "");
+          
+          call_id = agent_info.call_id;
+          if(call_id != null){
+
+            call_conn = agent_info.call_conn.toLowerCase();
+            if(call_conn == "connected"){
+              
+              call_start = agent_info.call_start_time;
+              call_ani = format_phone(agent_info.call_ani);
+              call_dnis = format_phone(agent_info.call_dnis);
+              call_direction = agent_info.call_direction.toLowerCase();
+              call_from = (call_direction == 'o') ? call_ani : call_dnis;
+              call_to = (call_direction == 'o') ? call_dnis : call_ani;
+              call_duration = agent_info.call_duration;
+              call_diff = time_to_sec(call_duration);
+              call_sys = agent_info.call_sys;
+              call_dev = agent_info.call_dev;
+              call_chn = agent_info.call_chn;
+              call_voice_url = agent_info.call_voice_url;
+              call_img = c_img[call_direction];
+              call_status = "Talking";
+
+              if(keyword_available){
+                call_ng = agent_info.call_ng;
+                call_mst = agent_info.call_mst;
+              }
+
+              realtime_block = "block";
+            }
+          }
+          
+          view += "<tr class=\"agent-row-tbl "+login_sts+"\" id=\"agent-"+id+"\" ondblclick=\"monitor($(this),"+id+",'"+cti_id+"','"+name+"', '"+group+"', '"+ext+"');\" onMouseOver=\"add_hover($(this));\" onMouseOut=\"remove_hover($(this));\">";
+          view += "<td class=\"agent-inf-td\"><div>";
+          view += "<div class=\"agent-icn\"><img src=\""+sex_img+"\" title=\""+agent_icn_title+"\"/></div>";
+          view += "<div class=\"agent-inf\">";
+          view += "<span class=\"title\">"+name+"</span><br/>";
+          view += " <span class=\"title\">Group: </span>&nbsp;<span class=\"title\">"+group+"</span><br/>";
+          view += " <span class=\"title\">Ext: </span><span class=\"title\">"+ext+"</span>";
+          view += "</div></div></td>";
+          view += "<td class=\"agent-call-sts\" style=\"text-align: center;\">";
+          view += "<span><img id=\"cl-dir-"+id+"\" src=\""+call_img+"\" style=\"margin-bottom: 3px;\"/></span><br/>";
+          view += "<span class=\"call-status call-"+call_status.toLowerCase()+"\" id=\"sts-"+id+"\">"+call_status+"</span></td>";
+          view += "<td class=\"agent-call-inf-sts\" valign=\"top\">";
+          view += "<div class=\"agent-call-inf\"><div class=\"agent-call-bar\">"
+          view += "<span class=\"title\">Total call:&nbsp;</span><span id=\"tc-"+id+"\" class=\"head-info\">"+total_call+"</span>";
+          view += "<span class=\"title head-in "+login_sts+"\">In:&nbsp;</span><span id=\"ci-"+id+"\" class=\"head-info head-in "+login_sts+"\">"+total_in+"</span>";
+          view += "<span class=\"title head-out "+login_sts+"\">Out:&nbsp;</span><span id=\"co-"+id+"\" class=\"head-info head-out "+login_sts+"\">"+total_out+"</span>";
+          if(keyword_available){
+            view += "<span class=\"title head-ng "+login_sts+"\" style=\"margin-left: 10px;\">NG:&nbsp;</span><span id=\"total-n-"+id+"\" class=\"head-info head-ng "+login_sts+"\">"+total_ng+"</span>";
+            view += "<span class=\"title head-mst "+login_sts+"\">Must:&nbsp;</span><span id=\"total-m-"+id+"\" class=\"head-info head-mst "+login_sts+"\">"+total_mst+"</span>";
+          }
+          view += "<input type=\"hidden\" id=\"call-sys-"+id+"\" value=\""+call_sys+"\" />";
+          view += "<input type=\"hidden\" id=\"call-dev-"+id+"\" value=\""+call_dev+"\" />";
+          view += "<input type=\"hidden\" id=\"call-chn-"+id+"\" value=\""+call_chn+"\" />";
+          if(call_transfer_available){
+            view += "<input class=\"btn\" id=\"trf-btn-"+id+"\" type=\"button\" value=\"Listen transfered\"/>";
+          }
+          view += "</div>";
+          view += "<div class=\"agent-rt-call\" id=\"agent-rt-call-"+id+"\" style=\"display: "+realtime_block+";\">";
+          view += "<span class=\"title\">Start From:&nbsp;</span><span id=\"st-"+id+"\" style=\"width: 50px;\">"+call_start+"</span>";
+          view += "<span class=\"title\">Duration:&nbsp;</span><span id=\"dur-"+id+"\" style=\"width: 50px; \" class=\"dur\" diff=\""+call_diff+"\">"+call_duration+"</span>&nbsp;";
+          view += "<span class=\"title\">Caller:&nbsp;</span><span id=\"from-"+id+"\" style=\"width: 70px;\">"+call_from+"</span>&nbsp;";
+          view += "<span class=\"title\">Dialed:&nbsp;</span><span id=\"to-"+id+"\" style=\"width: 70px;\">"+call_to+"</span><br/>";
+          if(keyword_available){
+            view += "<span class=\"title\">NG:&nbsp;</span><span id=\"n-"+id+"\" style=\"width: 30px;\">"+call_ng+"</span>";
+            view += "<span class=\"title\">Must:&nbsp;</span><span id=\"m-"+id+"\" style=\"width: 30px;\">"+call_mst+"</span>";
+          }
+          if(call_transfer_available){
+            view += "<span class=\"trfc\" id=\"trf-"+id+"\"></span>";
+          }
+          view += "</div></div></td></tr>";
+        }
+
+        if(calc_time != null){
+          clearTimeout(calc_time);
+        }
+
+        $("#div-loading").css("display","none");
+        $("table#agent-status-tbl").append(view);
+
+        calctime();
+        checkMonitoringAgent();
+
+        loading = false;
+      } // end if data is null
+    });
+  }
+
+  function checkMonitoringAgent() {
+    if(document.speechmonitor != null){
+      var agent_id = document.speechmonitor.getAgentID();
+      if(have_agent(agent_id)){
+        $("tr#agent-"+agent_id).addClass("selected");
+      }
+    }
+  }
+
+  function time_to_sec(time) {
+    /* hh:mm:ss */
+    var time_ele = time.toString().split(":");
+    var h = parseInt(time_ele[0]) * (60*60);
+    var m = parseInt(time_ele[1]) * 60;
+    var s = parseInt(time_ele[2]);
+
+    return (h+m+s);
+  }
+
+  function calctime(){
+    $("span.dur").each(function(){
+      
+      var obj = $("span#"+this.id);   
+      var obj_dif = obj.attr("diff");
+
+      if(obj_dif != "-"){
+        obj_dif = parseInt(obj_dif) + 1;
+        var h = format_time(Math.floor(obj_dif/(60*60)));
+        var m = format_time(Math.floor(obj_dif/60) % 60);
+        var s = format_time(Math.floor(obj_dif) % 60);
+
+        obj.attr("diff",obj_dif);
+        obj.text(h+":"+m+":"+s);
+      }
+
+    });
+    calc_time = setTimeout("calctime()", 1000);
+  }
+
+  function format_time(t){
+    if(t < 10)
+      return "0"+t;
+    else
+      return t;
+  }
+
+  function add_hover(element){ element.addClass("hover"); }
+  function remove_hover(element){ element.removeClass("hover"); }
+
+  function monitor(row, agent_id, cti_id, name, grp, ext){
+
+    var monit_agent_id = null;
+    if(document.speechmonitor != null)
+      monit_agent_id = document.speechmonitor.getAgentID();
+    
+    if((agent_id != monit_agent_id)){
+
+      $("tr.agent-row-tbl").removeClass("selected");
+
+      cti_id = (cti_id == null ? '-' : cti_id);
+      name = (name == null ? '-' : name);
+      ext = (ext == null ? '-' : ext);
+
+      if(document.speechmonitor != null){
+        document.speechmonitor.setAgentInfo(agent_id, cti_id, name, grp, ext);
+      }
+
+      $.getJSON("<%= url_for(:controller => 'call_browser', :action => 'get_current_channels_status') %>", {agent_id: agent_id}, function(data){
+
+        row.addClass("selected");
+
+        if(data != null){
+          var call_id = data.call_id;
+          var sys_id = data.sys_id;
+          var dev_id = data.dvc_id;
+          var chn_id = data.chn_id;
+          var from = format_phone(data.ani);
+          var to = format_phone(data.dnis);
+          var dir = data.c_dir
+          var st_time = data.st_time;
+          var diff = time_to_sec(data.diff);
+          var conn = data.conn;
+          var ng = data.ng_count;
+          var mst = data.mst_count;
+          var voice_url = format_voice_path(data.voice_url);
+/*
+          var from = (direction == 'o') ? format_phone(ani) : format_phone(dnis);
+          var to = (direction == 'o') ? format_phone(dnis) : format_phone(ani); 
+*/
+          if(document.speechmonitor != null){
+            document.speechmonitor.setCurrentStatus(call_id, sys_id, dev_id, chn_id, voice_url, from, to, dir, st_time, diff, conn, ng, mst);
+            /* current keyword amount */
+            $('span#n-'+agent_id).text(ng);
+            $('span#m-'+agent_id).text(mst);
+          }
+        }else{
+          if(document.speechmonitor != null){
+            document.speechmonitor.setIdleStatus();
+          }
+        }
+      });
+      enable_call_browser(agent_id, name, grp, ext);
+    }
+  }
+
+  function format_voice_path(vfpath){
+
+    var v = vfpath.split("/");
+    var voiceFileFP = "";
+
+    for(var i=0; i < v.length; i++){
+      if(i>=3){
+        voiceFileFP = voiceFileFP + "/" + v[i];
+      }
+    }
+    return voiceFileFP;
+  }
+
+  function show_prev_call(agent_id){
+    $.getJSON("<%= url_for(:controller => 'call_browser', :action => 'get_previous_call') %>", {agent_id: agent_id}, function(data){
+      if(data != null){
+        var data_len = data.length;
+        if(data_len == 2){
+          var prev_call_page = window.open("<%= url_for(:controller => 'voice_logs',:action => 'show') %>/" + data[1].id,
+                                           "",
+                                           "status=yes,toolbar=no,location=no,menubar=no,resizable=yes,width=1000,height=600");
+          prev_call_page.moveTo((screen.width - 1000)/2, (screen.height - 600)/2);
+        }else{
+          alert("No previous call.");
+        }
+      }
+    });
+  }
+
+  /* called by speech monitor */
+  function change_status(type, agent_id, start_time, from, to, sys, dev, chn, call_dir){
+
+    if(have_agent(agent_id)){
+
+      var direction = call_dir.charAt(0).toLowerCase();
+      from = format_phone(from);
+      to = format_phone(to);
+
+      if(type == "connected"){
+        change_status_talking(agent_id, start_time, from, to, sys, dev, chn, direction)
+      }else if (type == "disconnected"){
+        change_status_idle(agent_id, sys, dev, chn);
+      }else if ((type == "xfer") && call_transfer_available){
+        if(direction == 'o'){
+          change_status_transfer_to(agent_id, sys, dev, chn, direction, to);
+        }else{
+          change_status_transfer_from(agent_id, direction, from);
+        }
+      }
+      
+    }
+
+  }
+
+  function have_agent(agent_id) {
+    return ($("#agent-"+agent_id).length > 0);
+  }
+
+  function change_status_talking(agent_id, start_time, from, to, sys, dev, chn, call_dir) {
+
+    $('div#agent-rt-call-'+agent_id).css("display","block");
+
+    $("input#call-sys-"+agent_id).val(sys);
+    $("input#call-dev-"+agent_id).val(dev);
+    $("input#call-chn-"+agent_id).val(chn);
+
+    $('span#sts-'+agent_id).text("Talking");
+
+    if($('span#sts-'+agent_id).hasClass("call-trf"))
+      $('span#sts-'+agent_id).removeClass("call-trf")
+    
+    $('span#sts-'+agent_id).removeClass("call-idle").addClass("call-talking");
+
+    $('span#from-'+agent_id).text(from);
+    $('span#to-'+agent_id).text(to);
+    $('span#st-'+agent_id).text(start_time.split(" ")[1]);
+
+    /* tmp */
+    $('span#n-'+agent_id).text('0');
+    $('span#m-'+agent_id).text('0');
+    /* tmp */
+
+    $('span#dur-'+agent_id).attr("diff",0);
+    $('span#dur-'+agent_id).text("00:00:00");
+
+    $('img#cl-dir-'+agent_id).attr("src",c_img[call_dir]);
+
+    /* call :: total, in, out */
+    update_call_amount(agent_id, call_dir);
+  }
+
+  function update_call_amount(agnt_id, c_dir) {
+
+    var tc = parseInt($('span#tc-'+agnt_id).text());
+    tc = tc+1;
+    $('span#tc-'+agnt_id).text(tc);
+
+    var dir = c_dir.charAt(0).toLowerCase();
+    var c = parseInt($('span#c'+dir+"-"+agnt_id).text());
+    c = c+1;
+    $('span#c'+dir+"-"+agnt_id).text(c);
+  }
+
+  function change_status_idle(agent_id, sys, dev, chn) {
+
+    var cur_dev = $("input#call-sys-"+agent_id).val()+"-"+$("input#call-dev-"+agent_id).val()+"-"+$("input#call-chn-"+agent_id).val();
+    var new_dev = sys+"-"+dev+"-"+chn;
+
+    if(cur_dev == new_dev){
+      $('span#sts-'+agent_id).text("Idle");
+
+      if($('span#sts-'+agent_id).hasClass("call-trf")){
+        $('span#sts-'+agent_id).removeClass("call-trf");
+      }
+
+      $('span#trf-'+agent_id).text("");
+      $('span#sts-'+agent_id).removeClass("call-talking").addClass("call-idle");
+
+      $('span#from-'+agent_id).text("-");
+      $('span#to-'+agent_id).text("-");
+      $('span#st-'+agent_id).text("-");
+
+      $('span#n-'+agent_id).text("-");
+      $('span#m-'+agent_id).text("-");
+
+      $('span#dur-'+agent_id).attr("diff","-");
+      $('span#dur-'+agent_id).text("-:-:-");
+
+      $('img#cl-dir-'+agent_id).attr("src",c_img['id']);
+      $('div#agent-rt-call-'+agent_id).css("display","none");
+    }
+    
+  }
+
+  function change_status_transfer_to(agent_id, sys, dev, chn, call_dir, to){
+    
+    var call_sts = $("span#sts-"+agent_id).text().toLowerCase();
+    var new_dev = sys+"-"+dev+"-"+chn;
+    var cur_dev = $("input#call-sys-"+agent_id).val()+"-"+$("input#call-dev-"+agent_id).val()+"-"+$("input#call-chn-"+agent_id).val();
+    var trf_txt = "Transfering to '"+to+"'";
+
+    if((call_sts == "talking") && (new_dev == cur_dev)){
+
+      $('span#trf-'+agent_id).text(trf_txt);
+      $('img#cl-dir-'+agent_id).attr("src",c_img["trf-"+call_dir]);
+      $('span#sts-'+agent_id).text("Transfering");
+      $('span#trf-'+agent_id).css("display","inline-block");
+      $('span#sts-'+agent_id).removeClass("call-"+call_sts).addClass("call-trf");
+
+  //    $('input#trf-btn-'+agent_id).css("display","inline-block");
+    }
+
+  }
+
+  function change_status_transfer_from(agent_id, call_dir, from){
+
+    var call_sts = $("span#sts-"+agent_id).text().toLowerCase();
+    var trf_txt = "Transfering from '"+from+"'";
+
+    $('span#trf-'+agent_id).text(trf_txt);
+    $('img#cl-dir-'+agent_id).attr("src",c_img["trf-"+call_dir]);
+    $('span#sts-'+agent_id).text("Transfered");
+    $('span#trf-'+agent_id).css("display","inline-block");
+    $('span#sts-'+agent_id).removeClass("call-"+call_sts).addClass("call-trf");
+  }
+
+  /* called by speech monitor */
+  function update_keyword_amount(agent_id, k_type) {
+    if(have_agent(agent_id)){
+      var type = k_type.toString().toLowerCase();
+      var tk = parseInt($('span#total-'+type+'-'+agent_id).text());
+      tk = tk + 1;
+      $('span#total-'+type+'-'+agent_id).text(tk);
+
+      var sts = $('span#sts-'+agent_id).text().toLowerCase();
+      if("talking" == sts){
+        var kw = parseInt($('span#'+type+'-'+agent_id).text());
+        kw = kw + 1;
+        $('span#'+type+'-'+agent_id).text(kw);
+      }
+    }
+  }
+
+  function format_phone(num){
+     var n;
+     if(n = num.match(/(^9|^5)(\d+)/)){
+       return n[2];//formatting(n[2]);
+     }else{
+       return num;//formatting(num);
+     }
+  }
+
+  function formatting(pure_num) {
+    var d_len = pure_num.length;
+    var home_n;
+    
+    if(d_len == 10)
+      return pure_num.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+    else if (d_len == 9){
+      if(home_n = pure_num.match(/^02\d+/))
+        return home_n[0].replace(/(\d{2})(\d{7})/, "$1-$2");
+      else
+        return pure_num.replace(/(\d{3})(\d{6})/, "$1-$2");
+    }else
+      return pure_num;
+   }
+  
+</script>
+
+<div id="agent-status" class="div-show">
+  <div id="div-loading" style="display:none; padding-left: 2px;"> <%= image_tag('page_ctrl/load.gif',{:align => 'absmiddle'}) %> Please wait while retrieving agent's informations.</div>
+  <table id="agent-status-tbl"></table>
+</div>

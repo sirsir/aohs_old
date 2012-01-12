@@ -1,0 +1,140 @@
+<% content_for :header do %>
+
+  <script type="text/javascript">
+  	function getfilterKeys(){
+		return {
+			name: $("input[name=customer_name]").val(),
+			phone: $("input[name=phone]").val(),
+			col: "<%=params[:col] %>",
+			sort: "<%=params[:sort] %>"			
+		}
+	}
+
+    function showFilter(){
+         if($("#div-FilterBox-customer").css("display") == "none"){
+            $("#div-FilterBox-customer").css("display","block");
+         }
+         else {
+            $("#div-FilterBox-customer").css("display","none");
+         }
+    }
+	
+    function filterClear(){
+		$("input[name=customer_name]").val("");
+		$("input[name=phone]").val("");
+    }
+	
+    function sort_link(name){
+	   var d = getfilterKeys();
+	   d.col = name;
+	   d.sort = App.switch_order("<%=params[:sort] %>");
+       window.location = "<%= url_for(:controller => 'customer') %>?" +  App.make_query(d);
+    }
+	
+    function filterApply(){
+		var url = App.make_query(getfilterKeys());
+        window.location.href = "<%= url_for(:controller => 'customer',:action => 'index') %>?" + url;
+    }	
+		
+    function del_customer(id,name){
+        $("#delDialog").text("");
+        $("#delDialog").append("Are you sure to delete customer \"<b>" + name + "</b>\"");
+        $("#delDialog").dialog("open");
+        $("#delDialog").dialog({
+          bgiframe: true,
+          title: "Deleting Customer...",
+          modal: true,
+          buttons:{
+            "Cancel": function(){ $(this).dialog("close"); },
+            "Ok": function(){ window.location = "<%= url_for(:controller => 'customer',:action => 'delete') %>/" + id ; }
+          }
+        });
+    }
+	
+    function showImport(){
+        var rurl = "<%=url_for(:controller => 'data',:action => 'import',:q => 'customers')%>";
+        var window1 = window.open(rurl,"",'menubar=no,scrollbars=yes,location=yes,resizable=yes,width=500,height=270');
+    }
+	
+    function showExport(){
+        var rurl = "<%=url_for(:controller => 'data',:action => 'export',:q => 'customers') %>";
+        var window1 = window.open(rurl,"",'menubar=no,scrollbars=yes,location=yes,resizable=yes,width=10,height=10');
+    }
+  </script>
+<% end %>
+
+<div class="div-menu-block">
+	<div class="menu-block">
+	    <table width="100%" cellpadding="0" cellspacing="0">
+	      <tr>
+	        <td align="left">
+	          <ul>
+	            <% if link_permission_require('customers','new') %>
+	            <li><%= link_image_tag('New customer','new.png',{:controller => "customer",:action => 'new'},{:title => 'Add new manager'}) %></li>
+	            <% end %>
+	            <% if permission_by_name('data-users') %>
+	            <li><%= link_image_tag('Import','import.png',"#",{:onclick => "showImport()",:title => 'Import users'}) %></li>
+	            <li><%= link_image_tag('Export','export.png',"#",{:onclick => "showExport()",:title => 'Export users'}) %></li>
+	            <% end %>
+				<li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Search customer'}) %></li>
+	          </ul>
+	        </td>
+	        <td align="right">
+				<%= will_paginate(@customers) %>
+	        </td>
+	      </tr>
+	    </table>		
+	</div>
+	<div id="div-FilterBox-customer" class="filter-block">
+		<fieldset>
+		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+		  	<tr>
+		  		<td align="left">
+				  <label>Name:</label> <input type="text" class="input-txt" name="customer_name" style="width:100px;" value="<%= params[:name] %>">
+				  <label>Phone:</label> <input type="text" class="input-int" name="phone" style="width:150px;" value="<%= params[:phone] %>"></td>
+				<td align="right">
+					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
+					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
+				</td>
+			</tr>
+		  </table>
+		</fieldset>		
+	</div>	
+</div>
+<%
+  edit = link_permission_require('managers','edit')
+  delete = link_permission_require('managers','delete')
+%>
+<div id="tbl-agents" class="div-default-table">
+	<table cellpadding="0" cellspacing="0" class="tbl-hover">
+    <tr class="tname">
+      <td colspan="10" class="tbl-td-header">Customers</td>
+    </tr>
+    <tr class="thead">
+      <th>No</th>
+      <th><a href="#" class="linksort" onclick="sort_link('name')">Name</a></th>
+      <th>Phone number(s)</th>
+      <% if edit or delete %>
+      <th>Action</th>
+      <% end %>
+    </tr>
+    <% unless @customers.blank? %>
+    <% @customers.each_with_index do |customer,i| %>
+    <tr class="<%= cycle('odd','even') %>">
+      <td class="no"><%=(i+1)+($PER_PAGE*(@page.to_i-1)) %></td>
+      <td class="string" width="200px"><%= customer.customer_name %></td>
+      <td class="string"><%= customer.customer_numbers.empty? ? "-" : (customer.customer_numbers.map { |p| p.number.strip }).sort.join(', ') %></td>
+      <% if edit or delete %>
+      <td class="tool"><%= link_image_tag('','edit.png',{:controller => "customer",:action=>"edit", :id => customer.id},{:title => 'Edit'}) %>
+      <%= link_image_tag('','delete.png',"#",{:onclick => "del_customer(#{customer.id},\"#{customer.customer_name}\")",:title => 'Delete'}) %></td>
+      <% end %>
+    </tr>
+    <% end %>
+    <% else %>
+    <tr>
+      <td class="no">1</td>
+      <td colspan="3" class="no-rec"><span class="span-display-none">No record.</span></td>
+    </tr>
+    <% end %>
+  </table>
+</div>

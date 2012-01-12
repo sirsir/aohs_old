@@ -1,0 +1,113 @@
+<% content_for :header do %>
+
+  <%= stylesheet_src_path('/YUI.2.7/build/treeview/assets/skins/default/tree.css') %>
+  <%= stylesheet_src_path('/YUI.2.7/build/button/assets/skins/sam/button.css') %>
+  <%= javascript_src_path('/YUI.2.7/build/yahoo-dom-event/yahoo-dom-event.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/animation/animation-min.js') %>
+  <%= javascript_src_path('/YUI.2.7/build/treeview/treeview-min.js') %>
+  
+  <script type="text/javascript">
+     $(document).ready(function(){
+
+        $.getJSON("./tree/tree_source?with_agent=false",function(data){
+            var tree = new YAHOO.widget.TreeView("treediv",data);
+
+            YAHOO.util.Event.on("expand", "click", function(e) {
+                tree.expandAll();
+                YAHOO.util.Event.preventDefault(e);
+            });
+
+            YAHOO.util.Event.on("collapse", "click", function(e) {
+                tree.collapseAll();
+                YAHOO.util.Event.preventDefault(e);
+            });
+            
+            tree.subscribe("labelClick", function(node) {
+              var groups_id = getGroupsId(node);
+              onClickStatisticsTree(groups_id);
+             });
+            
+            function getGroupsId(node){
+                var nodes = node;
+                var checkedNodes = [];
+                if (nodes.hasChildren()){
+                    var l = nodes.length
+                    for(var i=0; i<l; i++) {
+                        var n = nodes[i];
+                        if(n.data.NodeType == "group"){
+                            checkedNodes.push(n.data.NodeId); // just using label for simplicity
+                        }
+                        if (n.hasChildren()) {
+                          checkedNodes = checkedNodes.concat(getGroupsId(n.children));
+                        } else {
+                           //
+                        }
+                    }
+                } else {
+                    if(nodes.data.NodeType == "group"){
+                        checkedNodes.push(nodes.data.NodeId);
+                    }
+                }
+                return checkedNodes;
+            }
+
+            function collapseOrExpandNode(nodes){
+                var group_id = parseInt("<%=@grp_id %>");
+                
+                nodes = nodes || tree.getRoot().children;
+                for(var i=0; i<nodes.length; ++i) {
+                  var n = nodes[i];
+                  if((n.data.NodeId == group_id) && (n.data.NodeType == "group")){
+                    var np = n
+                    while(!np.isRoot()){
+                      np.showChildren();
+                      np = np.parent;
+                    }
+                    np.showChildren();
+                  } else {
+                    n.collapseAll();
+                  }
+
+                  if(nodes[i].hasChildren()){
+                    collapseOrExpandNode(nodes[i].children);
+                  }
+                }
+            }
+            
+            tree.draw();
+            tree.collapseAll();
+            collapseOrExpandNode();
+            
+        }); 
+        
+     }); //end ready
+
+  </script>
+
+  <style type="text/css">
+    #treediv td{
+      font-size:8pt;
+      padding-left:0px;  
+    }
+
+    .icon-user { display:block; padding-left: 18px; background: transparent url(./images/tree_icon/icon-user.png) 0 0 no-repeat; background-position:2px;  }
+    .icon-group { display:block; padding-left: 18px; background: transparent url(./images/tree_icon/icon-group.png) 0 0 no-repeat; background-position:2px; }
+    .icon-cate { display:block; padding-left: 18px; background: transparent url(./images/tree_icon/icon-cate.png) 0 0 no-repeat; background-position:2px; }
+    
+    #expandcontractdiv {
+      font-size:8pt;
+      background-color:#ccffff;
+      border-bottom:1px solid #99cccc;
+      width:100%;
+      text-align:center;
+      display:block;
+    }
+  </style>
+
+<% end %>
+<div id="expandcontractdiv">
+  <a id="expand" href="#">Expand all</a> |
+  <a id="collapse" href="#">Collapse all</a>
+</div>
+<div id="treediv" align="left"></div>
+<input type="textbox" id="myurl" style="display:none">

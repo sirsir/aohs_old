@@ -1,0 +1,99 @@
+<% content_for :header do %>
+
+<% end %>
+
+<style type="text/css">
+  html { overflow: hidden;}
+
+  div#tree, div#realtime, div#realtime-status, div#call-hist{
+    float: left;
+    padding: 0px 2px 2px 2px;
+  }
+
+  div#tabs li {
+    cursor: pointer;
+    list-style: none;
+  }
+  div#tabs li.detail-tabs {
+    float: left;
+    border-width: 1px;
+    border-style: solid solid none none;
+    border-color: #cccccc;
+    padding: 6px 12px 3px 12px;
+    margin: 0;
+    font-weight: bold;
+    color: #384970;
+  }
+
+  div.div-show {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    border: 1px solid #B8B8B8;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+  jQuery.event.add(window, "load", resize_wrap);
+  jQuery.event.add(window, "resize", resize_wrap);
+
+  var keyword_available = false;
+  var call_transfer_available = false;
+
+  $(document).ready(function(){
+    keyword_available = <%= Aohs::MOD_KEYWORDS %>;
+    call_transfer_available = <%= Aohs::MOD_CALL_TRANSFER %>;
+  });
+
+  function resize_wrap() {
+
+    var win_h = $(window).height();
+    var win_w = $(window).width();
+
+    var agnt_cnd_w = $('div#agent-tree').width();
+    var sp_monit_h = $('#sp-monit').height();
+
+    // temp
+    var call_search_h = $('div#call-search').height();
+    var all_cb_vis = $('div#all-cb').css("display");
+
+    /* /call_browser/agent_tree */
+    $('div#agent-tree').css("height",win_h - 37);
+    var agnt_cnd_h = $('div#agent-tree').height();
+
+    /* /call_browser/agent_status */
+    var div_show_w = win_w - agnt_cnd_w - 13;
+    var div_show_h = agnt_cnd_h - sp_monit_h - call_search_h - 4;
+
+    if(all_cb_vis == "block")
+      div_show_h = Math.floor(div_show_h / 2);
+
+    $('div#agent-status').css("height", div_show_h);
+    $('div#agent-status').css("width", div_show_w);
+    $('div#realtime').css("width", div_show_w);
+    
+    var agnt_tbl_w = $('div#agent-status').width() - 20;
+    $('table#agent-status-tbl').css('width',agnt_tbl_w);
+    $('table#call-hist-tbl').css('width',agnt_tbl_w);
+
+    /* time table */
+    var cb_agent_inf_w = $('div#cb-agent-inf').width();
+    var cb_agent_inf_h = $('div#cb-agent-inf').height() - call_search_h;
+    $('div#cb-time-info').css("height", cb_agent_inf_h);
+    $('div#cb-time-info').css("width", win_w - agnt_cnd_w - cb_agent_inf_w - 30);
+
+    var h = div_show_h - cb_agent_inf_h - 29;
+    $('div#cb-call-hist').css("height", h);
+    $('div#cb-call-hist').css("width", div_show_w);
+
+  }
+
+</script>
+
+<div style="clear: both; float: left; margin-top: 2px;">
+  <div id="tree"><%= render :partial => "/call_browser/agent_tree" %></div>
+  <div id="realtime"><%= render :partial => "/call_browser/real_time" %></div>
+  <div id="realtime-status"><%= render :partial => "/call_browser/current_status" %></div>
+  <div id="call-hist"><%= render :partial => "/call_browser/call_history" %></div>
+</div>

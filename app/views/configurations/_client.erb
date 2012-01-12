@@ -1,0 +1,170 @@
+<% content_for :header do %>
+
+  <%= stylesheet_src_path('/jquery/jquery.treeview/jquery.treeview.css') %>
+  <%= javascript_src_path('/jquery/jquery.treeview/jquery.treeview.js') %>
+  <style>
+    td {word-wrap: break-word;}
+    .nonEdit { border:0px #ffffff; width:150px; font-size:11px;}
+    .div-tbl-default-style1 td {font-size:11px;}
+    .input-cf-val {font-size:11px;}
+    body { overflow-x :scroll}      
+  </style>
+  <script type="text/javascript">
+
+    Array.prototype.remove = function(from, to) {
+      var rest = this.slice((to || from) + 1 || this.length);
+      this.length = from < 0 ? this.length + from : from;
+      return this.push.apply(this, rest);
+    };
+
+    var current_cf = "";
+
+    var ifEdit = false;
+    function ondbClickCfTxt(ele){
+        <% if @editcf %>
+        $("#"+ele).removeAttr("readonly");
+        $("#"+ele).addClass("input-cf-val-edit");
+        ifEdit = true;
+        <% end %>
+    }
+    function onOutCfTxt(ele){
+        <% if @editcf %>
+        $("#"+ele).attr("readonly",true);
+        $("#"+ele).removeClass("input-cf-val-edit");
+
+        var cf_id = $("#"+ele).attr("cf_id");
+        var cfd_type = $("#"+ele).attr("cfd_type");
+        var cfd_type_id = $("#"+ele).attr("cfd_type_id");
+        var cf_val = jQuery.trim($("#"+ele).val());
+		$("#"+ele).val(cf_val);
+        if(ifEdit){
+            $.post("<%=url_for(:controller => 'configurations', :action => 'update_config') %>",
+            {
+				conf: cf_id,cfd_type: cfd_type, cfd_type_id: cfd_type_id,val:cf_val,q:current_cf
+			},function(data){
+				//alert(data);
+			});
+        }
+        <% end %>
+    }
+
+  </script>
+
+  <style>
+    #div-confTree {
+      width:160px;
+      height:500px;
+      border:1px solid #b4e1ff;
+      border-top:none;
+      overflow:scroll;
+      margin:1px;
+    }
+    .input-cf-val {
+      width:150px;
+      margin:0px;
+      vertical-align: middle;
+      text-align: left;
+      border:0px;
+      padding:0;
+      padding-left:3px;
+      padding-top:2px;
+      padding-bottom:2px;
+      color: #006699;
+      background: #fafaff;
+    }
+    .input-cf-val-edit {
+      width:150px;
+      margin:0px;
+      vertical-align: middle;
+      border:0px;
+      background: #ffe9a8;
+    }
+    .edit_field {
+        background: #fafaff;
+    }
+    .div-top-tbl { height: 2px;}      
+  </style>
+
+<% end %>
+<table cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td colspan="2" class="div-top-tbl"></td>
+  </tr>
+  <tr>
+    <td valign="top">
+    <div id="div-confTree">
+      <%= render :partial => 'configurations/cftree' %>
+    </div>
+    </td>
+    <td valign="top" class="div-tbl-default-style1">
+      <!-- BaesLine -->
+      <div id="cfDisplay1">
+        <table cellpadding="0" cellspacing="0" width="100%" id="tbl-config1">
+        <tr>
+            <td colspan="6" class="tbl-td-header"><span id="confInfo1">&nbsp;</span></td>
+        </tr>
+        <tr>
+            <th width="25px">No</th>
+            <th width="210px">Variable</th>
+            <th width="70px">Type</th>
+            <th width="180px">Default</th>
+            <th width="180px">Value</th>
+            <th>Description</th>
+        </tr>
+        <tbody id="tbody-conf1"></tbody>
+        </table>
+      </div>
+      <!-- Default -->
+      <div id="cfDisplay2" style="display:none">
+        <table cellpadding="0" cellspacing="0" width="100%" id="tbl-config2">
+        <tr>
+            <td colspan="5" class="tbl-td-header"><span id="confInfo2">&nbsp;</span></td>
+        </tr>
+        <tr>
+            <th width="25px">No</th>
+            <th width="210px">Variable</th>
+            <th width="70px">Type</th>
+            <th width="210px">Default</th>
+            <th>Description</th>
+        </tr>
+        <tbody id="tbody-conf2"></tbody>
+        </table>
+      </div>
+      <!-- Groups -->
+      <div id="cfDisplay3" style="display:none">
+        <table cellpadding="0" cellspacing="0" width="100%" id="tbl-config3">
+        <tr>
+            <td colspan="6" class="tbl-td-header"><span id="confInfo3">&nbsp;</span></td>
+        </tr>
+        <tr>
+            <th width="25px">No</th>
+            <th width="210px">Variable</th>
+            <th width="70px">Type</th>
+            <th width="210px">BaseLine</th>
+            <th width="210px">Value</th>
+            <th>Description</th>
+        </tr>
+        <tbody id="tbody-conf3"></tbody>
+        </table>
+      </div>
+      <!-- Users -->
+      <div id="cfDisplay4" style="display:none">
+        <table cellpadding="0" cellspacing="0" width="100%" id="tbl-config4">
+        <tr>
+            <td colspan="7" class="tbl-td-header"><span id="confInfo4">&nbsp;</span></td>
+        </tr>
+        <tr>
+            <th width="25px">No</th>
+            <th width="220px">Variable</th>
+            <th width="70px">Type</th>
+            <th width="180px">BaseLine</th>
+            <th width="180px">Group</th>
+            <th width="180px">Value</th>
+            <th>Description</th>
+        </tr>
+        <tbody id="tbody-conf4"></tbody>
+        </table>
+      </div>
+    </td>
+  </tr>
+</table>

@@ -1,0 +1,38 @@
+agent   エージェントの設定
+
+asr     Speech Recognizer(音声認識の設定)
+ * mode                  音声認識エンジンモード  string   AmiDictationTh  AmiDictationTh
+ * sampling_rate         サンプリングレート      string   8000            8000
+ * bit_rate              ビットレート            integer  8               8
+ * encoding              保存形式                string   pcm             pcm
+ * segmenter_properties  発話検出パラメータ      string   ""              ""
+
+mn      管理サイトの設定
+  show_numbers_of_list   表示リスト数の設定
+    * logs               操作ログの表示リスト数      integer               26        26
+    * events             イベントの表示リスト数      integer               26        26
+    * agents             エージェントの表示リスト数  integer               26        26
+    * managers           マネージャの表示リスト数    integer               26        26
+    * groups             グループの表示リスト数      integer               26        26
+    * voice_logs         音声ログの表示リスト数      integer               26        26
+
+hk      House Keeper(ハウスキーピング処理の設定)
+  transaction                 トランザクション
+    keep_period               保存期間
+      * logs                  操作ログ                string                6m        6m
+      * events                イベントログ            string                6m        6m
+      * daily_statistics      日時統計情報            string                6m        6m
+      * weekly_statistics     週次統計情報            string                6m        6m
+      * monthly_statistics    月次統計情報            string                6m        6m
+      * voice_logs            通話情報                string                6m        6m
+      * after_keeping_period  保存期間終了後の処理    string[delete,export_and_delete]   export_and_delete    export_and_delete
+  voice_logs                  音声データ設定
+    * keep_period             保存期間                string                6m        6m
+    * after_keeping_period    保存期間終了後の処理    string[delete,move]   delete    delete
+  statistics                  統計処理
+    * begining_of_week        週次集計の開始曜日      string[mo,tu,we,th,fr,sa,su]    mo        mo
+    * begining_of_month       月次集計の開始日        integer                         5         5
+
+ew      EventWatcher(イベント監視の設定)
+  emal_address                通知メールアドレス      string                ""        ""
+  sms                         通知SMS                 string                ""        ""

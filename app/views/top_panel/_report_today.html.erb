@@ -1,0 +1,182 @@
+<% content_for :header do %>
+<style>
+	#today-report {
+		width:550px;
+		margin:5px;
+	}
+	#today-report .title {
+		font-weight:bold;
+		font-size:10pt;
+		color:#1b6bad;
+		text-align:right;
+		border-bottom:1px solid #e1f0ff;
+		padding:5px;
+	}
+	#today-report .date-late {
+		font-weight:normal;
+		color:#8080ff;
+	}	
+	#today-report .detail {
+
+	}
+	#today-report .lb_topic {
+		font-weight:normal;
+		color:#353535;
+		font-style:normal;
+		color:#384970;
+	}
+</style>
+<script type="text/javascript">
+
+      var df_min = parseInt("<%= @min_update_report_today.to_i %>"); 
+      function get_statistics_today(){
+        $.getJSON("<%= url_for(:controller => 'top_panel',:action => 'statistics_today') %>",{mode: 'all'},function(data){
+			
+		  $("#RpTodayLastTime").html("("+data["date"]+")");	
+		  
+		  var d = data["all"];
+		  if(d){
+			  $("#lb_agents").html(d["agents"]);
+			  $("#lb_calls").html(d["calls"]);
+			  $("#lb_inbound").html(d["inbound"]);
+			  $("#lb_outbound").html(d["outbound"]);
+			  $("#lb_duration").html(d["duration"]);
+	          $("#lb_mustwords").html(d["mustwords"]);
+	          $("#lb_ngwords").html(d["ngwords"]); 
+			  $("#lb_avg_agent").html(d["agent"]); 
+			  $("#lb_avg_call").html(d["avg_call"]);
+			  $("#lb_avg_inbound").html(d["avg_inbound"]);
+			  $("#lb_avg_outbound").html(d["avg_outbound"]);
+			  $("#lb_avg_duration").html(d["avg_duration"]);
+			  $("#lb_avg_mustword").html(d["avg_mustword"]);
+			  $("#lb_avg_ngword").html(d["avg_ngword"]); 		  	
+		  }
+          var d = data["my"];
+		  if(d){
+			  $("#lb_agents2").html(d["agents"]);
+			  $("#lb_calls2").html(d["calls"]);
+			  $("#lb_inbound2").html(d["inbound"]);
+			  $("#lb_outbound2").html(d["outbound"]);
+			  $("#lb_duration2").html(d["duration"]);
+	          $("#lb_mustwords2").html(d["mustwords"]);
+	          $("#lb_ngwords2").html(d["ngwords"]);
+			  $("#lb_avg_agent2").html(d["agent"]); 
+			  $("#lb_avg_call2").html(d["avg_call"]);
+			  $("#lb_avg_inbound2").html(d["avg_inbound"]);
+			  $("#lb_avg_outbound2").html(d["avg_outbound"]);			  
+			  $("#lb_avg_duration2").html(d["avg_duration"]);
+			  $("#lb_avg_mustword2").html(d["avg_mustword"]);
+			  $("#lb_avg_ngword2").html(d["avg_ngword"]); 		  	
+		  }
+		  var d = data["my_all"];
+		  if(d){
+		  	  $("#lb_agents3").html(d["agents"]);
+			  $("#lb_calls3").html(d["calls"]);
+			  $("#lb_inbound3").html(d["inbound"]);
+			  $("#lb_outbound3").html(d["outbound"]);
+			  $("#lb_duration3").html(d["duration"]);
+	          $("#lb_mustwords3").html(d["mustwords"]);
+	          $("#lb_ngwords3").html(d["ngwords"]);
+			  $("#lb_avg_agent3").html(d["agent"]); 			  
+		  }
+		  
+		  data = undefined;
+		  d = undefined;
+		 
+        });
+
+		var sec_for_check = df_min * 60 * 1000;
+		if(df_min>0){}
+        	var t = setTimeout("get_statistics_today()",sec_for_check);
+      }
+
+      $(document).ready(function(){
+        <% if permission_by_name('report-today') %>
+        get_statistics_today();
+		
+		$(".table-1 tr").mouseout(function(){
+			$(this).removeClass("hover");
+		}).mouseover(function(){
+			$(this).addClass("hover");
+		});
+        <% end %>    
+		
+      });	
+</script>
+
+<% end %>
+<div id="today-report">
+	<div class="title">Today Report <span id="RpTodayLastTime" class="date-late"></span></div>
+	<div class="detail">
+		<% if permission_by_name('report-today') %>
+			  <table class="table-1" cellpadding="1" cellspacing="0" width="100%">
+		        <tr>
+		          <th>&nbsp;</th>
+		          <th>&nbsp;</th>
+				  <th>Agents</th>
+		          <th>Calls</th>
+				  <th>Inbound</th>
+				  <th>Outbound</th>
+				  <th>Call Duration</th>
+		          <th class="ng-word">NG Words</th>
+		          <th class="must-word">Must Words</th>
+		        </tr>
+		        <tr>
+		          <td class="lb_topic none" rowspan="2" valign="top"></td>
+				  <td class="lb_topic">All agents</td>
+				  <td><span id="lb_agents" class="today_lb usrcount">-</span></td>
+		          <td><span id="lb_calls" class="today_lb callcount">-</span></td>
+				  <td><span id="lb_inbound" class="today_lb inbound-call">-</span></td>
+				  <td><span id="lb_outbound" class="today_lb outbound-call">-</span></td>
+				  <td><span id="lb_duration" class="today_lb callduration">-</span></td>				  
+		          <td><span id="lb_ngwords" class="today_lb ngword ng-word">-</span></td>
+		          <td><span id="lb_mustwords" class="today_lb mustword must-word">-</span></td>
+		        </tr>
+		        <tr>
+		          <td class="lb_topic">Avg All agents</td>
+				  <td><span id="lb_avg_agent" class="today_lb usrcount">-</span></td>
+		          <td><span id="lb_avg_call" class="today_lb callcount">-</span></td>
+				  <td><span id="lb_avg_inbound" class="today_lb inbound-call">-</span></td>
+				  <td><span id="lb_avg_outbound" class="today_lb outbound-call">-</span></td>				  
+				  <td><span id="lb_avg_duration" class="today_lb callduration">-</span></td>
+		          <td><span id="lb_avg_ngword" class="today_lb ng-word">-</span></td>
+		          <td><span id="lb_avg_mustword" class="today_lb must-word">-</span></td>
+		        </tr>
+				<tr><td colspan="9"></td></tr>		
+		         <% if permission_by_name('tree_filter') %>
+		        <tr>
+		          <td class="lb_topic none" rowspan="3" valign="top"></td>
+				  <td class="lb_topic">My agents</td>
+				  <td><span id="lb_agents2" class="today_lb usrcount">-</span></td>
+		          <td><span id="lb_calls2" class="today_lb callcount">-</span></td>
+				  <td><span id="lb_inbound2" class="today_lb inbound-call">-</span></td>
+				  <td><span id="lb_outbound2" class="today_lb outbound-call">-</span></td>				  
+				  <td><span id="lb_duration2" class="today_lb callduration">-</span></td>
+		          <td><span id="lb_ngwords2" class="today_lb ng-word">-</span></td>
+		          <td><span id="lb_mustwords2" class="today_lb must-word">-</span></td>
+		        </tr>
+		        <tr style="display:none;">
+		          <td class="lb_topic">Avg My agents</td>
+				  <td><span id="lb_avg_agent2" class="today_lb usrcount">-</span></td>
+		          <td><span id="lb_avg_call2" class="today_lb callcount">-</span></td>
+				  <td><span id="lb_avg_inbound2" class="today_lb inbound-call">-</span></td>
+				  <td><span id="lb_avg_outbound2" class="today_lb outbound-call">-</span></td>				  
+				  <td><span id="lb_avg_duration2" class="today_lb callduration">-</span></td>
+		          <td><span id="lb_avg_ngword2" class="today_lb ng-word">-</span></td>
+		          <td><span id="lb_avg_mustword2" class="today_lb must-word">-</span></td>
+		        </tr>
+		        <tr>
+		          <td class="lb_topic">Avg My agents(%)</td>
+				  <td><span id="lb_agents3" class="today_lb usrcount">-</span></td>
+		          <td><span id="lb_calls3" class="today_lb callcount">-</span></td>
+				  <td><span id="lb_inbound3" class="today_lb inbound-call">-</span></td>
+				  <td><span id="lb_outbound3" class="today_lb outbound-call">-</span></td>				  
+				  <td><span id="lb_duration3" class="today_lb callduration">-</span></td>
+		          <td><span id="lb_ngwords3" class="today_lb ng-word">-</span></td>
+		          <td><span id="lb_mustwords3" class="today_lb must-word">-</span></td>
+		        </tr>				
+		        <% end %>    
+		      </table>
+		<% end %>		
+	</div>
+</div>

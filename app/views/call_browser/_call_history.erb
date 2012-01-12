@@ -1,0 +1,316 @@
+<%#
+# To change this template, choose Tools | Templates
+# and open the template in the editor.
+%>
+
+<style type="text/css">
+  
+  div#cb-agent-inf {
+    clear: both;
+    float: left;
+    margin-top: 3px;
+    padding: 3px;
+    width: 220px;
+  }
+
+  div#cb-time-info {
+    float: left;
+    margin-left: 2px;
+    margin-top: 3px;
+    padding: 1px;
+  }
+
+  div#cb-time-table { clear: both; margin-top: 4px; }
+  div#cb-time-table table { border-collapse: collapse; }
+  div#cb-time-table td {
+    border: 1px solid #8F8F8F;
+  }
+
+  div#cb-time-search{
+    float: right;
+    padding-bottom: 2px;
+  }
+
+  div.div-num { text-align: left; float:left;}
+  div.div-trf-icon { text-align: right; cursor: pointer; }
+  
+  input#browse-btn  {
+    color: #214095; 
+    width: 50px;
+    height: 18px;
+    font: bold 80% sans-serif;
+    border: 1px solid;
+  }
+  input#date {
+    background-repeat:no-repeat;
+    background-position:right;
+    background-image:url('<%=image_src_path('/images/calendar.png') %>');
+  }
+
+  table#call-hist-tbl { border-collapse: collapse; margin: 0px 0px 2px 2px;}
+
+  tr.tr-date { height: 25px; }
+  tr.tr-head { font-weight: bold; background-color: #D4E9FF; text-align: center;}
+
+  td.td-date {
+    font-weight: bold;
+    font-size: 105%;
+  }
+
+  td.td-num, td.td-time, td.td-duration, td.td-direction, td.td-ani, td.td-dnis, td.td-ng, td.td-mst, td.td-action {border: 1px solid #6699FF; text-align: center;}
+  td.td-time {width: 80px;}
+  td.td-num {width: 40px; }
+
+  span#h-name, span#h-grp, span#h-ext { color: #1A3380;}
+
+</style>
+
+<script type="text/javascript">
+  
+  var agent_id_g = null;
+  var load_voicelog = false;
+  
+  $(document).ready(function(){
+    $("input#date").val("<%= Time.now.strftime("%Y-%m-%d") %>");
+    $("input#date").datepicker({ showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
+  });
+
+  function enable_call_browser(agent_id, name, grp, ext) {
+
+    agent_id_g = agent_id;
+
+    $('span#h-name').text(name);
+    $('span#h-grp').text(grp);
+    $('span#h-ext').text(ext);
+
+    $("input#date").val("<%= Time.now.strftime("%Y-%m-%d") %>");
+    $('td.call-time').html("-");
+    $('table#call-hist-tbl').html("");
+
+    $('div#cb-time-search').attr("disabled","");
+    $("input#date").attr("disabled","");
+    $("input#time-from").attr("disabled","");
+    $("input#time-to").attr("disabled","");
+
+ //   show_agent_call();
+  }
+  
+  function show_agent_call(){
+
+    var date= $('input#date').val();
+ //   var time_from = $('input#time-from').val();
+ //   var time_to = $('input#time-to').val();
+
+    cal_call_stat(agent_id_g, date);
+  //  search_voice_log(agent_id_g, date, time_from, time_to);
+  }
+
+  function cal_call_stat(agent_id, date){
+
+    load_voicelog = true;
+    $('td.call-time').attr("disabled", "disabled");
+
+    $('input#browse-btn').attr("disabled","disabled");
+    $('table#call-hist-tbl').html("");
+    $.getJSON("<%= url_for(:controller => 'call_browser', :action => 'call_stat') %>", {
+      agent_id: agent_id,
+      date: date
+    }, function(data){
+      if(data != null){
+        for(var id in data){
+          var from = $("td#"+id).attr("from");
+          var to = $("td#"+id).attr("to");
+          $('td#'+id).html("<a href=\"#\" onclick=\"search_voice_log('"+agent_id+"', '"+date+"','"+from+"','"+to+"');\">"+eval('data.'+id)+"</a>");
+        }
+      }
+
+      $('input#browse-btn').attr("disabled","");
+      
+      load_voicelog = false;
+      $('td.call-time').attr("disabled", "");
+    });
+  }
+
+  function search_voice_log(agent_id, date, from, to){
+
+    if(!load_voicelog){
+
+      load_voicelog = true;
+  
+      $('table#call-hist-tbl').html("");
+
+      $.getJSON("<%= url_for(:controller => 'call_browser', :action => 'search_voice_log') %>", {
+        agent_id: agent_id,
+        date: date,
+        time_from: from,
+        time_to: to
+      }, function(data){
+        if(data != null){
+
+          var view = "";
+          var data_len = data.length;
+          var idx = 0;
+          var hour, lst_hour="";
+
+          while(idx < data_len){
+
+            var voice = data[idx++];
+            hour = voice.start_hour;
+
+            if(hour > lst_hour){
+              var period = hour+":00:00 - "+hour+":59:59";
+              view += "<tr class=\"tr-date\" valign=\"bottom\"><td class='td-date' colspan=\"3\">"+period+"</td></tr>";
+              view += "<tr class=\"tr-head\"></a>";
+              view += "<td class=\"td-num\">No</td>";
+              view += "<td class=\"td-time\">Start time</td>";
+              view += "<td class=\"td-duration\">Duration</td>"
+              view += "<td class=\"td-direction\">Direction</td>";
+              view += "<td class=\"td-ani\">From</td>";
+              view += "<td class=\"td-dnis\">To</td>";
+              if(keyword_available){
+                view += "<td class=\"td-ng\">NG</td><td class=\"td-mst\">Must</span></td>";
+              }
+              view += "<td class=\"td-action\">&nbsp;</td></tr>"
+              lst_hour = hour;
+            }
+
+            var call_from = (voice.call_direction == 'o') ? voice.ani : voice.dnis;
+            var call_to = (voice.call_direction == 'o') ? voice.dnis : voice.ani;
+
+            view += "<tr onMouseOver=\"add_hover($(this));\" onMouseOut=\"remove_hover($(this));\"><td class=\"td-num\">"+idx+"</td>";
+            view += "<td class=\"td-time\">"+voice.start_time+"</td>";
+            view += "<td class=\"td-duration\">"+sec_to_timeformat(voice.duration)+"</td>";
+            view += "<td class=\"td-direction\">"+full_direction(voice.call_direction)+"</td>";
+            view += "<td class=\"td-ani\">"+call_from+"</td>";
+            view += "<td class=\"td-dnis\">"+call_to+"</td>";
+            if(keyword_available){
+              view += "<td class=\"td-ng\"><span class=\"head-ng\">"+voice.ng+"</span></td>";
+              view += "<td class=\"td-mst\"><span class=\"head-mst\">"+voice.mst+"</span></td>";
+            }
+            view += "<td class=\"td-action\"><a href=\"#\" onclick=\"show_call("+voice.id+");\">Detail</a></td></tr>";
+          }
+          $('table#call-hist-tbl').append(view);
+          load_voicelog = false;
+
+        }
+      });
+    }
+  }
+
+  function add_tranfer_call(id) {
+    var row="";
+    row = "<tr onMouseOver=\"add_hover($(this));\" onMouseOut=\"remove_hover($(this));\"><td class=\"td-num\">&nbsp;</td>";
+    row += "<td class=\"td-time\">&nbsp;</td>";
+    row += "<td class=\"td-duration\">&nbsp;</td>";
+    row += "<td class=\"td-direction\">&nbsp;</td>";
+    row += "<td class=\"td-ani\">&nbsp;</td>";
+    row += "<td class=\"td-dnis\">&nbsp;</td>";
+    if(keyword_available){
+      row += "<td class=\"td-ng\"><span class=\"head-ng\">&nbsp;</span></td>";
+      row += "<td class=\"td-mst\"><span class=\"head-mst\">&nbsp;</span></td>";
+    }
+    row += "<td class=\"td-action\"><a href=\"#\">Detail</a></td></tr>";
+
+    $(row).insertAfter("tr#call-row-"+id);
+  }
+
+  function sec_to_timeformat(sec){
+    var h = format_time(Math.floor(sec/(60*60)));
+    var m = format_time(Math.floor(sec/60) % 60);
+    var s = format_time(Math.floor(sec) % 60);
+
+    return (h+":"+m+":"+s);
+  }
+
+  function full_direction (dir){
+    if (dir == 'i')
+      return '<span class=\"head-in\">In</span>'
+    else if (dir == 'o')
+      return '<span class=\"head-out\">Out</span>'
+    else
+      return 'Other'
+  }
+
+  function show_call(voice_log_id){
+    var call_page = window.open("<%= url_for(:controller => 'voice_logs',:action => 'show') %>/" + voice_log_id,
+                                     "",
+                                     "status=yes,toolbar=no,location=no,menubar=no,resizable=yes,width=1000,height=600");
+    call_page.moveTo((screen.width - 1000)/2, (screen.height - 600)/2);
+  }
+
+  function show_call_list(){
+    var all_cb = $("#all-cb").css("display");
+    if(all_cb == "none"){
+      $('span#show-call-search a').text("Hide call-list search");
+      $("div#all-cb").css("display", "block");
+    }else{
+      $('span#show-call-search a').text("Show call-list search");
+      $("div#all-cb").css("display","none");
+    }
+    
+    resize_wrap();
+  }
+</script>
+
+<div id="call-browser">
+  <div id="call-search"><span id="show-call-search"><a href="#" onclick="show_call_list();">Show call-list search</a></span></div>
+  <div id="all-cb" style="display: none;">
+    <div id="cb-agent-inf">
+      <p style="font-weight: bold;">Agent's call information</p>
+      <p style="margin-top: 5px;"><span style="font-weight: bold;">Name:&nbsp;&nbsp;</span><span id="h-name">-</span></p>
+      <p><span style="font-weight: bold;">Group:&nbsp;&nbsp;</span><span id="h-grp">-</span></p>
+      <p><span style="font-weight: bold;">Extension Number:&nbsp;&nbsp;</span><span id="h-ext">-</span></p>
+    </div>
+
+    <div id="cb-time-info">
+      <div id="cb-time-search" disabled>
+        <span style="font-weight: bold;">Date:&nbsp;</span>
+        <input type="text" id="date" title="yyyy-mm-dd" size="14" disabled/>
+        <!--span style="font-weight: bold; margin-left: 6px;">Time:&nbsp;</span>
+        <input type="text" alt="time" value="00:00" id="time-from" maxlength="5" size="2" title="hh:mm" disabled />
+        <span style="font-weight: bold;">To:&nbsp;</span>
+        <input type="text" alt="time" value="23:59" name="vcToTime" id="time-to" maxlength="5" size="2" title="hh:mm" disabled /-->
+        <input type="button" id="browse-btn" value="browse" onclick="show_agent_call()" style="margin-left: 3px;"/>
+      </div>
+
+      <div id="cb-time-table">
+        <table cellpadding="0" cellspacing="0" width="100%">
+          <tr style="text-align: center; font-weight: bold;">
+            <td>00:00 ...</td>
+            <td>08:00</td>
+            <td>09:00</td>
+            <td>10:00</td>
+            <td>11:00</td>
+            <td>12:00</td>
+            <td>13:00</td>
+            <td>14:00</td>
+            <td>15:00</td>
+            <td>16:00</td>
+            <td>17:00</td>
+            <td>18:00</td>
+            <td>19:00 ...</td>
+          </tr>
+          <tr style="text-align: center;">
+            <td class="call-time" id="bfr_egh" from="" to="08:00:00">-</td>
+            <td class="call-time" id="egh" from="08:00:00" to="09:00:00">-</td>
+            <td class="call-time" id="nine" from="09:00:00" to="10:00:00">-</td>
+            <td class="call-time" id="ten" from="10:00:00" to="11:00:00">-</td>
+            <td class="call-time" id="ele" from="11:00:00" to="12:00:00">-</td>
+            <td class="call-time" id="twlv" from="12:00:00" to="13:00:00">-</td>
+            <td class="call-time" id="thr" from="13:00:00" to="14:00:00">-</td>
+            <td class="call-time" id="fort" from="14:00:00" to="15:00:00">-</td>
+            <td class="call-time" id="fift" from="15:00:00" to="16:00:00">-</td>
+            <td class="call-time" id="sixt" from="16:00:00" to="17:00:00">-</td>
+            <td class="call-time" id="sev" from="17:00:00" to="18:00:00">-</td>
+            <td class="call-time" id="eght" from="18:00:00" to="19:00:00">-</td>
+            <td class="call-time" id="aft_nint" from="19:00:00" to="">-</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div id="cb-call-hist" class="div-show" style="clear: both; margin-top: 2px;">
+      <table id="call-hist-tbl" cellspacing="0"></table>
+    </div>
+  </div>
+</div>

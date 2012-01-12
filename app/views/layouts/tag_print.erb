@@ -1,0 +1,71 @@
+<%= stylesheet_link_tag 'printpage' %>
+<%= javascript_src_path '/jquery/js/jquery-1.3.2.min.js' %>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    //window.print()
+  });
+</script>
+<% page_at = 0 %>
+<% if !(@report[:details]).empty? %>
+
+  <% while not @report[:details].empty? %>
+      <div id="printHeader<%=page_at %>" class="printHeader">
+        <table width="100%">
+          <tr>
+            <td width="20%">
+              <div class="report-logo"><%#= image_tag('reports/prtlogo.png',{:width => '25px', :height => '25px',:align => 'absmiddle'}) %> AmiVoice Operator's Help</div>
+            </td>
+            <td style="text-align:center" width="60%">
+              <div class="report-name"><%= @report[:name] %></div>
+            </td>
+            <td width="20%">
+              <div class="repeot-note"></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div id="printDetails<%=page_at %>" class="printDetails">
+        <table class="tblbody" cellpadding="0" cellspacing="0">
+          <thead>
+          <tr>
+            <% @report[:cols1].each do |col| %>
+              <th rowspan="2"><%= col %></th>
+            <% end %>
+          </tr>
+          
+          </thead>
+          <tbody>
+            <% row_at = 1 %>
+            <% while (row_at != @report[:break_line]) and not @report[:details].empty?  %>
+              <tr class="<%= cycle('odd','even') %>">
+                <% r = @report[:details].first %>
+                <% r.each do |cell| %>
+                <td class="<%= "int" if is_numeric(cell) %>"><%= cell %></td>
+                <% end %>
+                <% @report[:details].delete(@report[:details].first) %>
+                <% row_at += 1 %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="printFooter<%=page_at %>" class="printFooter">
+        <table width="100%">
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </table>
+      </div>
+      <% page_at += 1 %>
+
+<% end %>
+<% else %>
+
+No result
+
+<% end %>

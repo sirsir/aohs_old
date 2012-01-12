@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="http://@SERVERROOT@/javafx/amiTimeLine/" href="amiTimeLine_browser.jnlp">
+    <information>
+        <title>amiTimeLine</title>
+        <vendor>AmiVoiceThai</vendor>
+        <homepage href="http://@SERVERROOT@"/>
+        <description>amiTimeLine</description>
+        <icon kind="splash" href="http://@SERVERROOT@/javafx/splash.png"/>
+        <offline-allowed/>
+    </information>
+    <resources>
+        <j2se version="1.5+"/>
+        <extension name="JavaFX Runtime" href="http://@SERVERROOT@/javafx/javafx-rt.jnlp"/>
+        <jar href="amiTimeLine.jar" main="true" size="18866"/>
+        <jar href="lib/jcommon-1.0.16.jar" size="309293"/>
+        <jar href="lib/jfreechart-1.0.13-swt.jar" size="72659"/>
+        <jar href="lib/jfreechart-1.0.13.jar" size="1425744"/>
+    </resources>
+    <applet-desc name="amiTimeLine" main-class="com.sun.javafx.runtime.adapter.Applet" progress-class="com.javafx.progressbar.ProgressManager" width="500" height="500">
+        <param name="MainJavaFXScript" value="amitimeline.timeline"/>
+    </applet-desc>
+    <update check="always"/>
+</jnlp>

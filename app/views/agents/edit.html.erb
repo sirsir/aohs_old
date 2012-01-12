@@ -1,0 +1,167 @@
+<% content_for :header do %>
+    <%= stylesheet_src_path '/jquery/jquery.timepickr/ui-timepickr/dist/themes/default/ui.timepickr.css' %>
+<script type="text/javascript">
+    function del_agent(id,name){
+        $("#delDialog").text("");
+        $("#delDialog").append("Are you sure to delete agent \"<b>" + name + "</b>\"");
+        $("#delDialog").dialog("open");
+        $("#delDialog").dialog({
+          bgiframe: true,
+          title: "Deleting agent...",
+          modal: true,
+          buttons:{
+            "Cancel": function(){ $(this).dialog("close"); },
+            "Ok": function(){ window.location = "<%= url_for(:controller => 'agents', :action => 'delete') %>/" + id ; }
+          }
+        });
+    }
+	
+	function changeUserTypeToManager(){
+		var role = $("select[name=role-manager] option:selected").val();
+		window.location = "<%= url_for(:controller => 'users', :action => 'change_type',:id => params[:id], :type => params[:controller] ) %>" + "&role=" + role;
+	}
+	
+	function onChangeUserType(id){
+		$("#change-usertype-dialog").dialog('destroy');
+		$("#change-usertype-dialog").dialog({
+			modal: true,
+			bgiframe: true,
+			width: '410',
+			buttons: {
+				"No": function(){ $(this).dialog('close'); },
+				"Yes": function(){ $(this).dialog('close'); changeUserTypeToManager();}
+			}
+		});
+	}
+		
+    $(document).ready(function(){
+       <%sts = 1%>
+       <%if @agent.state.to_s == 'active'%>
+       <%sts = 2%>
+       <%end%>
+         $("#agent_state<%=sts%>").attr("checked",true);
+         $("#agent_expired_date").datepicker({ showAnim: 'fold' ,dateFormat: 'yy-mm-dd'});
+
+    });
+</script>
+<% end %>
+
+<div id="change-usertype-dialog" style="display:none;">
+	<div>
+		<span>Are you sure to change user type from "Agent" to "Manager"?</span></br></br>
+		<span style="font-style:italic;">
+		Please choose role for manager.
+		<div style="padding-top:5px;">
+		<select name="role-manager">
+		<% Role.find(:all,:conditions => "name != 'Agent'",:order => 'name').each do |r| %>
+			<option><%=r.name %></option>	
+		<% end %>
+		</select>
+		</div>
+		</span>
+	</div>
+</div>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',{:controller => 'agents',:action=>"index"},{:title => 'Back to agent list'}) %></li>
+            <li><%= link_image_tag('Agent detail','detail.png',{:controller => 'agents',:action=>"show", :id => @agent.id},{:title => 'Agent details'}) %></li>
+            <li><%= link_image_tag('Delete agent','delete.png','#',{:onclick => "del_agent(#{@agent.id},\"#{@agent.login}\")",:title => 'Delete agent'}) %></li>
+            <li><%= link_image_tag('Change user type','urole.png','#',{:onclick => "onChangeUserType(#{@agent.id})",:title => 'Change from agent to manager'}) %></li>
+          </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+
+<div id="div-block-agent">
+<div class="div-form-default-style1">
+  <% form_for(@agent,:url => {:controller => 'agents',:action=>"update",:id=>"#{@agent.id}"}) do |f| %>
+  <%=display_frm_error(flash[:message]) %>
+  <table class="tblfrm" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td><span class="span-form-name">Agent infomation</span></td>
+    </tr>
+    <tr>
+      <td>
+          <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="140px" valign="top"><label for="login">Username:</label></td>
+              <td><%= f.text_field :login, :size => 20, :maxsize => 50, :class =>'input-text' %><span class="span-require">*</span>
+              <br><span class="note">Account must have a minimum of 4 characters</span></td>
+            </tr>
+            <tr>
+              <td><label for="display_name">Display name:</label></td>
+              <td><%= f.text_field :display_name, :size => 20, :maxsize => 50, :class =>'input-text' %></td>
+            </tr>
+            <tr>
+              <td><label for="group">Group:</label></td>
+              <td><%= f.collection_select "group_id",Group.find(:all), :id, :name %><span class="span-require">*</span></td>
+            </tr>
+            <tr>
+              <td width="150px" valign="top"><label for="cti_agent_id">CTI Agent ID:</label></td>
+              <td><%= f.text_field :cti_agent_id, :size => 20, :maxsize => 50, :class =>'input-text' %></td>
+            </tr>
+			<!-- ID CARD -->				   
+            <tr>
+              <td width="150px" valign="top"><label for="id_card">Citizen ID:</label></td>
+              <td><%= f.text_field :id_card, :size => 20, :maxsize => 50, :class =>'input-text' %></td>
+            </tr> 		
+			         
+            <tr>
+              <td><label for="sex">Sex:</label></td>
+              <td><%= f.select "sex", [["Undefine","u"], ["Female","f"], ["Male","m"]] %><span class="span-require">*</span></td>
+            </tr>
+           
+             <tr>
+              <td valign="top"><label for="expired_date">Account expired date:</label></td>
+              <td><%= f.text_field :expired_date,{:class => 'input-text'}%><span class="span-require">*</span>
+              <br><span class="note">Format date is "yyyy-mm-dd"</span></td>
+             </tr>
+               <tr>
+             <td><label for="status">Status</label></td>
+              <td><input type="radio" id="agent_state1" name="agent[state]" value="passive" checked="true">Inctivate
+                  <input type="radio" id="agent_state2" name="agent[state]" value="active">Activate
+              </td>
+            </tr>
+            </table>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="span-form-name">Authentication details</span></td>
+    </tr>
+    <tr>
+      <td>
+        <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="140px" valign="top"><label for="Password">Password:</label></td>
+            <td>
+              <%= f.password_field :password, :size => 25, :maxsize => 20,:class =>'input-text' %><span class="span-require">*</span>
+              <br><span class="note">Password must have a minimum of 6 characters</span>
+            </td>
+          </tr>
+          <tr>
+            <td><label for="password_confirmation">Confirm Password:</label></td>
+            <td><%= f.password_field :password_confirmation, :size => 25, :maxsize => 20,:class =>'input-text' %><span class="span-require">*</span></td>
+          </tr>
+            <tr>
+              <td></td>
+              <td><%= submit_tag " Update agent ",{:class => 'btnAccept'} %></td>
+            </tr>
+          </table>
+      </td>
+    </tr>
+  </table>
+  <% end %>
+</div>
+</div>
+
+

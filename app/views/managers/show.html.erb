@@ -1,0 +1,121 @@
+<% content_for :header do %>
+
+<% end %>
+
+<% content_for :submenu do %>
+  <div id="submenu">
+    <table width="100%">
+      <tr>
+        <td align="left">
+          <ul>
+            <li><%= link_image_tag('Back','back.png',{:controller => "managers",:action => 'index'},{:title => 'Back to manager list'}) %></li>
+            <% if link_permission_require('managers','edit') %>
+            <li><%= link_image_tag('Edit manager','edit.png',{:controller => "managers",:action=>"edit", :id => @manager.id},{:title => 'Edit'}) %></li>
+            <% end %>
+          </ul>
+        </td>
+        <td align="right">
+
+        </td>
+      </tr>
+    </table>
+  </div>
+<% end %>
+
+<div id="div-block-manager">
+    <div class="div-form-default-style2">
+        <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+                <td><span class="span-form-name">Manager infomation</span></td>
+            </tr>
+            <tr>
+            <td>
+            <table class="tbl-frm-details" cellpadding="0" cellspacing="1">
+            <tr>
+                <td align="left" width="160px"><label>Username:</label></td>
+                <td><%=h @manager.login %></td>
+            </tr>
+            <tr>
+                <td><label>Display name:</label></td>
+                <td><%=h @manager.display_name %></td>
+            </tr>
+            <tr>
+                <td><label>CTI Agent Id:</label></td>
+                <td><%=h @manager.cti_agent_id %></td>
+            </tr>
+			<!-- ID CARD -->				
+            <tr>
+                <td><label>Citizen ID:</label></td>
+                <td><%=h @manager.id_card %></td>
+            </tr>		
+			
+            <tr>
+                <td><label>Sex:</label></td>
+                <td><%=h @manager.sex2 %></td>
+            </tr>
+          <tr>
+                <td><label>Role:</label></td>
+                <td><%=h @manager.role.name %></td>
+          </tr>
+           <tr>
+            <td><label>Status:</label></td>
+            <% usr_login_status = (@manager.state == 'pending' or @manager.state == 'passive') ? 'inactive' : 'active' %> 
+            <td><span class="span-<%=usr_login_status %>"><%=usr_login_status %></span></td>
+          </tr>
+           <tr>
+            <td><label>Account expired date at:</label></td>
+            <td><%=h @manager.expired_date.nil? ? "-" : @manager.expired_date.strftime('%Y-%m-%d')%></td>
+          </tr>
+        </table>
+      </td>
+    <tr>
+      <td><span class="span-form-name">Groups</span></td>
+    </tr>
+      <td style="padding-top:5px;">
+        <div class="div-default-table">
+			<table cellpadding="0" cellspacing="0" class="tbl-hover">
+            <tr class="thead">
+                <th>No</th>
+                <th>Group name</th>
+                <th>Leader's name</th>
+                <th>Leader's role</th>
+                <th>Description</th>
+                <% @group_category_type_names.each do |category_type_name|%>
+                    <th width="100px"><label><%=category_type_name%></label></th>
+                <% end %>
+            </tr>
+            <% unless @group.empty? %>
+                <% @group.each_with_index do |gr,i| %>
+                <% categories = {} %>
+                <% gr.categories.to_ary.map{|c| categories[c.category_type.name] = c.value } %>
+            	<tr class="<%= gr.leader.nil? ? cycle('odd','even') : (gr.leader.display_name == @manager.display_name ? 'current' : cycle('odd','even'))%>">
+                    <td class="no"><%= i + 1 %></td>
+                    <td class="string" width="150px"><%=h gr.name %></td>
+                    <td><%= gr.leader.nil? ? '-' : gr.leader.display_name %></td>
+                    <td><%= gr.leader.nil? ? '-' : gr.leader.role.name %></td>
+                    <td class="string"><%=h gr.description %></td>
+                    <% @group_category_type_names.each do |category_type_name|
+                        unless (categories[category_type_name]).nil?
+                            txtVal = categories[category_type_name]
+                        else
+                            txtVal = "-"
+                        end
+                    %>
+                    <td class="string"><%= txtVal %></td>
+                    <% end %>
+                </tr>
+                <% end %>
+            <% else %>
+                <tr align="center">
+                  <td class="no">&nbsp;</td>
+                  <td colspan="<%= 4 + @group_category_type_names.length %>"><span class="span-display-none">No groups.</span></td>
+                </tr>
+              <% end %>
+          </table> 
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>
+</div>
+

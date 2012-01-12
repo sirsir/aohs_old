@@ -1,0 +1,65 @@
+<% content_for :header do %>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+
+      $(function(){
+        $(".tbl-event tr").mouseover(function(){
+          $(this).addClass('tr-selected');
+        }).mouseout(function(){
+          $(this).removeClass('tr-selected');
+        });
+      });
+
+    });
+
+    function sort_link(name){
+      window.location = "./event?sort=" + name;
+    }
+
+  </script>
+  <style>
+
+  </style>
+<% end %>
+
+<div id="div-tbl-list-event">
+<div class="div-tbl-default-style1">
+  <table class="tbl-event" cellpadding="0" cellspacing="0">
+    <tr>
+      <td colspan="8"  class="tbl-td-header">Events</td>
+    </tr>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Target</th>
+      <th>Status</th>
+      <th>Sevelity</th>
+      <th><a href="#" class="linksort" onclick="sort_link('start_time')">Start time</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('complete_time')">Complete time</a></th>
+    </tr>
+    <% unless @events.empty? %>
+    <% @events.each_with_index do |event,i| %>
+    <tr class="<%= cycle('tr-odd','tr-even') %>">
+      <td class="no"><%=i+1 %></td>
+      <td class="string"><%=h event.name %></td>
+      <td class="string"><%=h event.target %></td>
+      <td class="none"><span style="color:green"><%=h event.status %></span></td>
+      <td class="none"><%=h event.sevelity %></td>
+      <td class="string"><%=h event.start_time.strftime('%Y/%m/%d %H:%M:%S') %></td>
+      <td class="string"><%=h event.complete_time.strftime('%Y/%m/%d %H:%M:%S') %></td>
+    </tr>
+    <% end %>
+    <% else %>
+    <tr>
+      <td class="no">1</td>
+      <td colspan="7" class="none">Events cannot be found.</td>
+    </tr>
+    <% end %>
+    <tr>
+      <td colspan="8" class="pages">
+        <%= will_paginate(@events) %>
+      </td>
+    </tr>
+  </table>
+</div></div>

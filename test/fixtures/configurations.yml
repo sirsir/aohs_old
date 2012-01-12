@@ -1,0 +1,60 @@
+# == Schema Information
+# Schema version: 20100402074157
+#
+# Table name: configurations
+#
+#  id                     :integer(11)     not null, primary key
+#  variable               :string(255)
+#  default_value          :string(255)
+#  description            :string(255)
+#  variable_type          :string(255)
+#  created_at             :datetime
+#  updated_at             :datetime
+#  configuration_group_id :integer(10)
+#
+
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  variable: StringParameter1
+  raw_value: 12345_abcde
+  raw_value_type: string
+  default_value: 12345_abcde
+  description: dummy data to test string paramenter
+  parent_id: 1
+  lft: 1
+  rgt: 1
+  lock_version: 1
+
+two:
+  variable: IntegerParameter1
+  raw_value: 12345
+  raw_value_type: integer
+  default_value: 12345
+  description: dummy data to test integer paramenter
+  parent_id: 1
+  lft: 1
+  rgt: 1
+  lock_version: 1
+
+tree:
+  variable: BooleanParameter1
+  raw_value: true
+  raw_value_type: boolean
+  default_value: true
+  description: dummy data to test boolean paramenter
+  parent_id: 1
+  lft: 1
+  rgt: 1
+  lock_version: 1
+
+tree:
+  variable: BooleanParameter2
+  raw_value: false
+  raw_value_type: boolean
+  default_value: false
+  description: dummy data to test boolean paramenter
+  parent_id: 1
+  lft: 1
+  rgt: 1
+  lock_version: 1

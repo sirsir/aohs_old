@@ -1,0 +1,207 @@
+<%
+@tl_enabled = (AmiConfig.get('client.aohs_web.enableCallsTimeline').to_i == 1 ? true : false)
+%>
+<% content_for :header do %>
+
+  <%= javascript_src_path '/jquery/jquery.autocomplete/lib/jquery.bgiframe.min.js' %>
+  <%#= javascript_src_path '/jquery/jquery.autocomplete/lib/jquery.dimensions.js' %>
+  <%= javascript_src_path '/jquery/js/jquery.download.js' %>
+  <%= javascript_src_path 'webtoolkit.url.js' %>
+  <%= stylesheet_src_path 'for_callsearch.css' %>
+  <%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
+      
+  <style type="text/css">
+
+    .div-cond-ctrl {
+        background-color: #f0efef;
+        border-right:1px solid #cccccc;
+    }
+    #voice-timeline {
+        margin-top:2px;
+        margin-left:2px;
+        margin-bottom:2px;
+    }
+    #ami-viewer {
+        margin-top:2px;
+        margin-left:2px;
+        margin-bottom:2px;        
+        border:1px solid #cccccc;
+        background:url('<%= image_path('gradient-mod.png') %>');
+    }
+    #voicelog-tbl {
+        margin-top:2px;
+        margin-left:2px;
+        margin-bottom:2px;          
+        border:1px solid #b4e1ff;
+    }
+
+    body,html {
+      overflow:hidden;
+    }
+    #div-voice_log_tabs {
+        margin-top:3px;
+        width:100%
+    }
+    #vc-block1,#vc-block2 {
+       margin-left:2px;
+    }
+	.tabmenu-li {
+		font-weight:bold;
+	}	
+  </style>
+
+<script type="text/javascript">
+    var current_sort = "desc";
+    var current_key = "";
+    var tlLoaded = false;
+    
+    var customer_info = {
+      cust_name: "",
+      cust_id: -1
+    }
+
+    var maxPhoneIndex = 0;
+    var vc_start = false;
+
+    function onLoadPage(){
+
+      $("#loading").css("display","none");
+      $("#btnSaveCust").attr("disabled","disabled");
+
+      var d = new Date();
+      $("input[name=eddate]").val(d.strftime('%m/%d/%Y'));
+      
+    }
+
+    function resizeWindow(e) {
+        var intBrowserHeight = $(window).height();
+        var intBrowserWidth = $(window).width();
+        var divCustCtrlWidth = $("#div-custCtrl").width();
+        $("#ami-viewer").css("width",intBrowserWidth-divCustCtrlWidth-6);
+        $("#voice-timeline").css("width",intBrowserWidth-divCustCtrlWidth-4);
+        $("#div-tblCtrl").css("width",intBrowserWidth-divCustCtrlWidth-4);
+        $("#div-tbl-outer").css("width",intBrowserWidth-divCustCtrlWidth+12);
+        var divTblOuter = $("#div-tbl-outer");
+        var divTblInner = $("#div-tbl-inner");
+        divTblOuter.css("height",intBrowserHeight-$("#voice-timeline").height()-$("#ami-viewer").height()-$("#header").height()-57);
+        divTblInner.css("height",divTblOuter.height()-$("#div-tblCtrl").height()-15);
+        divTblInner.css("width",$(".tbl-header").width()+10);
+    }
+
+    $(document).ready(function(){
+        
+     onLoadPage();
+
+     $(window).bind("resize", resizeWindow);
+        
+     resizeWindow();
+      $("#btnsearch").ajaxError(function(){
+        if(vc_start){
+          progressEnabled(false);
+          $("#btnsearch").attr("disabled","");
+          InfoDialog("Searching voices have some problem. Please try again.");
+          vc_start = false;
+        }
+      });
+
+      tabVCSelect(1);
+
+        $("#vlrs-tabs ul li").mouseover(function(){
+            $(this).addClass('tabmenu-li-hover');
+        }).mouseout(function(){
+            $(this).removeClass('tabmenu-li-hover');
+        });
+        
+    });
+
+    function sortby(field)
+    {
+      var current_s = "";
+      if(current_key.toString() == field.toString()){
+       if(current_sort == "desc")
+         current_sort = "asc";
+       else
+         current_sort = "desc";
+     }
+     else{
+         current_key = field;
+         current_sort = "asc";
+     }
+     pageReset();
+     searchVoice();
+    }
+    function ShowOrHidePanel(){
+		if($('#divSearchPanel').css('display')=="none")
+			$('#divSearchPanel').css('display','block');
+		else
+			$('#divSearchPanel').css('display','none');
+		if($('#divBtnShowPanel').css('display')=="none")
+			$('#divBtnShowPanel').css('display','block');
+		else
+			$('#divBtnShowPanel').css('display','none');  	
+		resizeWindow();		
+	}
+    function tabVCSelect(tabNo){
+        switch(tabNo){
+          case 1: {
+            $("#vc-block1").css("display","none");
+            $("#tabli-2").removeClass("tabmenu-li-selected");
+            $("#vc-block2").css("display","block");
+            $("#tabli-1").addClass("tabmenu-li-selected");
+            break;
+          }
+          case 2: {
+            $("#vc-block1").css("display","block");
+            $("#tabli-2").addClass("tabmenu-li-selected");
+            $("#vc-block2").css("display","none");
+            $("#tabli-1").removeClass("tabmenu-li-selected");
+            break;
+          }
+          default : {
+            $("#vc-block1").css("display","block");
+            $("#tabli-2").addClass("tabmenu-li-selected");
+            $("#vc-block2").css("display","none");
+            $("#tabli-1").removeClass("tabmenu-li-selected")
+          }
+        }
+    }
+</script>
+
+<% end %>
+
+<%= render :partial => 'customers/customer_dialog'%>
+<%= render :partial => 'shared/voice_log_rmenu'%>
+
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+    <td class="div-cond-ctrl" valign="top">
+        <div style="padding-left:0px; overflow:hidden; width:205px;" id="divSearchPanel"><%= render :partial => 'customers/customer_cond' %></div>
+		<div style="overflow:hidden; width:16px;" id="divBtnShowPanel" style="display:none; padding-top:3px; padding-left:2px; padding-right:2px"><a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a></div>
+    </td>
+    <td valign="top">
+      <div id="div-voice_log_tabs">
+        <div class="div-tabmenu-style1" id="vlrs-tabs">
+            <ul class="tabmenu-ul">
+              <li id="tabli-1" class="tabmenu-li tabmenu-li-selected"><a href="#" onclick="tabVCSelect(1)">Calls Result</a></li>
+              <% if @tl_enabled %>
+              <li id="tabli-2" class="tabmenu-li"><a href="#" onclick="tabVCSelect(2)">Calls Timeline</a></li>
+              <% end %>    
+            </ul>
+        </div>
+      </div>
+      <div id="vc-block1">
+        <div id="voice-timeline">
+            <%= render :partial => 'customers/customer_timeline' %>
+        </div>
+      </div>
+      <div id="vc-block2">
+        <div id="ami-viewer">
+            <%= render :partial => 'shared/amiviewer' %>
+        </div>
+        <div id="voicelog-tbl">
+            <%= render :partial => 'shared/voice_logs_tbl' %>
+        </div>
+      </div>
+    </td>
+  </tr>
+</table>
