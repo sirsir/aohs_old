@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jnlp codebase="http://192.168.1.15:3001/applets/audio_viewer" href="launch.jnlp" spec="1.0+">
+    <information>
+        <title>AudioViewer</title>
+        <vendor>AMI (Thailand)</vendor>
+        <homepage href=""/>
+        <description>AudioViewer</description>
+        <description kind="short">AudioViewer</description>
+    </information>
+<update check="always"/>
+<security>
+	<all-permissions/>
+</security>
+<resources>
+	<j2se version="1.5+"/>
+	<jar href="AmiAdvw.jar" main="true"/>
+</resources>
+<applet-desc height="300" main-class="AudioViewerApplet" name="AmiAdvw" width="300"></applet-desc>
+</jnlp>

@@ -1,10 +1,9 @@
-# Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
 
   include AmiPermission
   include Format
 
-  $PER_PAGE = AmiConfig.get('client.aohs_web.number_of_display_list') 
+  ##$PER_PAGE = $CF.get('client.aohs_web.number_of_display_list') 
 
   $VOLUME_RANK = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,2.0,2.5,3.0,4.0,5.0,7.0,10.0]
   $SPEED_RANK = [0.5,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4]
@@ -45,7 +44,7 @@ module ApplicationHelper
       html << link_to(name, option, html_option)
     end
 
-    return html
+    return html.html_safe
     
   end
     
@@ -55,7 +54,7 @@ module ApplicationHelper
   def create_header_link(name,url,title,current_controller,map_controllers)
     li_class = current_header_menu(current_controller,map_controllers)
     url_tag = link_to(name,url,{:class =>'a-link-2',:title => title})
-    return "<li class=\"#{li_class}\">#{url_tag.gsub("\"","'")}</li>"
+    return "<li class=\"#{li_class}\">#{url_tag.gsub("\"","'")}</li>".html_safe
   end
   
   def current_header_menu(control_name,link_name)
@@ -72,7 +71,7 @@ module ApplicationHelper
   
   def javascript_src_path(src)
 
-    return "<script src=\"#{javascript_path(src)}\" type=\"text/javascript\"></script>"
+    return "<script src=\"#{javascript_path(src)}\" type=\"text/javascript\"></script>".html_safe
 
   end
 
@@ -84,7 +83,7 @@ module ApplicationHelper
   
   def stylesheet_src_path(src)
 
-     return "<link href=\"#{stylesheet_path(src)}\" type=\"text/css\" rel=\"stylesheet\"/>"
+     return "<link href=\"#{stylesheet_path(src)}\" type=\"text/css\" rel=\"stylesheet\"/>".html_safe
 
   end
 
@@ -105,7 +104,7 @@ module ApplicationHelper
       end
     end
 
-    return str
+    return str.html_safe
 
   end
 
@@ -120,12 +119,13 @@ module ApplicationHelper
       end
     end
 
-    return str
+    return str.html_safe
 
   end
 
   def limit_string(str,length=10)
-    unless str.empty?
+    str = "" if str.nil?
+    if not str.empty?
         new_str = ""
         i = 0
         str.each_char do |c|
@@ -179,7 +179,7 @@ module ApplicationHelper
     end
     html << "</select>"
     
-    return html
+    return html.html_safe
     
   end
   
@@ -200,8 +200,17 @@ module ApplicationHelper
     end
     html << "</select>"
     
-    return html
+    return html.html_safe
        
+  end
+  
+  def car_id_format(car_no=nil)
+    if car_no.blank?
+      return ""
+    else
+      c = format_car_id(car_no).to_s.split(/-| /,3)
+      return  "<span class='carunderline'>" + c[0] + "</span>" + "-" + "<span class='carunderline'>" + c[1] + "</span>" + "&nbsp;" + "<span class='carunderline'>" + c[2] + "</span>"
+    end
   end
   
 end

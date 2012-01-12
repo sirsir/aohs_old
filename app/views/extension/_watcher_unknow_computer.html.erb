@@ -1,0 +1,34 @@
+<div id="tbl-wlogs" class="div-default-table">
+  <table cellpadding="0" cellspacing="0" class="tbl-hover"> 
+    <tr class="tname">
+      	<td colspan="10">Watcher Report - Unknown Computers </td>
+    </tr>
+    <tr class="thead">
+      <th rowspan="2">No.</th>
+      <th colspan="4">Watcher Log/Computer Log</th>
+      <th colspan="2">User List</th>
+    </tr>
+    <tr class="thead">
+      <th>Computer Name</th>
+      <th>Remote IP</th>
+      <th>Username</th>
+      <th>Checked Time</th>
+      <th>Username</th>
+      <th>Group</th>
+    </tr>
+    <% @logs.each_with_index do |l,i| %>
+      <tr>
+        <td><%=i+1 %></td>
+	<td style="background-color:#FFFFCC;"><%=l.comp2 %>&nbsp;</td>
+	<td style="background-color:#FFFFCC;"><%=l.ip2 %>&nbsp;</td>
+	<td><%=l.login_name %>&nbsp;</td>
+	<td><%=l.check_time %>&nbsp;</td>
+	<td><%=l.username %>&nbsp;</td>
+	<td><%=l.group_name %>&nbsp;</td>
+      </tr>
+    <% end %>
+  </table>
+  <p>* List of computer name and ip address that not found in extension list.</p>
+  <p>* Please check them are exist in extension list or not?.</p>
+</div>
+</div>

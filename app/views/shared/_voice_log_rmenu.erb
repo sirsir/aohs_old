@@ -1,16 +1,33 @@
 <% content_for :header do %>
-
 <style type="text/css">
   #tagsList,#tagsList2 {
       width:270px;
   }
+  #btnAddPhone {
+  	  color:#46843c;
+  }
+  #cars-inputbox {
+  	border:1px solid #ceceff;
+	padding-top:3px;
+	padding-bottom:3px;
+	font-family:inherit;
+  }
+  #cars-inputbox ul {
+	margin-left:35px;
+	padding-left:0px;
+	list-style:decimal;
+  }
+  #cars-inputbox li {
+	margin-left:0px;
+  }  
 </style>
 
 <script type="text/javascript">
 
     var ins_el;
     var ins_vc;
-
+    var custATCLoaded = false;
+	
     function loadTagList(call_id){
 		var call_id = call_id || null;
         $("select[name=tagsList]").html("");
@@ -161,7 +178,290 @@
                 }
              });	
 	}
-    </script>
+		
+	function openCustomerDialog(vc_id,row){
+
+		  var vc_id = vc_id;
+		  var row = row || 0;
+		  var r = $("#rowAt" + row);
+
+		  customerAutoComplete();
+		  
+		  var o = $("#call-info-cust");
+		  var customer_id = $(".vc-cust",r).attr("custid");
+		  var cdirection = $(".vc-cdirect",r).attr("calldirec");
+		  var ani = $(".vc-ani",r).text();
+		  var dnis = $(".vc-dnis",r).text();		  
+		  $("#ci-dt",o).html($(".vc-date",r).text());
+		  $("#ci-user",o).html($(".vc-user",r).text());
+		  $("#ci-ani",o).html(ani);
+		  $("#ci-dnis",o).html(dnis);
+		  	  		  
+		  if(cdirection=="i"){
+		  	$("input[name=icust-phones]",o).val(ani);
+		  }else if(cdirection=="o"){
+		  	$("input[name=icust-phones]",o).val(dnis);
+		  }
+		  
+		  $("input[name=radioAddPhone]").attr("checked","checked");
+		  $("#btnAddPhone").css("display","none");		  
+		  $("#cars-inputbox ul").html("");
+		  
+		  if($(".vc-cust-regis",r).text().length > 0){
+		  		getCarListByVoiceId(vc_id)	
+		  }
+		  $.getJSON("<%=url_for(:controller => 'customer', :action => 'profile') %>",
+		  { id: customer_id },
+		  function(data){
+			if (data == false) {
+				$("input[name=icust-id]").val("");
+				$("input[name=icust-name]").val("");
+				$("input[name=old-icust-id]").val("");
+				$("input[name=old-icust-name]").val("");
+				$("input[name=icust-car-no]").val("");
+			} else {
+				$("input[name=icust-name]").val(data['name']);
+				$("input[name=icust-id]").val(data['id']);
+				$("input[name=old-icust-id]").val(data['id']);
+				$("input[name=old-icust-name]").val(data['name']);
+				validPhoneNumber();
+			}
+			$("#call-info-cust").dialog({
+				width: 440,
+				height: 395,
+				modal: true,
+				resizable: false,
+				buttons : [
+				{ text: "Save", click: function(){
+					saveCallCustomerInfo(vc_id,row);
+					$("#AmiAdvw").css("display","block");		
+				}},
+				{ text: "Close", click: function(){ 
+					$("#AmiAdvw").css("display","block");
+					$(this).dialog("destroy");			
+				}}]
+			});
+			$("#AmiAdvw").css("display","none");
+		  });
+	}
+	
+	function getCarListByVoiceId(voice_id){
+		  $.getJSON("<%=url_for(:controller => 'customer', :action => 'list_cars_by_voice') %>",
+		  { voice_log_id: voice_id },
+		  function(data){
+		  	initCarNo(data["cars"].join(","));	
+		  });
+	}
+	
+	function customerAutoComplete(){
+		if(!custATCLoaded){
+			$("#icust-name").autocomplete("<%=url_for(:controller => 'customer',:action => 'autocomplete_list') %>", {
+				width: 190,
+				multiple: false,
+				matchContains: true,
+				delay: 500,
+				formatResult: function(row) {
+					return row.toString().split("&break;")[0];
+				},
+				formatItem: function(row, i, max) {
+					var a = row.toString().split("&break;",3);
+					return a[0] + " " + a[1];
+				}
+			}).result(function(event, data, formatted) {
+				var a = data.toString().split("&break;",3);
+				$("input[name=icust-name]").val(a[0]);
+				$("input[name=icust-id]").val(a[2]);
+			}).dblclick(function(){
+				enableEditCustName();
+			}).blur(function(){
+				disableEditCustName();
+				validNewCustomer();
+				validPhoneNumber();
+			});
+		}
+	}
+	
+	function validNewCustomer(){
+		var cust_name = $("input[name=icust-name]").val();
+		var cust_id =  $("input[name=icust-id]").val();
+		if(cust_name.length > 0){
+			if(cust_id.length > 0){
+				$.getJSON("<%= url_for(:controller => 'customer', :action => 'profile') %>",{
+					id: cust_id,
+					name: cust_name
+				},function(data){
+					if(data){
+						if(data['name'] == cust_name){
+							$("span#isNewCust").css("display","none");
+						} else {
+							$("span#isNewCust").css("display","inline");
+						}
+						if(data['car_no'].length > 0){
+							initCarNo(data['car_no'].join(","));
+						}
+					} else {
+						$("span#isNewCust").css("display","none");
+					}
+				});
+			} else {
+				$("span#isNewCust").css("display","inline");
+			}
+		}
+	}
+	
+	function initCarNo(car_nos){
+		if($("#cars-inputbox ul li").length <= 0) {
+			$("#cars-inputbox ul").html("");
+			try {
+				var car_nos = car_nos.split(",");
+				var j = car_nos.length;
+				var i = 0;
+				for (i = 0; i < j; i++) {
+					if(App.isBlank(car_nos[i]))
+						continue;
+				    try {
+						var b1 = car_nos[i].split("-", 2)[0];
+						var b2 = car_nos[i].split("-", 2)[1].split(" ",2)[0] || "";
+						var b3 = car_nos[i].split("-", 2)[1].split(" ",2)[1] || "";
+						addCarNumber(new Array(b1, b2, b3));						
+					} catch(e){
+						//
+					}
+				}
+			} 
+			catch (e) {
+				//alert(e.message);
+			}
+		}
+	}
+	
+	function validCarNoInput(){
+		return getLstOfCars();
+	}
+	
+	function getLstOfCars(){
+		var a = new Array();
+		$("#cars-inputbox ul li").each(function(){
+			var b1 = jQuery.trim($("input[name=icust-car-no1]",this).val());
+			var b2 = jQuery.trim($("input[name=icust-car-no2]",this).val());
+			var b3 = jQuery.trim($("input[name=icust-car-no3]",this).val());
+			if(App.isBlank(b1) && App.isBlank(b2) && App.isBlank(b3)){
+				// skip
+				return false;
+			} else {
+				var d = b1 + "-" + b2 + " " + b3;
+				a.push(d);			
+			}
+		});
+		return a.join(",");
+	}
+	
+	function saveCallCustomerInfo(v_id,row){
+		var row = row;
+		var vid = v_id;
+		var phone = "";
+		var cname = jQuery.trim($("input[name=icust-name]").val());
+		var cid = jQuery.trim($("input[name=icust-id]").val());
+		var car_no = validCarNoInput();
+		if((cname.length <= 0) && (car_no.length <= 6)){
+			alert("Car No must be require customer's name");
+		} else if((cname.length >= 1) && (cname.length <= 3)){
+			alert("Customer's name minimum require 3 charactors!");
+		} else {
+			if(car_no != false){
+				if($("input[name=radioAddPhone]").attr("checked")){
+					phone = $("input[name=icust-phones]").val();
+				}
+				$.getJSON('<%=url_for(:controller => "customer", :action => "update_calls") %>',
+				{ voice_log_id: vid, name: cname, id: cid, phone: phone, car_no: car_no },
+				function(data){
+					if(data['result']==true){
+						$("input[name=icust-name]").val(data['customer_name']);
+						$("input[name=icust-id]").val(data['customer_id']);
+						updateCustomerFields(row,data['cars']);
+						$("#call-info-cust").dialog("close");
+					} else {
+						alert("Saving customer information has been failed. Please try again.");
+					}
+				});
+			} else {
+				alert("One or more car number are incorrect pattern. Please check again.");
+			}
+		}
+	}
+		
+	function validPhoneNumber(){
+		var cname = jQuery.trim($("input[name=icust-name]").val());
+		var cid = jQuery.trim($("input[name=icust-id]").val());
+		var phone = jQuery.trim($("input[name=icust-phones]").val());
+		if(cname.length > 0 && phone.length > 0){
+			$.getJSON("<%= url_for(:controller => 'customer', :action => 'valid_customer_phone') %>",
+			{ c: cname, cid: cid, p: phone},
+			function(data){
+				if(data['isphone_exist'] == true){
+					$("#btnAddPhone").css("display","none");
+				} else {
+					$("#btnAddPhone").css("display","block");
+				}
+			});
+		} else {
+			$("#btnAddPhone").css("display","none");
+		}
+	}
+	
+	function updateCustomerFields(row,cars){
+		var cars = cars || false;
+		try {
+			var cname = jQuery.trim($("input[name=icust-name]").val());
+			var cid = jQuery.trim($("input[name=icust-id]").val());
+			var car_no;
+			if(cars != false){
+				car_no = cars.join(",")
+			} else {
+				car_no = validCarNoInput();
+			}
+			var r = $("#rowAt" + row);
+			var c = $(".vc-cust",r);
+			c.attr("custid",cid);			
+			c.html(App.call_blank(cname));
+			$(".vc-cust-regis",r).html(breaklineCars(App.call_blank(car_no)));			
+		} catch(e){}
+	}
+	
+	function disableEditCustName(){
+		//
+	}
+	
+	function enableEditCustName(){
+		var o = $("#icust-name");
+		o.removeAttr("readonly");
+		o.removeClass("input-text-readonly");
+		$("#btnSaveCustName").css("display","inline");
+	}
+	
+	function disableEditCar(){
+		//enableEditCar();
+	}
+	function enableEditCar(){	
+		//
+	}
+	function addCarNumber(a){
+		var t = $("#cars-inputbox ul");
+		t.prepend(makeCarInputData(a));
+	}
+	function makeCarInputData(a){
+		var a = a || false;
+		if(a == false)
+			return "<li><input type=\"text\" class=\"input-text-car1\" maxlength=\"4\" name=\"icust-car-no1\"/>-<input type=\"text\" class=\"input-text-car2\" maxlength=\"5\" name=\"icust-car-no2\"/>&nbsp;<input type=\"text\" class=\"input-text-car1\" maxlength=\"4\" name=\"icust-car-no3\"/>&nbsp;<a href=\"#\" class=\"link04\" onclick=\"remCarNumber(this);\">Remove</a></li>";	
+		else
+			return "<li><input type=\"text\" class=\"input-text-car1\" maxlength=\"4\" value=\"" + a[0] + "\" name=\"icust-car-no1\"/>-<input type=\"text\" class=\"input-text-car2\" maxlength=\"5\" value=\"" + a[1] + "\" name=\"icust-car-no2\"/>&nbsp;<input type=\"text\" class=\"input-text-car1\" maxlength=\"4\" value=\"" + a[2] + "\" name=\"icust-car-no3\"/>&nbsp;<a href=\"#\" class=\"link04\" onclick=\"remCarNumber(this);\">Remove</a></li>";
+	}
+	function remCarNumber(p){
+		if (confirm("Are you sure to remove this car no from current call?")) {
+			$(p).parent().remove();
+		}
+	}
+</script>
 
 <% end %>
 
@@ -193,4 +493,55 @@
       <td><i>Please choose tag that you need to remove.</i></td>
     </tr>
   </table>
+</div>
+
+<!-- EDIT CUSTOMER -->
+<div id="call-info-cust" style="display:none;" title="Edit call's information">
+	<div class="div-form-default-style1">
+		<table width="100%" cellpadding="0" cellspacing="0" border="0" class="tbl-frm-details" style="margin-left:0; padding-left:0;">
+			<tr>
+				<td colspan="3">
+					<label>Date/Time:&nbsp;</label><span id="ci-dt">00000-00-00 00:00:00</span>
+					&nbsp;<br/>
+					<label>Caller:&nbsp;</label><span id="ci-ani">00-0000-000</span>&nbsp;&nbsp;&nbsp;
+					<label>Dialed:&nbsp;</label><span id="ci-dnis">00-0000-000</span><br/>
+					<label>Agent:&nbsp;</label><span id="ci-user">xxxxxxxxx xxxxxxxx</span>
+				</td>
+			</tr>
+			<tr><td colspan="3"><hr/></td></tr>
+			<tr>
+				<td width="100" valign="top"><label>Customer's name:</label></td>
+				<td>
+					<input type="hidden" name="icust-id" id="icust-id"/>
+					<input type="hidden" name="old-icust-id" id="icust-id"/>
+					<input type="hidden" name="old-icust-name" id="old-icust-name"/>
+					<input type="text" class="input-text-short" name="icust-name" id="icust-name"/>
+					<span id="isNewCust" style="display:none;"><%=image_tag('newcust.gif') %>&nbsp;<span class="note">New</span></span>
+					<br/>
+					<span class="note">Please choose customer from list or type a new name for new customer.</span>
+				</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td valign="top"><label>Phone(s):</label></td>
+				<td>
+					<input type="text" class="input-text-short input-text-readonly" name="icust-phones" readonly/>&nbsp;
+					<span id="btnAddPhone" style="display:none;"><input type="checkbox" id="radioAddPhone" name="radioAddPhone" checked="checked" value="add">&nbsp;Add new phone to this customer.</span>
+				</td>
+			</tr>
+			<tr style="<%= (Aohs::MOD_CUST_CAR_ID ? 'display:inline;' : 'display:none;') %>">
+				<td valign="top"><label>Car No.:</label></td>
+				<td>
+					<div id="cars-inputbox" style="overflow:scroll; overflow-x:hidden; width:290px; height:80px;">
+						<ul>
+							<!-- <li><input type="text" class="input-text-car1" maxlength="4" name="icust-car-no1"/>-<input type="text" class="input-text-car2" maxlength="5" name="icust-car-no2"/>&nbsp;<input type="text" class="input-text-car1" maxlength="4" name="icust-car-no3"/>&nbsp;<a href="#" onclick="remCarNumber(this);">Remove</a></li> -->
+						</ul>
+					</div>
+					<a href="#" class="link04" onclick="addCarNumber();">Add Car No.</a>
+					<br/>
+					<span class="note"></span>
+				</td>
+			</tr>
+		</table>		
+	</div>
 </div>

@@ -2,6 +2,7 @@ class ComputerLogController < ApplicationController
   
   layout "control_panel"
   
+  skip_before_filter :verify_authenticity_token, :only => [:update]
   before_filter :login_required, :except => [:update]
   before_filter :permission_require, :except => [:update]
       
@@ -63,20 +64,15 @@ class ComputerLogController < ApplicationController
     order = "#{order} #{check_order_name(params[:sort])}" 
     
     @page = (params[:page].to_i <= 1 ? 1 : params[:page].to_i)
-      
-    @comp_logs = CurrentComputerStatus.paginate(
-        :select => "#{CurrentComputerStatus.table_name}.*,users.cti_agent_id",
-        :page => params[:page],
-        :per_page => $PER_PAGE,
-			  :joins => "left join users on users.login = #{CurrentComputerStatus.table_name}.login_name",
-        :conditions => conditions.join(' and '),
-        :order => order)
+     
+    @comp_logs = CurrentComputerStatus.select("#{CurrentComputerStatus.table_name}.*,users.cti_agent_id").joins("left join users on users.login = #{CurrentComputerStatus.table_name}.login_name").where(conditions.join(' and ')).order(order)  
+    @comp_logs = @comp_logs.paginate(:page => params[:page],:per_page => $PER_PAGE)
 
-    @oss = CurrentComputerStatus.find(:all,:select => 'os_version as version',:conditions => "os_version is not null and os_version <> ''", :group => 'os_version',:order => 'os_version')
-    @jvs = CurrentComputerStatus.find(:all,:select => 'java_version as version',:conditions => "java_version is not null and os_version <> ''",:group => 'java_version',:order => 'java_version')
-    @aws = CurrentComputerStatus.find(:all,:select => 'watcher_version as version',:conditions => "watcher_version is not null and os_version <> ''",:group => 'watcher_version',:order => 'watcher_version')
-    @avs = CurrentComputerStatus.find(:all,:select => 'audioviewer_version as version',:conditions => "audioviewer_version is not null and os_version <> ''",:group => 'audioviewer_version',:order => 'audioviewer_version')
-    @ctis = CurrentComputerStatus.find(:all,:select => 'cti_version as version',:conditions => "cti_version is not null and os_version <> ''",:group => 'cti_version',:order => 'cti_version')
+    @oss = CurrentComputerStatus.select('os_version as version').where("os_version is not null and os_version <> ''").group('os_version').order('os_version')
+    @jvs = CurrentComputerStatus.select('java_version as version').where("java_version is not null and os_version <> ''").group('java_version').order('java_version')
+    @aws = CurrentComputerStatus.select('watcher_version as version').where("watcher_version is not null and os_version <> ''").group('watcher_version').order('watcher_version')
+    @avs = CurrentComputerStatus.select('audioviewer_version as version').where("audioviewer_version is not null and os_version <> ''").group('audioviewer_version').order('audioviewer_version')
+    @ctis = CurrentComputerStatus.select('cti_version as version').where("cti_version is not null and os_version <> ''").group('cti_version').order('cti_version')
       
   end
   
@@ -89,7 +85,7 @@ class ComputerLogController < ApplicationController
     if params.has_key?(:computer_name) and not params[:computer_name].empty?
       computer_name = params[:computer_name]
     end
-      
+       
     login_name = nil
     if params.has_key?(:login_name) and not params[:login_name].empty?
       login_name = params[:login_name]
@@ -139,12 +135,12 @@ class ComputerLogController < ApplicationController
         data[:check_time] = Time.new.strftime("%Y-%m-%d %H:%M:%H")
       end
       
-      ccs = CurrentComputerStatus.find(:first,:conditions => {:computer_name => computer_name, :login_name => login_name})
+      ccs = CurrentComputerStatus.where({:computer_name => computer_name, :remote_ip => remote_ip}).first
       if ccs.nil?
         ccs = CurrentComputerStatus.new(data)
         ccs.save!
       else
-        ccs = CurrentComputerStatus.update_all(data,{:computer_name => computer_name, :login_name => login_name})  
+        ccs = CurrentComputerStatus.update_all(data,{:computer_name => computer_name, :remote_ip => remote_ip})  
       end
         
       cpl = ComputerLog.new(data)
@@ -164,7 +160,105 @@ class ComputerLogController < ApplicationController
     html << "parameters=#{tmp.join('|')}<br/>"
     html << "message=#{messages.join(',')}"
     
+    if Aohs::COMPUTER_EXTENSION_LOOKUP
+      r = update_computer_extension
+	  Aohs::COMP_RETRY_UPDATE.to_i.times do 
+		r = update_computer_extension
+	  end
+      html << "- computer extension --<br>"
+      html << r.join("<br/>")
+    end
+    
     render :text => html, :layout => false
+    
+  end
+  
+  def update_computer_extension
+
+    result = []
+    
+    computer_name = nil
+    if params.has_key?(:computer_name) and not params[:computer_name].empty?
+      computer_name = params[:computer_name].to_s.strip.gsub(" ","")
+      result << "CompName=#{computer_name}"
+    end
+      
+    login_name = nil
+    if params.has_key?(:login_name) and not params[:login_name].empty?
+      login_name = params[:login_name].to_s.strip.gsub(" ","")
+      result << "Login=#{login_name}"
+    end
+    
+    remote_ip = nil
+    if params.has_key?(:remote_ip) and not params[:remote_ip].empty?
+      remote_ip = params[:remote_ip]
+    else
+      remote_ip = request.remote_ip
+    end
+    result << "IP=#{remote_ip}"
+	
+    if not computer_name.nil? and not remote_ip.nil?
+        
+        # get computer extension
+        cond = []
+        case Aohs::COMP_LOOKUP_BY_KEYS
+        when :comp
+          cond = {:computer_extension_maps => {:computer_name => computer_name}}
+        when :ip
+          cond = {:computer_extension_maps => {:ip_address => remote_ip}}
+        when :comp_and_ip
+          cond = ["computer_extension_maps.computer_name = ? and computer_extension_maps.ip_address = ?",computer_name,remote_ip]
+        when :comp_or_ip
+          cond = ["computer_extension_maps.computer_name = ? or computer_extension_maps.ip_address = ?",computer_name,remote_ip]
+        end
+        ext = Extension.includes(:computer_extension_map).where(cond).first
+        unless ext.nil?
+           user = User.alive.where(:login => login_name).first
+           unless user.nil?
+             
+             # update extension agent map
+             eam = ExtensionToAgentMap.where({:extension => ext.number}).first
+             if eam.nil?
+                eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user.id})  
+                eam.save!
+             else
+                eam.update_attributes!({:extension => ext.number, :agent_id => user.id})  
+             end
+                     
+             # update did agent map
+             dids = Did.where({ :extension_id => ext.id })
+             unless dids.empty?
+                dids.each do |did|
+                  dams = DidAgentMap.where({:number => did.number }).all
+                  if dams.empty?
+                     dam = DidAgentMap.new({:number => did.number , :agent_id => user.id}).save
+                  else
+                     dams.update_all({:agent_id => user.id},{:number => did.number })
+                  end
+                end
+             end
+             
+             result << "Update extension successfully #{user.login}(#{ext.number})"
+           else
+             
+             result << "User not found, deleted extension map for #{ext.number}"
+             
+             # clean up extension map if user not found
+             ExtensionToAgentMap.delete_all({:extension => ext.number})
+             dids = Did.where({ :extension_id => ext.id })
+             unless dids.empty?
+                DidAgentMap.delete_all({:number => dids.map { |d| d.number }})
+             end
+
+          end
+        else
+          result << "Extension not found by #{Aohs::COMP_LOOKUP_BY_KEYS}"
+        end
+    else
+      result << "Computer or IP not defined"
+    end
+    
+    return result
     
   end
   

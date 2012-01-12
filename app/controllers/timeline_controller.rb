@@ -72,12 +72,21 @@ class TimelineController < ApplicationController
       agents = nil if agents.empty?
 
       if agents.nil?
-        conditions << "(agent_id is null or agent_id = 0)"
+        if permission_by_name('tree_filter')
+          show_as_unk = ($CF.get('client.aohs_web.displayDeletedAgentAsUnk').to_i == 1)
+          if show_as_unk
+            agents = User.deleted.map { |a| a.id }
+          else 
+            agents = []
+          end
+          agents << 0
+          conditions << "(#{vl_tbl_name}.agent_id is null or #{vl_tbl_name}.agent_id in (#{agents.join(',')}))"
+        end
       else
         if agents.empty?
           skip_search = true
         else
-          conditions << "agent_id in (#{agents.join(',')})"
+          conditions << "#{vl_tbl_name}.agent_id in (#{agents.join(',')})"
         end
       end
 
@@ -95,12 +104,12 @@ class TimelineController < ApplicationController
 
     #ani
     if params.has_key?(:caller) and not params[:caller].empty?
-      conditions << "#{vl_tbl_name}.ani = '#{params[:caller].strip}'"
+      conditions << "#{vl_tbl_name}.ani like '#{params[:caller].strip}%'"
     end
 
     #dnis
     if params.has_key?(:dialed) and not params[:dialed].empty?
-      conditions << "#{vl_tbl_name}.dnis = '#{params[:dialed].strip}'"
+      conditions << "#{vl_tbl_name}.dnis like '#{params[:dialed].strip}%'"
     end
 
     # call direction
@@ -108,26 +117,41 @@ class TimelineController < ApplicationController
     if params.has_key?(:calld) and not params[:calld].empty?
       cd_ary = CGI::unescape(params[:calld]).split('')
       cd_ary.to_s.each_char do |c|
-        call_directions << "'#{c}'"
+        call_directions << c
+        call_directions.concat(['u','e']) if c == 'e'     
       end
+      call_directions = [] if call_directions.uniq.sort == ['i','o','u','e'].sort 
+      call_directions = call_directions.uniq.map { |c| "'#{c}'"}
     else
-      call_directions = ['i','o','e','u']
+      skip_search = true
     end
-
-    case call_directions.length
-    when 1
-      conditions << "#{vl_tbl_name}.call_direction = '#{call_directions.first.gsub('\'','')}'"
-    when 2
-      conditions << "#{vl_tbl_name}.call_direction in (#{call_directions.join(',')})"
-    when 0, 3
+    
+    unless call_directions.empty?
+      case call_directions.length
+      when 1
+        conditions << "#{vl_tbl_name}.call_direction = '#{call_directions.first.gsub('\'','')}'"
+      else
+        conditions << "#{vl_tbl_name}.call_direction in (#{call_directions.join(',')})"
+      end    
     end
-
+  
     # call duration
-    conditions << retrive_duration_conditions(params[:stdu],params[:eddu])
+    conditions << retrive_duration_conditions(params[:stdur],params[:eddur])
+
+    if params.has_key?(:keyword) and not params[:keyword].empty?
+      knames = CGI::unescape(params[:keyword]).split(" ")
+      keywords = Keyword.find(:all,:select => 'id',:conditions => (knames.map { |k| "name like '%#{k}%'" }).join(" or ") )
+      if keywords.empty?
+        skip_search = true
+      else
+        keywords = (keywords.map { |k| k.id }).join(',')
+        conditions << "#{ResultKeyword.table_name}.keyword_id in (#{keywords})"
+      end
+    end
 
     # ==========================================================================
 
-    $NM_MAX_TL = AmiConfig.get('client.aohs_web.number_of_max_timeline').to_i
+    $NM_MAX_TL = $CF.get('client.aohs_web.number_of_max_timeline').to_i
     start_row = 0
 
     orders = ['users.login asc',"#{vl_tbl_name}.start_time asc"]
@@ -213,7 +237,7 @@ class TimelineController < ApplicationController
     phone_numbers = []
 
     if customer_id > 0
-      customer = Customers.find(:first,:conditions => {:id => customer_id})
+      customer = Customers.select({:id => customer_id}).first
       unless customer.blank?
         unless customer.customer_numbers.blank?
           customer.customer_numbers.each { |p| phone_numbers << p.number }
@@ -243,7 +267,7 @@ class TimelineController < ApplicationController
 
     #===========================================================================
 
-    $NM_MAX_TL = AmiConfig.get('client.aohs_web.number_of_max_timeline').to_i
+    $NM_MAX_TL = $CF.get('client.aohs_web.number_of_max_timeline').to_i
 
     orders = ['users.login asc',"#{vl_tbl_name}.start_time asc"]
 

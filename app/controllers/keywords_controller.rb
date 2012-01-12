@@ -2,7 +2,7 @@
 class KeywordsController < ApplicationController
 
    before_filter :login_required, :except => [:keywords]
-   before_filter :permission_require, :except => [:keywords,:update_group,:autocomplete_list,:result_keywords]
+   before_filter :permission_require, :except => [:keywords,:update_group,:autocomplete_list,:result_keywords, :get_edit_keywords]
 
    include AmiReport
    require 'cgi'
@@ -25,7 +25,7 @@ class KeywordsController < ApplicationController
     @report = {}
     @report[:title_of] = Aohs::REPORT_HEADER_TITLE
            
-    @kwg = KeywordGroup.find(:all,:select => 'name')
+    @kwg = KeywordGroup.select("name").all
     
     number_of_cols = 0
     conditions = []
@@ -40,7 +40,7 @@ class KeywordsController < ApplicationController
 
     case @period
       when 'daily'
-        number_of_daily = AmiConfig.get('client.aohs_web.number_of_daily')
+        number_of_daily = $CF.get('client.aohs_web.number_of_daily')
         statistics_model = DailyStatistics
         dates = find_statistics_date_rank(params[:stdate],params[:eddate],number_of_daily,'daily')
         number_of_daily = dates.length
@@ -51,6 +51,7 @@ class KeywordsController < ApplicationController
 
         @display_first_labels = (dates.map{ |x| x.strftime('%b') }).uniq
         @display_second_labels = dates.map{ |x| x.strftime('%d').to_i }
+        @display_single_labels = dates.map{ |x| x.strftime('%d/%b')}
         @display_cols_count = []
         @display_first_labels.each { |x| @display_cols_count << (dates.select {|y| x == y.strftime('%b')}).length }
         @display_columns = dates.map { |x| x.strftime('%Y-%m-%d')}
@@ -58,21 +59,28 @@ class KeywordsController < ApplicationController
       
       when 'weekly'
         
-        @nweeks = 12 * Aohs::WEEKS_PER_MONTH #AmiConfig.get('client.aohs_web.number_of_monthly').to_i * Aohs::WEEKS_PER_MONTH
+        filter_nmonths = $CF.get('client.aohs_web.filter.nof_recent_months').to_i
+        number_of_monthly = $CF.get('client.aohs_web.number_of_monthly').to_i
+        if filter_nmonths <= number_of_monthly
+          filter_nmonths = number_of_monthly
+        end
+        ##filter_weeks = $CF.get('client.aohs_web.filter.nof_recent_months').to_i
+        @nweeks = filter_nmonths * Aohs::WEEKS_PER_MONTH
       
-        number_of_weekly = AmiConfig.get('client.aohs_web.number_of_weekly')
-        begin_of_weekly = AmiConfig.get('client.aohs_web.beginning_of_week')
+        number_of_weekly = $CF.get('client.aohs_web.number_of_weekly')
+        begin_of_weekly = $CF.get('client.aohs_web.beginning_of_week')
         statistics_model = WeeklyStatistics
-        dates = find_statistics_date_rank(params[:stdate],params[:eddate],number_of_weekly,'weekly',DAYS_OF_THE_WEEK.index("#{begin_of_weekly}").to_i)
+        dates = find_statistics_date_rank(params[:stdate],params[:eddate],number_of_weekly,'weekly',Aohs::DAYS_OF_THE_WEEK.index("#{begin_of_weekly}").to_i)
 
         @report[:title] = "Keyword Weekly Report (#{rptitle})"
         @rpname = @report[:name]
         @report[:desc] = "Period from #{dates.first.strftime("%d/%m/%Y")} to #{dates.last.strftime("%d/%m/%Y")}"
 
         @display_first_labels = (dates.map{ |x| x.strftime('%b') }).uniq
-        start_week = DAYS_OF_THE_WEEK.index("#{begin_of_weekly}").to_i
+        start_week = Aohs::DAYS_OF_THE_WEEK.index("#{begin_of_weekly}").to_i
         @display_second_labels = dates.map{ |x| "#{x.strftime('%d').to_i}-#{(x.end_of_week+start_week).strftime('%d').to_i}"  }
-          
+        @display_single_labels = dates.map{ |x| "#{x.strftime('%d/%b')} - #{(x.end_of_week+start_week).strftime('%d/%b')}"  }
+        
         @display_cols_count = []
         @display_first_labels.each { |x| @display_cols_count << (dates.select {|y| x == y.strftime('%b')}).length }
         @display_columns = dates.map { |x| x.strftime('%Y-%m-%d')}
@@ -80,10 +88,14 @@ class KeywordsController < ApplicationController
       
       else # 'M' and 'm' is default
 
-		@nmonths = 12
-		
-        number_of_monthly = AmiConfig.get('client.aohs_web.number_of_monthly')
-        begin_of_month = AmiConfig.get('client.aohs_web.beginning_of_month')
+        filter_nmonths = $CF.get('client.aohs_web.filter.nof_recent_months').to_i
+        number_of_monthly = $CF.get('client.aohs_web.number_of_monthly')
+        if filter_nmonths <= number_of_monthly
+          filter_nmonths = number_of_monthly
+        end
+        @nmonths = filter_nmonths
+        
+        begin_of_month = $CF.get('client.aohs_web.beginning_of_month')
         statistics_model =  MonthlyStatistics
         dates = find_statistics_date_rank(params[:stdate],params[:eddate],number_of_monthly,'monthly',begin_of_month - 1)
 
@@ -93,6 +105,7 @@ class KeywordsController < ApplicationController
 
         @display_first_labels = (dates.map{ |x| x.strftime('%Y') }).uniq
         @display_second_labels = dates.map{ |x| x.strftime('%b') }
+        @display_single_labels = dates.map{ |x| x.strftime('%b/%Y') }
         @display_cols_count = []
         @display_first_labels.each { |x| @display_cols_count << (dates.select {|y| x == y.strftime('%Y')}).length }
         @display_columns = dates.map { |x| x.strftime('%Y-%m-%d')}
@@ -107,12 +120,15 @@ class KeywordsController < ApplicationController
     when 'type'
         order = 'k.keyword_type'
     when 'total'
-        order = "s.total"
+        order = "sum(total)"
     when 'group'
         order = "k.keyword_group_name"
     when /^(col-)/
         order = "s.c#{params[:sort].split('-').last}"
+    else
+        order = "sum(total)"
     end
+    
     case params[:od]
       when 'desc'
         order = "#{order} desc"
@@ -124,7 +140,7 @@ class KeywordsController < ApplicationController
 
     if params.has_key?(:keywg_id) and not params[:keywg_id].empty? and params[:keywg_id].to_i > 0
       kw_conditions << "kg.id = '#{params[:keywg_id]}'"
-	  kwg = KeywordGroup.find(:first,:conditions => {:id => params[:keywg_id].to_i })
+	  kwg = KeywordGroup.where({:id => params[:keywg_id].to_i }).first
 	  unless kwg.nil?
 		params[:keywg] = kwg.name
 	  end 
@@ -203,14 +219,16 @@ class KeywordsController < ApplicationController
         end
 
         select2 = ["keyword_group_id,keyword_group_name,sum(s.total) as total"]
+        select3 = ["keyword_id2,keyword_name,keyword_type,keyword_group_id,keyword_group_name,sum(s.total) as total"]
         select << "s.keyword_id"
         select << "sum(s.value) as total"
         dates.each_with_index do |d,i|
             select << "sum(if(s.start_day = '#{d}',value,0)) as c#{i+1}"
             select2 << "sum(s.c#{i+1}) as c#{i+1}"
+            select3 << "sum(s.c#{i+1}) as c#{i+1}"
         end
 
-        sql << " select * from "
+        sql << " select #{select3.join(',')} from "
         sql << " (select k.id as keyword_id2, k.name as keyword_name,k.keyword_type, kg.id as keyword_group_id,kg.name as keyword_group_name "
         sql << " from keywords k join (keyword_groups kg join keyword_group_maps km on kg.id = km.keyword_group_id) on k.id = km.keyword_id "
         sql << " where #{kw_conditions.join(" and ")} " unless kw_conditions.empty?
@@ -259,7 +277,7 @@ class KeywordsController < ApplicationController
     sql = nil
     sumsql = nil
 
-    keyword_groups = KeywordGroup.find(:all,:select => "keyword_group_maps.keyword_id,keyword_groups.name",:joins => :keyword_group_maps) if @sub_type != "group"
+    keyword_groups = KeywordGroup.select("keyword_group_maps.keyword_id,keyword_groups.name").joins(:keyword_group_maps).all if @sub_type != "group"
 
     keywords = []
     @keywords.each do |x|
@@ -304,8 +322,7 @@ class KeywordsController < ApplicationController
    def show
 
      @keyword = Keyword.find(params[:id])
-     kwg = KeywordGroup.find(:all,:select => "keyword_groups.name",:joins => :keyword_group_maps,
-     :conditions =>{:keyword_group_maps => {:keyword_id => @keyword.id}})
+     kwg = KeywordGroup.select("keyword_groups.name").joins(:keyword_group_maps).where({:keyword_group_maps => {:keyword_id => @keyword.id}})
      unless kwg.empty?
        @keyword_group = kwg.map { |kgn| "#{kgn.name}" }.join(",")
      else
@@ -316,7 +333,7 @@ class KeywordsController < ApplicationController
 
    def new
      
-     @keyword_group = KeywordGroup.find(:all)
+     @keyword_group = KeywordGroup.all
      @keyword = Keyword.new
 
    end
@@ -326,8 +343,8 @@ class KeywordsController < ApplicationController
     begin
        
        @keyword_group = KeywordGroup.find(params[:id])
-       @keyword = Keyword.find(:all,:joins => [:keyword_group_maps],:conditions => {:deleted => false, :keyword_group_maps => {:keyword_group_id => @keyword_group.id } })
-       @keyword_group_map = KeywordGroupMap.find(:all,:conditions =>{:keyword_id => params[:id]})
+       @keyword = Keyword.joins([:keyword_group_maps]).where({:deleted => false, :keyword_group_maps => {:keyword_group_id => @keyword_group.id } })
+       @keyword_group_map = KeywordGroupMap.where({:keyword_id => params[:id]})
 
     rescue => e
        
@@ -346,7 +363,7 @@ class KeywordsController < ApplicationController
        @keyword.created_by = current_user.id
        @keyword.created_at = Time.new.strftime("%Y-%m-%d %H:%M:%S")   
        
-       kwg = KeywordGroup.find(:first,:conditions => {:name => params[:keyword_group]})
+       kwg = KeywordGroup.where({:name => params[:keyword_group]}).first
        if kwg.nil?
           kwg = KeywordGroup.create({:name => params[:keyword_group]})
           kwg.save   
@@ -432,12 +449,12 @@ class KeywordsController < ApplicationController
         end
       end
                
-      kwg = KeywordGroupMap.find(:all,:conditions => {:keyword_group_id => keyword_group_id})
+      kwg = KeywordGroupMap.where({:keyword_group_id => keyword_group_id})
         
       # update or delete old keywords
       STDOUT.puts ">>"+keyword_ids.join('==')  
       kwg.each do |k|
-        if not Keyword.find(:first,:conditions => {:id => k.keyword_id}) == nil
+        if not Keyword.where({:id => k.keyword_id}).first == nil
           if keyword_ids.include?(k.keyword_id.to_i)
             # update
             STDOUT.puts "upd : #{k.keyword_id}"
@@ -457,7 +474,7 @@ class KeywordsController < ApplicationController
       # add new keyword
       
       new_keywords.each do |k|
-        ok = Keyword.find(:first,:conditions => {:name => k})
+        ok = Keyword.where({:name => k}).first
         if ok.nil?
           STDOUT.puts "new : #{k}"
           nk = Keyword.new({:name => k,:keyword_type => keyword_type})
@@ -477,7 +494,7 @@ class KeywordsController < ApplicationController
       STDOUT.puts "grp : #{keyword_group_id}"
       
       begin
-        kg = KeywordGroup.find(:first,:conditions => {:id => keyword_group_id})
+        kg = KeywordGroup.where({:id => keyword_group_id}).first
         KeywordGroup.update(kg.id,{:name => keyword_group})  
         log("Update","KeywordGroup",true,"id=#{kg.id},name=#{kg.name}")
       rescue => e
@@ -509,11 +526,11 @@ class KeywordsController < ApplicationController
 #       log("Delete","Keyword",false,"id:#{params[:id]}, #{e.message}")
 #     end
 
-     kg = KeywordGroup.find(:first,:conditions => {:id => params[:id]})
+     kg = KeywordGroup.where({:id => params[:id]}).first
      
      unless kg.nil?
                 
-       kgm = KeywordGroupMap.find(:all,:conditions => {:keyword_group_id => kg.id})
+       kgm = KeywordGroupMap.where({:keyword_group_id => kg.id})
          
        kgm.each do |k|
          Keyword.update(k.keyword_id,{:deleted => true,:deleted_at =>Time.new.strftime("%Y-%m-%d %H:%M:%S")})
@@ -553,7 +570,7 @@ class KeywordsController < ApplicationController
            ].concat(col1),
            [].concat(col2)
          ],
-         :csv => ['No','Name','Type','Total'].concat(@display_second_labels),
+         :csv => ['No','Name','Type','Total'].concat(@display_single_labels),
          :summary => [
            [['',1,1],['Total',1,2]]
          ]  
@@ -673,7 +690,7 @@ class KeywordsController < ApplicationController
            ktmp = Keyword.find(:all,
                               :select => "keywords.id as keyword_id",
                               :include => :keyword_group_maps,
-                              :conditions => "keyword_group_maps.keyword_id is null and keywords.deleted = false",
+                              :conditions => "keyword_group_maps.keyword_id is null",
                               :group => "keywords.id")
            unless ktmp.empty?
              keywords = ktmp.map {|g| g.id }
@@ -724,8 +741,8 @@ class KeywordsController < ApplicationController
      show_all = false
      
      if sl_date.empty? or sl_date == 'all'
-        st_date = params[:st]
-        ed_date = params[:ed]
+        st_date = params[:st].to_s + " 00:00:00"
+        ed_date = params[:ed].to_s + " 23:59:59"
         @lable_col = "#{params[:st]} - #{params[:ed]}"
      else
        case params[:period]
@@ -763,7 +780,7 @@ class KeywordsController < ApplicationController
              :page => params[:page],
              :perpage => $PER_PAGE})
 
-     @keywords = Keyword.find(:all,:conditions => ["id in (?) and deleted = false",keywords])
+     @keywords = Keyword.where({:id => keywords}).all
      @report[:desc] << "  Keywords: #{(@keywords.map { |k| k.name }).join(', ')}"
        
      @unknow_title = ""
@@ -1011,7 +1028,6 @@ class KeywordsController < ApplicationController
                         :keyword_id => kwid,
                         :voice_log_id => kw[0],
                         :user_id => current_user.id,
-                        :keyword_id => kwid,
                         :start_msec => (kw[2].to_f * 1000),
                         :end_msec => (kw[3].to_f * 1000),
                         :edit_status => 'n',
@@ -1166,7 +1182,7 @@ class KeywordsController < ApplicationController
         id = edit_info[3]
 
         if id != "-1"
-          db_edit = EditKeyword.find(:first, :conditions => {:id => id})
+          db_edit = EditKeyword.where(:id => id).first
           if not db_edit.nil?
             if db_edit.start_msec.to_f == start_time and
                db_edit.end_msec.to_f == end_time and
@@ -1199,4 +1215,42 @@ class KeywordsController < ApplicationController
 
     render :text => "Update keyword complete."
   end
+
+  def get_edit_keywords
+
+    voice_log_id = params[:voice_log_id]
+    db_name = params[:db_name]
+    kw_info = []
+
+    sql = "";
+    sql += "select ";
+    sql += " r.id as id, r.voice_log_id as voice_log_id, (r.start_msec/1000) as st_sec, (r.end_msec/1000) as en_sec, ";
+    sql += " r.keyword_id as keyword_id, k.keyword_type as keyword_type, k.name as keyword_name, ";
+    sql += " kgm.keyword_group_id as keyword_group_id, kg.name as keyword_group_name, r.edit_status as edit_status ";
+    sql += "from "+db_name+" r ";
+    sql += "left join keywords k on r.keyword_id = k.id ";
+    sql += "left join keyword_group_maps kgm on kgm.keyword_id = r.keyword_id ";
+    sql += "left join keyword_groups kg on kgm.keyword_group_id = kg.id ";
+    sql += "where r.voice_log_id = #{voice_log_id} ";
+    sql += (db_name == 'edit_keywords' ? "and r.edit_status != 'd' " : "and r.edit_status is null ");
+    sql += "order by start_msec ";
+
+    if db_name == 'edit_keywords'
+      kw = EditKeyword.find_by_sql(sql)
+    else
+      kw = ResultKeyword.find_by_sql(sql)
+    end
+
+    unless kw.empty?
+      kw.each do |k|
+        kw_info << {:st_sec => k.st_sec, :en_sec => k.en_sec, :kw_name => k.keyword_name, :kw_type => k.keyword_type,
+                    :kw_id => k.keyword_id, :kw_grp_id => k.keyword_group_id, :kw_grp_name => k.keyword_group_name,
+                    :edit_sts => k.edit_status, :id => k.id, :from => db_name
+                    }
+      end
+    end
+
+    render :json => kw_info
+  end
+
 end

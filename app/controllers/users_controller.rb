@@ -1,38 +1,37 @@
 class UsersController < ApplicationController
 
-   layout "control_panel"
+  # Be sure to include AuthenticationSystem in Application Controller instead
+  include AuthenticatedSystem
+  
+  # Protect these actions behind an admin login
+  # before_filter :admin_required, :only => [:suspend, :unsuspend, :destroy, :purge]
+  skip_before_filter :verify_authenticity_token, :only => [:update_agent_activity, :update_extension]
+  before_filter :find_user, :only => [:suspend, :unsuspend, :destroy, :purge]
+  before_filter :login_required , :only => [:profile]
 
-   before_filter :login_required , :only => [:profile]
-
-  def index
-     @users = User.paginate(:page => params[:page], :per_page => 26, :order => 'id', :conditions =>["type=:type", params])
-     respond_to do |format|
-        format.html # index.html.erb
-        format.xml  { render :xml => @users }
-     end
-  end
-
+  CTI_STATUS_LOGOUT = "logout"
+  
   def profile
     
     $LAYOUT = "application"
     
     render :layout => 'application'
 
-  end
+  end  
 
   def change_password
     result = []
     begin
-     @user = User.find(params[:id])
+     @user = User.alive.where({:id => params[:id]}).first
     if @user.authenticated?(params[:opw])
        if @user.reset_password(params[:npw])
           if @user.save!
-             log("Update","User",true)
+             log("Update","User",true,"change user's password")
              result << "t"
              result << "change password complete"
           end
        else
-          log("Update","User",false)
+          log("Update","User",false,"change user's password")
           result << "f"
           result << "you password less than minimum require."
        end
@@ -43,7 +42,7 @@ class UsersController < ApplicationController
     end
       render :text => result.join(",")
     rescue => ex
-       log("Update","User",false,"ID:#{@user.id},#{ex.message}")
+       log("Update","User",false,"id:#{@user.id}, name:#{@user.login}, msg:#{ex.message}")
        result << "f"
        result << ex.message
        render :text => result.join(",")
@@ -56,7 +55,7 @@ class UsersController < ApplicationController
     change_from = params[:type].to_sym
     result = true
       
-    user = User.find(:first,:conditions => { :id => user_id })
+    user = User.where({:id => user_id }).first
     
     target = ""      
     case change_from
@@ -64,19 +63,19 @@ class UsersController < ApplicationController
       target = "agents"
       
       # remove group_member
-      rs = GroupMember.find(:all,:conditions => { :user_id => user.id })
+      rs = GroupMember.where({ :user_id => user.id })
       unless rs.empty?
         GroupMember.delete_all({ :user_id => user.id })
       end
         
       # remove group_manager
-      rs = GroupManager.find(:all,:conditions => { :user_id => user.id })
+      rs = GroupManager.where({ :user_id => user.id })
       unless rs.empty?
         GroupManager.delete_all({ :user_id => user.id })
       end
          
       # remove leader from groups
-      rs = Group.find(:all,:conditions => {:leader_id => user.id })
+      rs = Group.where({:leader_id => user.id })
       unless rs.empty?
         rs.each do |group|
           group.update_attributes({:leader_id => nil })
@@ -84,7 +83,7 @@ class UsersController < ApplicationController
       end
               
       # change group from user
-      group = Group.find(:first,:conditions => {:id => params[:group_id].to_i })
+      group = Group.where({:id => params[:group_id].to_i }).first
       unless group.nil?
         group = group.id
       else
@@ -93,7 +92,7 @@ class UsersController < ApplicationController
       user.update_attributes({:group_id => group})
         
       # change role
-      role_id = Role.find(:first,:conditions => {:name => 'Agent'}).id rescue 0
+      role_id = Role.where({:name => 'Agent'}).first.id rescue 0
       user.update_attributes({:role_id => role_id})
 
       # change_type
@@ -103,7 +102,7 @@ class UsersController < ApplicationController
       target = "managers"
  
       # change role
-      role_id = Role.find(:first,:conditions => {:name => params[:role]}).id rescue 0
+      role_id = Role.where({:name => params[:role]}).first.id rescue 0
       user.update_attributes({:role_id => role_id})
       
       # remove group  
@@ -132,27 +131,33 @@ class UsersController < ApplicationController
 
     messages = []
 
-    #
-    # recive params
-    #
-
     username = nil
     if params.has_key?(:username) and not params[:username].empty?
       username = params[:username]
     end
-
+    
     ctilogin = nil
     if params.has_key?(:ctilogin) and not params[:ctilogin].empty?
       ctilogin = params[:ctilogin]
     end
-
+	if not Aohs::CTI_LOGOUT_ENABLE
+		ctilogin = "login"
+	end
+	
     remote_ip = nil
     if params.has_key?(:remote_ip) and not params[:remote_ip].empty?
       remote_ip = params[:remote_ip]
     else
       remote_ip = request.remote_ip
     end
-
+	
+	ctistatus = nil
+	
+    if params.has_key?(:ctistatus) and not params[:ctistatus].empty?
+	  # val = login,logout
+      ctistatus = params[:ctistatus]
+    end
+    
     ext_numbers = []
     if params.has_key?(:extension) and not params[:extension].empty?
       ext_numbers = params[:extension].to_s.split(',')
@@ -164,142 +169,162 @@ class UsersController < ApplicationController
     #
     # get agent.id
     #
+    
     begin
 
       agent_id = 0
       agent_login = nil
-
-      if((not ctilogin.nil? or not username.nil?) and not ext_numbers.empty?)
-
-        # - find with ctiloggin-agent_id
-        if not ctilogin.nil?
-          usrs = User.find(:all,:conditions => {:cti_agent_id => ctilogin},:order => 'created_at desc')
-          unless usrs.empty?
-            if usrs.length > 1
-              messges << "found users.ctilogin more than one record."
+      if Aohs::CTI_EXTENSION_LOOKUP
+        if((not ctilogin.nil? or not username.nil?) and not ext_numbers.empty?)
+  
+          # - find with ctiloggin-agent_id
+          if not ctilogin.nil? and Aohs::CTI_LOOKUP_BY_CTIID 
+            usrs = User.alive.where({:cti_agent_id => ctilogin}).order('created_at desc').all
+            unless usrs.empty?
+              messges << "found users.ctilogin more than one record." if usrs.length > 1
+              agent_id = usrs.first.id
+              agent_login = usrs.first.login
+            else
+              messages << "ctilogin not found"
             end
-            agent_id = usrs.first.id
-            agent_login = usrs.first.login
-          else
-            messages << "ctilogin not found"
           end
-        end
-
-        if not username.nil? and agent_id == 0
-          usrs = User.find(:all,:conditions => {:login => username},:order => 'created_at desc')
-          unless usrs.empty?
-            agent_id = usrs.first.id
-            agent_login = usrs.first.login
-          else
-            messages << "window account not found"
-          end
-        end
-
-        # if nil add new user
-        if agent_id <= 0
-          n_login = "newUser#{ctilogin}"
-          usr = Agent.create({
-            :login => n_login,
-            :display_name => n_login,
-            :role_id => 0,
-            :group_id => 0,
-            :password => "aohsweb",
-            :password_confirmation => "aohsweb",
-            :cti_agent_id => ctilogin,
-            :state => 'active'
-          })
-          if usr.save
-            agent_id = usr.id
-            agent_login = usr.login
-          else
-            agent_id = 0
-            messages << "create user failed because #{usr.errors.full_messages}"
-          end
-          messages << "create tmp user #{n_login}:#{agent_id}"
-        end
-
-        if agent_id > 0
-
-            #
-            # mapping agent <users.id> and extension <extension_number>
-            #
-            unless ext_numbers.empty?
-              ext_numbers.each do |ext|
-                eams = ExtensionToAgentMap.find(:all,:conditions => { :extension => ext })
-                unless eams.empty?
-                  eam = ExtensionToAgentMap.update_all({:agent_id => agent_id, :extension => ext },{:extension => ext})
-                else
-                  eam = ExtensionToAgentMap.create({
-                    :agent_id => agent_id,
-                    :extension => ext
-                  })
-                end
-              end
+          if not username.nil? and agent_id == 0 and Aohs::CTI_LOOKUP_BY_USERN
+            usrs = User.alive.where({:login => username}).order('created_at desc')
+            unless usrs.empty?
+              agent_id = usrs.first.id
+              agent_login = usrs.first.login
+            else
+              messages << "window account not found"
             end
-
-            #
-            # mapping agent and dids from extension number
-            #
-            unless ext_numbers.empty?
-              ext_numbers.each do |ext_number|
-                ext_tmp = Extension.find(:first,:conditions => { :number => ext_number })
-                unless ext_tmp.nil?
-                  dids = ext_tmp.dids
-                  unless dids.empty?
-                    dids = dids.map { |d| d.number }
-                    dids.each do |did|
-                      dams = DidAgentMap.find(:all,:conditions => { :number => did })
-                      if dams.empty?
-                        dam = DidAgentMap.create({:agent_id => agent_id, :number => did })
-                      else
-                        dam = DidAgentMap.update_all({:agent_id => agent_id},{:number => did})
+          end
+ 
+          # if nil add new user
+          if agent_id <= 0 and Aohs::AUTO_CRTNEW_USR
+            n_login = "#{Aohs::DEFAULF_USERN_PATTERN}#{ctilogin}"
+            usr = Agent.create({
+              :login => n_login,
+              :display_name => n_login,
+              :role_id => Role.where({:name => 'Agent'}).first.id,
+              :group_id => 0,
+              :password => Aohs::DEFAULT_PASSWORD_NEW,
+              :password_confirmation => Aohs::DEFAULT_PASSWORD_NEW,
+              :cti_agent_id => ctilogin,
+              :state => 'active'
+            })
+            if usr.save
+              agent_id = usr.id
+              agent_login = usr.login
+            else
+              agent_id = 0
+              messages << "create user failed because #{usr.errors.full_messages}"
+            end
+            messages << "create tmp user #{n_login}:#{agent_id}"
+          end
+  
+          if agent_id > 0
+  
+              #
+              # mapping agent
+              #
+              
+              unless ext_numbers.empty?
+                ext_numbers.each do |ext|
+                  
+				  # add extension
+				  if true
+					if ext =~ /^1/
+						old_ext = Extension.where({:number => ext}).first
+						if old_ext.nil?
+							new_ext = Extension.new({:number => ext})
+							new_ext.save
+						end
+					end
+				  end
+				  
+                  # mapping extension
+                  eams = ExtensionToAgentMap.where({ :extension => ext })
+                  begin
+					if ctistatus == CTI_STATUS_LOGOUT
+						unless eams.empty?
+							ExtensionToAgentMap.delete(eams)
+							messages << "remove mapping extension"
+						end
+					else
+						unless eams.empty?
+						  eam = ExtensionToAgentMap.update_all({:agent_id => agent_id, :extension => ext },{:extension => ext})
+						else
+						  eam = ExtensionToAgentMap.new({ :agent_id => agent_id, :extension => ext })
+						  eam.save!
+						end					
+					end
+                  rescue => e
+                    messages << "update mapping extension error cause #{e.message}"
+                  end
+                  # mapping dids
+                  ext_tmp = Extension.where({:number => ext}).first
+                  unless ext_tmp.nil?
+                    unless ext_tmp.dids.empty?
+                      ext_tmp.dids.each do |did|
+                        dams = DidAgentMap.where({ :number => did }).all
+                        if dams.empty?
+                          dam = DidAgentMap.new({:agent_id => agent_id, :number => did })
+                          dam.save!
+                        else
+                          dam = DidAgentMap.update_all({:agent_id => agent_id},{:number => did})
+                        end  
+						if ctistatus == CTI_STATUS_LOGOUT
+							DidAgentMap.delete(dam)
+						end
                       end
+                    else
+                      messages << "did of '#{ext}' not found in master."
                     end
                   else
-                    messages << "did of '#{ext_number}' not found."
+                    messages << "extension '#{ext}' not found in master." 
                   end
-                else
-                  messages << "extension '#{ext_number}' not found."
+                  
                 end
               end
-            end
-
-            #
-            # watcher log
-            #
-
-            cws_data = {
-                :check_time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                :agent_id => agent_id,
-                :extension => ext_numbers.first,
-                :extension2 => ext_numbers.last,
-                :login_name => username,
-                :remote_ip => remote_ip
-            }
-
-            wl = WatcherLog.new(cws_data)
-            wl.save!
-
-            cws = CurrentWatcherStatus.find(:first,:conditions => {:login_name => username, :remote_ip => remote_ip })
-            if cws.nil?
-              cws = CurrentWatcherStatus.new(cws_data)
-              cws.save!
-            else
-              cws.update_attributes(cws_data)
-            end
-
-            if messages.empty?
-              messages << "OK"
-            end
-
+  
+              #
+              # watcher log
+              #
+  
+              cws_data = {
+                  :check_time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                  :agent_id => agent_id,
+                  :extension => ext_numbers.first,
+                  :extension2 => ext_numbers.last,
+                  :login_name => username,
+                  :remote_ip => remote_ip,
+				  :ctistatus => ctistatus
+              }
+  
+              wl = WatcherLog.new(cws_data)
+              wl.save!
+  
+              cws = CurrentWatcherStatus.where({:login_name => username, :remote_ip => remote_ip }).first
+              if cws.nil?
+                cws = CurrentWatcherStatus.new(cws_data)
+                cws.save!
+              else
+                cws.update_attributes(cws_data)
+              end
+  
+              if messages.empty?
+                messages << "OK"
+              end
+  
+          else
+            messages << "agent_id is not defined"
+          end
+  
         else
-          messages << "agent_id is not defined"
+          messages << "username or agent_id or ext are not defined"
         end
-
       else
-        messages << "username or agent_id or ext are not defined"
+        messages << "cti extension mapping was stopped" 
       end
-
     rescue => e
       messages << e.message
     end
@@ -329,9 +354,12 @@ class UsersController < ApplicationController
     split_line = "\n"
 
     # read informations
-
-    data_sources = params[:result].gsub(/^result=/,"")
-
+    
+    data_sources = ""
+    if params.has_key?(:result) and not params[:result].empty?
+      data_sources = params[:result].gsub(/^result=/,"")
+    end
+    
     data_sources = data_sources.split(split_line)
 
     login_name = nil
@@ -340,10 +368,10 @@ class UsersController < ApplicationController
     activities = []
     idles = []
     access_logs = []
-
+    
     unless data_sources.empty?
       read_type = nil
-    STDOUT.puts "Read activity result.."
+      STDOUT.puts "Read activity result.."
       data_sources.each do |line|
 
         next if line.nil?
@@ -390,7 +418,7 @@ class UsersController < ApplicationController
 
     if not login_name.nil? and not mac_address.nil?
 
-      result_recs = UserActivity.update_agent_activities(login_name,mac_address,request.remote_ip, activities)
+      result_recs = UserActivityLog.update_agent_activities(login_name,mac_address,request.remote_ip, activities)
       if result_recs > 0
         messages << "#{result_recs}/#{activities.length} update activities success"
         result_recs = 0
@@ -398,7 +426,7 @@ class UsersController < ApplicationController
         messages << "no activities to update or failed"
       end
 
-      result_recs = UserIdle.update_user_idles(login_name,mac_address,request.remote_ip,idles)
+      result_recs = UserIdleLog.update_user_idles(login_name,mac_address,request.remote_ip,idles)
       if result_recs > 0
         messages << "#{result_recs}/#{idles.length} update idles success"
         result_recs = 0
@@ -427,6 +455,43 @@ class UsersController < ApplicationController
     render :text => html, :layout => false
 
   end
+  
+  def new
+
+  end
+  
+  def create
+
+  end
+
+  def suspend
+    @user.suspend! 
+    redirect_to users_path
+  end
+
+  def unsuspend
+    @user.unsuspend! 
+    redirect_to users_path
+  end
+
+  def destroy
+    @user.delete!
+    redirect_to users_path
+  end
+
+  def purge
+    @user.destroy
+    redirect_to users_path
+  end
+  
+  # There's no page here to update or destroy a user.  If you add those, be
+  # smart -- make sure you check that the visitor is authorized to do so, that they
+  # supply their old password along with a new one to update it, etc.
+
+  protected
+
+  def find_user
+    @user = User.find(params[:id])
+  end
 
 end
-

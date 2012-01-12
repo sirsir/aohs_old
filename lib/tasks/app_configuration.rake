@@ -99,7 +99,7 @@ def create_configuration
                   :default_value => default,
                   :description => desc}
             
-            Configuration.update(cf.id,new_cf)
+            #Configuration.update(cf.id,new_cf)
             
           end
 

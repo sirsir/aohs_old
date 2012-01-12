@@ -16,7 +16,7 @@
   <script type="text/javascript">
      //var tree;
      $(document).ready(function(){
-            tree = new YAHOO.widget.TreeView("treediv",<%=@src_tree%>);
+            tree = new YAHOO.widget.TreeView("treediv",<%= (@src_tree).html_safe %>);
 
             YAHOO.util.Event.on("expand", "click", function(e) {
                 //YAHOO.log("Expanding all TreeView  nodes.", "info", "example");

@@ -5,16 +5,25 @@
 
 <style type="text/css">
 
+  div#ac-status {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    border: 1px solid #0B0B61;
+  }
+
   div.agent-icn {
     float: left;
     margin-left: 1px;
     border: 1px solid #CCCCCC;
     height: 40px;
     width: 40px;
+    display: inline;
   }
   div.agent-inf {
     float: left;
     padding-left: 3px;
+    width: 140px;
+    display: inline;
   }
   div.vc-i { background-color: #33AA33; }
   div.vc-o { background-color: #0B559B; }
@@ -50,8 +59,11 @@
   span.head-out { color: #0B559B; }
   span.head-in, span.head-mst{ color: #298829; }
   span.head-ng{ color: #990000; }
+  span.trf-lnk { display: none; }
 
-  table#agent-status-tbl { background-color: #FFFFFF; }
+  span#agent-recog-result {color: #0B559B;}
+
+  table#ac-status-tbl { background-color: #FFFFFF; }
 
   tr.agent-row-tbl {
     cursor: pointer;
@@ -61,30 +73,23 @@
    }
   tr.hover {background-color: #E8F4FF;}
   tr.selected {background-color: #FFFFDB;}
-  
+
+  tr.login td {border-color: #778899;}
   tr.logout, span.logout {color: #A2A2A2;}
-  
+
+  td {padding: 0;}
   td.agent-inf-td, td.agent-sts-td, td.agent-call-sts, td.agent-call-inf-sts {border:1px solid #cccccc;}
-  td.agent-inf-td {width: 220px;}
+  td.agent-inf-td {width: 200px;}
   td.agent-call-sts {width: 80px;}
   td.talking {border-color: red;}
-
-  input.btn {
-    color:#050;
-    width: 50px;
-    height: 15px;
-    font: bold 80% sans-serif;
-    background-color:#fed;
-    border:1px solid;
-    border-color: #696 #363 #363 #696;
-    display: none;
-  }
+  td.scroll-compensate {width: 16px;}
 
 </style>
 
 <script type="text/javascript">
 
   var calc_time;
+  var usr_sts_load = false;
   var img = new Array();
       img['FA'] = "<%=image_path('a-female.jpg')%>";
       img['FL'] = "<%=image_path('a-female-leader.jpg')%>";
@@ -100,11 +105,13 @@
       c_img['trf-i'] = "<%=image_path('cb-trf-in.png')%>";
       c_img['trf-o'] = "<%=image_path('cb-trf-out.png')%>";
 
+  var my_agent = <%=  @usrs.to_json %>;
+
   function append_agent(group_id) {
     
     loading = true;
     $("#div-loading").css("display","block");
-    $("table#agent-status-tbl").html("");
+    $("table#ac-status-tbl").html("");
 
     $.getJSON("<%= url_for(:controller => 'call_browser', :action => 'get_info') %>", {grp_id: group_id }, function(data){
 
@@ -112,10 +119,9 @@
 
       var id, name, type, cti_id, sex, group, ext, login_sts;
       var total_call, total_in, total_out, total_ng, total_mst;
-      var call_id, call_conn, call_start, call_ani, call_dnis, call_direction, call_duration, call_ng, call_mst, call_diff, call_from, call_to, call_sys, call_dev, call_chn, call_voice_url;
+      var call_id, call_conn, call_start, call_ani, call_dnis, call_direction, call_duration, call_ng, call_mst, call_diff, call_from, call_to, call_sys, call_dev, call_chn;
       var sex_img, call_img;
       var agent_icn_title;
-      var prev_call;
 
       var realtime_block, call_status;
       
@@ -160,11 +166,9 @@
           call_sys = "-";
           call_dev = "-";
           call_chn = "-";
-          call_voice_url = "-";
           call_img = c_img[call_direction];
 
           realtime_block = "none";
-          prev_call = (ext == "-" ? "disabled" : "");
           
           call_id = agent_info.call_id;
           if(call_id != null){
@@ -183,7 +187,6 @@
               call_sys = agent_info.call_sys;
               call_dev = agent_info.call_dev;
               call_chn = agent_info.call_chn;
-              call_voice_url = agent_info.call_voice_url;
               call_img = c_img[call_direction];
               call_status = "Talking";
 
@@ -196,14 +199,14 @@
             }
           }
           
-          view += "<tr class=\"agent-row-tbl "+login_sts+"\" id=\"agent-"+id+"\" ondblclick=\"monitor($(this),"+id+",'"+cti_id+"','"+name+"', '"+group+"', '"+ext+"');\" onMouseOver=\"add_hover($(this));\" onMouseOut=\"remove_hover($(this));\">";
-          view += "<td class=\"agent-inf-td\"><div>";
+          view += "<tr class=\"agent-row-tbl "+login_sts+"\" id=\"agent-"+id+"\" ondblclick=\"if (!usr_sts_load) monitor($(this),"+id+",'"+cti_id+"','"+name+"', '"+group+"', '"+ext+"');\" onMouseOver=\"add_hover($(this));\" onMouseOut=\"remove_hover($(this));\">";
+          view += "<td class=\"agent-inf-td\">";
           view += "<div class=\"agent-icn\"><img src=\""+sex_img+"\" title=\""+agent_icn_title+"\"/></div>";
           view += "<div class=\"agent-inf\">";
           view += "<span class=\"title\">"+name+"</span><br/>";
           view += " <span class=\"title\">Group: </span>&nbsp;<span class=\"title\">"+group+"</span><br/>";
           view += " <span class=\"title\">Ext: </span><span class=\"title\">"+ext+"</span>";
-          view += "</div></div></td>";
+          view += "</div></td>";
           view += "<td class=\"agent-call-sts\" style=\"text-align: center;\">";
           view += "<span><img id=\"cl-dir-"+id+"\" src=\""+call_img+"\" style=\"margin-bottom: 3px;\"/></span><br/>";
           view += "<span class=\"call-status call-"+call_status.toLowerCase()+"\" id=\"sts-"+id+"\">"+call_status+"</span></td>";
@@ -220,7 +223,7 @@
           view += "<input type=\"hidden\" id=\"call-dev-"+id+"\" value=\""+call_dev+"\" />";
           view += "<input type=\"hidden\" id=\"call-chn-"+id+"\" value=\""+call_chn+"\" />";
           if(call_transfer_available){
-            view += "<input class=\"btn\" id=\"trf-btn-"+id+"\" type=\"button\" value=\"Listen transfered\"/>";
+            view += "<span class=\"trf-lnk\" id=\"trf-lnk-"+id+"\" style=\"display: none;\" to=\"0\"></span>";
           }
           view += "</div>";
           view += "<div class=\"agent-rt-call\" id=\"agent-rt-call-"+id+"\" style=\"display: "+realtime_block+";\">";
@@ -243,7 +246,7 @@
         }
 
         $("#div-loading").css("display","none");
-        $("table#agent-status-tbl").append(view);
+        $("table#ac-status-tbl").append(view);
 
         calctime();
         checkMonitoringAgent();
@@ -309,7 +312,7 @@
       monit_agent_id = document.speechmonitor.getAgentID();
     
     if((agent_id != monit_agent_id)){
-
+      usr_sts_load = true;
       $("tr.agent-row-tbl").removeClass("selected");
 
       cti_id = (cti_id == null ? '-' : cti_id);
@@ -317,14 +320,18 @@
       ext = (ext == null ? '-' : ext);
 
       if(document.speechmonitor != null){
-        document.speechmonitor.setAgentInfo(agent_id, cti_id, name, grp, ext);
+        document.speechmonitor.stopListening();
+        document.speechmonitor.setAgentID(agent_id);
       }
+      
+      update_agent_label(cti_id, name, grp, ext);
+      draw_meter("L", 0);
+      draw_meter("R", 0)
 
       $.getJSON("<%= url_for(:controller => 'call_browser', :action => 'get_current_channels_status') %>", {agent_id: agent_id}, function(data){
 
-        row.addClass("selected");
-
         if(data != null){
+          
           var call_id = data.call_id;
           var sys_id = data.sys_id;
           var dev_id = data.dvc_id;
@@ -337,54 +344,33 @@
           var conn = data.conn;
           var ng = data.ng_count;
           var mst = data.mst_count;
-          var voice_url = format_voice_path(data.voice_url);
-/*
+
+          /* in _real_time page */
+          update_currentcall_label(st_time, dir, from, to);
+          
+          if(document.speechmonitor != null)
+            document.speechmonitor.startListenFromHtml(sys_id, dev_id, chn_id, conn);
+
+          /*
           var from = (direction == 'o') ? format_phone(ani) : format_phone(dnis);
-          var to = (direction == 'o') ? format_phone(dnis) : format_phone(ani); 
-*/
-          if(document.speechmonitor != null){
-            document.speechmonitor.setCurrentStatus(call_id, sys_id, dev_id, chn_id, voice_url, from, to, dir, st_time, diff, conn, ng, mst);
+          var to = (direction == 'o') ? format_phone(dnis) : format_phone(ani);  */
+
             /* current keyword amount */
             $('span#n-'+agent_id).text(ng);
             $('span#m-'+agent_id).text(mst);
-          }
+
         }else{
-          if(document.speechmonitor != null){
-            document.speechmonitor.setIdleStatus();
-          }
+          clear_current_call_label();
+          change_status_idle(agent_id);
+          monitor_status("idle.");
         }
+        row.addClass("selected");
+        usr_sts_load = false;
       });
-      enable_call_browser(agent_id, name, grp, ext);
+      
+      /* in call history */
+     // enable_call_browser(agent_id, name, grp, ext);
     }
-  }
-
-  function format_voice_path(vfpath){
-
-    var v = vfpath.split("/");
-    var voiceFileFP = "";
-
-    for(var i=0; i < v.length; i++){
-      if(i>=3){
-        voiceFileFP = voiceFileFP + "/" + v[i];
-      }
-    }
-    return voiceFileFP;
-  }
-
-  function show_prev_call(agent_id){
-    $.getJSON("<%= url_for(:controller => 'call_browser', :action => 'get_previous_call') %>", {agent_id: agent_id}, function(data){
-      if(data != null){
-        var data_len = data.length;
-        if(data_len == 2){
-          var prev_call_page = window.open("<%= url_for(:controller => 'voice_logs',:action => 'show') %>/" + data[1].id,
-                                           "",
-                                           "status=yes,toolbar=no,location=no,menubar=no,resizable=yes,width=1000,height=600");
-          prev_call_page.moveTo((screen.width - 1000)/2, (screen.height - 600)/2);
-        }else{
-          alert("No previous call.");
-        }
-      }
-    });
   }
 
   /* called by speech monitor */
@@ -399,7 +385,7 @@
       if(type == "connected"){
         change_status_talking(agent_id, start_time, from, to, sys, dev, chn, direction)
       }else if (type == "disconnected"){
-        change_status_idle(agent_id, sys, dev, chn);
+        change_status_idle(agent_id);
       }else if ((type == "xfer") && call_transfer_available){
         if(direction == 'o'){
           change_status_transfer_to(agent_id, sys, dev, chn, direction, to);
@@ -409,7 +395,6 @@
       }
       
     }
-
   }
 
   function have_agent(agent_id) {
@@ -461,12 +446,15 @@
     $('span#c'+dir+"-"+agnt_id).text(c);
   }
 
-  function change_status_idle(agent_id, sys, dev, chn) {
+  function change_status_idle(agent_id) {
 
-    var cur_dev = $("input#call-sys-"+agent_id).val()+"-"+$("input#call-dev-"+agent_id).val()+"-"+$("input#call-chn-"+agent_id).val();
-    var new_dev = sys+"-"+dev+"-"+chn;
+    /* in _real_time page */
+    clear_current_call_label();
 
-    if(cur_dev == new_dev){
+  //  var cur_dev = $("input#call-sys-"+agent_id).val()+"-"+$("input#call-dev-"+agent_id).val()+"-"+$("input#call-chn-"+agent_id).val();
+  //  var new_dev = sys+"-"+dev+"-"+chn;
+
+  //  if(cur_dev == new_dev){
       $('span#sts-'+agent_id).text("Idle");
 
       if($('span#sts-'+agent_id).hasClass("call-trf")){
@@ -488,8 +476,22 @@
 
       $('img#cl-dir-'+agent_id).attr("src",c_img['id']);
       $('div#agent-rt-call-'+agent_id).css("display","none");
-    }
+
+  /*    if (call_transfer_available){
+        make_lnk_disappear(agent_id);
+      }*/
+      
+  //  }
     
+  }
+
+  function make_lnk_disappear(agent_id){
+    /* remove transfer link */
+    $('span.trf-lnk').each(function(){
+      if(this.to == agent_id){
+        $('span#'+this.id).css("display","none");
+      }
+    });
   }
 
   function change_status_transfer_to(agent_id, sys, dev, chn, call_dir, to){
@@ -497,25 +499,70 @@
     var call_sts = $("span#sts-"+agent_id).text().toLowerCase();
     var new_dev = sys+"-"+dev+"-"+chn;
     var cur_dev = $("input#call-sys-"+agent_id).val()+"-"+$("input#call-dev-"+agent_id).val()+"-"+$("input#call-chn-"+agent_id).val();
-    var trf_txt = "Transfering to '"+to+"'";
 
     if((call_sts == "talking") && (new_dev == cur_dev)){
 
-      $('span#trf-'+agent_id).text(trf_txt);
       $('img#cl-dir-'+agent_id).attr("src",c_img["trf-"+call_dir]);
       $('span#sts-'+agent_id).text("Transfering");
       $('span#trf-'+agent_id).css("display","inline-block");
       $('span#sts-'+agent_id).removeClass("call-"+call_sts).addClass("call-trf");
 
-  //    $('input#trf-btn-'+agent_id).css("display","inline-block");
+    /*  if(call_transfer_available){
+        make_listen_transfer_link(agent_id, to);
+      }*/
     }
 
+  }
+
+  function make_listen_transfer_link(agent_id, ext){
+    $.getJSON("<%= url_for(:controller => 'call_browser', :action => 'get_destination_agent') %>", {ext: ext }, function(agent){
+      if(agent != null){
+        var dst_id = agent.id;
+        var name = agent.name;
+        var group_id = agent.group_id;
+        var group_name = agent.group_name;
+        var cti = agent.cti;
+        var trf_txt = "Transfering to '"+name+"'";
+
+        $('span#trf-'+agent_id).text(trf_txt);
+        $('span#trf-lnk-'+agent_id).html("<a onclick=\"listen_transfer("+group_id+","+dst_id+",'"+cti+"','"+name+"', '"+group_name+"', '"+ext+"');\">Listen continue</a>");
+
+        if (my_agent != null){
+          if ((jQuery.inArray(dst_id,my_agent) != -1) && (group_id != 0)){
+            $('span#trf-lnk-'+agent_id).css("display","inline-block");
+            $('span#trf-lnk-'+agent_id).attr("to",dst_id);
+          }else{
+            $('span#trf-lnk-'+agent_id).css("display","none");
+          }
+        }else{
+          if (group_id != 0){
+            $('span#trf-lnk-'+agent_id).css("display","inline-block");
+            $('span#trf-lnk-'+agent_id).attr("to",dst_id);
+          }
+        }
+        
+      }else{
+        $('span#trf-'+agent_id).text("Transfering ot 'unknown'");
+      }
+    });
+  }
+
+  function listen_transfer(group_id, agent_id, cti_id, name, group, ext){
+
+    if(prvs_node_id != group_id){
+      append_agent(group_id);
+      refresh_tree(prvs_node_id, group_id);
+      prvs_node_id = group_id;
+    }
+
+    var row = $('tr#agent-'+agent_id);
+    monitor(row, agent_id, cti_id, name, group, ext);
   }
 
   function change_status_transfer_from(agent_id, call_dir, from){
 
     var call_sts = $("span#sts-"+agent_id).text().toLowerCase();
-    var trf_txt = "Transfering from '"+from+"'";
+    var trf_txt = "Transfered from '"+from+"'";
 
     $('span#trf-'+agent_id).text(trf_txt);
     $('img#cl-dir-'+agent_id).attr("src",c_img["trf-"+call_dir]);
@@ -540,7 +587,7 @@
       }
     }
   }
-
+  
   function format_phone(num){
      var n;
      if(n = num.match(/(^9|^5)(\d+)/)){
@@ -567,7 +614,10 @@
   
 </script>
 
-<div id="agent-status" class="div-show">
-  <div id="div-loading" style="display:none; padding-left: 2px;"> <%= image_tag('page_ctrl/load.gif',{:align => 'absmiddle'}) %> Please wait while retrieving agent's informations.</div>
-  <table id="agent-status-tbl"></table>
+<!-- Realtime agent's status -->
+<div id="ac-status">
+  <div id="div-loading" style="display:none; padding-left: 2px;"><%= image_tag('page_ctrl/load.gif',{:align => 'absmiddle'}) %> Please wait while retrieving agent's informations.</div>
+  <div id="ac-status-div" style="height: 10px;">
+    <table id="ac-status-tbl" width="100%" cellpadding="0" cellspacing="2px"></table>
+  </div>
 </div>

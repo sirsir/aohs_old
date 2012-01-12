@@ -4,17 +4,23 @@
 <% content_for :header do %>
 
 <style type="text/css">
-     .txtPhone { font-size:11px;} 
+    .txtPhone { font-size:11px;} 
     .frm-note {
           font-size:10px;
           color: #666666;
-    }  
+    }
+	input.input-text-readonly {
+		border:1px solid #a7a7a7;;
+		background-color:#ffffff;
+		padding:1px;
+	}
     .span-phoneno {
         padding-right:5px;
     }
     .editPhone {
-        background-color: #ffcc66;
+        background-color:#fcd8a3;
         border:1px solid #666666;
+		padding:1px;
     }
     .span-field {
         margin-left : 3px;
@@ -68,16 +74,25 @@
       width : 65px;
        font-size:11.5px;         
     }
+	.txt-car-no {
+        font-size:12px;
+        width:195px;
+	}
     .vcCD {font-size:11.5px;}
     .condName1 {
         font-weight:bold;
         font-size:12px;
         text-decoration: underline;
         display:block;
+		color:#1b77c2;
     }
     .condName2 {
-        font-size:11.5px;
-        display:block;
+          font-size:11px;
+          display:block;
+          margin-top:2px;
+		  margin-bottom:1px;
+		  font-weight:700;
+		  color:#5b5b5b;
     }
     .labelStyle1 {font-size:11.5px;}
     #div-custCtrl {
@@ -102,14 +117,25 @@
 		  font-weight:bold;
 		  color:#ffffff;
 		  padding:2px;
-          background-image:url('<%=image_src_path('/images/bg008.png') %>');
-    }	
+          background-image:url('<%=image_src_path('/images/greenbtn.png') %>');
+    }
+	  .ui-button-text {
+	  	padding:0px;
+		margin:0px;
+		margin-bottom:-3px;
+		margin-top:-2px;
+	  }	
+	  #link-edit-cust {
+	  	cursor:pointer;
+	  }
 </style>
 
 <script type="text/javascript">
+	var isEnaEdit = App.to_boolean("<%= Aohs::MOD_EDIT_CUST_ON_SEARCH %>");
     var enable_save = false;
     var customerLoaded = false;
-
+	var isCustFrmList = false;
+	var validCustomerName = App.to_boolean("<%=Aohs::VALID_UNIQUE_CUSTNAME %>");
     var searchKey = {
       dateCondition: "",
       stdate: "",
@@ -117,6 +143,8 @@
       eddate: "",
       edtime: "",
       cust_phone: "",
+	  no_phone: "",
+	  car_no: "",
       calld: "",
       stdu: "",
       eddu: ""
@@ -141,7 +169,8 @@
 		$("input[name=vcFromTime]").val("");
 		$("input[name=vcToTime]").val("");
 		$("input[name=vcFromDate]").val("");
-		$("input[name=vcToDate]").val("");			
+		$("input[name=vcToDate]").val("");	
+		$("input[name=car_no]").val("");		
     }
     
     function getSearchKeys(){
@@ -180,15 +209,20 @@
       }else{
         searchKey.edtime = "";
       }
-
+	
       var strphoneList = "";
+	  var strNoPhone = "";
       $.each($("#phoneList input[type=text]"),function(i,el){
         cdigit = $(el).attr("name").toString().substr(5,1);
-        if($("#checktel"+cdigit.toString()).attr("checked"))
-           strphoneList += $(el).val() + ","
+        if($("#checktel"+cdigit.toString()).attr("checked")){
+			strphoneList += $(el).val() + ","
+		} else {
+			strNoPhone += $(el).val() + ","
+		}
       });
       searchKey.cust_phone = strphoneList;
-
+	  searchKey.no_phone = strNoPhone;
+	  
       var cd = "";
       if($("input[name=vcCD1]").attr("checked"))
         cd = cd + $("input[name=vcCD1]").val();
@@ -217,6 +251,12 @@
       } else {
           searchKey.calld = "";
       }
+	  
+	  var car_no = jQuery.trim($("input[name=car_no]").val());
+	  searchKey.car_no = car_no;
+	  
+	  customer_info.cust_name = $("#txtCustName2").val();
+	  
     }
 
     function setCurrentCustomer(){
@@ -224,14 +264,18 @@
         customerLoaded = false;
         customer_info.new_cust_name = "";
         
+		//$("#link-edit-cust").css("display","none");
+		
         if($("#seltName option:selected").val() != null){
-            customer_info.cust_name = $("#seltName option:selected").val();
+			var c = $("#seltName option:selected");
+            customer_info.cust_name = c.val();
+			customer_info.cust_id = c.attr("cid"); 
         } else {
             customer_info.cust_name = $("#txtCustName").val();
         }
 
         $.get("<%= url_for(:controller => 'customer',:action => 'customer_id') %>",
-        { cust_name: customer_info.cust_name},
+        { cust_name: customer_info.cust_name, cust_id:customer_info.cust_id },
         function(data){
             if(data == "0"){
               customer_info.cust_id = -1;
@@ -239,13 +283,21 @@
             } else {
               customerLoaded = true;  
               customer_info.cust_id = parseInt(data);
-              $("#btnSaveCust2").css("display","inline");    
+              $("#btnSaveCust2").css("display","inline");
+			  //$("#link-edit-cust").css("display","inline");    
             }
             $("#txtCustName2").val(customer_info.cust_name);
             phoneList();
         });
     }
-
+	function clearCustomerInf(){
+		customer_info.cust_id = -1;
+		customer_info.cust_name = "";
+		if(validCustomerName){
+			$("#btnSaveCust").attr("disabled","disabled");
+		}		
+		//$("#link-edit-cust").css("display","none");
+	}
     function SelectCustomer(){
         $("#tblphone").html("");
         setCurrentCustomer();
@@ -255,31 +307,35 @@
 
         var custName = $("#txtCustName").val();
 
-        //$("#btnSaveCust").attr("disabled","disabled");
         $("#btnSaveCust2").css("display","none");
         $("#txtCustName2").val("");
         $("#seltName").html("<option value=\"\"></option>");
 
         if(custName.length > 0){
-			$("#btnSaveCust").attr("disabled","");
             $.getJSON("<%= url_for(:controller => 'customer',:action => 'list') %>",
             {cust_name:custName},
             function(data){
                 var cust_option = "";
-                $("#btnSaveCust").attr("disabled","");
+				var allowNewCust = true;
                 $.each(data,function(id,cust){
-                    if(custName == cust['name']){
-                        //$("#btnSaveCust").attr("disabled","disabled");
-                    }
-                    cust_option += "<option value=\"" + cust['name'] + "\">" + cust['name'] + "</option>";
+					if((validCustomerName) &&(custName == cust['name'])){
+						allowNewCust = false;
+					}
+                    cust_option += "<option cid=\"" + cust['id'] + "\" value=\"" + cust['name'] + "\">" + cust['name'] + "</option>";
                 });
-                
+				if(allowNewCust && custName.length < 3){
+					allowNewCust = false;
+				}
+				if(allowNewCust){
+					$("#btnSaveCust").removeAttr("disabled");
+				}else{
+					$("#btnSaveCust").attr("disabled","disabled");
+				}
                 if(cust_option.toString().length){
                     $("#seltName").html(cust_option);
                 }
                 else {
                     $("#seltName").html("<option value=\"\"></option>");
-                    //$("#btnSaveCust").attr("disabled","");
                 }
             });
         } else {
@@ -288,15 +344,27 @@
     }
 
     var search_timeout = undefined;
-
+	
+	function clearCustOnFocus(){
+		findCustomerDelay();
+	}
     function findCustomerDelay(){
-        
+        clearCustomerInf();
+		
         $("#tblphone").html("");
-
-        if($("#txtCustName").val().length > 0){
+		var custkey = jQuery.trim($("#txtCustName").val());
+        if(custkey.length > 0){
+			$("#txtCustName2").addClass("input-text-readonly");
             $("#btnSaveCust").attr("disabled","disabled");
+			$("#txtCustName2").val("No selected customer");
+			$("#txtCustName2").attr('readonly','readonly');
+			isCustFrmList = true;
         } else {
-            $("#btnSaveCust").attr("disabled","");
+			$("#txtCustName2").removeClass("input-text-readonly");	
+            $("#btnSaveCust").removeAttr("disabled");
+			$("#txtCustName2").removeAttr('readOnly');
+			$("#txtCustName2").val("");
+			isCustFrmList = false;
         }
         if(search_timeout != undefined){
             clearTimeout(search_timeout);
@@ -304,15 +372,16 @@
         search_timeout = setTimeout(function(){
             search_timeout = undefined;
             customerList();
-        }, 500);
+        },150);
     }
 
     function phoneList() {
 
         if(customer_info.cust_name.length > 0){
+			$("#loadPhone").css("display","block");
             $.getJSON("<%= url_for(:controller => 'customer', :action => 'list_phones') %>",
             {
-                cust_name: customer_info.cust_name
+                cust_name: customer_info.cust_name, cust_id: customer_info.cust_id
             },
             function(data){
               maxPhoneIndex = 0;
@@ -331,8 +400,10 @@
                     $.each($("#phoneList input[type=text]"),function(i,el){
                     $(el).attr('readOnly',"true");
               });
+			  $("#loadPhone").css("display","none");
          } else {
             $("#tblphone").html("");
+			$("#loadPhone").css("display","none");
          }
          });
       }
@@ -356,16 +427,18 @@
    }
 
    function SetCustomerNameFocus(){
-        if(customerLoaded){
-            $("#txtCustName2").attr('readOnly',"");
+        if(customerLoaded && isCustFrmList && isEnaEdit){
+            $("#txtCustName2").removeAttr('readOnly');
+			$("#txtCustName2").removeClass("input-text-readonly");
             $("#txtCustName2").addClass("editPhone");
             enable_save = true;
         }
    }
    function SetCustomerNameLostFocus(){
-        $("#txtCustName2").attr('readOnly',"true");
-        $("#txtCustName2").removeClass("editPhone");
-        if(customerLoaded){
+        if(customerLoaded && isCustFrmList){
+        	$("#txtCustName2").attr('readOnly',"true");
+        	$("#txtCustName2").removeClass("editPhone");
+			$("#txtCustName2").addClass("input-text-readonly");			
            customer_info.new_cust_name = $("#txtCustName2").val();
         }
    }
@@ -394,7 +467,7 @@
    function RemovePhone(i){
        var row_id = i;
        var phoneNo = $("input[name=TelAt" + row_id + "]").val();
-       if(phoneNo.length > 0){
+       if((phoneNo.length > 0) && isEnaEdit){
              $("#phone-deldialog").dialog("destroy");
              $("#cust-message2").html("Are you sure to delete phone number '" + phoneNo +"' ?");
              $("#phone-deldialog").dialog("open");
@@ -486,10 +559,11 @@
           customer_info.cust_name = $("#txtCustName").val();
 
           if(customer_info.cust_name.length > 0){
-            $.get("<%= url_for(:controller => 'customer',:action => 'create_customer') %>",
+            $.getJSON("<%= url_for(:controller => 'customer',:action => 'create_customer') %>",
             { cust_name: customer_info.cust_name },
             function(data){
-              if(data == 'success'){
+              if(data["msg"] == 'success'){
+			  	customer_info.cust_id = parseInt(data["cust_id"]);
                 InfoDialog("Add new customer \" " + customer_info.cust_name + " \" was successfully.");
                 setCurrentCustomer();
                 customerList();
@@ -512,37 +586,46 @@
         
       progressEnabled(true);
       $("#btnsearch").attr("disabled","true");
-
+		
       getSearchKeys();
+	  
+      if(App.isBlank(customer_info.cust_name) && App.isBlank(searchKey.cust_phone) && App.isBlank(searchKey.car_no)){
+	  	  alert("Please define at least one condition in customer details to search customer's calls");
+		  $("#btnsearch").removeAttr("disabled");
+		  progressEnabled(false);
+	  } else {
+	      $.getJSON("<%= url_for(:controller => 'customers',:action => 'customer_voice_log') %>",
+	      {
+	        cust_name: customer_info.cust_name,
+	        cust_id: customer_info.cust_id,
+	        cust_phone: searchKey.cust_phone,
+			no_phone: searchKey.no_phone,
+	        dateCondition: searchKey.dateCondition,
+	        start_date: searchKey.stdate,
+	        start_time: searchKey.sttime,
+	        end_date: searchKey.eddate,
+	        end_time: searchKey.edtime,
+	        page: ctrlPage.selectPage,
+	        sortby: ctrlSort.colName,
+	        od: ctrlSort.order,
+			perpage: ctrlPage.perPage,
+	        stdur: searchKey.stdu,
+	        eddur: searchKey.eddu,
+	        calld: searchKey.calld,
+			car_no: searchKey.car_no
+	      },
+	      function(data,textStatus)
+	      {
+	        loadDataTable(data);
+	        if(!tlLoaded){
+	            loadTimeLine();
+	        }
+	        progressEnabled(false);
+	        vc_start = false;
+	        $("#btnsearch").attr("disabled","");
+	      });	  	
+	  }
 
-      $.getJSON("<%= url_for(:controller => 'customers',:action => 'customer_voice_log') %>",
-      {
-        cust_name: customer_info.cust_name,
-        cust_id: customer_info.cust_id,
-        cust_phone: searchKey.cust_phone,
-        dateCondition: searchKey.dateCondition,
-        start_date: searchKey.stdate,
-        start_time: searchKey.sttime,
-        end_date: searchKey.eddate,
-        end_time: searchKey.edtime,
-        page: ctrlPage.selectPage,
-        sortby: ctrlSort.colName,
-        od: ctrlSort.order,
-		perpage: ctrlPage.perPage,
-        stdur: searchKey.stdu,
-        eddur: searchKey.eddu,
-        calld: searchKey.calld
-      },
-      function(data,textStatus)
-      {
-        loadDataTable(data);
-        if(!tlLoaded){
-            loadTimeLine();
-        }
-        progressEnabled(false);
-        vc_start = false;
-        $("#btnsearch").attr("disabled","");
-      });
     }
 
     function start_btn_search(){
@@ -606,11 +689,18 @@
 			}
 		  });	  
     });
-
+	
+	function openEditCustomerPage(){
+		$("#link-edit-cust").click(function(){
+			window.open("<%=url_for(:controller => 'customer',:action => 'edit') %>/" + customer_info.cust_id);
+		});	
+	}
+	
     $(document).ready(function(){
-		
+	
       $("#btnSaveCust2").css("display","none");
-	  
+	  $(".chk-direction").buttonset();
+	  openEditCustomerPage();
       $("#ccs_periods").change(function(){
         var prd = $("#ccs_periods").val();  
         if ( prd == 0){
@@ -628,7 +718,6 @@
         }
       });
 	  
-	  
     })
     
     </script>
@@ -637,40 +726,48 @@
 
 <div id="div-custCtrl">
   <table cellpadding="0" cellspacing="0" width="100%"><tr><td><div class="condName1">Customers list</div></td><td align="right">&nbsp;<a href="#" onclick="ShowOrHidePanel()" title="Hide"><%=image_tag('hide_panel2.png',{:border => 0}) %></a></td></tr></table>
-    <input type="text" value="" id="txtCustName" onkeypress="findCustomerDelay();" onkeydown="findCustomerDelay()"/>
-    <% if edit_cust %>
+    <input type="text" value="" id="txtCustName" onclick="clearCustOnFocus();" onkeyup="findCustomerDelay();" onkeydown="findCustomerDelay()"/>
+    <% if edit_cust and Aohs::MOD_EDIT_CUST_ON_SEARCH %>
     <input type="button" value="New" id="btnSaveCust" class="btnStyle2" onclick="SaveCustomer()"/>
     <% end %>  
     <select id="seltName" size="5" onclick="SelectCustomer()" title="Double click to choose customer">
         <option value="" title="Double click to choose customer"></option>
     </select>
   <div class="div-line"></div>
-  <div class="condName1">Customers detail</div>
-    <div class="condName2">Name:</div>
-    <input title="Show choosen customer's name" type="text" value="" id="txtCustName2" ondblclick="SetCustomerNameFocus();" onblur="SetCustomerNameLostFocus()" onkeypress="" readonly/>
+  <div class="condName1">Customers detail<span id="link-edit-cust" style="display:none; text-decoration:none;">&nbsp;<img src="<%=image_path('user_edit.png') %>" alt="Click to edit customer." align="absmiddle"></span></div>
+	<div class="condName2">Name:</div>
+    <input title="Show choosen customer's name" type="text" value="" id="txtCustName2" ondblclick="SetCustomerNameFocus();" onblur="SetCustomerNameLostFocus()" onkeypress=""/>
     <div class="condName2">Phone number(s):</div>
-    <div id="phoneList">
+    <div id="phoneList"><span id="loadPhone" style="display:none;"><%=image_tag('page_ctrl/load.gif') %></span>
     <table id="tblphone" style="margin-top:3px; margin-bottom:3px;" cellpadding="0" cellspacing="0"><tr><td></td></tr></table>
     </div>
     <% if edit_cust %>
     <span style="margin-left:3px;">
-      <a href="#add" onclick="AddPhone()" title="Add new phone's number">Add phone</a>&nbsp;
-      <span id="btnSaveCust2"><a href="#save"  onclick="btnSavePhone()" title="Save customer's informations">Save</a></span>
+      <a href="#add" onclick="AddPhone()" title="Add more phone's number">Add more phone</a>&nbsp;
+      <span id="btnSaveCust2">
+      	<% if Aohs::MOD_EDIT_CUST_ON_SEARCH %>
+		<a href="#save"  onclick="btnSavePhone()" title="Save customer's informations">Save</a>
+		<% end %>
+	  </span>
     </span>
     <% end %>
   <div class="div-line"></div>
-  <div class="condName1">Filter</div>
+  <div class="condName1">Search Filter</div>
+	<div style="<%= (Aohs::MOD_CUST_CAR_ID ? 'display:block;' : 'display:none;') %>">
+		<div class="condName2">Car No(s):</div>
+		<input type="text" class="txt-car-no" name="car_no" id="car_no"/>		
+	</div>  
     <div class="condStyle1">
     <div class="condName2">Period:</div>
     <select id="ccs_periods">
-        <option value="1">Today</option>
+        <option value="1" selected>Today</option>
         <option value="2">Yesterday</option>
         <option value="3">This week</option>
         <option value="4">Last week</option>
         <option value="5">This month</option>
         <option value="6">Last month</option>
         <option value="7">This year</option>
-        <option value="8" selected>All</option>
+        <option value="8">All</option>
         <option value="0">Custom ...</option>
     </select>
     <div id="ccs_custom_periods" style="display:none">
@@ -681,16 +778,19 @@
         <input type="text" name="vcToDate" id="eddate" />
         <input type="text" name="vcToTime" id="edtime" />
         <span class="frm-note"><i>Format date: yy-mm-dd, Time: hh:mm</i></span>
-    </div></div>
+    </div>
+	</div>
       <div class="condStyle1">
         <span class="condName2">Call Duration (mm:ss):</span>
         <input type="text" name="vcLengthFrom" maxlength="4" id="vcLengthStart" value="" title="mm:ss"><label class="vcCD"> To </label><input type="text" maxlength="4" name="vcLengthTo" id="vcLengthEnd" title="mm:ss" value="">
       </div>
       <div class="condStyle1">
         <span class="condName2">Call Direction:</span>
-        <input type="checkbox" name="vcCD1" id="vcCD1" value="i" checked> <label class="vcCD">In</label>
-        <input type="checkbox" name="vcCD2" id="vcCD2" value="o" checked> <label class="vcCD">Out</label>
-        <input type="checkbox" name="vcCD3" id="vcCD3" value="e" checked> <label class="vcCD">Other</label>
+		<div class="chk-direction">
+	    <input type="checkbox" name="vcCD1" id="vcCD1" value="i" checked> <label for="vcCD1" class="vcCD">In</label>
+	    <input type="checkbox" name="vcCD2" id="vcCD2" value="o" checked> <label for="vcCD2" class="vcCD">Out</label>
+	    <input type="checkbox" name="vcCD3" id="vcCD3" value="e" checked> <label for="vcCD3" class="vcCD">Other</label>
+	    </div>
       </div>
   <div class="div-line"></div>
   <input type="button" class="btnStyle1" value="Search Calls" id="btnsearch" onclick="start_btn_search()"/>

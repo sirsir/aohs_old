@@ -1,6 +1,85 @@
 <% content_for :header do %>
-
+<style>
+	.btn-remove {
+		display:none;
+	}
+</style>
 <script type="text/javascript">
+
+function makeCarHover(o){
+	$(o).mouseover(function(){
+		$(".btn-remove", $(this)).css("display", "inline");
+	}).mouseout(function(){
+		$(".btn-remove", $(this)).css("display", "none");
+	});
+}
+function addCar(ele){
+	var e = $(ele);
+	var htm = "<div class=\"div-car-hover\"><input type=\"text\" class=\"input-text-car1\" maxlength=\"4\" name=\"icust-car-no1\"/>-<input type=\"text\" class=\"input-text-car2\" maxlength=\"5\" name=\"icust-car-no2\"/>&nbsp;<input type=\"text\" class=\"input-text-car1\" maxlength=\"4\" name=\"icust-car-no3\"/><input type=\"hidden\" class=\"input-text input-car\" name=\"carno[]\" maxlength=\"15\"/>&nbsp;<a href=\"#\" class=\"btn-remove\" onclick=\"removeCar(this);\">Remove</a></div>"	
+	e = $(htm).insertBefore(e.parent());
+	makeCarHover(e);
+}
+function removeCar(ele){
+	var e = $(ele);
+	e.parent().remove();	
+}
+
+function makePhoneHover(o){
+	$(o).mouseover(
+	function(){
+		$(".btn-remove",$(this)).css("display","inline");
+	}).mouseout(function(){
+		$(".btn-remove",$(this)).css("display","none");
+	});
+}	
+function addPhone(ele){
+	var e = $(ele);
+	var htm = "<div class=\"div-phone-hover\"><input type=\"text\" class=\"input-text input-phone\" name=\"phone[]\" maxlength=\"15\"/>&nbsp;<a href=\"#\" class=\"btn-remove\" onclick=\"removePhone(this);\">Remove</a></div>"	
+	e = $(htm).insertBefore(e.parent());
+	makePhoneHover(e);
+}
+function removePhone(ele){
+	var e = $(ele);
+	e.parent().remove();	
+}
+function updateCarNo(){
+	try {
+		$(".div-car-hover").each(function(){
+			var c1 = jQuery.trim($("input[name=icust-car-no1]",this).val());
+			var c2 = jQuery.trim($("input[name=icust-car-no2]",this).val());
+			var c3 = jQuery.trim($("input[name=icust-car-no3]",this).val());
+			if(App.isBlank(c1) && App.isBlank(c2) && App.isBlank(c3)){
+				// skip if blank all
+				$(".input-car",this).val("");
+			} else {
+				$(".input-car",this).val(c1 + "-" + c2 + " " + c3);
+			}
+		});
+	} catch(e) {
+		//
+	}
+}
+function loadCarNo(){
+	try {
+		$(".div-car-hover").each(function(){
+			var c = $(".input-car",this).val();
+			try {
+				$("input[name=icust-car-no1]",this).val(c.split("-",2)[0]);
+				$("input[name=icust-car-no2]",this).val(c.split("-",2)[1].split(" ",2)[0]);
+				$("input[name=icust-car-no3]",this).val(c.split("-",2)[1].split(" ",2)[1]);			
+			} catch(e){
+				//
+			}
+		});		
+	} catch(e) {
+		//	
+	}
+}
+$(document).ready(function(){
+	loadCarNo();
+	makePhoneHover($('.div-phone-hover'));
+	makeCarHover($('.div-car-hover'));
+});
 </script>
 <% end %>
 
@@ -22,34 +101,63 @@
 <% end %>
 
 <div id="div-block-agent">
-
 <div class="div-form-default-style1">
+  <%= form_for :customer, :url => {:controller => 'customer', :action => 'create' } do |f| %>	
   <table class="tblfrm" width="100%" cellpadding="0" cellspacing="0">
     <tr>
       <td><span class="span-form-title">New Customer</span></td>
     </tr>
     <tr>
-      <td><span class="span-form-name">Customer infomation</span></td>
+      <td><span class="span-form-name">Customer information</span></td>
     </tr>
     <tr>
       <td>
-        <% form_for :customer, :url => {:controller => 'customer', :action => 'create' } do |f| %>
-        <%=display_frm_error(flash[:message]) %>
+          <%=display_frm_error(flash[:message]) %>
           <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
             <tr>
-              <td width="150px" valign="top"><label for="login">Name :</label></td>
+              <td width="140px" valign="top"><label for="login">Name:</label></td>
               <td><%= f.text_field :customer_name, :size => 20, :maxsize => 255, :class =>'input-text' %><span class="span-require">*</span>
               <br/><span class="note">Name must have a minimum of 4 characters</span></td>
             </tr>
+			<tr>
+				<td width="140px" valign="top"><label for="login">Phone number(s):</label></td>
+				<td>
+					<% if not params[:phone].nil? and not params[:phone].empty? %>
+					<% params[:phone].each do |c| %>
+					<% next if c.empty? %>
+					<div class="div-phone-hover"><input type="text" class="input-text input-phone" name="phone[]" maxlength="15" value="<%=c %>"/>&nbsp;<a href="#" class="btn-remove" onclick="removePhone(this);">Remove</a></div>
+					<% end %>
+					<% end %>
+					<div class="div-phone-hover"><input type="text" class="input-text input-phone" name="phone[]" maxlength="15"/>&nbsp;<a href="#" class="btn-remove" onclick="removePhone(this);">Remove</a></div>
+					<div><a href="#" onclick="addPhone(this);">Add phone</a></div>
+					</br><span class="note">Phone number must be contain digits only.</span>
+				</td>
+			</tr> 
+			<% if Aohs::MOD_CUST_CAR_ID %>
+			<tr>
+				<td width="140px" valign="top"><label for="login">Car No(s):</label></td>
+				<td>
+					<% if not params[:carno].nil? and not params[:carno].empty? %>
+						<% params[:carno].each do |c| %>
+						<% next if c.empty? %>
+						<div class="div-car-hover"><input type="text" class="input-text-car1" maxlength="4" name="icust-car-no1"/>-<input type="text" class="input-text-car2" maxlength="5" name="icust-car-no2"/>&nbsp;<input type="text" class="input-text-car1" maxlength="4" name="icust-car-no3"/><input type="hidden" class="input-text input-car" name="carno[]" maxlength="15" value="<%=c.strip %>"/>&nbsp;<a href="#" class="btn-remove" onclick="removeCar(this);">Remove</a></div>
+						<% end %>
+					<% else %>
+						<div class="div-car-hover"><input type="text" class="input-text-car1" maxlength="4" name="icust-car-no1"/>-<input type="text" class="input-text-car2" maxlength="5" name="icust-car-no2"/>&nbsp;<input type="text" class="input-text-car1" maxlength="4" name="icust-car-no3"/><input type="hidden" class="input-text input-car" name="carno[]" maxlength="15"/>&nbsp;<a href="#" class="btn-remove" onclick="removeCar(this);">Remove</a></div>
+					<% end %>
+					<div><a href="#" onclick="addCar(this);">Add Car No.</a></div>
+					</br><span class="note">Pattern: XXXX-XXXXX XXXX</span>
+				</td>
+			</tr>	
+			<% end %>		
             <tr>
               <td></td>
-              <td><%= submit_tag "Add customer",{:class => 'btnAccept'} %>&nbsp;&nbsp;<%#= submit_tag "Reset",{:type => 'Reset',:class => 'btnAccept'} %></td>
+              <td><%= submit_tag "Add",{:class => 'btnAccept', :onclick => "updateCarNo();"} %>&nbsp;&nbsp;<%#= submit_tag "Reset",{:type => 'Reset',:class => 'btnAccept'} %></td>
             </tr>
-            </table>
-        <% end %>
+          </table>
       </td>
     </tr>
   </table>
+  <% end %>  
 </div>
-
 </div>

@@ -1,25 +1,30 @@
 --- 
 development: 
   adapter: jdbcmysql
-  database: amivoice_operators_help_acss
+  database: amivoice_operators_help_v3
   host: 192.168.1.15
   port: 3306
   username: mysqladmin
   password: password
   encoding: utf8
+  pool: 5
+  timeout: 5000
 production: 
   adapter: jdbcmysql
-  database: amivoice_operators_help_acss
+  database: amivoice_operators_help_v3
   host: 192.168.1.15
   port: 3306
   username: mysqladmin
   password: password
   encoding: utf8
+  pool: 5
+  timeout: 5000
 test: 
   adapter: jdbcmysql
-  database: amivoice_operators_help_acss_v2
+  database: amivoice_operators_help_hy
   host: 192.168.1.15
   port: 3306
   username: mysqladmin
   password: password
   encoding: utf8
+  pool: 10

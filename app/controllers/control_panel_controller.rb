@@ -1,5 +1,5 @@
 class ControlPanelController < ApplicationController
-
+ 
    layout "control_panel"
    
    before_filter :login_required,:permission_require
@@ -20,14 +20,15 @@ class ControlPanelController < ApplicationController
       {:name => "Permissions", :url => {:controller => 'permission',:action => 'index'}, :title => "", :image => "permission.png"},
       {:name => "Server and Client configurations", :url => {:controller => 'configurations',:action => 'index'}, :title => "", :image => "setting.png"}
     ].reverse
-
+   
+    new_menus = []
     @ctrl_menus.each do |o|
       u = o[:url]
-      unless link_permission_require(u[:controller],u[:action])
-        @ctrl_menus.delete(o)  
+      if link_permission_require(u[:controller],u[:action])
+        new_menus << o  
       end
     end
-
+    @ctrl_menus = new_menus
    end
 
 end

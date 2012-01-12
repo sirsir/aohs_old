@@ -5,6 +5,8 @@ class CreateCustomerNumbers < ActiveRecord::Migration
       t.string    :number
       t.timestamps
     end
+	add_index :customer_numbers, :customer_id, :name => 'cust_index1'
+	 
   end
 
   def self.down

@@ -1,0 +1,47 @@
+<% content_for :header do %>
+<style>
+  p.selected-content { background-color:#CCCCCC; }
+</style>
+<% end %>
+<div class="div-menu-block">
+  <div class="menu-block">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="border-bottom:1px solid #b4e1ff;"><%= render :partial => 'extension/extension_menu' %></td>
+        </tr>
+      </table>		
+  </div>
+</div>
+<table width="100%" cellspacing="0">
+  <tr>
+    <td width="100" valign="top" style="padding-left:10px; padding-top:5px;">
+      <div style="font-weight:bold; font-style:italic; padding:3px; padding-bottom:10px;">Log view:</div>
+      <p class="<%= "selected-content" if params[:k] == 'overview' %>"><a href="<%= url_for(:action => 'watcher_result', :k => 'overview') %>">Overview</a></p><br/>
+      <p class="<%= "selected-content" if params[:k] == 'matched_success' %>"><a href="<%= url_for(:action => 'watcher_result', :k => 'matched_success') %>">Matched User</a></p><br/>
+      <p class="<%= "selected-content" if params[:k] == 'unknown_user' %>"><a href="<%= url_for(:action => 'watcher_result', :k => 'unknown_user') %>">Unknown User</a></p><br/>
+      <p class="<%= "selected-content" if params[:k] == 'unmatched_user' %>"><a href="<%= url_for(:action => 'watcher_result', :k => 'unmatched_user') %>">Unmatched User</a></p><br/>
+      <p class="<%= "selected-content" if params[:k] == 'unknown_comp' %>"><a href="<%= url_for(:action => 'watcher_result', :k => 'unknown_comp') %>">Unknown Computer</p></a>
+      <br/>
+      <br/>
+      <div style="font-weight:bold; font-style:italic; padding:3px; padding-bottom:10px;">Period:</div>
+      <p class="<%= "selected-content" if params[:p] == 'today' %>"><a href="<%= url_for(:action => 'watcher_result', :k => params[:k], :p => 'today') %>">Today</a></p><br/>
+      <p class="<%= "selected-content" if params[:p] == '7days' %>"><a href="<%= url_for(:action => 'watcher_result', :k => params[:k], :p => '7days') %>">7 Days ago</a></p><br/>
+      <p class="<%= "selected-content" if params[:p] == '30days' %>"><a href="<%= url_for(:action => 'watcher_result', :k => params[:k], :p => '30days') %>">30 Days ago</a></p><br/>
+      <p class="<%= "selected-content" if params[:p] == '6months' %>"><a href="<%= url_for(:action => 'watcher_result', :k => params[:k], :p => '6months') %>">6 Month ago</a></p><br/>
+      <p class="<%= "selected-content" if params[:p] == 'alltime' %>"><a href="<%= url_for(:action => 'watcher_result', :k => params[:k], :p => 'alltime') %>">All Time</a></p><br/>
+    </td>
+    <td valign="top">
+      <% if params[:k] == 'unknown_comp' %>
+        <%= render :partial => 'extension/watcher_unknow_computer' %>
+      <% elsif params[:k] == 'matched_success' %>
+        <%= render :partial => 'extension/watcher_matched' %>
+      <% elsif params[:k] == 'unknown_user' %>
+        <%= render :partial => 'extension/watcher_unknow_users' %>
+      <% elsif params[:k] == 'unmatched_user' %>
+        <%= render :partial => 'extension/watcher_unmatched_users' %>         
+      <% else %>
+        <%= render :partial => 'extension/watcher_overview' %>
+      <% end %>
+    </td>
+  </tr>
+</table>

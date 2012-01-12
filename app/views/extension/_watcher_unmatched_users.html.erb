@@ -1,0 +1,28 @@
+<div id="tbl-wlogs" class="div-default-table">
+  <table cellpadding="0" cellspacing="0" class="tbl-hover"> 
+    <tr class="tname">
+      	<td colspan="10">Watcher Report - Unmatched Users </td>
+    </tr>
+    <tr class="thead">
+      <th rowspan="2">No.</th>
+      <th colspan="4">User List</th>
+    </tr>
+    <tr class="thead">
+      <th>Username</th>
+      <th>Display Name</th>
+      <th>Group name</th>
+      <th>Role name</th>
+    </tr>
+    <% @logs.each_with_index do |l,i| %>
+      <tr>
+        <td><%=i+1 %></td>
+	<td style="background-color:#FFFFCC;"><%=l.username %>&nbsp;</td>
+	<td><%=l.display_name %>&nbsp;</td>
+	<td><%=l.group_name %>&nbsp;</td>
+	<td><%=l.role_name %>&nbsp;</td>
+      </tr>
+    <% end %>
+  </table>
+  <p>* List of username (windows's account) that system can not matching with watcher program.</p>
+</div>
+</div>

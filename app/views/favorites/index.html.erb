@@ -67,13 +67,19 @@
         var intBrowserHeight = $(window).height();
         var intBrowserWidth = $(window).width();
         var confTreeWidth = $("#conftree").width();
+		var pageCtrlWidth = intBrowserWidth-confTreeWidth-6;
+		
         $("#conftree").css("height",intBrowserHeight-$("#header").height()-15);
         $("#ami-viewer").css("width",intBrowserWidth-confTreeWidth-8);
         $("#div-tblCtrl").css("width",intBrowserWidth-confTreeWidth);
+		
+		$(".expand-cell").css("width",pageCtrlWidth+10);
+		
         var divTblOuter = $("#div-tbl-outer");
-        var divTblInner = $("#div-tbl-inner");
         divTblOuter.css("width",intBrowserWidth-confTreeWidth+11);
         divTblOuter.css("height",intBrowserHeight-$("#ami-viewer").height()-$("#header").height()-35);
+		
+		var divTblInner = $("#div-tbl-inner");
         divTblInner.css("height",divTblOuter.height()-$("#div-tblCtrl").height());
         divTblInner.css("width",$(".tbl-header").width()+14);
       }

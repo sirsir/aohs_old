@@ -1,5 +1,5 @@
 <% content_for :header do %>
-<%= javascript_src_path '/jquery/jquery-ui-1.8.6.custom/development-bundle/ui/jquery.ui.slider.js' %>
+<%= javascript_src_path '/jquery/jquery-ui-1.8.7.custom/development-bundle/ui/jquery.ui.slider.js' %>
 <%= javascript_src_path '/jquery/jquery.selectToUISlider/js/selectToUISlider.jQuery.js' %>
 <%= stylesheet_src_path '/jquery/jquery.selectToUISlider/css/ui.slider.extras.css' %>
 <%= javascript_src_path('/jquery/jquery.autocomplete/jquery.autocomplete.js') %>
@@ -8,19 +8,24 @@
 <style type="text/css">
 
   .ui-slider {
-    height:6px;
+    height:4px;
     background: #e9f4ff;
   }
-
+  .ui-dialog-titlebar-close { display: none; }
   .ui-slider .ui-slider-handle {
-    border:1px;
+    border: 1px;
     border-color:#93B2CC;
   }
-
+  #transfer-call-radio .ui-button {
+    width: 180px;
+    margin-bottom: 4px;
+    font-size: 10px;
+  }
+  
   html {
     overflow: hidden;
   }
-
+   
 </style>
 
 <style type="text/css">
@@ -84,7 +89,6 @@
   div#speaker-panel{
     clear:both;
     float:left;
-    width: 210px;
     background: no-repeat;
     background-position: 90px 30px;
   }
@@ -128,9 +132,48 @@
     background: none;
     border: 0;
   }
-
-  input.editting { background-color: #FFFFEB; }
+  div.tab-pane-info {
+    position: relative;
+    float: left;
+    display: block;
+    background-color: #FFFFFF;
+  }
+  
+  input.editting { background-color: #FFFF99; }
+  div#Footer {
+  /*  position: relative; */
+    clear: both;
+    height: 30px;
+    background-image:url(<%=image_path('bg002.png')%>); 
+    padding:4px 4px 4px 10px;
+    border-left: 1px solid  #99ccff;
+    border-right: 1px solid  #99ccff;
+    border-bottom: 1px solid  #99ccff;
+  }
   span.footer_txt { font-weight: normal; font-style: italic; display: none;}
+  div.transfer-call {
+    clear: both;
+    float: left;
+    margin: 0px 1px 0px 1px;
+    text-align: center;
+  }
+
+  td.ami-ctrl-pnl {
+    width: 50px;
+    padding-right: 6px;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  input.btn {
+    color:#050;
+    font: bold 84% sans-serif;
+    background-color:#fed;
+    border:1px solid;
+    border-color: #696 #363 #363 #696;
+    height: 20px;
+  } 
 
 </style>
 
@@ -139,14 +182,18 @@
   var current_pane = 1;
   var current_index = 0;
 
+  /* current view call (main call, transfer[1], ... , transfer[n]) */
+  var current_call = 0;
+
+  jQuery.event.add(window, "load", ResizeWrapInfo);
+  jQuery.event.add(window, "resize", ResizeWrapInfo);
+
   $(document).ready(function(){
 
     AmiAdvw.SetSegmentGuideRange(-20,-80);
     AmiAdvw.setProperty("DisableContextMenu",1);
 
-    jQuery.event.add(window, "load", ResizeWrapInfo);
-    jQuery.event.add(window, "resize", ResizeWrapInfo);
-    $('#AmiAdvw').css("height", $('#speaker-panel').height()); //$('#speaker-panel').height()
+    $('#AmiAdvw').css("height", $('#speaker-panel').height());
     $('#advw-vol').slider({min:0 ,max:100, step:1, value:10,
                            slide: function(event, ui){
                              AmiAdvw.PlayingVolume = (ui.value/10);
@@ -155,22 +202,272 @@
                              slide: function(event, ui){
                                AmiAdvw.PlayingSpeed = (ui.value/10);
                              }});
+
     initialVoiceLog();
-   
+    if(<%= @voice_log.have_transfered_call? %>){
+      initailTransferCall();
+    }
   });
+
+  function initailTransferCall() {
+    var view = "";
+        view += "<input class=\"radio-transf\" type=\"radio\" id=\"radio-main\" name=\"call-radio\" onclick=\"change_view(0);\" checked disabled /><label for=\"radio-main\">Main Call</label><br/>";
+        view += "<br/><span style=\"font-weight: bold; color: #384970;\">Transfer Call</span>";
+    <% transcall = @voice_log.transfer_calls %>
+    <% unless transcall.nil? %>
+        <% transcall.each_with_index do |tc, idx| %>
+          var c_idx = <%= idx+1 %>;
+          var label = "To : <%= tc.user.display_name rescue 'UnknownAgent' %> <br/>";
+              label += "Ext : <%= tc.extension %> <br/>";
+              label += "Start : <%= tc.start_time.strftime("%Y-%m-%d %H:%M:%S") %> <br/>";
+              label += "Duration : <%= format_sec(tc.duration.to_i) %> <br/>";
+          view += "<input class=\"radio-transf\" type=\"radio\" id=\"radio-<%= idx %>\" name=\"call-radio\" onclick=\"change_view("+c_idx+");\" disabled /><label style=\"text-align: left;\" for=\"radio-<%= idx %>\">"+label+"</label><br/>";
+
+          call_information.push({
+            id: "<%= tc.id %>",
+            date: "<%= tc.start_time.strftime("%Y-%m-%d") %>",
+            st: "<%= tc.start_time.strftime("%H:%M:%S") %>",
+            strsec: <%= tc.start_position_sec %>,
+            v_st: "<%= (tc.start_time - tc.start_position_sec).strftime("%H:%M:%S") %>",
+            v_en: "<%= (tc.start_time + tc.duration.to_i).strftime("%H:%M:%S") %>",
+            dur: "<%= format_sec(tc.duration.to_i) %>",
+            dir_c: "<%= tc.call_direction %>",
+            dir_n: "<%= tc.call_direction_name %>",
+            sid: "<%= tc.system_id %>",
+            did: "<%= tc.device_id %>",
+            cid: "<%= tc.channel_id %>",
+            agnt: "<%= tc.user.nil? ? "Unknown Agent" : tc.user.display_name%>",
+            cust: "<%= tc.customer.nil? ? "Customer" : tc.customer.customer_name %>",
+            ext: "<%= tc.extension %>",
+            ani: "<%= format_phone(tc.ani) %>",
+            dnis: "<%= format_phone(tc.dnis) %>",
+            url: "<%= tc.voice_file_url %>"
+          });
+        <% end %>
+    <% end %>
+
+    $('div#transfer-call-radio').html(view);
+    $('#transfer-call-radio').buttonset();
+    /* load information for transfer call */
+    var len = call_information.length;
+    for(var idx=1; idx < len; idx++){
+      load_info_list(idx, call_information[idx].id);
+    }
+  }
+
+  function load_info_list(c_idx, voice_id) {
+
+    callinfo_list[c_idx] = new Array();
+    bookmark_list[c_idx] = new Array();
+
+    <% if Aohs::MOD_KEYWORDS %>
+    keyword_list[c_idx] = new Array();
+    keyword_del[c_idx] = new Array();
+    for(var idx in keyword_source){
+      var db = keyword_source[idx];
+      $.getJSON("<%= url_for(:controller => 'keywords', :action => 'get_edit_keywords') %>", {voice_log_id: voice_id, db_name: db},
+              function(data){
+				var data_len = data.length;
+                if(data_len > 0){
+                  var d_idx = 0;
+                  while(d_idx < data_len){
+                    var kw = data[d_idx++];
+                    keyword_list[c_idx].push({
+                        type: "keyword",
+                        start_time: kw.st_sec,
+                        end_time: kw.en_sec,
+                        show: kw.kw_name,
+                        keyword_type: kw.kw_type,
+                        keyword_id: kw.kw_id,
+                        keyword_group_id: kw.kw_grp_id,
+                        keyword_group_name: kw.kw_grp_name,
+                        edit_status: kw.edit_sts,
+                        from: kw.from,
+                        id: kw.id});
+                      }
+                }
+              });
+    }
+    <% end %>
+
+    $.getJSON("<%= url_for(:controller => 'voice_logs', :action => 'get_call_info') %>", {voice_log_id: voice_id},
+              function(data){
+                if(data != null){
+                  var data_len = data.length;
+                  var idx = 0;
+                  while(idx < data_len){
+                    var cnf = data[idx++];
+                    callinfo_list[c_idx].push({type: "call_information", start_time: cnf.st/1000, end_time: cnf.en/1000, show: cnf.evt})
+                  }
+                }
+              });
+      
+    $.getJSON("<%= url_for(:controller => 'bookmark', :action => 'get_bookmarks') %>", {voice_log_id: voice_id},
+              function(data){
+                if(data != null){
+                  var data_len = data.length;
+                  var idx = 0;
+                  while(idx < data_len){
+                    var bmk = data[idx++];
+                    bookmark_list[c_idx].push({type: "bookmark", start_time: bmk.st/1000, end_time: bmk.en/1000, show: bmk.title+" : "+bmk.body, title: bmk.title, body: bmk.body})
+                  }
+                }
+                if((c_idx+1) == call_information.length){
+                  $('.radio-transf').attr("disabled","");
+                  $('#transfer-call-radio').buttonset("refresh");
+                }
+              });
+  }
+
+  function change_view(call_idx) {
+    var view = (current_call != call_idx);
+
+    switch(view){
+      case true:
+        view_call(call_idx);
+        break;
+
+      case false:
+        if(<%= !@voice_log.have_transfered_call? %>)
+          view_call(call_idx);
+        break;
+    }
+  }
+
+  function view_call(call){
+	  
+	var tab = <%= params[:tab].nil? ? 1 : params[:tab].to_i %>
+	
+    current_call = call;
+    ans_sec = call_information[current_call].strsec;
+    
+    voicelog_start_msec = new Date (new Date().toDateString()+" "+call_information[current_call].st).getTime();
+
+    AmiAdvw.Reset();
+    AmiAdvw.LoadFromFile(call_information[current_call].url);
+    setPlayOffset(call_information[current_call].strsec);
+
+    setCallerInfo();
+    refreshTag();
+    <% if Aohs::MOD_KEYWORDS %>
+      updateKeywordView();
+    <% end %>
+    
+    updateInformationView();
+    updateBookmarkView();
+    updateAllView();
+ //   showAmiViewer(current_pane);
+    show_tab(tab);
+
+    resetVolume();
+    resetSpeed();
+
+    resize_edit_content();
+  }
+
+  function setPlayOffset(st_sec){
+    // cut audio file
+    var st_sec = parseInt(st_sec) || 0;
+    if(st_sec > 0){
+      try { 
+        AmiAdvw.SetSelectedRange(0, st_sec * AmiAdvw.SamplesPerSec);
+        AmiAdvw.cut();
+      }catch(e){
+        alert(e.message);
+      }		
+    }
+  }
+  
+  function setCallerInfo() {
+    $('span#v-start').text(call_information[current_call].date+" "+call_information[current_call].st);
+    $('span#v-dur').text(call_information[current_call].dur);
+    $('span#v-dir').text(call_information[current_call].dir_n);
+    $('span#v-sid').text(call_information[current_call].sid);
+    $('span#v-did').text(call_information[current_call].did);
+    $('span#v-cid').text(call_information[current_call].cid);
+
+    $('span#a-name').text(call_information[current_call].agnt);
+    $('span#a-ext').text(call_information[current_call].ext);
+    $('span#a-tel').text(call_information[current_call].dir_c == 'i' ? call_information[current_call].dnis: call_information[current_call].ani);
+
+  //  $('span#c-name').text(cust);
+    $('span#c-tel').text(call_information[current_call].dir_c == 'i' ? call_information[current_call].ani: call_information[current_call].dnis);
+
+    $('div.voice-start').text(call_information[current_call].v_st);
+    $('div.voice-end').text(call_information[current_call].v_en);
+    
+    if(call_information[current_call].dir_c == 'i')
+      $("#speaker-panel").css("background-image","url(<%=image_path('direct_up.png')%>)");
+    else if(call_information[current_call].dir_c == 'o')
+      $("#speaker-panel").css("background-image","url(<%=image_path('direct_down.png')%>)");
+    else
+      $("#speaker-panel").css("background-image","");
+  }
+
+  function get_maincall_info(){
+    call_information.push({
+      id: "<%= @voice_log.id %>",
+      date: "<%= @voice_log.start_time.strftime("%Y-%m-%d") %>",
+      st: "<%= @voice_log.start_time.strftime("%H:%M:%S") %>",
+      strsec: <%= @voice_log.start_position_sec %>,
+      v_st: "<%= (@voice_log.start_time + @voice_log.start_position_sec).strftime("%H:%M:%S") %>",
+      v_en: "<%= (@voice_log.start_time + @voice_log.duration.to_i).strftime("%H:%M:%S") %>",
+      dur: "<%= format_sec(@voice_log.duration.to_i) %>",
+      dir_c: "<%= @voice_log.call_direction %>",
+      dir_n: "<%= @voice_log.call_direction_name %>",
+      sid: "<%= @voice_log.system_id %>",
+      did: "<%= @voice_log.device_id %>",
+      cid: "<%= @voice_log.channel_id %>",
+      agnt: "<%= @voice_log.user.nil? ? "Unknown Agent" : @voice_log.user.display_name%>",
+      cust: "<%= @voice_log.customer.nil? ? "Customer" : @voice_log.customer.customer_name %>",
+      ext: "<%= @voice_log.extension %>",
+      ani: "<%= format_phone(@voice_log.ani) %>",
+      dnis: "<%= format_phone(@voice_log.dnis) %>",
+      url: "<%= @voice_log.voice_file_url %>"
+    });
+  }
 
   function ResizeWrapInfo(){
 
     var window_height = $(window).height();
+    var window_width = $(window).width();
     var header_height = $('#Header').height();
     var footer_height = $('#Footer').height();
 
     var info_header_height = $(".Info-Header-"+current_pane).height();
     var info_header_width = $(".Info-Header-"+current_pane).width();
     var WrapInfo_height = (window_height - (header_height + info_header_height + footer_height));
+    var voice_detail_w = $('.td-voicedetail').width();
 
-    $('.Info').css("height",WrapInfo_height);
+    $('.Info').css("height", WrapInfo_height);
     $('.tbl-info').css("width", info_header_width - 19);
+    $('#speaker-panel').css("width", voice_detail_w);
+
+    if(<%= @voice_log.have_transfered_call? %>){
+      $('.transfer-call').css("width", voice_detail_w);
+    //  $('.transfer-call').css("height", WrapInfo_height);
+      $('.tab-pane-info').css("width", window_width - (voice_detail_w + 8));
+      $('#Footer').css("width", window_width - (voice_detail_w + 24));
+    //  $('.tabs').css("margin-left", voice_detail_w);
+      $('#tab-pane-ul').css("margin-left", voice_detail_w + 3);
+      $('#Footer').css("margin-left", voice_detail_w + 4);
+    }else{
+      $('.tab-pane-info').css("width", window_width);
+    }
+
+    resize_edit_content();
+  }
+
+  function resize_edit_content(){
+    if($("#con-w-"+current_pane).length > 0){
+      var a = $("#con-w-"+current_pane).width();
+      $(".edit-"+current_pane).css("width",a);
+
+      if($("#ti-w-"+current_pane).length > 0){
+        var b = $("#ti-w-"+current_pane).width();
+        $(".title-"+current_pane).css("width",b);
+      }
+    }
   }
 
 </script>
@@ -187,39 +484,32 @@
   /* tag list :: { tag_group_name, tag_id, tag_name } */
   var tag_list;
 
+  var call_information;
+
   var keyword_pattern = [ <%= (@keyword_pattern.to_a.map { |k| "{id: '#{k.id}', name: '#{k.name}',type: '#{k.keyword_type}',group_id: #{k.group_id},group_name:'#{k.group_name}'}"}).join(',') %> ];
   var keyword_source = ["result_keywords", "edit_keywords"];
+  
   var voicelog_start_msec;
+  var ans_sec = 0;
 
-  function initialVoiceLog(){
+  function initialVoiceLog() {
 
-    keyword_list = new Array();
-    keyword_del = new Array();
     callinfo_list = new Array();
     bookmark_list = new Array();
-    voicelog_start_msec = new Date (new Date().toDateString()+" <%=@voice_log.start_time.strftime("%H:%M:%S")%>").getTime();
+    call_information = new Array();
 
-    AmiAdvw.LoadFromFile("<%=  @voice_log.voice_file_url %>");
-
-    <%if @voice_log.call_direction == 'i'%>
-      $("#speaker-panel").css("background-image","url(<%=image_path('direct_up.png')%>)");
-    <%elsif @voice_log.call_direction == 'o'%>
-      $("#speaker-panel").css("background-image","url(<%=image_path('direct_down.png')%>)");
-    <%end%>
-
+    get_maincall_info();
     refreshTag();
-    LoadEditKeyword();
+
+    <% if Aohs::MOD_KEYWORDS %>
+      keyword_list = new Array();
+      keyword_del = new Array();
+      LoadEditKeyword();
+    <% end %>
+      
     LoadCallInformation();
     LoadCallBookmark();
     updateAllView();
-
-    <% if params[:tab] == "2" %>
-        show_tab(2);
-    <% elsif params[:tab] == "4" %>
-        show_tab(4);
-    <% else %>
-        show_tab(1);
-    <% end %>
 
     $(".detail-tabs").hover(
       function(){ // on mouseover
@@ -228,37 +518,41 @@
       function(){ // on mouseout
         $(this).removeClass("hover");
       });
+
+    /* Force to view main call at first */
+    view_call(0);
   }
 
+  /* Function 'show_tab(tab_order)'  
+   *    also call 'showAmiViewer()'
+   */
   function show_tab(tab_order){
-
+     
     var tabs = ["All", "Keywords", "CallInformations", "BookMarks"];
     var selected_tab = tab_order-1;
 
-    var pane = $("div.tab-pane-info");
-    for(i=0; i<pane.length; i++){
+    $("li.detail-tabs").removeClass("selected");
+    $("li#selected-tab-"+tab_order).addClass("selected");
 
-      if(pane[i].id == tabs[selected_tab]){
-        $("div.tab-pane-info#"+tabs[selected_tab]).css("display", "block");
-        $("#selected-tab-"+tab_order).addClass("selected");
-        $("#footer-span-"+tab_order).css("display","block");
+    $("div.tab-pane-info").css("display","none");
+    $("div#"+tabs[selected_tab]).css("display","block");
 
-        showAmiViewer(tab_order);
-        current_pane = tab_order;
-      }else{
-        $("div.tab-pane-info#"+pane[i].id).css("display", "none");
+    $("span.footer_txt").css("display","none");
+    $("span#footer-span-"+tab_order).css("display","block");
 
-        var cur_tab_order = (i+1);
-        $("#selected-tab-"+cur_tab_order).removeClass("selected");
-        $("#footer-span-"+cur_tab_order).css("display","none");
-      }
-    }
-  }/* end function : show_tab */
+    showAmiViewer(tab_order);
+    current_pane = tab_order;
+
+    resize_edit_content();
+
+  }
   
   function buildKeywordPattern(){
     $('.kw_pattern').autocomplete(keyword_pattern,{
       minChars: 0,
       autoFill: true,
+      mustMatch: true,
+      matchContains: false,
       scroll: true,
       scrollHeight: 100,
       formatItem: function(item) {
@@ -266,17 +560,19 @@
       }
     }).result(function(event, data, formatted) {
       if (data) {
-        keyword_list[current_index].show = data.name;
-        keyword_list[current_index].keyword_type = data.type;
-        keyword_list[current_index].keyword_id = data.id;
-        keyword_list[current_index].keyword_group_id = data.group_id;
-        keyword_list[current_index].keyword_group_name = data.group_name;
+        keyword_list[current_call][current_index].show = data.name;
+        keyword_list[current_call][current_index].keyword_type = data.type;
+        keyword_list[current_call][current_index].keyword_id = data.id;
+        keyword_list[current_call][current_index].keyword_group_id = data.group_id;
+        keyword_list[current_call][current_index].keyword_group_name = data.group_name;
         updateKeywordView();
         showAmiViewer(current_pane);
         focusSegment(current_index, 0);
       }
+    }).blur(function(){
+      $('#kw_pattern_'+current_index).val(keyword_list[current_call][current_index].show);
+  //    showAmiViewer(current_pane);
     });
-
   }
    
   function setChannel(){
@@ -300,22 +596,29 @@
   }
 
   function showAmiViewer(tab){
+	  
     var drawSegment="";
-
+    
+    AmiAdvw.SegmentEditable(0) = true;
     switch(tab){
       case 1:
         $("#action_div").css("display","none");
         var allinfo = new Array();
-        allinfo = allinfo.concat(keyword_list, callinfo_list, bookmark_list);
+        <% if Aohs::MOD_KEYWORDS %>
+          allinfo = allinfo.concat(keyword_list[current_call], callinfo_list[current_call], bookmark_list[current_call]);
+        <% else %>
+          allinfo = allinfo.concat(callinfo_list[current_call], bookmark_list[current_call]);
+        <% end %>
         allinfo.sort(sortByStartTime);
 
         for(var index in allinfo)
-          drawSegment += ((allinfo[index].start_time)+" "+(allinfo[index].end_time)+"\n");
+          drawSegment += ( Math.abs(allinfo[index].start_time - ans_sec)+" "+ Math.abs(allinfo[index].end_time - ans_sec)+"\n");
 
         AmiAdvw.LoadFromSegmentFileData(drawSegment, 0);
         for(var index in allinfo)
-          AmiAdvw.SetSegmentInfo(index, (allinfo[index].start_time), (allinfo[index].end_time), allinfo[index].show, 0);
-
+          AmiAdvw.SetSegmentInfo(index, Math.abs(allinfo[index].start_time - ans_sec), Math.abs(allinfo[index].end_time - ans_sec), allinfo[index].show, 0);
+          
+        AmiAdvw.SegmentEditable(0) = false;
         updateAllView();
       break;
 
@@ -323,42 +626,42 @@
         $("#action_div").css("display","block");
         $("#add_seg_btn").attr("value","Add Keyword");
         $("#save_change_btn").attr("value","Save Keyword");
-        for(var index in keyword_list)
-          drawSegment += ((keyword_list[index].start_time)+" "+(keyword_list[index].end_time)+"\n");
+        for(var index in keyword_list[current_call])
+          drawSegment += (Math.abs(keyword_list[current_call][index].start_time - ans_sec)+" "+Math.abs(keyword_list[current_call][index].end_time - ans_sec)+"\n");
 
         AmiAdvw.LoadFromSegmentFileData(drawSegment, 0);
-        for(var index in keyword_list)
-          AmiAdvw.SetSegmentInfo(index, (keyword_list[index].start_time), (keyword_list[index].end_time), keyword_list[index].show, 0);
+        for(var index in keyword_list[current_call])
+          AmiAdvw.SetSegmentInfo(index, Math.abs(keyword_list[current_call][index].start_time - ans_sec), Math.abs(keyword_list[current_call][index].end_time - ans_sec), keyword_list[current_call][index].show, 0);
 
       break;
 
       case 3:
         $("#action_div").css("display","none");
-        for(var index in callinfo_list)
-          drawSegment += ((callinfo_list[index].start_time)+" "+(callinfo_list[index].end_time)+"\n");
+        for(var index in callinfo_list[current_call])
+          drawSegment += (Math.abs(callinfo_list[current_call][index].start_time - ans_sec)+" "+Math.abs(callinfo_list[current_call][index].end_time - ans_sec)+"\n");
 
         AmiAdvw.LoadFromSegmentFileData(drawSegment, 0);
-        for(var index in callinfo_list)
-          AmiAdvw.SetSegmentInfo(index, (callinfo_list[index].start_time), (callinfo_list[index].end_time), callinfo_list[index].show, 0);
+        for(var index in callinfo_list[current_call])
+          AmiAdvw.SetSegmentInfo(index, Math.abs(callinfo_list[current_call][index].start_time - ans_sec), Math.abs(callinfo_list[current_call][index].end_time - ans_sec), callinfo_list[current_call][index].show, 0);
       break;
 
       case 4:
         $("#action_div").css("display","block");
         $("#add_seg_btn").attr("value","Add Bookmark");
         $("#save_change_btn").attr("value","Save Bookmark");
-        for(var index in bookmark_list)
-          drawSegment += ((bookmark_list[index].start_time)+" "+(bookmark_list[index].end_time)+"\n");
+        for(var index in bookmark_list[current_call])
+          drawSegment += (Math.abs(bookmark_list[current_call][index].start_time - ans_sec)+" "+Math.abs(bookmark_list[current_call][index].end_time - ans_sec)+"\n");
 
         AmiAdvw.LoadFromSegmentFileData(drawSegment, 0);
-        for(var index in bookmark_list)
-          AmiAdvw.SetSegmentInfo(index, (bookmark_list[index].start_time), (bookmark_list[index].end_time), bookmark_list[index].body, 0);
+        for(var index in bookmark_list[current_call])
+          AmiAdvw.SetSegmentInfo(index, Math.abs(bookmark_list[current_call][index].start_time - ans_sec), Math.abs(bookmark_list[current_call][index].end_time - ans_sec), bookmark_list[current_call][index].body, 0);
       break;
     }
     AmiAdvw.SetSelectedRange(0,0);
   }
 
   /* use for sort allinfo array by start time */
-  function sortByStartTime(a, b){ return (a.start_time - b.start_time); }
+  function sortByStartTime(a, b){ return a.start_time - b.start_time; }
 
   function canAddSegmentInfo() {
 
@@ -415,111 +718,102 @@
 <script type="text/javascript">
 
   function LoadEditKeyword(){
-
-    <% edit_keywords = @voice_log.get_result_keywords %>
-    <% unless edit_keywords.empty? %>
-      <% edit_keywords.each_with_index do |resultKeyword, index| %>
-        keyword_list.push({type: "keyword",
-                           start_time: "<%=  resultKeyword.start_sec %>",
-                           end_time: "<%= resultKeyword.end_sec %>",
-                           show: "<%= resultKeyword.keyword_name %>",
-                           keyword_type: "<%= resultKeyword.keyword_type %>",
-                           keyword_id: "<%= resultKeyword.keyword_id %>",
-                           keyword_group_id: "<%= resultKeyword.keyword_group_id %>",
-                           keyword_group_name: "<%= resultKeyword.keyword_group_name %>",
-                           edit_status: "<%= resultKeyword.edit_status %>",
-                           from: keyword_source[0],
-                           id:"<%= resultKeyword.id %>"});
+    /* initialize keyword list & keyword del */
+    keyword_list[0] = new Array();
+    keyword_del[0] = new Array();
+    
+    <%['result_keywords', 'edit_keywords'].each do |db_name|%>
+      <% keywords = @voice_log.get_keywords(db_name) %>
+      <% unless keywords.empty? %>
+        <% keywords.each do |keyword| %>
+          keyword_list[0].push({type: "keyword",
+                                start_time: <%= keyword.start_sec %>,
+                                end_time: <%= keyword.end_sec %>,
+                                show: "<%= keyword.keyword_name %>",
+                                keyword_type: "<%= keyword.keyword_type %>",
+                                keyword_id: "<%= keyword.keyword_id %>",
+                                keyword_group_id: "<%= keyword.keyword_group_id %>",
+                                keyword_group_name: "<%= keyword.keyword_group_name %>",
+                                edit_status: "<%= keyword.edit_status %>",
+                                from: "<%= db_name %>",
+                                id:"<%= keyword.id %>"});
+        <% end %>
       <% end %>
     <% end %>
-
-    <% edit_keywords = @voice_log.get_edit_keywords %>
-    <% unless edit_keywords.empty? %>
-      <% edit_keywords.each_with_index do |editKeyword, index| %>
-        keyword_list.push({type: "keyword",
-                           start_time: "<%=  editKeyword.start_sec %>",
-                           end_time: "<%= editKeyword.end_sec %>",
-                           show: "<%= editKeyword.keyword_name %>",
-                           keyword_type: "<%= editKeyword.keyword_type %>",
-                           keyword_id: "<%= editKeyword.keyword_id %>",
-                           keyword_group_id: "<%= editKeyword.keyword_group_id %>",
-                           keyword_group_name: "<%= editKeyword.keyword_group_name %>",
-                           edit_status: "<%= editKeyword.edit_status %>",
-                           from: keyword_source[1],
-                           id:"<%= editKeyword.id %>"});
-      <% end %>
-    <% end %>
+    
     updateKeywordView();
   }
 
   function updateKeywordView(){
-
     var view = "";
+    keyword_list[current_call].sort(sortByStartTime);
+    for(var index in keyword_list[current_call]){
 
-    keyword_list.sort(sortByStartTime);
-    for(var index in keyword_list){
+      var start = new Date(voicelog_start_msec + toMsec(keyword_list[current_call][index].start_time)).strftime("%H:%M:%S");
+      var end = new Date(voicelog_start_msec + toMsec(keyword_list[current_call][index].end_time)).strftime("%H:%M:%S");
 
-      var start = new Date(voicelog_start_msec + toMsec(keyword_list[index].start_time)).strftime("%H:%M:%S");
-      var end = new Date(voicelog_start_msec + toMsec(keyword_list[index].end_time)).strftime("%H:%M:%S");
-
-      view += "<tr class=\"tr"+keyword_list[index].keyword_type+"\" onclick=\"focusSegment("+index+", 0)\">";
+      view += "<tr class=\"tr"+keyword_list[current_call][index].keyword_type+"\" onclick=\"focusSegment("+index+", 0)\">";
       view += "<td class=\"info-col row-no\" width=\"40px;\">"+(parseInt(index)+1)+"</td>";
-      view += "<td class=\"info-col\" width=\"140px;\">keyword</td>";
+  //    view += "<td class=\"info-col\" width=\"140px;\">keyword</td>";
       view += "<td class=\"info-col\" width=\"100px;\" id=\"kst_"+index+"\">"+start+"</td>";
       view += "<td class=\"info-col\" width=\"100px;\" id=\"ken_"+index+"\">"+end+"</td>";
-      view += "<td class=\"info-col\" width=\"60px;\">"+displayKeywordType(keyword_list[index].keyword_type)+"</td>";
-      view += "<td class=\"info-col\" width=\"200px\">"+keyword_list[index].keyword_group_name+"</td>";
-      view += "<td class=\"info-col\" ><input readonly id=\"kw_pattern_"+index+"\" class=\"for_edit kw_pattern\" style=\"width:100%\" value=\""+keyword_list[index].show+"\" ondblclick=\"inputEdit('kw_pattern_"+index+"', "+index+")\" onblur=\"editFinish('kw_pattern_"+index+"', "+index+")\" /></td>";
+      view += "<td class=\"info-col\" width=\"60px;\">"+displayKeywordType(keyword_list[current_call][index].keyword_type)+"</td>";
+      view += "<td class=\"info-col\" width=\"200px\">"+keyword_list[current_call][index].keyword_group_name+"</td>";
+      view += "<td class=\"info-col\" ><input type=\"text\" readonly id=\"kw_pattern_"+index+"\" class=\"for_edit edit-2 kw_pattern\" style=\"width:100%\" value=\""+keyword_list[current_call][index].show+"\" ondblclick=\"inputEdit('kw_pattern_"+index+"', "+index+")\" onblur=\"editFinish('kw_pattern_"+index+"', "+index+")\" /></td>";
       view += "<td class=\"info-col\" width=\"40px;\" align=\"center\" >";
       <% if permission_by_name('callskeyw-upd') %>
-        view += "<img src=\"<%=image_path('delete.png')%>\" name=\"delete\" class=\"act_btn\" onclick=\"deleteElement("+index+")\"/>";
+        view += "<img src=\"<%=image_path('delete.png')%>\" name=\"delete\" class=\"act_btn\" onclick=\"deleteElement('keyword',"+index+")\"/>";
       <% end %>
       view += "</td>";
       view += "</tr>";
     }
 
-    $('#span-sum-keyword').text(keyword_list.length);
+    $('#span-sum-keyword').text(keyword_list[current_call].length);
     $('#keyword_info_tbl').html(view);
 
+    resize_edit_content();
     buildKeywordPattern();
   }
 
   function LoadCallInformation(){
+    callinfo_list[0] = new Array();
     <% call_info = @voice_log.call_informations %>
     <% unless call_info.empty? %>
       <% call_info.each_with_index do |callinfo, index| %>
-        callinfo_list.push({type: "call_information", start_time: "<%= callinfo.start_sec %>", end_time: "<%= callinfo.end_sec %>", show: "<%= callinfo.event %>"});
+        callinfo_list[0].push({type: "call_information", start_time: <%= callinfo.start_sec %>, end_time: <%= callinfo.end_sec %>, show: "<%= callinfo.event %>"});
       <% end %>
     <% end %>
-    updateInformationView()
+    updateInformationView();
   }
 
   function updateInformationView() {
     var view = "";
 
-    callinfo_list.sort(sortByStartTime);
-    for(var index in callinfo_list){
+    callinfo_list[current_call].sort(sortByStartTime);
+    for(var index in callinfo_list[current_call]){
 
-      var start = new Date(voicelog_start_msec + toMsec(callinfo_list[index].start_time)).strftime("%H:%M:%S");
-      var end = new Date(voicelog_start_msec + toMsec(callinfo_list[index].end_time)).strftime("%H:%M:%S");
+      var start = new Date(voicelog_start_msec + toMsec(callinfo_list[current_call][index].start_time)).strftime("%H:%M:%S");
+      var end = new Date(voicelog_start_msec + toMsec(callinfo_list[current_call][index].end_time)).strftime("%H:%M:%S");
 
       view += "<tr class=\"trcall_information\" onclick=\"focusSegment("+index+", 0)\">";
       view += "<td class=\"info-col row-no\" width=\"40px;\">"+(parseInt(index)+1)+"</td>";
-      view += "<td class=\"info-col\" width=\"140px;\">call information</td>";
+  //    view += "<td class=\"info-col\" width=\"140px;\">call information</td>";
       view += "<td class=\"info-col\" width=\"100px;\">"+start+"</td>";
       view += "<td class=\"info-col\" width=\"100px;\">"+end+"</td>";
-      view += "<td class=\"info-col\">"+callinfo_list[index].show+"</td>";
+      view += "<td class=\"info-col\">"+callinfo_list[current_call][index].show+"</td>";
       view += "<tr>";
     }
+    $('#span-sum-callinfo').html(callinfo_list[current_call].length);
     $('#call_info_tbl').html(view);
+
   }
 
   function LoadCallBookmark(){
-
+    bookmark_list[0] = new Array();
     <% call_bookmark = @voice_log.bookmarks %>
     <% unless call_bookmark.empty? %>
       <% call_bookmark.each_with_index do |callbookmark, index| %>
-        bookmark_list.push({type: "bookmark", start_time: "<%= callbookmark.start_sec %>", end_time: "<%= callbookmark.end_sec %>", show: "<%= callbookmark.title %> : <%= callbookmark.body %>", title: "<%= callbookmark.title %>", body: "<%= callbookmark.body %>"});
+        bookmark_list[0].push({type: "bookmark", start_time: <%= callbookmark.start_sec %>, end_time: <%= callbookmark.end_sec %>, show: "<%= callbookmark.title %> : <%= callbookmark.body %>", title: "<%= callbookmark.title %>", body: "<%= callbookmark.body %>"});
       <% end %>
     <% end %>
     updateBookmarkView();
@@ -528,32 +822,34 @@
   function updateBookmarkView() {
     var view = "";
 
-    bookmark_list.sort(sortByStartTime);
-    for(var index in bookmark_list){
+    bookmark_list[current_call].sort(sortByStartTime);
+    for(var index in bookmark_list[current_call]){
 
-      var start = new Date(voicelog_start_msec + toMsec(bookmark_list[index].start_time)).strftime("%H:%M:%S");
-      var end = new Date(voicelog_start_msec + toMsec(bookmark_list[index].end_time)).strftime("%H:%M:%S");
+      var start = new Date(voicelog_start_msec + toMsec(bookmark_list[current_call][index].start_time)).strftime("%H:%M:%S");
+      var end = new Date(voicelog_start_msec + toMsec(bookmark_list[current_call][index].end_time)).strftime("%H:%M:%S");
 
       view += "<tr class=\"trbookmark\" onclick=\"focusSegment("+index+", 0)\">";
       view += "<td class=\"info-col row-no\" width=\"40px;\">"+(parseInt(index)+1)+"</td>";
-      view += "<td class=\"info-col\" width=\"140px;\">bookmark</td>";
+  //    view += "<td class=\"info-col\" width=\"120px;\">bookmark</td>";
       view += "<td class=\"info-col\" width=\"100px;\" id=\"bst_"+index+"\">"+start+"</td>";
       view += "<td class=\"info-col\" width=\"100px;\" id=\"ben_"+index+"\">"+end+"</td>";
-      view += "<td class=\"info-col\" width=\"250px;\">";
-      view += "  <input readonly part=\"title\" id=\"bk_title_"+index+"\" class=\"for_edit\" style=\"width: 250px;\" value=\""+bookmark_list[index].title+"\" maxlength=\"300\" ondblclick=\"inputEdit('bk_title_"+index+"', "+index+")\" onblur=\"editFinish('bk_title_"+index+"', "+index+")\"/>";
+      view += "<td class=\"info-col\">";//
+      view += "  <input readonly type=\"text\" part=\"title\" id=\"bk_title_"+index+"\" class=\"for_edit title-4\" value=\""+bookmark_list[current_call][index].title+"\" ondblclick=\"inputEdit('bk_title_"+index+"', "+index+")\" onblur=\"editFinish('bk_title_"+index+"', "+index+")\"/>";
       view += "</td>";
       view += "<td class=\"info-col\">";
-      view += "  <input readonly part=\"body\" id=\"bk_body_"+index+"\" class=\"for_edit\" style=\"width:100%\" value=\""+bookmark_list[index].body+"\" maxlength=\"300\" ondblclick=\"inputEdit('bk_body_"+index+"', "+index+")\" onkeyup=\"updateTxtChange('bk_body_"+index+"', "+index+")\" onblur=\"editFinish('bk_body_"+index+"', "+index+")\" />"
+      view += "  <input readonly type=\"text\" part=\"body\" id=\"bk_body_"+index+"\" class=\"for_edit edit-4\" value=\""+bookmark_list[current_call][index].body+"\" ondblclick=\"inputEdit('bk_body_"+index+"', "+index+")\" onkeyup=\"updateTxtChange('bk_body_"+index+"', "+index+")\" onblur=\"editFinish('bk_body_"+index+"', "+index+")\" />";
       view += "</td>";
       view += "<td class=\"info-col\" width=\"40px;\" align=\"center\" >";
       <% if permission_by_name('bookmarks-upd') %>
-        view += "<img src=\"<%=image_path('delete.png')%>\" class=\"act_btn\" name=\"delete\" onclick=\"deleteElement("+index+")\" />";
+        view += "<img src=\"<%=image_path('delete.png')%>\" class=\"act_btn\" name=\"delete\" onclick=\"deleteElement('bookmark',"+index+")\" />";
       <% end %>
       view += "</td>";
       view += "<tr>";
     }
-    $('#span-sum-bookmark').text(bookmark_list.length);
     $('#bookmark_info_tbl').html(view);
+    $('#span-sum-bookmark').text(bookmark_list[current_call].length);
+
+    resize_edit_content();
   }
 
   function updateAllView(){
@@ -561,7 +857,11 @@
     var view = "";
     var allinfo = new Array();
 
-    allinfo = allinfo.concat(keyword_list, callinfo_list, bookmark_list);
+    <% if Aohs::MOD_KEYWORDS %>
+      allinfo = allinfo.concat(keyword_list[current_call], callinfo_list[current_call], bookmark_list[current_call]);
+    <% else %>
+      allinfo = allinfo.concat(callinfo_list[current_call], bookmark_list[current_call]);
+   <% end %>
     allinfo.sort(sortByStartTime);
 
     $('#all_info_tbl').html(view);
@@ -577,13 +877,14 @@
       }
 
       view += "<td class=\"info-col row-no\" width=\"40px;\">"+(parseInt(index)+1)+"</td>";
-      view += "<td class=\"info-col\" width=\"140px;\">"+allinfo[index].type.replace(/_/g," ")+"</td>";
       view += "<td class=\"info-col\" width=\"100px;\">"+start+"</td>";
       view += "<td class=\"info-col\" width=\"100px;\">"+end+"</td>";
+      view += "<td class=\"info-col\" width=\"140px;\">"+allinfo[index].type.replace(/_/g," ")+"</td>";
       view += "<td class=\"info-col\">"+allinfo[index].show+"</td>";
       view += "</tr>";
     }
     $('#all_info_tbl').html(view);
+    
   }
 
   function toMsec(time){ return time*1000 }
@@ -596,6 +897,7 @@
   }
 
   function addElement(pane){
+	  
     var row_focus = AmiAdvw.GetFocus(0);
     var seg_info = AmiAdvw.GetSegmentInfo(row_focus, 0.0, 0.0, "", 0);
 
@@ -604,36 +906,38 @@
 
     switch(pane){
       case 2:
-        keyword_list.push({type: "keyword", start_time: start, end_time: end, show: "", keyword_type: "", keyword_id: "", keyword_group_id: "",keyword_group_name: "",from: keyword_source[1], id: "-1"});
+        keyword_list[current_call].push({type: "keyword", start_time: start, end_time: end, show: "", keyword_type: "", keyword_id: "", keyword_group_id: "",keyword_group_name: "",from: keyword_source[1], id: "-1"});
         updateKeywordView();
       break;
       case 4:
-        bookmark_list.push({type: "bookmark", start_time: start, end_time: end, show: "", title: "", body: ""});
+        bookmark_list[current_call].push({type: "bookmark", start_time: start, end_time: end, show: "", title: "", body: ""});
         updateBookmarkView();
       break;
     }
+
+    resize_edit_content();
   }
 
-  function deleteElement(index) {
+  function deleteElement(title, index) {
 
-    if(confirm("Delete keyword?")){
+    if(confirm("Are you sure to remove this "+title+"?")){
       switch(current_pane){
         case 2:
-          if(keyword_list[index].id != "-1")    /* ID: `-1` >> new element */
-            keyword_del.push({id: keyword_list[index].id, from: keyword_list[index].from});
+          if(keyword_list[current_call][index].id != "-1")    /* ID: `-1` >> new element */
+            keyword_del[current_call].push({id: keyword_list[current_call][index].id, from: keyword_list[current_call][index].from});
 
-          keyword_list.splice(index, 1);
+          keyword_list[current_call].splice(index, 1);
           updateKeywordView();
           showAmiViewer(current_pane);
         break;
         case 4:
-          bookmark_list.splice(index, 1);
+          bookmark_list[current_call].splice(index, 1);
           updateBookmarkView();
           showAmiViewer(current_pane);
         break;
       }
+      resize_edit_content();
     }
-
   }
 
   function inputEdit(element_id, index) {
@@ -644,22 +948,22 @@
   }
 
   function updateTxtChange(element_id, index) {
-    AmiAdvw.SetSegmentInfo(index,bookmark_list[index].start_time, bookmark_list[index].end_time,$("#"+element_id).val(),0);
+    AmiAdvw.SetSegmentInfo(index,bookmark_list[current_call][index].start_time, bookmark_list[current_call][index].end_time,$("#"+element_id).val(),0);
   }
 
   function editFinish(element_id, index) {
     $("#"+element_id).attr("readonly", true);
     $("#"+element_id).removeClass("editting");
 
+    /* for bookmark */
     var work_part = $("#"+element_id).attr("part");
-
     if(current_pane == 4){
       if("title"==work_part){
-        bookmark_list[index].title = $("#"+element_id).val();
+        bookmark_list[current_call][index].title = $("#"+element_id).val();
       }else if("body"==work_part){
-        bookmark_list[index].body = $("#"+element_id).val();
+        bookmark_list[current_call][index].body = $("#"+element_id).val();
       }
-      bookmark_list[index].show = bookmark_list[index].title+" : "+bookmark_list[index].body;
+      bookmark_list[current_call][index].show = bookmark_list[current_call][index].title+" : "+bookmark_list[current_call][index].body;
     }
   }
 
@@ -667,29 +971,38 @@
     $('#save_change_btn').attr("disabled","disabled");
     switch(current_pane){
       case 2:
-        if(confirm("Save keyword?")){
+        if(confirm("Are you sure to save change keyword list?")){
 
           var edit_k = new Array();
           var edit_d = new Array();
           var result_k = new Array();
           var result_d = new Array();
-
-          for(var index in keyword_list){
-            if(keyword_list[index].from == keyword_source[0]){
-              result_k.push(new Array(keyword_list[index].start_time, keyword_list[index].end_time, keyword_list[index].keyword_id, keyword_list[index].id));
-            }else{
-              edit_k.push(new Array(keyword_list[index].start_time, keyword_list[index].end_time, keyword_list[index].keyword_id, keyword_list[index].id));
+		  var can_save = true;
+		  
+          for(var index in keyword_list[current_call]) {
+		    var k_id = keyword_list[current_call][index].keyword_id || ""
+		    if((k_id == 0) || (k_id == "")){
+				can_save = false;
+				break;
+			}
+            if(keyword_list[current_call][index].from == keyword_source[0]){
+              result_k.push(new Array(keyword_list[current_call][index].start_time, keyword_list[current_call][index].end_time, keyword_list[current_call][index].keyword_id, keyword_list[current_call][index].id));
+            } else {
+              edit_k.push(new Array(keyword_list[current_call][index].start_time, keyword_list[current_call][index].end_time, keyword_list[current_call][index].keyword_id, keyword_list[current_call][index].id));
             }
           }
-          for(var index in keyword_del){
-            if(keyword_del[index].from == keyword_source[0]){
-              result_d.push(new Array(keyword_del[index].id));
+          
+          for(var index in keyword_del[current_call]){
+            if(keyword_del[current_call][index].from == keyword_source[0]){
+              result_d.push(keyword_del[current_call][index].id);
             }else{
-              edit_d.push(new Array(keyword_del[index].id));
+              edit_d.push(keyword_del[current_call][index].id);
             }
-          }
+          } 
+			
+		if(can_save){
           $.post("<%= url_for(:controller => 'keywords', :action => 'save_change_keyword') %>",
-                {'voice_log_id': "<%= @voice_log.id %>",
+                {'voice_log_id': call_information[current_call].id,
                  'edit_keywords[]':edit_k,
                  'edit_del[]':edit_d,
                  'result_keywords[]':result_k,
@@ -698,34 +1011,47 @@
                    alert(data);
                    window.location.href = "<%=url_for :controller=>'voice_logs',:action => 'show', :id => params[:id], :tab => 2 %>";
                  });
+		  } else {
+			alert("For each segment, keyword's name is required. Please check your information again.");
+		  }
         }
       break;
-
       case 4:
-        if(confirm("Save bookmark?")){
+        if(confirm("Are you sure to save change of bookmarks?")){
           var bookmark = new Array();
-          for(var index in bookmark_list){
-            bookmark.push(new Array(bookmark_list[index].start_time, bookmark_list[index].end_time, bookmark_list[index].title, bookmark_list[index].body));
+		  var can_save = true;
+          for(var index in bookmark_list[current_call]){
+		    if((jQuery.trim(bookmark_list[current_call][index].title).length <= 0) || (jQuery.trim(bookmark_list[current_call][index].body).length <= 0)){
+				can_save = false;
+				break;
+			}
+            bookmark.push(new Array(bookmark_list[current_call][index].start_time, bookmark_list[current_call][index].end_time, bookmark_list[current_call][index].title, bookmark_list[current_call][index].body));
           }
-          $.post("<%= url_for(:controller => 'bookmark', :action => 'save_change_bookmark') %>",{'voice_log_id': "<%= @voice_log.id %>",'bookmarks[]': bookmark},
+		  if(can_save){
+            $.post("<%= url_for(:controller => 'bookmark', :action => 'save_change_bookmark') %>",{'voice_log_id': call_information[current_call].id,'bookmarks[]': bookmark},
                  function(data){
                    alert(data);
                    window.location.href = "<%=url_for :controller=>'voice_logs',:action => 'show', :id => params[:id], :tab => 4 %>";
                  });
+		  } else {
+			alert("Title and content of bookmark can not be blank. Please check your information.");
+		  }
         }
       break;
     }
     $('#save_change_btn').attr("disabled","");
   }
 
+  /* Function : refreshTag()
+   * Usage : refresh tag list on voice_logs/show page
+   */
   function refreshTag() {
-    var voice_log_id = <%= @voice_log.id %>;
 
-    $.getJSON("<%= url_for(:controller => 'call_tags', :action=>'load_tags') %>", {voice_id: voice_log_id},function(data){
-      if(data != null){
+    $.getJSON("<%= url_for(:controller => 'call_tags', :action=>'load_tags') %>", {voice_id: call_information[current_call].id},function(data){
+	  var data_length = data.length;
+      if(data_length > 0){
 
         var tag = new Array();
-        var data_length = data.length;
 
         var index = 0, order = 1;
         while(index < data_length){
@@ -751,13 +1077,10 @@
   }
 
   function manageTag() {
-    var voice_log_id = <%= @voice_log.id %>;
-
-    $.getJSON("<%= url_for(:controller => 'call_tags', :action=>'load_tags') %>", {voice_id: voice_log_id},function(data){
-
-      if(data != null){
-
-        var data_length = data.length;
+    $.getJSON("<%= url_for(:controller => 'call_tags', :action=>'load_tags') %>", {voice_id: call_information[current_call].id},function(data){
+	  var data_length = data.length;
+      if(data_length > 0){
+        
         var index = 0;
         var current_tag_group = data[index].tag_group;
         var view = "<tr><td class=\"taggroup\">"+current_tag_group+"</td></tr>\n";
@@ -782,7 +1105,6 @@
 
   function openManageTagDialog(){
     $("#tag-update-span").css("display","none");
-    $("#tag_manage").dialog("open");
     $("#tag_manage").dialog({
       show: 'fold',
       hide:'fold',
@@ -791,13 +1113,11 @@
       draggable: false,
       resizable: false,
       position: [60,136],
-      width: 340,
-      height: 280,
+      width: 350,
+      height: $(window).height() / 2,
       buttons:{
         "cancel": function(){ $(this).dialog("close") },
         "save": function(){
-
-          var voice_log_id = <%= @voice_log.id %>;
 
           var selectTag = new Array();
           var deleteTag = new Array();
@@ -811,7 +1131,7 @@
           });
 
           $.post("<%= url_for(:controller => 'tag', :action => 'update_tag') %>",
-                 {'new_tags[]': selectTag, 'del_tags[]': deleteTag,'voice_id': voice_log_id},
+                 {'new_tags[]': selectTag, 'del_tags[]': deleteTag,'voice_id': call_information[current_call].id},
                  function(data){
                    $("#tag-update-span").css("display","block");
                    setTimeout("$(\"#tag_manage\").dialog(\"close\");",350);
@@ -843,12 +1163,12 @@
     return false;
   }
 
-  function resetVolume(){
+  function resetVolume() {
     $("#advw-vol").slider("option","value",10);
     AmiAdvw.PlayingVolume = 1;
   }
 
-  function resetSpeed(){
+  function resetSpeed() {
     $("#advw-speed").slider("option","value",10);
     AmiAdvw.PlayingSpeed = 1;
   }
@@ -859,32 +1179,32 @@
 
   canAddSegmentInfo();
 
-  var advw_event = { create: 12288, x: 524288, setSegmentInfo: 8192, click: 8};
+  var advw_event = { create: 12288, drag: 8, setSegmentInfo: 8192, click: 4104}; //drag: 524288
   var cur_event = target;
   var row_focus = parameter1;
   var row_index = AmiAdvw.GetFocus(row_focus);
 
   /* Event :: Click some segment */
-  if((row_index != -1) && (cur_event != advw_event.create) && (cur_event != advw_event.x) && (cur_event != advw_event.setSegmentInfo)){
+  if((row_index != -1) && (cur_event != advw_event.create) && (cur_event != advw_event.setSegmentInfo) && ((cur_event == advw_event.drag) || (cur_event == advw_event.click))){
 
     current_index = row_index;
     var seg_info = AmiAdvw.GetSegmentInfo(current_index, 0.0, 0.0, "", 0);
 
-    var start = seg_info.split(/ /)[0];
-    var end = seg_info.split(/ /)[1];
+    var start = parseFloat(seg_info.split(/ /)[0]) + ans_sec;
+    var end = parseFloat(seg_info.split(/ /)[1]) + ans_sec;
 
     var start_view = new Date(voicelog_start_msec + toMsec(start)).strftime("%H:%M:%S");
     var end_view = new Date(voicelog_start_msec + toMsec(end)).strftime("%H:%M:%S");
     switch(current_pane){
       case 2:
-        keyword_list[current_index].start_time = start;
-        keyword_list[current_index].end_time = end;
+        keyword_list[current_call][current_index].start_time = start;
+        keyword_list[current_call][current_index].end_time = end;
         $("#kst_"+current_index).text(start_view);
         $("#ken_"+current_index).text(end_view);
         break;
       case 4:
-        bookmark_list[current_index].start_time = start;
-        bookmark_list[current_index].end_time = end;
+        bookmark_list[current_call][current_index].start_time = start;
+        bookmark_list[current_call][current_index].end_time = end;
         $("#bst_"+current_index).text(start_view);
         $("#ben_"+current_index).text(end_view);
         break;
@@ -901,8 +1221,8 @@
     var overlap = false;
 
     switch(current_pane){
-      case 2: overlap = checkOverlap(start_crt, end_crt, keyword_list); break;
-      case 4: overlap = checkOverlap(start_crt, end_crt, bookmark_list); break;
+      case 2: overlap = checkOverlap(start_crt, end_crt, keyword_list[current_call]); break;
+      case 4: overlap = checkOverlap(start_crt, end_crt, bookmark_list[current_call]); break;
     }
 
     if(!overlap){
@@ -923,13 +1243,13 @@
 <% end %>
 
 <div id="tag_manage" title="Tag management" style="display: none;">
-  <div style="overflow-y: scroll; overflow-x: hidden; width: 99%; height: 75%; border: 1px solid #99ccff;">
+  <div style="overflow-y: scroll; overflow-x: hidden; margin-top: 5px; width: 99%; height: 85%; border: 1px solid #99ccff;">
     <table border="0" cellspacing="0" cellpadding="0">
       <tbody id="tbl_tag"><tr><td>&nbsp;</td></tr></tbody>
     </table>
   </div>
-  <span style="font-style: italic;">Choose call tag from this list.</span>
-  <span id="tag-update-span" style="clear: both; float: right; display: none; margin: 0;">Update complete.</span>
+  <span style="font-style: italic; margin: 0;">Choose call tag from this list.</span>
+  <span id="tag-update-span" style="clear: both; float: right; margin: 0; display: none;">Update complete.</span>
 </div>
 
 <!-- Begin : HEADER -->
@@ -940,14 +1260,14 @@
       <tr>
         <td class="td-voicedetail"> Voice details </td>
         <td align="left" class="td-voice">
-          <span><b>Start time: </b><%= @voice_log.start_time.strftime("%Y-%m-%d %H:%M:%S") %></span>
-          <span><b>Duration: </b><%= format_sec(@voice_log.duration.to_i) %></span>
-          <span><b>Call direction: </b><%= @voice_log.call_direction_name %></span>
+          <span><b>Start time: </b><span id="v-start"></span></span>
+          <span><b>Duration: </b><span id="v-dur"></span></span>
+          <span><b>Call direction: </b><span id="v-dir"></span></span>
         </td>
         <td align="right" class="td-voice" style="padding-right: 6px;">
-          <span><b>System Id: </b><%= @voice_log.system_id %></span>
-          <span><b>Device Id: </b><%= @voice_log.device_id %></span>
-          <span><b>Channel Id: </b><%= @voice_log.channel_id %></span>
+          <span><b>System Id: </b><span id="v-sid"></span></span>
+          <span><b>Device Id: </b><span id="v-did"></span></span>
+          <span><b>Channel Id: </b><span id="v-cid"></span></span>
         </td>
       </tr>
     </table>
@@ -963,9 +1283,9 @@
             <td><input type="checkbox" id="agent-chn" checked onclick="setChannel();" /></td>
             <td><%= image_tag "operator.png" %></td>
             <td>
-              <span class="agent-name"><%= @voice_log.user.nil? ? "Unknown Agent" : @voice_log.user.display_name%></span><br/>
-              <span class="tel-num"><b>Ext: </b><%= @voice_log.extension %></span><br/>
-              <span class="tel-num"><%= @voice_log.call_direction == 'i'? @voice_log.dnis : @voice_log.ani%></span>
+              <span class="agent-name" id="a-name"></span><br/>
+              <span class="tel-num"><b>Ext: </b><span id="a-ext"></span></span><br/>
+              <span class="tel-num" id="a-tel"></span>
             </td>
           </tr>
         </table>
@@ -976,8 +1296,8 @@
             <td><input type="checkbox" id="cust-chn" checked onclick="setChannel();" /></td>
             <td><%= image_tag "customer.png" %></td>
             <td>
-              <span class="agent-name">Customer</span><br/>
-              <span class="tel-num"><%= @voice_log.call_direction == 'i'? @voice_log.ani : @voice_log.dnis%></span>
+              <span class="agent-name" id="c-name"></span><br/>
+              <span class="tel-num" id="c-tel"></span>
             </td>
           </tr>
         </table>
@@ -1001,32 +1321,32 @@
           <param name="SegmentGuideVisible" value="4" />
         </object>
       </div>
-      <div class="voice-start" style="float: left;"><%= @voice_log.start_time.strftime("%H:%M:%S") %></div>
-      <div class="voice-end" style="float: right;"><%= (@voice_log.start_time + @voice_log.duration.to_i).strftime("%H:%M:%S") %></div>
+      <div class="voice-start" style="float: left;"></div>
+      <div class="voice-end" style="float: right;"></div>
       <div class="AmiAdvw-ctrl" style="clear: both; float: left; width:100%; padding-top: 2px;">
         <div style="float: left;">
-          <input type="button" class="btn" value="Play" id="play_btn" onclick="PausePlay()"/>
-          <input type="button" class="btn" value="Stop" id="stop_btn" onclick="Stop()" disabled/>
-          <input type="button" class="btn" value="<<" onclick="movefocus(0)"/>
-          <input type="button" class="btn" value=">>" onclick="movefocus(1)"/>
+          <input type="button" class="btn" value="Play" id="play_btn" onclick="PausePlay()" style="width: 50px;"/>
+          <input type="button" class="btn" value="Stop" id="stop_btn" onclick="Stop()" style="width: 50px;" disabled/>
+          <input type="button" class="btn" value="<<" onclick="movefocus(0)" style="width: 35px;"/>
+          <input type="button" class="btn" value=">>" onclick="movefocus(1)" style="width: 35px;"/>
         </div>
         <div style="float: left;">
-          <table>
-            <tr align="left">
-              <td style="padding: 3px 0px 0px 0px;"><input type="checkbox" id="auto-play"/></td>
-              <td style="padding-top: 4px; font-weight: bold;">AutoPlay</td>
-              <td align="right" style="width: 50px; padding-top: 4px; font-weight: bold; cursor: pointer;" title="reset volume" onclick="resetVolume();"> Volume </td>
-              <td style="padding: 5px 0px 0px 7px; width: 100px;"><div id="advw-vol"></div></td>
-              <td align="right" style="width: 50px; padding-top: 4px; font-weight: bold; cursor: pointer;" title="reset speed" onclick="resetVolume();"> speed </td>
-              <td style="padding: 5px 0px 0px 7px; width: 100px;"><div id="advw-speed"></div></td>
+          <table style="padding: 0; font: bold 84% sans-serif;" cellpadding="0" cellspacing="0">
+            <tr style="line-height: 15px;">
+              <td><input type="checkbox" id="auto-play"/></td>
+              <td valign="center">AutoPlay</td>
+              <td align="right" class="ami-ctrl-pnl" title="reset volume" onclick="resetVolume();"> Volume </td>
+              <td style="width: 70px;"><div id="advw-vol"></div></td>
+              <td align="right" class="ami-ctrl-pnl" title="reset speed" onclick="resetSpeed();"> Speed </td>
+              <td style="width: 70px;"><div id="advw-speed"></div></td>
             </tr>
           </table>
         </div>
         <div id="action_div" style="float: right; display: none;">
           <table cellpadding="0" cellspacing="0">
             <tr align="left">
-              <td><input type="button" class="btn" value="" onclick="addSegmentInfo()" id="add_seg_btn" style="width: 100px; margin-left: 15px;" disabled/></td>
-              <td><input type="button" class="btn" value="" onclick="saveChangeInfo()" id="save_change_btn" style="width: 100px; margin-left: 3px;"/></td>
+              <td><input type="button" class="btn" value="" onclick="addSegmentInfo()" id="add_seg_btn" style="width: 80px; margin-left: 15px;" disabled/></td>
+              <td><input type="button" class="btn" value="" onclick="saveChangeInfo()" id="save_change_btn" style="width: 80px; margin-left: 3px;"/></td>
             </tr>
           </table>
         </div>
@@ -1037,11 +1357,13 @@
 
   <!-- Tabs -->
   <div class="tabs block" style="margin-top: 8px; background-image:url(<%=image_path('bg011.png')%>); width: 100%;">
-    <ul style="padding: 0; margin: 0; width: 99.9%;">
+    <ul id="tab-pane-ul" style="padding: 0; margin: 0; width: 99.9%;">
       <li id="selected-tab-1" class="detail-tabs" onclick="show_tab(1)" style="border-left: 1px solid #99ccff;"> All </li>
-      <li id="selected-tab-2" class="detail-tabs" onclick="show_tab(2)"> Keywords (<span id="span-sum-keyword"></span>)</li>
-      <li id="selected-tab-3" class="detail-tabs" onclick="show_tab(3)"> Call informations (<span><%= @voice_log.call_informations.length %></span>)</li>
-      <li id="selected-tab-4" class="detail-tabs" onclick="show_tab(4)"> Bookmarks (<span id="span-sum-bookmark"></span>)</li>
+      <% if Aohs::MOD_KEYWORDS %>
+      <li id="selected-tab-2" class="detail-tabs" onclick="show_tab(2)"> Keywords (<span id="span-sum-keyword">-</span>)</li>
+      <% end %>
+      <li id="selected-tab-3" class="detail-tabs" onclick="show_tab(3)"> Call informations (<span id="span-sum-callinfo">-</span>)</li>
+      <li id="selected-tab-4" class="detail-tabs" onclick="show_tab(4)"> Bookmarks (<span id="span-sum-bookmark">-</span>)</li>
     </ul>
   </div>
   <!-- Tabs -->
@@ -1049,74 +1371,82 @@
 <!-- End : HEADER -->
 
 <!-- Begin : WRAP-INFO -->
-<div id="Wrap-Info" style="position: relative; clear: both; float: left; width: 99.9%; padding: 0px 1px 0px 1px; margin: 0;">
+<div id="Wrap-Info" style="position: relative; clear: both; float: left; width: 99.9%; padding: 0px 1px 0px 1px; margin: 0; background-color: #F5F5F5;">
 
-  <div id="All" class="tab-pane-info" style="position: relative; width: 100%; ">
+  <% if @voice_log.have_transfered_call? %>
+  <div class="transfer-call">
+    <div id="transfer-call-radio"></div>
+  </div>
+  <% end %>
+
+  <div id="All" class="tab-pane-info">
     <table class="Info-Header-1" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-        <tr>
-          <th class="header-info-col" width="40px;">No</th>
-          <th class="header-info-col" width="140px;">Information Type</th>
-          <th class="header-info-col" width="100px;">Start Time</th>
-          <th class="header-info-col" width="100px;">End Time</th>
-          <th class="header-info-col">Description</th>
-          <th class="header-info-col" width="13px;"></th>
-        </tr>
+      <tr>
+        <th class="header-info-col" width="40px;">No</th> <!-- px : 40 140 100 100 ? 13-->
+        <th class="header-info-col" width="100px;">Start</th>
+        <th class="header-info-col" width="100px;">End</th>
+        <th class="header-info-col" width="140px;">Information Type</th>
+        <th class="header-info-col">Description</th>
+        <th class="header-info-col" width="13px;"></th>
+      </tr>
     </table>
     <div class="Info" style="overflow-y: scroll; overflow-x: hidden; border: 1px solid #99ccff;">
-      <table id="all_info_tbl" class="tbl-info" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;"></table>
+      <table id="all_info_tbl" class="tbl-info" cellpadding="0" cellspacing="0" style="border-collapse: collapse;"></table>
     </div>
   </div>
 
-  <div id="Keywords" class="tab-pane-info" style="position: relative; width: 100%; display: none;">
+  <% if Aohs::MOD_KEYWORDS %>
+  <div id="Keywords" class="tab-pane-info" style="display:none;">
     <table class="Info-Header-2" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-        <tr>
-          <th class="header-info-col" width="40px;">No</th>
-          <th class="header-info-col" width="140px;">Information Type</th>
-          <th class="header-info-col" width="100px;">Start Time</th>
-          <th class="header-info-col" width="100px;">End Time</th>
-          <th class="header-info-col" width="60px;">Type</th>
-          <th class="header-info-col" width="200px">Keyword</th>
-          <th class="header-info-col" >Keyword Pattern</th>
-          <th class="header-info-col" width="40px;">Delete</th>
-          <th class="header-info-col" width="13px;"></th>
-        </tr>
+      <tr>
+        <th class="header-info-col" width="40px;">No</th>
+        <!--th class="header-info-col" width="140px;">Information Type</th-->
+        <th class="header-info-col" width="100px;">Word Start</th>
+        <th class="header-info-col" width="100px;">Word End</th>
+        <th class="header-info-col" width="60px;">Type</th>
+        <th class="header-info-col" width="200px">Keyword</th>
+        <th class="header-info-col" id="con-w-2">Keyword Pattern</th>
+        <th class="header-info-col" width="40px;">Del</th>
+        <th class="header-info-col" width="13px;"></th>
+      </tr>
     </table>
     <div class="Info" style="overflow-y: scroll; overflow-x: hidden; border: 1px solid #99ccff;">
-      <table id="keyword_info_tbl" class="tbl-info" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;"></table>
+      <table id="keyword_info_tbl" class="tbl-info" cellpadding="0" cellspacing="0" style="border-collapse: collapse;"></table>
     </div>
   </div>
-
-  <div id="CallInformations" class="tab-pane-info" style="position: relative; width: 100%; display: none;">
+  <% end %>
+  
+  <div id="CallInformations" class="tab-pane-info" style="display:none;">
     <table class="Info-Header-3" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-        <tr>
-          <th class="header-info-col" width="40px;">No</th>
-          <th class="header-info-col" width="140px;">Information Type</th>
-          <th class="header-info-col" width="100px;">Start Time</th>
-          <th class="header-info-col" width="100px;">End Time</th>
-          <th class="header-info-col">Description</th>
-          <th class="header-info-col" width="13px;"></th>
-        </tr>
+      <tr>
+        <th class="header-info-col" width="40px;">No</th>
+        <!--th class="header-info-col" width="140px;">Information Type</th-->
+        <th class="header-info-col" width="100px;">Info Start</th>
+        <th class="header-info-col" width="100px;">Info End</th>
+        <th class="header-info-col">Description</th>
+        <th class="header-info-col" width="13px;"></th>
+      </tr>
     </table>
     <div class="Info" style="overflow-y: scroll; overflow-x: hidden; border: 1px solid #99ccff;">
-      <table id="call_info_tbl" class="tbl-info" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;"></table>
+      <table id="call_info_tbl" class="tbl-info" cellpadding="0" cellspacing="0" style="border-collapse: collapse;"></table>
     </div>
   </div>
 
-  <div id="BookMarks" class="tab-pane-info" style="position: relative; width: 100%; display: none;">
+  <div id="BookMarks" class="tab-pane-info" style="display:none;">  <!--%= (params[:tab]=='2' and not params[:tab].nil?) ? 'block' : 'none' %-->
     <table class="Info-Header-4" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-        <tr>
-          <th class="header-info-col" width="40px;">No</th>
-          <th class="header-info-col" width="140px;">Information Type</th>
-          <th class="header-info-col" width="100px;">Start Time</th>
-          <th class="header-info-col" width="100px;">End Time</th>
-          <th class="header-info-col" width="250px;">Title</th>
-          <th class="header-info-col">Contents</th>
-          <th class="header-info-col" width="40px;">Delete</th>
-          <th class="header-info-col" width="13px;"></th>
-        </tr>
+      <tr>
+        <th class="header-info-col" width="40px;">No</th>
+        <!--th class="header-info-col" width="120px;">Information Type</th-->
+        <th class="header-info-col" width="100px;">Bookmark Start</th>
+        <th class="header-info-col" width="100px;">Bookmark End</th>
+        <th class="header-info-col" id="ti-w-4">Title</th>
+        <th class="header-info-col" id="con-w-4">Contents</th>
+        <th class="header-info-col" width="40px;">Del</th>
+        <th class="header-info-col" width="13px;"></th>
+      </tr>
     </table>
     <div class="Info" style="overflow-y: scroll; overflow-x: hidden; border: 1px solid #99ccff;">
-      <table id="bookmark_info_tbl" class="tbl-info" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;"></table>
+      <table id="bookmark_info_tbl" class="tbl-info" cellpadding="0" cellspacing="0" style="border-collapse: collapse;"></table>
     </div>
   </div>
 
@@ -1124,8 +1454,10 @@
 <!-- End : WRAP-INFO -->
 
 <!-- Begin : FOOTER -->
-<div id="Footer" style="position: relative; clear: both; width: 100%; height: 30px; background-image:url(<%=image_path('bg002.png')%>); padding:4px 4px 4px 10px;">
-  <span class="footer_txt" id="footer-span-2">Note: Double click on `Keyword Pattern` column to edit keyword.</span>
-  <span class="footer_txt" id="footer-span-4">Note: Double click on `Title` and `Contents` column to edit bookmark.</span>
+<div style="background-color: #F5F5F5;">
+  <div id="Footer">
+    <span class="footer_txt" id="footer-span-2">Note: Double click on `Keyword Pattern` column to edit keyword.</span>
+    <span class="footer_txt" id="footer-span-4">Note: Double click on `Title` and `Contents` column to edit bookmark.</span>
+  </div>
 </div>
 <!-- End : FOOTER -->

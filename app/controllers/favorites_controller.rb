@@ -9,12 +9,12 @@ class FavoritesController < ApplicationController
 
   def index
     
-    @tag_groups = TagGroup.find(:all,:order => 'name')
+    @tag_groups = TagGroup.order('name')
     
-    @cd_color = CALL_DIRECTION_COLORS
+    @cd_color = Aohs::CALL_DIRECTION_COLORS
     @rows_per_page = $PER_PAGE
-    @favarite = Tags.find(:all,:order => 'name')
-    @numbers_of_display = AmiConfig.get('client.aohs_web.number_of_display_voice_logs').to_i
+    @favarite = Tags.order('name')
+    @numbers_of_display = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i
         
     get_tag_list
     
@@ -26,10 +26,10 @@ class FavoritesController < ApplicationController
     @arr_charactor = {}
     @arr_non_used =  []
     
-    key_string = "กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮabcdefghijklmnopqrstuvwxyz0123456789"
-    sara = "โไใเแ"
+    key_string = Aohs::CHR_TH + Aohs::CHR_EN
+    sara = Aohs::CHR_SARA_TH
 
-    nonused_tags = Taggings.find(:all,:group=>:tag_id)
+    nonused_tags = Taggings.group(:tag_id)
     nonused_tags.each do |nut|
       @arr_non_used << nut.tag_id
     end
@@ -39,7 +39,7 @@ class FavoritesController < ApplicationController
       condition = "name is not null and id in(" +@arr_non_used.join(",")+")"
     end
 
-    data_tags = Tags.find(:all,:order=>'name',:conditions=>condition)
+    data_tags = Tags.where(condition).order('name')
 
     unless data_tags.empty?
       data_tags.each do |val|
@@ -76,7 +76,7 @@ class FavoritesController < ApplicationController
     
     $PER_PAGE = params[:perpage].to_i 
     if $PER_PAGE <= 0
-      $PER_PAGE = AmiConfig.get('client.aohs_web.number_of_display_voice_logs').to_i  
+      $PER_PAGE = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i  
     end  
     
     start_row = $PER_PAGE * (page.to_i-1)
@@ -121,36 +121,61 @@ class FavoritesController < ApplicationController
 
     show_all = ( (params[:type] =~ /true/) ? true : false )
       
-    find_call_tag({:show_all => show_all, :timeline_enabled => false, :tag_enabled => false })
+    find_call_tag({:show_all => show_all, :timeline_enabled => false, :tag_enabled => false,:summary => true })
 
-    @report = {}
-    @report[:title_of] = Aohs::REPORT_HEADER_TITLE
-    @report[:title] = "Tags Call List Report"
+     @report[:cols] = {}
+     @report[:cols][:cols] = []
+     @report[:cols][:cols] << ['No','no',3,1,1]
+     @report[:cols][:cols] << ['Date/Time','date',10,1,1]
+     @report[:cols][:cols] << ['Duration','int',7,1,1]
+     @report[:cols][:cols] << ['Caller Number','',8,1,1]
+     @report[:cols][:cols] << ['Dailed Number','',8,1,1]
+     @report[:cols][:cols] << ['Ext','',4,1,1]
+     @report[:cols][:cols] << ['Agent','',12,1,1]
+     if Aohs::MOD_CUSTOMER_INFO
+      @report[:cols][:cols] << ['Customer','',10,1,1]
+      @report[:cols][:cols] << ['Car No','',5,1,1] if Aohs::MOD_CUST_CAR_ID
+     end
+     @report[:cols][:cols] << ['Direction','sym',4,1,1]
+     if Aohs::MOD_KEYWORDS
+      @report[:cols][:cols] << ['NG','int',5,1,1]
+      @report[:cols][:cols] << ['Must','int',5,1,1] 
+     end
+     @report[:cols][:cols] << ['Bookmark','int',5,1,1] 
+     
+     @report[:data] = []
+     @voice_logs_ds[:data].each_with_index do |vc,i|
+       unless vc[:no].blank?
+         if vc[:trfc] == true
+           vc[:no] = "+ #{vc[:no]}"
+         else
+           if vc[:child] == true
+            vc[:no] = ""  
+           else
+            vc[:no] = "   #{vc[:no]}" 
+           end
+         end
+         p = [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent]]
+         if Aohs::MOD_CUSTOMER_INFO
+          p << vc[:cust]
+          p << vc[:car_no]
+         end
+         p << vc[:cd]
+         if Aohs::MOD_KEYWORDS  
+           p << vc[:ngc]
+           p << vc[:mustc]
+         end
+         p << vc[:bookc]
+         @report[:data] << p
+       end
+     end
 
-    @report[:cols] = {
-        :cols => [
-          ['No','no',3,1,1],
-          ['Date/Time','date',10,1,1],
-          ['Duration','int',7,1,1],
-          ['Caller Number','',8,1,1],
-          ['Dailed Number','',8,1,1],
-          ['Ext','',4,1,1],
-          ['Agent','',12,1,1], 
-          ['Direction','sym',4,1,1], 
-          ['NG','int',5,1,1],   
-          ['Must','int',5,1,1],
-          ['Bookmark','int',5,1,1]  
-        ]
-    }
-    
-    @report[:data] = []
-    @voice_logs_ds[:data].each_with_index do |vc,i|
-      unless vc[:no].blank?
-        vc[:no] = (i+1)
-        @report[:data] << [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent],vc[:cd],vc[:ngc],vc[:mustc],vc[:bookc]]
-      end
-    end
-
+     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}"
+     if Aohs::MOD_KEYWORDS  
+       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}"
+       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}"
+     end
+     
     @voice_logs_ds = nil
    
     @report[:fname] = "TagCallList"
@@ -168,36 +193,65 @@ class FavoritesController < ApplicationController
 
     show_all = ( (params[:type] =~ /true/) ? true : false )
       
-    find_call_tag({:show_all => show_all, :timeline_enabled => false, :tag_enabled => false })
+    find_call_tag({:show_all => show_all, :timeline_enabled => false, :tag_enabled => false,:summary => true })
 
     @report = {}
     @report[:title_of] = Aohs::REPORT_HEADER_TITLE
     @report[:title] = "Tags Call List Report"
 
-    @report[:cols] = {
-        :cols => [
-          ['No','no',3,1,1],
-          ['Date/Time','date',10,1,1],
-          ['Duration','int',7,1,1],
-          ['Caller Number','',8,1,1],
-          ['Dailed Number','',8,1,1],
-          ['Ext','',4,1,1],
-          ['Agent','',12,1,1], 
-          ['Direction','sym',4,1,1], 
-          ['NG','int',5,1,1],   
-          ['Must','int',5,1,1],
-          ['Bookmark','int',5,1,1]  
-        ]
-    }
-    
-    @report[:data] = []
-    @voice_logs_ds[:data].each_with_index do |vc,i|
-      unless vc[:no].blank?
-        vc[:no] = (i+1)
-        @report[:data] << [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent],vc[:cd],vc[:ngc],vc[:mustc],vc[:bookc]]
-      end
-    end
+     @report[:cols] = {}
+     @report[:cols][:cols] = []
+     @report[:cols][:cols] << ['No','no',3,1,1]
+     @report[:cols][:cols] << ['Date/Time','date',10,1,1]
+     @report[:cols][:cols] << ['Duration','int',6,1,1]
+     @report[:cols][:cols] << ['Caller Number','',8,1,1]
+     @report[:cols][:cols] << ['Dailed Number','',8,1,1]
+     @report[:cols][:cols] << ['Ext','',4,1,1]
+     @report[:cols][:cols] << ['Agent','',12,1,1]
+     if Aohs::MOD_CUSTOMER_INFO
+      @report[:cols][:cols] << ['Customer','',10,1,1]
+      @report[:cols][:cols] << ['Car No','',9,1,1] if Aohs::MOD_CUST_CAR_ID
+     end
+     @report[:cols][:cols] << ['Direction','sym',5,1,1]
+     if Aohs::MOD_KEYWORDS
+      @report[:cols][:cols] << ['NG','int',5,1,1]
+      @report[:cols][:cols] << ['Must','int',5,1,1] 
+     end
+     @report[:cols][:cols] << ['Bookmark','int',5,1,1] 
+     
+     @report[:data] = []
+     @voice_logs_ds[:data].each_with_index do |vc,i|
+       unless vc[:no].blank?
+         if vc[:trfc] == true
+           vc[:no] = "+ #{vc[:no]}"
+         else
+           if vc[:child] == true
+            vc[:no] = ""  
+           else
+            vc[:no] = "   #{vc[:no]}" 
+           end
+         end
+         p = [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent]]
+         if Aohs::MOD_CUSTOMER_INFO
+          p << vc[:cust]
+          p << report_car_breakline(vc[:car_no])
+         end
+         p << vc[:cd]
+         if Aohs::MOD_KEYWORDS  
+           p << vc[:ngc]
+           p << vc[:mustc]
+         end
+         p << vc[:bookc]
+         @report[:data] << p
+       end
+     end
 
+     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}"
+     if Aohs::MOD_KEYWORDS  
+       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}"
+       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}"
+     end
+     
     @voice_logs_ds = nil
    
     @report[:fname] = "TagCallList"

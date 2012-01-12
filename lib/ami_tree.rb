@@ -1,6 +1,17 @@
-
+ 
 module AmiTree
-
+  
+  NODE_TYP_USRN   = "agent"
+  NODE_TYP_GRPN   = "group"
+  NODE_TYP_CATN   = "cate"
+  
+  ICON_USRN       = "ico-usr"
+  ICON_GRPN       = "ico-grp"
+  ICON_CATN       = "ico-cate"
+  
+  TREE_NAME       = "aohstreeview"
+  TREE_LEVELS     = [['My','Manager','Category'],['Group'],['Agent']]
+  
   #=========================================================#
   # build nodes of agents tree with group and role permission
   # build_tree return tree nodes
@@ -64,7 +75,7 @@ module AmiTree
       
     data = []
       
-    g = Group.find(:first,:conditions => {:id => group_id})  
+    g = Group.where({:id => group_id}).first
     unless g.nil?
       data = build_agent_tree(g.id)
     end
@@ -100,9 +111,9 @@ module AmiTree
         end
 
         if child.empty?
-          data << {:type => @node_type,:label => "#{gc[:name]}",:labelStyle => 'icon-gc',:expanded => true,:id => gc[:id],:NodeType => 'cate',:NodeId => gc[:id] }
+          data << {:type => @node_type,:label => "#{gc[:name]}",:labelStyle => 'icon-gc',:expanded => true,:id => gc[:id],:NodeType => NODE_TYP_CATN,:NodeId => gc[:id] }
         else
-          data << {:type => @node_type,:label => "#{gc[:name]}",:labelStyle => 'icon-gc',:expanded => true,:id => gc[:id],:NodeType => 'cate',:NodeId => gc[:id],:children => child }
+          data << {:type => @node_type,:label => "#{gc[:name]}",:labelStyle => 'icon-gc',:expanded => true,:id => gc[:id],:NodeType => NODE_TYP_CATN,:NodeId => gc[:id],:children => child }
         end
 
         gc_ids.delete(gc_ids.last)
@@ -144,9 +155,9 @@ module AmiTree
       groups.each do |x|
         child = build_agent_tree(x.id)
         if child.empty?
-          data << {:type => @node_type,:label => x.name,:labelStyle => 'icon-grp',:expanded => false,:id => x.id,:NodeType => 'group',:NodeId => x.id }
+          data << {:type => @node_type,:label => x.name.to_s.strip,:labelStyle => 'icon-grp',:expanded => false,:id => x.id,:NodeType => NODE_TYP_GRPN,:NodeId => x.id, :GroupId => x.id }
         else
-          data << {:type => @node_type,:label => x.name,:labelStyle => 'icon-grp',"iconMode" => 1 ,:expanded => true,:id => x.id,:NodeType => 'group',:NodeId => x.id,:children => child }
+          data << {:type => @node_type,:label => x.name.to_s.strip,:labelStyle => 'icon-grp',"iconMode" => 1 ,:expanded => true,:id => x.id,:NodeType => NODE_TYP_GRPN,:NodeId => x.id,:GroupId => x.id,:children => child }
         end
       end
     end
@@ -173,7 +184,7 @@ module AmiTree
           if(select_agent.include?(x.id.to_i))
             checked = true
           end
-          data << {:type => @node_type,:label => x.login,:labelStyle => 'icon-usr',:id => x.id, :checked => checked,:NodeType => 'agent',:NodeId => x.id }
+          data << {:type => @node_type,:label => x.login.to_s.strip,:labelStyle => 'icon-usr',:id => x.id, :checked => checked,:NodeType => NODE_TYP_USRN,:NodeId => x.id }
         end
       end
     end
@@ -187,13 +198,13 @@ module AmiTree
     data = nil
 
     if grp_id.to_i > 0
-      leader = Group.find(:first,:conditions => {:id => grp_id.to_i})
+      leader = Group.where({:id => grp_id.to_i}).first
       unless leader.nil?
         unless leader.leader_id.nil?
-          user = User.find(:first,:conditions => {:id => leader.leader_id})
+          user = User.where({:id => leader.leader_id}).first
           unless user.nil?
             role = (user.role.nil? ? "Leader" : user.role.name) 
-            data = {:type => @node_type,:label => "#{user.login} [#{role}]",:labelStyle => 'icon-usr',:id => user.id,:NodeType => 'agent',:NodeId => user.id }
+            data = {:type => @node_type,:label => "#{user.login} [#{role}]",:labelStyle => 'icon-usr',:id => user.id,:NodeType => NODE_TYP_USRN,:NodeId => user.id }
           end
         end 
       end
@@ -207,7 +218,7 @@ module AmiTree
 
     data = nil
     if permission_by_name('tree_mycall')
-      data = {:type => @node_type,:label => "MyCalls [#{@userinfo.login}]",:labelStyle => 'icon-usr',:id => @userinfo.id,:NodeType => 'agent',:NodeId => @userinfo.id }
+      data = {:type => @node_type,:label => "MyCalls [#{@userinfo.login}]",:labelStyle => 'icon-usr',:id => @userinfo.id,:NodeType => NODE_TYP_USRN,:NodeId => @userinfo.id }
     end
     
     return data
@@ -223,10 +234,10 @@ module AmiTree
     end  
     
     data = nil
-    data = {:type => @node_type,:label => "UnknownAgents",:labelStyle => 'icon-usr',:checked => checked,:id => 0,:NodeType => 'agent',:NodeId => 0}
+    data = {:type => @node_type,:label => "UnknownAgents",:labelStyle => 'icon-usr',:checked => checked,:id => 0,:NodeType => NODE_TYP_USRN,:NodeId => 0}
     
     return data
-            
+
   end
   
   def build_manager_tree(op={})
@@ -235,13 +246,13 @@ module AmiTree
       
     data = []
     group_managers = []
-    if op[:manager_filter] == true
-      group_managers = GroupManager.find(:all, :conditions => {:user_id => @userinfo.id })
+    if permission_by_name('tree_filter') and (op[:manager_filter] == true)
+      group_managers = GroupManager.where({:user_id => @userinfo.id })
       mg_id = group_managers.map {|m| m.manager_id}
       mg_id.delete_if { |m| m == @userinfo.id }
-      group_managers = Manager.find(:all,:conditions => {:id => mg_id }, :order => "users.login")
+      group_managers = Manager.where({:id => mg_id }).order("users.login")
     else
-      group_managers = Manager.find(:all, :order => "users.login")
+      group_managers = Manager.order("users.login")
     end
 
     unless group_managers.empty?
@@ -250,12 +261,12 @@ module AmiTree
            if(select_manager.include?(m.id))
              checked = true
            end
-           data << {:type => @node_type,:label => m.login ,:labelStyle => 'icon-usr',:checked => checked,:id => m.id,:NodeType => 'agent',:NodeId => m.id }
+           data << {:type => @node_type,:label => m.login ,:labelStyle => 'icon-usr',:checked => checked,:id => m.id,:NodeType => NODE_TYP_USRN,:NodeId => m.id }
          end
     end
 
     unless data.empty?
-      data = {:type => @node_type,:label => "Managers",:labelStyle => 'icon-grp',:expanded => true,:id => 0,:NodeType => 'group',:NodeId => 0,:children => data }
+      data = {:type => @node_type,:label => "Managers",:labelStyle => 'icon-grp',:expanded => true,:id => 0,:NodeType => NODE_TYP_GRPN,:NodeId => 0,:children => data }
     else
       data = nil
     end
@@ -304,7 +315,7 @@ module AmiTree
 
     cate_type = []
 
-    gcdts = GroupCategoryDisplayTree.find(:all)
+    gcdts = GroupCategoryDisplayTree.all
 
     gcdts.each { |x| cate_type << {:id => x.id,:ct_id => x.group_category_type.id, :name => x.group_category_type.name, :parent_id => x.parent_id } if not x.parent_id }
     gcdts.length.times {
@@ -326,20 +337,20 @@ module AmiTree
     owner = nil
     
     if user.is_a?(Integer)
-      owner = User.find(:first,:conditions => {:id => user})
+      owner = User.where({:id => user}).first
     else
-      owner = User.find(:first,:conditions => {:login => user})
+      owner = User.where({:login => user}).first
     end
 
     unless owner.nil?
   
       if (permission_by_name('tree_filter',owner.id)) and @use_filter
-        owner_groups = Group.find(:all,:select => 'id', :conditions => {:leader_id => owner.id})
-        watch_groups = GroupMember.find(:all,:select => 'group_id',:conditions => {:user_id => owner.id})
+        owner_groups = Group.select('id').where({ :leader_id => owner.id })
+        watch_groups = GroupMember.select('group_id').where({ :user_id => owner.id })
         selected_groups = (owner_groups.map { |g| g.id }).concat(watch_groups.map { |g| g.group_id })
         selected_groups = selected_groups.uniq
       else
-        watch_groups = Group.find(:all,:select => 'id')
+        watch_groups = Group.select('id')
         selected_groups = watch_groups.map { |g| g.id }
       end
 
@@ -404,7 +415,7 @@ module AmiTree
     end
     gcs = gcs.uniq
     #STDERR.puts "----->#{gct_id} => #{gcs.join("|")}"
-    gcs = GroupCategory.find(:all,:select => 'id,value as name',:conditions => "id in (#{gcs.join(',')})") unless gcs.empty?
+    gcs = GroupCategory.select('id,value as name').where("id in (#{gcs.join(',')})") unless gcs.empty?
 
     return gcs
     
@@ -423,7 +434,7 @@ module AmiTree
     
     grp = grp.uniq
    # STDERR.puts "G->#{grp.join("|")}"
-    grp = Group.find(:all,:select => 'id,name',:conditions => "id in (#{grp.join(',')})") unless grp.empty?
+    grp = Group.select('id,name').where("id in (#{grp.join(',')})") unless grp.empty?
     
     return grp
     
@@ -433,12 +444,8 @@ module AmiTree
 
     agents = []
 
-    agents = Agent.find(
-                :all,
-                :select => 'id,login,display_name',
-                :conditions => {:group_id => group_id},
-                :order => 'login')
-
+    agents = Agent.select('id,login,display_name').alive.where({:group_id => group_id}).order('login') 
+    
     unless agents.empty?
       agents = agents
     end
@@ -452,12 +459,12 @@ module AmiTree
     tmp = {}
     
     agents = [] if agents.blank?
-      
+    
     if agents.include?('0')
       tmp['0'] = [0]
     end
       
-    agents = User.find(:all,:select => 'id,group_id',:conditions =>{ :id => agents})
+    agents = User.select('id,group_id').where({ :id => agents })
     
     agents.each do |u|
       group_id = u.group_id.to_i.to_s

@@ -1,8 +1,9 @@
 <% content_for :header do %>
-<%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
+  <%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
   <%= stylesheet_src_path 'cssreport.css' %>
   <script type="text/javascript">
-
+  var loadTreeData = false;
+  
   var statisticsKey = {
      period: "<%= @period %>",
      group: "<%= @grp_id %>",
@@ -12,7 +13,8 @@
      od: "<%= params[:od] %>",
      stdate: "<%= params[:stdate] %>",
      eddate: "<%= params[:eddate] %>",
-     page: "<%= params[:page] %>"
+     page: "<%= params[:page] %>",
+	 agent_name: "<%= params[:agent_name] %>"
   }
 
   function getStatisticsParamsUrl(){
@@ -29,12 +31,12 @@
     $("input[name=period]").val(statisticsKey.period);
     $("input[name=group]").val(statisticsKey.group);  
     $("input[name=agent]").val(statisticsKey.agent);
+	$("input[name=agent_name]").val(statisticsKey.agent_name);
     $("input[name=sec]").val(statisticsKey.sec);
     $("input[name=sort]").val(statisticsKey.sort);
     $("input[name=od]").val(statisticsKey.od);
     $("input[name=stdate]").val(statisticsKey.stdate);
-    $("input[name=eddate]").val(statisticsKey.eddate);
-    $("input[name=page]").val(statisticsKey.page);
+    $("input[name=eddate]").val(statisticsKey.eddate);  
   }
 
   function csv_export() {
@@ -53,36 +55,19 @@
   }
 
   function clickTabPeriod(period){
-    statisticsKey.page = 1;
+  	statisticsKey.page = 1;
     statisticsKey.period = period;
     var url = getStatisticsParamsUrl();
     $("#StaisticsFrm").removeAttr("target");
-    $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'index') %>/" + period + "?page=" + statisticsKey.page);  
+    $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'index') %>?period=" + statisticsKey.period + "&page=" + 1);  
     $("#StaisticsFrm").submit();
   }
-   
-  function submitPage(url){
-    var paramsStr = url.split("?")[1];
-    var params = paramsStr.split("&");
-    $("#getHere").html("");
-    for(var i=0; i<params.length; i++){
-      var x = params[i].split("=");
-      var p = x[0];
-      if(p=="page"){
-        statisticsKey.page = x[1];  
-      }
-    }
-      var url = getStatisticsParamsUrl();
-      $("#StaisticsFrm").removeAttr("target");
-      $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'index') %>");  
-      $("#StaisticsFrm").submit();    
-  }
-  
+
   function clickTabType(type){
     statisticsKey.sec = type;
     var url = getStatisticsParamsUrl();
     $("#StaisticsFrm").removeAttr("target");  
-    $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'index') %>/" + statisticsKey.period + "?page=" + statisticsKey.page);  
+    $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'index') %>?period=" + statisticsKey.period + "&page=" + 1);  
     $("#StaisticsFrm").submit();
   }
 
@@ -99,7 +84,7 @@
 
   function reloadStatistics()
   {
-      statisticsKey.page = 1;
+  	  statisticsKey.page = 1;
       var url = getStatisticsParamsUrl();
       $("#StaisticsFrm").removeAttr("target");
       $("#StaisticsFrm").attr("action","<%= url_for(:controller => 'statistics',:action => 'index') %>");  
@@ -109,8 +94,10 @@
      function resizeWindow(e) {
       var intBrowserHeight = $(window).height();
 	  var intBrowserWidth = $(window).width();
-      $("#agent_tree").css("height",intBrowserHeight-80);
-	  $("#divTblScroll").css('width',intBrowserWidth-$("#agent_tree").width()-320);
+	  var ag = $("#agent_tree");
+      ag.css("height",intBrowserHeight-80);
+	  $("#divTblScroll").css('width',intBrowserWidth-$("#panel-tree").width()-330);
+	  $("#tbl-statistics").css('width',intBrowserWidth-$("#panel-tree").width());
     }
 	 
   $(document).ready(function(){
@@ -137,13 +124,15 @@
         }).mouseout(function(){
             $(this).removeClass('lihover');
         });
-		//$(".div-default-table tr").mouseover(function(){
-		//	var row = $(this).attr("row_no");
-		//	$(".tr-at" + row).addClass("hover");
-		//}).mouseout(function(){
-		//	var row = $(this).attr("row_no");
-		//	$(".tr-at" + row).removeClass("hover");			
-		//});
+		/*
+		$(".div-default-table tr").mouseover(function(){
+			var row = $(this).attr("row_no");
+			$(".tr-at" + row).addClass("hover");
+		}).mouseout(function(){
+			var row = $(this).attr("row_no");
+			$(".tr-at" + row).removeClass("hover");			
+		});
+		*/
      });
 
      $("#checked_nodes").text("<%=@agents_id.join(',') %>");
@@ -154,14 +143,7 @@
 			onClickCell(o.attr("atype"),o.attr("agent_id"),o.attr("period"),(o.attr("date") || ''));		
 		}
 	 });
-
-	 $("a",$("#paging")).click(function(){
-	   var url = $(this).attr("href") || "";
-	   if(url.length > 1){
-	     submitPage(url);
-	   }
-	   return false;
-	 });
+	 
    });
 
    function sort_link(key)
@@ -194,17 +176,37 @@
         $("#div-FilterBox-keywords").css("display","none");
      }
    }
-
+   function showTree(){
+   	  var o = $("#agent_tree");
+	  if (o.css("display") == "none") {
+	  	if(!loadTreeData){
+			rebuildTree();
+			loadTreeData = true;
+		}
+		o.css("display","block");	  
+	  } else {
+	  	o.css("display","none");
+	  }
+	  resizeWindow();
+   }
    function filterApply()
    {
    	  statisticsKey.page = 1;
+	  
 	  try {
 	  	statisticsKey.stdate = jQuery.trim($("select[name=fr] option:selected").val());	
-		statisticsKey.eddate = jQuery.trim($("select[name=to] option:selected").val());	  
+		statisticsKey.eddate = jQuery.trim($("select[name=to] option:selected").val());		  	
+	  	if((App.isBlank(statisticsKey.stdate)) && (App.isBlank(statisticsKey.eddate))){
+		  	statisticsKey.stdate = jQuery.trim($("input[name=fr]").val());	
+			statisticsKey.eddate = jQuery.trim($("input[name=to]").val());				
+		}
 	  } catch(e){
 	  	statisticsKey.stdate = jQuery.trim($("input[name=fr]").val());	
-		statisticsKey.eddate = jQuery.trim($("input[name=to]").val());	  	
+		statisticsKey.eddate = jQuery.trim($("input[name=to]").val());	
 	  }
+
+	  statisticsKey.group = $("#grpsel option:selected").val(); 
+	  statisticsKey.agent_name = jQuery.trim($("input[name=iagent_name]").val());
 	  if (checkPeriodCond(statisticsKey.stdate,statisticsKey.eddate)) {
 	  	reloadStatistics();
 	  } else {
@@ -239,6 +241,10 @@
 	  	  background-image:url('<%=image_src_path('/images/calendar.png') %>');   
 		  width:90px;	
    }
+   #panel-tree {
+   	 background-color:#F6F6F6;
+	 border:1px solid #e6f5fb;
+   }
 </style>
 <% end %>
 
@@ -248,14 +254,17 @@
 	      <tr>
 	        <td align="left">
 	          <ul>
+	          	<li><%= link_image_tag('Show/Hide Tree','treev.png','#',{:id => 'treeview',:onclick => 'showTree()',:title => "Show/Hide Agent treeview"}) %></li>
 	            <li><%= link_image_tag('CSV','mimetype/spreadsheet.png','#',{:id => 'export',:title => "Export agents report as CSV file"}) %></li>
 	            <li><%= link_image_tag('PDF','mimetype/pdf.png','#',{:id => 'print',:title => "Export agents report as PDF file"}) %></li>
-	            <li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Filtering keyword report'}) %></li>
+	            <li><%= link_image_tag('Filter','filter.png',"#",{:onclick => "showFilter()",:title => 'Filtering report'}) %></li>
 	            <li><%= link_image_tag('Search Report','reset.png',"#",{:onclick => "reloadStatistics()",:title => 'Refresh report view when change selected nodes\'s treeview'}) %></li>
 	          </ul>
 	        </td>
 			<td align="right">
-			<div id="paging"><%= will_paginate(@agents2) %></div>	
+			<% params.delete(:authenticity_token) %>
+            <% params.delete(:utf8) %>
+			<div id="paging"><%= will_paginate(@agents2,{:params => params}) %></div>	
 			</td>
 	      </tr>
 	    </table>		
@@ -265,6 +274,23 @@
 		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
 		  	<tr>
 		  		<td align="left">
+		  			<span>
+		  			<label>Agent's Name:</label>
+					<input type="text" name="iagent_name" value="<%=params[:agent_name] %>">
+		  			<label>Group:</label>
+					<select id="grpsel" name="grpsel">
+						<option selected="selected"></option>
+						<% @grps.each do |g| %>
+							<% if g.id == params[:group].to_i %>
+							<option value="<%=g.id %>" selected="selected"><%=g.name %></option>
+							<% else %>
+							<option value="<%=g.id %>"><%=g.name %></option>
+							<% end %>
+						<% end %>
+						<!-- <option value="0" <%=(params[:group].to_s == '0' ? "selected=\"selected\"" : "") %>>UnknownGroup</option> -->
+					</select>
+					&nbsp;
+					</span>
 		  			<label><%= @period.capitalize %> period:</label>
 					 	<% if @period == "weekly" %>
 						<%= weekly_picker(:fr,params[:stdate],@nweeks) %> - <%= weekly_picker(:to,params[:eddate],@nweeks) %>
@@ -273,7 +299,7 @@
 						<%= monthly_picker(:fr,params[:stdate],@nmonths) %> - <%= monthly_picker(:to,params[:eddate],@nmonths) %>
 						<% end %>
 						<% if @period == "daily" %>
-  					    <input type="text" class="input-date-picker" name="fr" value="<%= params[:stdate] %>"> - <input class="input-date-picker" type="text" name="to" value="<%= params[:eddate] %>">
+  					    <input type="text" id="ipDatePickerFr" class="input-date-picker" name="fr" value="<%= params[:stdate] %>"> - <input class="input-date-picker" type="text" name="to" value="<%= params[:eddate] %>">
 		  				<% end %>
 				</td>
 				<td align="right">
@@ -288,10 +314,12 @@
 
 <table cellpadding="0" cellspacing="0" border="0" width="100%">
 	<tr>
-		<td valign="top" width="170px">
-		  <div id="agent_tree"><%= render :partial => "shared/group_and_agents_tree2" %></div>			
+		<td valign="top">
+		  <div id="panel-tree">
+		  	<div id="agent_tree" style="display:none;"><%= render :partial => "shared/group_and_agents_tree2" %></div>
+		  </div>
 		</td>
-		<td valign="top" width="90%">
+		<td valign="top" width="100%">
 		  <div>
 		    <div id="tabsStyle1">
 		        <ul>
@@ -302,12 +330,16 @@
 		    </div>
 		    <div id="tabsStyle2">
 	           <ul>
-	             <li id="tab8" onclick="clickTabType('calls')" class="<%= 'liselected2' if @sub_type == "calls" %>">Calls</li>
+	             <li id="tab8" onclick="clickTabType('calls')" class="<%= 'liselected2' if @sub_type == "calls" %>">Call</li>
+	             <li id="tab9" onclick="clickTabType('in')" class="<%= 'liselected2' if @sub_type == "in" %>">Inbound</li>
+	             <li id="tab10" onclick="clickTabType('out')" class="<%= 'liselected2' if @sub_type == "out" %>">Outbound</li>				 				 
+				 <% if Aohs::MOD_KEYWORDS %>
 	             <li id="tab4" onclick="clickTabType('keywords')" class="<%= 'liselected2' if @sub_type == "keywords" %>">All Keywords</li>
 	             <li id="tab5" onclick="clickTabType('must')" class="<%= 'liselected2' if @sub_type == "must" %>">Must</li>
 	             <li id="tab6" onclick="clickTabType('ng')" class="<%= 'liselected2' if @sub_type == "ng" %>">NG</li>
 	             <li id="tab7" onclick="clickTabType('action')" class="<%= 'liselected2' if @sub_type == "action" %>">Action</li>
-	           </ul>
+	             <% end %>
+			   </ul>
 		    </div>
 			<div><%= render :partial => "statistics/statistics" %></div>		
 		  </div> 	
@@ -315,15 +347,18 @@
 	</tr>
 </table>
 <div id="divStaisticsFrm" style="display:none">
-<form id="StaisticsFrm" name="StaisticsFrm" action="<%= url_for(:controller => 'statistics', :action => 'index', :page => params[:page]) %>" method="post">
+<%= form_tag(url_for(:controller => 'statistics', :action => 'index', :page => params[:page]),{:method => 'post', :id => 'StaisticsFrm', :name => 'StaisticsFrm'}) do %>	
+<!-- <form id="StaisticsFrm" name="StaisticsFrm" action="<%= url_for(:controller => 'statistics', :action => 'index', :page => params[:page]) %>" method="post"> -->
   <input type="hidden" name="period" value="">
   <input type="hidden" name="group" value="">
   <input type="hidden" name="agent" value="">
+  <input type="hidden" name="agent_name" value="">
   <input type="hidden" name="sec" value="">
   <input type="hidden" name="sort" value="">
   <input type="hidden" name="od" value="">
   <input type="hidden" name="stdate" value="">
   <input type="hidden" name="eddate" value="">
   <input type="hidden" name="page" value="">
-</form>
+<!-- </form> -->
+<% end %>
 </div>

@@ -1,13 +1,15 @@
-<% @tl_enabled = (AmiConfig.get('client.aohs_web.enableCallsTimeline').to_i == 1 ? true : false) %>
+<% @tl_enabled = (($CF.get('client.aohs_web.enableCallsTimeline').to_i == 1 ? true : false) and Aohs::CALL_TIMELINE_ONCALL) %>
 <% content_for :header do %>
   
   <%= stylesheet_src_path 'for_callsearch.css' %>
   <%= stylesheet_src_path '/jquery/jquery.autocomplete/jquery.autocomplete_blue.css' %>
+  <%= stylesheet_src_path '/jquery/jquery-image-dropdown-2.36/msdropdown/dd.css' %>
   <%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
   <%= javascript_src_path '/jquery/jquery.autocomplete/jquery.autocomplete.min.js' %>
   <%= javascript_src_path '/jquery/js/jquery.numeric.js' %>
   <%= javascript_src_path '/jquery/js/jquery.download.js' %>
   <%= javascript_src_path 'webtoolkit.url.js' %>
+  <%= javascript_src_path '/jquery/jquery-image-dropdown-2.36/msdropdown/js/jquery.dd.js' %>
   
   <style type="text/css">
 
@@ -37,6 +39,8 @@
       float: left;
     }
     #div-voice_log_tabs {
+    	margin:0px;
+		padding:0px;
         margin-top:3px;
         width:100%
     }
@@ -61,27 +65,32 @@
 	
     function resizeWindow(e){
 		
-        var intBrowserHeight = $(window).height();
-        var intBrowserWidth = $(window).width();
-        var tabCondsHeight = $("#tab-conds").height();
-        var tabCondsWidth = $("#tab-conds").width();
-        var headerHeight = $("#header").height();
-        
-        $("#agent_tree").css("height", intBrowserHeight-tabCondsHeight-headerHeight-30);
-        $("#ami-viewer").css("width",intBrowserWidth-tabCondsWidth-11);
-		$("#voicelog-tbl").css("width",intBrowserWidth-tabCondsWidth-11);
-        $("#voice-timeline").css("width",intBrowserWidth-tabCondsWidth-8);
-        $("#div-tblCtrl").css("width",intBrowserWidth-tabCondsWidth-11);
-        $("#btnResizable").css("height",intBrowserHeight-headerHeight-4);
-		
-        var divTblOuter = $("#div-tbl-outer");
-        divTblOuter.css("width",intBrowserWidth-tabCondsWidth-10);
-        divTblOuter.css("height",intBrowserHeight-$("#ami-viewer").height()-headerHeight-$("#div-voice_log_tabs").height()-53);
-
-        var divTblInner = $("#div-tbl-inner");
-        divTblInner.css("height",$("#div-tbl-outer").height()-$("#div-tblCtrl").height()-15);
-        divTblInner.css("width",$(".tbl-header").width()+10);
-        
+		try {
+	        var intBrowserHeight = $(window).height();
+	        var intBrowserWidth = $(window).width();
+			var headerHeight = $("#header").height();
+			var searchPanelWidth = $("#div-search-panel").width();
+	        var tabCondsHeight = $("#tab-conds").height();
+			var pageCtrlWidth = intBrowserWidth-searchPanelWidth-8;
+			
+			var eAmiViewer = $("#ami-viewer");
+			var etblCtrl = $("#div-tblCtrl");
+			      
+	        $("#agent_tree").css("height",intBrowserHeight-tabCondsHeight-headerHeight-29);
+	        $("#voice-timeline").css("width",intBrowserWidth-searchPanelWidth-8);		
+	        eAmiViewer.css("width",intBrowserWidth-searchPanelWidth-15);
+	        etblCtrl.css("width",pageCtrlWidth);
+			
+			$(".expand-cell").css("width",pageCtrlWidth+10);
+			 
+	        var divTblOuter = $("#div-tbl-outer");
+	        divTblOuter.css("width",pageCtrlWidth);
+	        divTblOuter.css("height",intBrowserHeight-eAmiViewer.height()-headerHeight-$("#div-voice_log_tabs").height()-56);
+	
+	        var divTblInner = $("#div-tbl-inner");
+	        divTblInner.css("height",divTblOuter.height()-etblCtrl.height()-14);
+	        divTblInner.css("width",pageCtrlWidth-3);			
+		} catch (e) {}
     }
     
     function onSearchVoice(keys){
@@ -103,7 +112,8 @@
 		<% end %>
     }
     
-    $(document).ready(function(){	  
+    $(document).ready(function(){
+			  
       $(window).bind("resize", resizeWindow);
       $("#custom-periods").css("display","none");  
       resizeWindow();
@@ -113,7 +123,7 @@
       }).mouseout(function(){
         $(this).removeClass('tabmenu-li-hover');
       });
-     
+     	  
       window.setTimeout("SearchWithStartUp()",1500);
 	  tabVCSelect(1);
 	  
@@ -164,20 +174,22 @@
 <%= render :partial => 'shared/voice_log_rmenu' %>
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
-    <td class="div-cond-ctrl" valign="top">
-    	<div style="padding-left:0px; width:190px;" style="overflow:hidden;" id="divSearchPanel"><%= render :partial => 'voice_logs/voicelog_conds' %></div>
-		<div style="padding-left:0px; width:9px;" style="overflow:none;" id="divBtnShowPanel" style="display:none; padding-top:3px;"><a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a></div>
+    <td class="div-cond-ctrl" valign="top" id="div-search-panel">
+    	<div style="padding-left:0px; width:190px;" style="overflow:hidden; <%= 'display:none;' if params[:layout] == 'report' %>" id="divSearchPanel"><%= render :partial => 'voice_logs/voicelog_conds' %></div>
+		<div style="padding-left:0px; width:9px;" style="overflow:none;" id="divBtnShowPanel" style="<%= 'display:none;' if params[:layout] != 'report' %> padding-top:3px;"><a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a></div>
     </td>
     <td valign="top">
-      <div id="div-voice_log_tabs">
-        <div class="div-tabmenu-style1" id="vlrs-tabs">
-            <ul class="tabmenu-ul">
-              <li id="tabli-1" class="tabmenu-li tabmenu-li-selected"><a href="#" onclick="tabVCSelect(1)">Calls Result</a></li>
-              <% if @tl_enabled %>
-              <li id="tabli-2" class="tabmenu-li"><a href="#" onclick="tabVCSelect(2)">Calls Timeline</a></li>
-              <% end %>    
-            </ul>
-        </div>
+      <div id="vc-block0">
+	      <div id="div-voice_log_tabs">
+	        <div class="div-tabmenu-style1" id="vlrs-tabs">
+	            <ul class="tabmenu-ul">
+	              <li id="tabli-1" class="tabmenu-li tabmenu-li-selected"><a href="#" onclick="tabVCSelect(1)">Calls Result</a></li>
+	              <% if @tl_enabled %>
+	              <li id="tabli-2" class="tabmenu-li"><a href="#" onclick="tabVCSelect(2)">Calls Timeline</a></li>
+	              <% end %>    
+	            </ul>
+	        </div>
+	      </div>      	
       </div>
       <div id="vc-block1">
         <div id="voice-timeline">

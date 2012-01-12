@@ -29,7 +29,7 @@
             </tr>
     <tr>
       <td>
-        <% form_tag :action => 'update', :id => @group_category_type.id do %>
+        <%= form_tag :action => 'update', :id => @group_category_type.id do %>
         <%= display_frm_error(flash[:message]) %>
           <table  class="tbl-frm-details" cellpadding="0" cellspacing="0">
             <tr>
@@ -39,7 +39,7 @@
             </tr>
             <tr>
               <td></td>
-              <td><%= submit_tag "Update category type",{:class => 'btnAccept'} %></td>
+              <td><%= submit_tag "Save",{:class => 'btnAccept'} %></td>
             </tr>
             </table>
         <% end %>

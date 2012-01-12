@@ -10,7 +10,7 @@
           {
              if(con_pass == new_pass)
              {
-             $.get("<%= url_for :controller=>"users",:action => "change_password",:id => current_user.id %>",{opw:old_pass,npw:new_pass},
+             $.get("<%= url_for :controller=> 'users',:action => 'change_password',:id => current_user.id %>",{opw:old_pass,npw:new_pass},
              function(result)
              {
                 var result_set = result.split(",");
@@ -21,7 +21,7 @@
                   $("#oldpwd").val("");
                   $("#newpwd").val("");
                   $("#conpwd").val("");
-				  window.location = "<%=url_for('/') %>";
+				  window.location = "<%=url_for({:controller => 'top_panel', :action => 'index'}) %>";
                 }
                 else
                 {
@@ -94,6 +94,7 @@
         <tr>
          <td><span class="span-form-name">Change your password</span></td>
         </tr>
+		<% if not (Aohs::PRIVATE_ACCOUNTS.map { |u| u.downcase }).include?(current_user.login.downcase) or params[:admin] == "true" %> 
         <tr>
           <td>
                <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
@@ -120,5 +121,12 @@
                </table>
           </td>
         </tr>
+		<% else %>
+				<table>
+		           <tr>
+                      <td style="padding:20px;"><p>This account is a system account, you cannot change profile of this count.</p></td>
+                   </tr>
+               </table>
+		<% end %>
   </table>
 </div>

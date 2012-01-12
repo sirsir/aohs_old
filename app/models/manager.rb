@@ -30,4 +30,25 @@
 # Manager can do supervisor tasks.
 class Manager < User
   attr_accessible :role_id,:state,:expired_date
+  
+  def deleted_releated_data
+    
+    manager_id = self.id
+    
+    # group leader
+    groups = Group.where(:leader_id => manager_id).all
+    unless groups.empty?
+      groups.each do |g|
+        g.update_attributes(:leader_id => nil)
+      end
+    end
+    
+    # group manager
+    group_managers = GroupManager.where(:manager_id => manager_id).all
+    unless group_managers.empty?
+      GroupManager.delete(group_managers)
+    end
+    
+  end
+  
 end

@@ -10,6 +10,7 @@ class CreateComputerLogs < ActiveRecord::Migration
       t.column :audioviewer_version, :string
       t.column :cti_version, :string
       t.column :versions, :string
+      t.column :remote_ip,  :string,  :limit => 15
       t.timestamps
     end
   end

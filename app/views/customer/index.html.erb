@@ -1,10 +1,19 @@
 <% content_for :header do %>
-
+  <style>
+  	.carunderline {
+  		text-decoration:underline;
+  	}
+	td.td-car {
+		letter-spacing:1px;
+	}
+  </style>
+  <%= javascript_src_path('webtoolkit.url.js') %>
   <script type="text/javascript">
   	function getfilterKeys(){
 		return {
-			name: $("input[name=customer_name]").val(),
+			name: Url.encode($("input[name=customer_name]").val()),
 			phone: $("input[name=phone]").val(),
+			car: Url.encode($("input[name=car_no]").val()),
 			col: "<%=params[:col] %>",
 			sort: "<%=params[:sort] %>"			
 		}
@@ -22,6 +31,7 @@
     function filterClear(){
 		$("input[name=customer_name]").val("");
 		$("input[name=phone]").val("");
+		$("input[name=car_no]").val("");
     }
 	
     function sort_link(name){
@@ -50,7 +60,7 @@
           }
         });
     }
-	
+			
     function showImport(){
         var rurl = "<%=url_for(:controller => 'data',:action => 'import',:q => 'customers')%>";
         var window1 = window.open(rurl,"",'menubar=no,scrollbars=yes,location=yes,resizable=yes,width=500,height=270');
@@ -90,8 +100,12 @@
 		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
 		  	<tr>
 		  		<td align="left">
-				  <label>Name:</label> <input type="text" class="input-txt" name="customer_name" style="width:100px;" value="<%= params[:name] %>">
-				  <label>Phone:</label> <input type="text" class="input-int" name="phone" style="width:150px;" value="<%= params[:phone] %>"></td>
+				  <label>Name:</label> <input type="text" class="input-txt" name="customer_name" style="width:100px;" value="<%= @customer_name %>">
+				  <label>Phone:</label> <input type="text" class="input-int" name="phone" style="width:150px;" value="<%= params[:phone] %>">
+				  <span style="<%= (Aohs::MOD_CUST_CAR_ID ? "" : "display:none;") %>">
+				  <label>Car No:</label> <input type="text" class="input-txt" name="car_no" style="width:120px;" value="<%= @car_id %>">	 
+				  </span>
+				</td>
 				<td align="right">
 					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
 					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
@@ -114,6 +128,10 @@
       <th>No</th>
       <th><a href="#" class="linksort" onclick="sort_link('name')">Name</a></th>
       <th>Phone number(s)</th>
+	  <% if Aohs::MOD_CUST_CAR_ID %>
+	  <th>Car No.</th>
+	  <% end %>
+	<!--  <th>Number of Calls</th> -->
       <% if edit or delete %>
       <th>Action</th>
       <% end %>
@@ -121,10 +139,14 @@
     <% unless @customers.blank? %>
     <% @customers.each_with_index do |customer,i| %>
     <tr class="<%= cycle('odd','even') %>">
-      <td class="no"><%=(i+1)+($PER_PAGE*(@page.to_i-1)) %></td>
-      <td class="string" width="200px"><%= customer.customer_name %></td>
-      <td class="string"><%= customer.customer_numbers.empty? ? "-" : (customer.customer_numbers.map { |p| p.number.strip }).sort.join(', ') %></td>
-      <% if edit or delete %>
+      <td class="no" valign="top"><%=(i+1)+($PER_PAGE*(@page.to_i-1)) %></td>
+      <td class="string" valign="top" width="200px"><%= customer.customer_name %></td>
+      <td class="string" valign="top"><%= customer.customer_numbers.empty? ? "-" : (customer.customer_numbers.map { |p| format_phone(p.number.strip) }).sort.join(', ') %></td>
+	  <% if Aohs::MOD_CUST_CAR_ID %>
+	  <td valign="top" class="td-car"><%= ((customer.car_numbers.without_delete.empty?) ? "&nbsp;" : (customer.car_numbers.without_delete.map { |p| car_id_format(p.car_no) }).join(", ")).html_safe %>&nbsp;</td>
+	  <% end %>
+	<!--  <td class="int"><%#= customer.voice_log_count %>&nbsp;</td> -->
+	  <% if edit or delete %>
       <td class="tool"><%= link_image_tag('','edit.png',{:controller => "customer",:action=>"edit", :id => customer.id},{:title => 'Edit'}) %>
       <%= link_image_tag('','delete.png',"#",{:onclick => "del_customer(#{customer.id},\"#{customer.customer_name}\")",:title => 'Delete'}) %></td>
       <% end %>
@@ -133,7 +155,7 @@
     <% else %>
     <tr>
       <td class="no">1</td>
-      <td colspan="3" class="no-rec"><span class="span-display-none">No record.</span></td>
+      <td colspan="6" class="no-rec"><span class="span-display-none">No record.</span></td>
     </tr>
     <% end %>
   </table>

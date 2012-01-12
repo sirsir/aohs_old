@@ -3,6 +3,18 @@
 
 module Format
 
+   def default_page(page=1)
+      ((page.to_i <= 1) ? 1 : page.to_i)
+   end
+   
+   def default_datetime_format(d,fm='%Y-%m-%d %H:%M:%S')
+     return d.strftime(fm) rescue nil
+   end
+   
+   def default_time_format(t,fm='%H:%M:%S')
+     return t.strftime(fm) rescue nil
+   end
+   
    def format_sec(sec, short = false)
       sec = sec.to_i
        
@@ -60,6 +72,42 @@ module Format
     
   end
 
+  def format_phone(phone)
+     
+     #Thailand
+     
+     if phone.nil? or phone.empty? or phone =~ /^#/
+       return phone
+     else
+       ndigits = phone.to_s.length
+       phone = phone.to_s
+       if ndigits <= 6
+          # Ext XXXXX
+          return (phone[-4..-1]).to_s 
+       else
+         phone = remove_first_is_nine(phone)
+         if Aohs::USE_PHONE_PATTERN
+           ndigits = phone.to_s.length
+           case true
+             when ((ndigits == 9) and not (phone =~ /^02\d+/).nil?):
+               # BKK 02-999-9999
+               return phone.to_s.gsub(/^(\d\d)(\d\d\d)(\d+)/,"\\1-\\2\\3")
+             when (ndigits == 9):
+               # OTH 099-9999-999
+               return phone.to_s.gsub(/^(\d\d\d)(\d\d\d)(\d+)/,"\\1-\\2\\3")
+             when (ndigits == 10)
+               # Mobile 08-9999-9999
+               return phone.to_s.gsub(/^(\d\d\d)(\d\d\d)(\d+)/,"\\1-\\2\-\\3")
+             else
+               return phone
+           end
+         else
+           return phone
+         end
+       end
+     end
+  end
+  
   def audio_src_path(src)
 
     if $AUDIO_BASE_URL.blank? or $AUDIO_BASE_URL.length < 5
@@ -153,6 +201,42 @@ module Format
   def row_no(i,page,per_page)
     page = 1 if page.to_i <= 0
     return (i+1) + (per_page * (page.to_i-1))
+  end
+  
+  def remove_phone_format(phone)
+    return phone.to_s.gsub("-","")  
+  end
+  
+  def remove_nine_number_forp(p)
+    return remove_first_is_nine(p)
+  end
+  
+  def report_car_breakline(cars)
+    return cars.to_s.gsub(",","\n")
+  end
+  
+  def format_car_id(car_id)
+    unless car_id.empty?
+      a = car_id.split("-",2)[0] rescue ""
+      b = car_id.split("-",2)[1].split(/ /,2)[0] rescue ""
+      c = car_id.split("-",2)[1].split(/ /,2)[1] rescue ""
+      return sprintf("%-4s",a).gsub(" ","_") + "-" + sprintf("%-5s",b).gsub(" ","_") + " " + sprintf("%-4s",c).gsub(" ","_")
+    else
+      return car_id
+    end
+  end
+  
+  protected 
+  
+  def remove_first_is_nine(p)
+    a = p[0..0].to_i
+    if a == 9
+      return /(9)(.+)/.match(p)[2] rescue p
+    elsif a != 0
+      return "0" + p
+    else
+      return p
+    end
   end
   
 end

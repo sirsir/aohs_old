@@ -104,65 +104,47 @@ class BookmarkController < ApplicationController
       end
   end
 
-  # for 'voice_logs/shows/...' page
   def save_change_bookmark
 
     voice_log_id = params[:voice_log_id]
-    bookmarks = params[:bookmarks] || []
-    index = 0;
+    all_bookmark = params[:bookmarks] || []
 
-    db_bookmark = CallBookmark.find(:all, :conditions => {:voice_log_id => voice_log_id})
-    db_bookmark.each do |currentBookmark|
-      if not bookmarks[index].nil?
-        bookmark_info = bookmarks[index].split(",")
-
-        start_time = (bookmark_info[0].to_f)*1000
-        end_time = (bookmark_info[1].to_f)*1000
-        title = bookmark_info[2]
-        body = bookmark_info[3]
-
-        if currentBookmark.start_msec.to_f == start_time and
-           currentBookmark.end_msec.to_f == end_time and
-           currentBookmark.title == title and
-           currentBookmark.body == body
-
-          STDOUT.puts " -- Not Update bookmark id: #{currentBookmark.id}"
-        else
-          CallBookmark.update(currentBookmark.id, {:start_msec => start_time, :end_msec => end_time, :title => title, :body => body})
-          STDOUT.puts " -- Update Bookmark :: "+currentBookmark.id.to_s+" to start_msec:"+start_time.to_s+" end_msec:"+end_time.to_s+" title:"+title+" body:"+body
-        end
-
-      else
-        CallBookmark.destroy(currentBookmark.id)
-        STDOUT.puts " -- Delete Bookmark :: "
-      end
-      index += 1
+    bookmarks = []
+    all_bookmark.each do |cb|
+        start_time, end_time, title, body = cb.split(",")
+        bookmarks << { 
+            :voice_log_id => voice_log_id,
+            :start_msec => (start_time.to_f * 1000), 
+            :end_msec => (end_time.to_f * 1000), 
+            :title => title, 
+            :body => body
+        }
     end
-
-    while index < bookmarks.length
-      bookmark_info = bookmarks[index].split(",")
-
-      start_time = (bookmark_info[0].to_f)*1000
-      end_time = (bookmark_info[1].to_f)*1000
-      title = bookmark_info[2]
-      body = bookmark_info[3]
-
-      new_bookmark = CallBookmark.new(:voice_log_id =>voice_log_id,
-                                      :start_msec => start_time,
-                                      :end_msec => end_time,
-                                      :title => title,
-                                      :body => body);
-
-      if new_bookmark.save
-        STDOUT.puts " -- New Bookmark :: start_msec:"+start_time.to_s+" end_msec:"+end_time.to_s+" title:"+title+" body:"+body
-      else
-        STDOUT.puts " -- Cannot Create Bookmark :: start_msec:"+start_time.to_s+" end_msec:"+end_time.to_s+" title:"+title+" body:"+body
-      end
-
-      index += 1
+    
+    result = CallBookmark.update_bookmarks(voice_log_id, bookmarks)
+    if result
+      log("Update","CallBookmark",true,"voice_log_id:#{voice_log_id}")
+      STDOUT.puts " xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx #{voice_log_id}"
+    else
+      log("Update","CallBookmark",false,"voice_log_id:#{voice_log_id}")  
     end
-
+    
     render :text => "Update bookmark complete."
+    
   end
+
+   def get_bookmarks
+     voice_log_id = params[:voice_log_id].to_i
+
+     bookmark = []
+     bookmarks = CallBookmark.where(:voice_log_id => voice_log_id)
+     unless bookmarks.nil?
+       bookmarks.each do |bmk|
+         bookmark << {:st => bmk.start_msec, :en => bmk.end_msec, :title => bmk.title, :body => bmk.body}
+       end
+     end
+
+     render :json => bookmark
+   end
 
 end

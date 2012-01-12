@@ -26,18 +26,45 @@
       font-weight:bold;
       font-size:9pt;
       display:block;
-      padding-top:5px;
-      padding-left:5px;
+      padding:3px;
+	  margin:5px;
+	  text-align:center;
+	  background-color:#D2E0E6;
+	  border; 1px solid #e5e5e5;
+	  color:#666666;
+  }
+  span.pending {
+  	color:#5584E0;
+  }
+  span.running {
+  	color:#459E00;
+  }
+  span.error {
+  	color:#FCC90D;
+  }
+  span.stopped {
+  	color:#DD0000;
+  } 
+  span.disabled {
+  	color:#B6BABE;
   }
 </style>
+<script type="text/javascript">
+	
+	function reloadMe(){
+		window.location.reload();
+	}
+	window.setTimeout("reloadMe();",60*1000);
+	
+</script>
 <% end %>
-<span class="stitle">Tool</span>
+<div class="stitle">System Information and Tool</div>
 <div id="dbInfo" class="sysInfo">
 <span class="sysInfo-title">Application:</span><br/>
   <div class="sysInfo-detail">
-  <label class="mlabel">Host name:</label><label class="rlabel"><%="-" %></label><br/>
-  <label class="mlabel">Root path:</label><label class="rlabel"><%=RAILS_ROOT %></label><br/>
-  <label class="mlabel">Enviroment:</label><label class="rlabel"><%=RAILS_ENV %></label><br/>
+  <label class="mlabel">Host name:</label><label class="rlabel"><%=@hostname %></label><br/>
+  <label class="mlabel">Root path:</label><label class="rlabel"><%=Rails.root %></label><br/>
+  <label class="mlabel">Enviroment:</label><label class="rlabel"><%=Rails.env %></label><br/>
   </div>
 </div>
 <div id="dbInfo" class="sysInfo">
@@ -46,23 +73,97 @@
   <label class="mlabel">Adaptor:</label><label class="rlabel"><%=@db_info[:adapter] %></label><br/>  
   <label class="mlabel">Database:</label><label class="rlabel"><%=@db_info[:dbname] %></label><br/>
   <label class="mlabel">Host IP:</label><label class="rlabel"><%=@db_info[:host] %></label><br/>
-  <label class="mlabel">Port:</label><label class="rlabel">3306</label>  
-  </div>  
-</div>
-<div id="lgInfo" class="sysInfo">
-<span class="sysInfo-title">ActiveLogger:</span><br/>
-  <div class="sysInfo-detail">  
-  <label class="mlabel">ActiveLoggerId:</label><label class="rlabel"><%=@loggerid %></label><br/>
-  <label class="mlabel">VoiceLogs:</label><label class="rlabel"><%="voice_logs_#{@loggerid}" %></label><br/>
+  <label class="mlabel">Port:</label><label class="rlabel">3306</label><br/>
+  <label class="mlabel">MySQL Server:</label><label class="rlabel"><%=@mysqli %></label>  
   </div>
 </div>
 <div id="lgInfo" class="sysInfo">
-<span class="sysInfo-title">JFX Runtime Certificate:</span><br/>
+<span class="sysInfo-title">ActiveLogger:</span><br/>
+  <div class="sysInfo-detail"> 
+  <label class="mlabel">Logger:</label><label class="rlabel"><%=Aohs::CURRENT_LOGGER_TYPE %></label><br/>
+  <label class="mlabel">Active Logger Id:</label><label class="rlabel"><%=@loggerid %></label><br/>
+  <label class="mlabel">Voice Logs Table:</label><label class="rlabel"><%=VoiceLogTemp.table_name %></label><br/>
+  <label class="mlabel">Voice Logs Today Table:</label><label class="rlabel"><%=VoiceLogToday.table_name %></label><br/>
+  <label class="mlabel">Channel Status Table:</label><label class="rlabel"><%=CurrentChannelStatus.table_name %></label><br/>
+  <label class="mlabel">File Checker:</label><label class="rlabel"><%= Aohs::LOGGER_ACTIVE_CHECKER_PATH %></label><br/>
+  </div>
+</div>
+<div id="lgInfo" class="sysInfo">
+<span class="sysInfo-title">Variable/Module/Function:</span><br/>
   <div class="sysInfo-detail">
-  <label class="mlabel">Source 1:</label><label class="rlabel">JFXRuntimeCer.cer <a href="<%=get_root_url %>/resources/cert/JFXRuntimeCer.cer">[Download]</a></label><br/>
-  <label class="mlabel">Source 2:</label><label class="rlabel">LatestCRL.crl <a href="<%=get_root_url %>/resources/cert/LatestCRL.crl">[Download]</a></label><br/>
-  <label class="mlabel">Source 3:</label><label class="rlabel">pca2-g2.crl <a href="<%=get_root_url %>/resources/cert/pca2-g2.crl">[Download]</a></label><br/>
-  <label class="mlabel">Source 4:</label><label class="rlabel">SunMicrosystemsIncRootCA.crl <a href="<%=get_root_url %>/resources/cert/SunMicrosystemsIncRootCA.crl">[Download]</a></label><br/>    
-  <label class="mlabel">Source 5:</label><label class="rlabel">Import Cert Script.vbs <a href="<%=get_root_url %>/resources/cert/importcert.vbs">[Download]</a></label><br/> 
+  <label class="mlabel">Enable Keyword:</label><label class="rlabel"><%=Aohs::MOD_KEYWORDS %></label><br/>
+  <label class="mlabel">Enable Customer Info:</label><label class="rlabel"><%=Aohs::MOD_CUSTOMER_INFO %></label><br/>
+  <label class="mlabel">Enable Transfer Call:</label><label class="rlabel"><%=Aohs::MOD_CALL_TRANSFER %></label><br/>
+  </div>
+</div>
+<div id="lgInfo" class="sysInfo">
+<span class="sysInfo-title">Schedulers:</span><br/>
+  <div class="sysInfo-detail">
+  <table width="100%" border="1" bordercolor="#72b8eb" cellspacing="0">
+  	<tr>
+  		<th>Name</th>
+		<th>Detail</th>
+		<th>State</th>
+		<th>Updated</th>
+		<th>Start/Stop</th>
+		<th>Run Now.</th>
+  	</tr>
+	<% @jscheds.each do |j| %>
+	<tr>
+		<td><%=j.name %></td>
+		<td><%=j.desc %></td>
+		<td align="center"><span class="<%=j.state.to_s.downcase %>"><%=j.state %></span></td>
+		<td align="center"><%=j.updated_at.to_s %></td>
+		<td align="center">
+			<% if j.state == AmiScheduler::JS_STOP %>
+				<a href="<%= url_for(:controller => 'tools', :action => 'update', :id => j.id, :name => 'sched', :state => AmiScheduler::JS_PENDING) %>"><%=image_tag('start-icon.png',{:border => 0, :align => 'absmiddle'}) %> Start</a>
+			<% else %>
+				<a href="<%= url_for(:controller => 'tools', :action => 'update', :id => j.id, :name => 'sched', :state => AmiScheduler::JS_STOP) %>"><%=image_tag('stop-icon.png',{:border => 0, :align => 'absmiddle'}) %> Stop</a>
+			<% end %>
+		</td align="center">
+		<td align="center">Not Available</td>
+	</tr>
+	<% end %>
+  </table>
+  </div>
+</div>
+<div id="lgInfo" class="sysInfo">
+<span class="sysInfo-title">Public Website:</span><br/>
+  <div class="sysInfo-detail">
+  <table width="100%">
+  	<tr>
+  		<td><label class="mlabel">Web Site's status (PUBLIC/NOT PUBLIC):</label><label class="rlabel"><%= (@webpublic ? "PUBLIC" : "NOT PUBLIC") %></label></td>
+		<td align="right">
+			<% if not @webpublic %>
+				<a href="<%= url_for(:controller => 'tools', :action => 'update', :id => 1627, :name => 'webs', :run => 'true') %>"><%=image_tag('start-icon.png',{:border => 0, :align => 'absmiddle'}) %> Start</a>
+			<% else %>
+				<a href="<%= url_for(:controller => 'tools', :action => 'update', :id => 1627, :name => 'webs', :run => 'false') %>"><%=image_tag('stop-icon.png',{:border => 0, :align => 'absmiddle'}) %> Stop</a>
+			<% end %>			
+		</td>
+  	</tr>
+  </table>
+ </div>
+</div>
+<div id="lgInfo" class="sysInfo">
+<span class="sysInfo-title">Tables:</span><br/>
+  <div class="sysInfo-detail">
+	<table width="100%" border="1" bordercolor="#72b8eb" cellspacing="0">
+		<tr>
+			<th>Table name</th>
+			<th>Engine</th>
+			<th>Number of rows</th>
+			<th>Used (MB)</th>
+			<th>Free (MB)</th>
+		</tr>
+		<% @tablesi.each do |t| %>
+		<tr>
+			<td><%=t['table_name'] %></td>
+			<td align="center"><%=t['engine'] %></td>
+			<td align="right"><%=t['table_rows'].to_i %></td>
+			<td align="right"><%=sprintf("%0.2f",t['mb_size'].to_f) %></td>
+			<td align="right"><%=sprintf("%0.2f",t['mb_free'].to_f) %></td>
+		</tr>
+		<% end %>
+	</table>
   </div>
 </div>

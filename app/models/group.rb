@@ -27,11 +27,29 @@ class Group < ActiveRecord::Base
    validates_presence_of     :name
    validates_uniqueness_of   :name, :case_sensitive => false
    validates_length_of       :name, :minimum => 3
-  
+    
+   after_destroy :remove_group
+   
    def agent_count
    
-     return Agent.count(:id,:conditions => {:group_id => self.id }).to_i
+     return User.alive.where({:group_id => self.id }).count.to_i
          
    end
    
+   def remove_group
+     
+     group_id = self.id
+     
+     # remove category
+     gct = GroupCategorization.select(:id).where(:group_id => group_id)
+     gct.each { |x| GroupCategorization.destroy(x.id) }
+     
+     # remove group member
+     group_members = GroupMember.where(:group_id => group_id).all
+     unless group_members.empty?
+       GroupMember.delete(group_members)
+     end
+     
+   end
+ 
 end

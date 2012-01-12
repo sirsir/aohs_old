@@ -18,18 +18,15 @@ namespace :demo do
       task :create => :setup do
         create_customer
       end
+
+      desc 'Create all '
+      task :create_car => :setup do
+        create_cars_no
+      end    
    end
 end
 
 def create_customer
-
-  STDERR.puts "--> Creating customer and phone ..."
-
-  phones = VoiceLogTemp.find(:all,
-                :select => 'dnis',
-                :group => 'dnis',
-				:order => 'start_time desc',
-                :limit => 5000)
 
   customer_names = []
   customer_names_file = File.join(File.dirname(__FILE__),"CUSTOMERS.txt")
@@ -37,63 +34,54 @@ def create_customer
     customer_names << "#{line.to_s.strip}".downcase
   end
   
-  unless phones.blank?
-    i = 5
-    current_customer = ""
-    cust_id = 0
-    phones.each do |pc|
-
-      next if pc.dnis.nil?
-      
-      p_number = pc.dnis
-
-      # add cust
-
-      if i >= 5
-        i = 0
-        current_customer = customer_names.shift
-        if current_customer.nil?
-          current_customer = customer_names[rand(customer_names.length)].to_s + rand(1000).to_s
+  customer_names.each do |c|
+    
+    cust = Customer.new(:customer_name => c)
+    cust.save
+    
+    (1 + rand(3)).times do 
+        case rand(3)
+        when 0
+          phone = '08' + sprintf('%08d',rand(1000000))    
+        when 1
+          phone = '02' + sprintf('%07d',rand(1000000)) 
+        else
+          phone = '0' + (rand(7) + 1).to_s + sprintf('%07d',rand(1000000)) 
         end
-        if not Customers.exists?(:customer_name => current_customer)
-          Customers.new(:customer_name => current_customer).save
-        end
-        cust_id = Customers.find(:first,:conditions => {:customer_name => current_customer}).id
-        i = i + rand(2)
-      end
-
-      STDERR.puts " get #{current_customer},#{p_number}"
-      
-      i = i + 1
-
-      # add numbers
-      phone_id = nil
-      if not CustomerNumbers.exists?(:customer_id => cust_id ,:number => p_number)
-        CustomerNumbers.new(:customer_id => cust_id ,:number => p_number).save
-        phone_id = CustomerNumbers.find(:first,:conditions => {:customer_id => cust_id ,:number => p_number}).id
-      end
-
-      # map cust and number
-
-      vcs = VoiceLogTemp.find(:all,:conditions => "(ani = '#{p_number}' or dnis = '#{p_number}')", :limit => 1000)
-      unless vcs.empty?
-        vcs.each do |vc|
-          x = VoiceLogCustomer.create(:voice_log_id => vc.id, :customer_id => cust_id)
-        end
-      end
-
-      STDERR.puts " add -"
-      
+        CustomerNumber.new(:customer_id => cust.id ,:number => phone).save
     end
+    
   end
+  
+end
 
+def create_cars_no
+    del_cars_no
+    
+    chrs = "กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ".split("")
+    
+    cs = Customer.all
+    cs.each do |c|
+        (1 + rand(2)).times do
+            ch = "#{chrs[rand(chrs.length)]}#{chrs[rand(chrs.length)]}"
+            no = sprintf("%04d",rand(10000)).to_s          
+            CarNumber.new({:customer_id => c.id, :car_no => "#{ch}#{no}"}).save!
+            ch = nil
+            no = nil
+        end
+    end
+  
+end
+
+def del_cars_no
+  CarNumber.delete_all
 end
 
 def remove_customer
 
   STDERR.puts "--> Removing customer and phone ..."
   
-  Customers.delete_all
-  CustomerNumbers.delete_all
-  VoiceLogCustomer.delete_all 
+  Customer.delete_all
+  CustomerNumber.delete_all
+
 end

@@ -23,28 +23,11 @@
 #
 
 class VoiceLogTemp < VoiceLog
+
   set_table_name("voice_logs_1")
-
-
-#def after_save
-#     if self.table_name == "voice_logs_1" or self.table_name == "voice_logs_2"
-#       unless self.agent_id.blank? or self.start_time.blank?
-#       count_statistic_call(self.agent_id,self.start_time.strftime('%Y-%m-%d'))
-#       end
-#     end
-#end
-#
-# def count_statistic_call(agent,days)
-#       stype = StatisticsType.find(:first,:select => "id",:conditions =>{:target_model => 'VoiceLog' ,:value_type => 'count',:by_agent => 1})
-#       unless agent.blank? and days.blank?
-#                  if DailyStatistics.exists?({:start_day => days,:agent_id => agent,:statistic_type_id => stype})
-#                      before_daily = DailyStatistics.find(:first,:conditions =>{:start_day => days,:agent_id => agent,:statistic_type_id => stype})
-#                      before_daily_value = before_daily.value + 1
-#                      DailyStatistics.update(before_daily.id,:value => before_daily_value)
-#                  else
-#                      DailyStatiscs.new(:start_day => days,:agent_id => agent,:statistic_type_id => stype,:value => 1)
-#                  end
-#         end
-# end
-
+  
+  def self.table_name_prefix
+    return "voice_logs_"
+  end
+  
 end

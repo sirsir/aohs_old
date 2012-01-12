@@ -3,7 +3,7 @@ class CallTagsController < ApplicationController
   layout "control_panel"
 
   before_filter :login_required
-  before_filter :permission_require, :except => [:tags]
+  before_filter :permission_require, :except => [:tags,:load_tags]
   
   def index
 
@@ -28,7 +28,6 @@ class CallTagsController < ApplicationController
       conditions << "tags.name like '#{params[:tag]}%%'"
     end
 
-    @filter_enable = true unless conditions.empty?
     @tag_group = nil
     
     if params.has_key?(:group_id) and not params[:group_id].empty?
@@ -36,18 +35,11 @@ class CallTagsController < ApplicationController
       @tag_group = TagGroup.find(params[:group_id])
     end
   
-    @call_tags = Tags.paginate(
-                :page => params[:page],
-                :per_page => $PER_PAGE,
-                :include => [:taggings,:tag_group],     
-                :order => sort_key,
-                :group => "tags.id",
-                :conditions => conditions)
+    @call_tags = Tags.includes([:taggings,:tag_group]).where(conditions).order(sort_key).group("tags.id")
+    @call_tags = @call_tags.paginate(:page => params[:page], :per_page => $PER_PAGE)
 
-    @tag_groups = TagGroup.find(:all,:order => 'name')
-
-    @filter_enable = false if not $FILTER_SHOW_ENA
-    
+    @tag_groups = TagGroup.order('name')
+     
   end
 
   def new
@@ -157,9 +149,9 @@ class CallTagsController < ApplicationController
     jtags = []
     
     if voice_id.to_i > 0
-      tags = Tagging.find(:all,:conditions => {:taggable_id => voice_id},:group => :tag_id)
+      tags = Taggings.where({:taggable_id => voice_id}).group('tag_id')
       tags_id = tags.map { |t| t.tag_id }
-      tag_groups = TagGroup.find(:all,:joins => :tags,:conditions => {:tags => {:id => tags_id}},:order => 'tag_groups.name,tags.name',:group => :name) unless tags_id.blank?
+      tag_groups = TagGroup.joins([:tags]).where({:tags => {:id => tags_id}}).order('tag_groups.name,tags.name').group('tag_groups.name').all unless tags_id.blank?
       unless tag_groups.blank?
          tag_groups.each do |tg|
            jtags << {:name => tg.name , :tags => (tg.tags.map { |t| tags_id.include?(t.id) ? "#{t.id},#{t.name}" : nil }).compact}
@@ -182,11 +174,12 @@ class CallTagsController < ApplicationController
   def load_tags
 
     tag_info = []
-    voice_log_id = params[:voice_id]
-    tags = Tags.find(:all, :joins => :tag_group, :order => 'tag_groups.name,tags.name')
+    voice_log_id = params[:voice_id].to_i if not params[:voice_id].blank?
+    tags = Tags.joins(:tag_group).order('tag_groups.name, tags.name')
 
     tags.each do |tag|
-      tagging = Tagging.find(:first, :conditions => {:taggable_id => voice_log_id, :tag_id => tag.id})
+      tagging = Taggings.where({:taggable_id => voice_log_id, :tag_id => tag.id}).first
+      STDOUT.puts voice_log_id.to_s+" "+tag.id.to_s
       if not tagging.nil?
         tag_info << {:tag_id => tag.id, :tag_name => tag.name, :tag_group => tag.tag_group.name, :status => "checked"}
       else

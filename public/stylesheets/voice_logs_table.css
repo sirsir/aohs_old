@@ -1,0 +1,174 @@
+#vcpage {
+  width:45px;
+  font-size:10px;
+  border:1px solid #b4e1ff;
+  text-align:center;
+  font-weight:bold;
+  color: #003399;
+  padding:1px;
+}
+#perpage {
+  width:20px;
+  font-size:10px;
+  border:1px solid #b4e1ff;
+  text-align:center;
+  color: #003399;
+  padding:1px;
+}	  
+#div-tblCtrl {
+  background:url('../images/bg002.png');
+  background-position:bottom;
+  border-bottom:1px #b4e1ff solid;
+}
+#div-tblCtrl td {
+  padding-top:1px;
+  padding-bottom:1px;
+  font-size:11px;
+}
+.tbl-header th {
+  background:url('../images/bg002.png');
+  background-position:top;
+  border-left:1px solid #b4e1ff;
+  text-align:center;
+  padding-top:2px;
+  padding-bottom:2px;
+  padding-left:0px;
+  padding-right:0px;          
+  font-size:8pt;
+}
+.tbl-summary th {
+  background:url('../images/bg002.png');
+  background-position:top;
+  border-left:1px solid #b4e1ff;
+  border-top:1px solid #3399ff;
+  border-bottom:1px solid #3399ff;
+  text-align:center;
+  padding-top:2px;
+  padding-bottom:2px;
+  padding-left:2px;
+  padding-right:2px;
+  font-size:8pt;
+}
+.tbl-header th a:visited {
+	  text-decoration:underline;
+  color:#000000;
+}
+.tbl-header td {
+  padding-top:0px;
+  padding-bottom:0px;          
+  padding-left:1px;
+  padding-right:1px;
+  border-right:0px solid #FFFFFF;
+}
+#div-summary {
+	padding-left:3px;
+}
+#div-tbl-inner {
+  border-top:1px #b4e1ff solid;
+}
+#div-tbl-inner {
+  overflow:scroll;
+  overflow-x:hidden;
+  background:#ffffff;
+}
+#div-tbl-outer {
+  overflow:hidden;
+}
+#div-tbl-outer {
+  background:url('../images/bg002.png');
+  background-repeat:repeat-x;
+  background-position: top;
+}
+#div-tbl-outer table th,#div-tbl-outer table td {
+	  padding-left:1px;
+  padding-right:1px;
+}	  
+#mytable td {
+  font-size:11px;
+  border-left:1px solid #b4e1ff;
+  border-bottom:1px solid #b4e1ff;
+  padding-top:1px;
+  padding-bottom:1px;
+  padding-left:2px;
+  padding-right:2px;
+}
+#mytable th {
+  padding:0px;
+  padding-left:2px;
+  padding-right:2px;
+} 
+#mytable .odd {
+  background: #fafdff;
+}
+#mytable .even {
+  background: #f1f8ff;
+}
+#mytable .specify-red {
+      color:#FF3322;
+  background-color:#FFDDEE;
+}
+#mytable .click {
+  background-color:#C5DBEC;
+}
+td .no-item {
+  background:url('../images/bg012.png');
+}
+#mytable .rowSelected {
+  background: #bfdfff;
+}
+#mytable .item-ctrl {
+  padding-left:0px;
+}
+#mytable .rowSelectedPlay {
+  background: #c2ffc2;
+}
+ul.call-button {
+	list-style:none;
+margin:0px;
+margin-left:2px;
+padding:0px;
+}
+ul.call-button li {
+	margin:0px;
+padding:1px;
+float:left;
+cursor:pointer;
+}
+ul.tool-action {
+margin:0px;
+padding:0px;	  	
+}
+ul.tool-action li {
+margin:0px;
+padding:0px;
+cursor:pointer;	  	
+}
+.summary-title { color: #333333; }
+.summary-result {}
+html,body {
+overflow:hidden;
+}
+.btntrf {
+text-align:right;
+float:left;
+width:13px;
+cursor:pointer;
+}
+.div-no {
+text-align:left;	
+float:left;	
+width:26px;
+}
+tr.sub-odd {
+background-color:#fdfdfd;
+}
+tr.sub-even {
+background-color:#fdfdfd;
+}	
+.carunderline {
+text-decoration:underline;
+}
+.carnounderline {
+text-decoration:none !important;
+color:#ff0000;
+}

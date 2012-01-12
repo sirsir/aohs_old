@@ -13,6 +13,8 @@
 #  configuration_group_id :integer(10)
 #
 
+require 'yaml'
+
 class Configuration < ActiveRecord::Base
 
    has_one :configuration_data , :foreign_key => "configuration_id"
@@ -21,11 +23,10 @@ class Configuration < ActiveRecord::Base
    validates_length_of       :variable,    :within => 4..100
    validates_length_of       :variable_type,    :within => 4..255
    validates_uniqueness_of   :variable , :scope => [:configuration_group_id]
-   #validates_presence_of     :default_value
+   
+   after_update :after_update_configurations
 
-  require 'yaml'
-  
-  def after_update
+	def after_update_configurations
 
     old_val = self.default_value_was
     new_val = self.default_value
@@ -75,7 +76,44 @@ class Configuration < ActiveRecord::Base
                               
 
   end
+  
+  def self.convert_type(value,value_type)
 
+      type_name, value_ranges = value_type.split(/[\[\]]/)
+      case value_ranges
+      when /^(\d+)\.\.\.?(\d+)$/
+        @valid_range = ($1.to_i)..($2.to_i)
+      when /,/
+        @valid_data_list = value_ranges.split(',')
+      else
+        # [FIXME] should be logged
+        @valid_range = nil
+        @valid_data_list = nil
+      end
+
+      case type_name
+      when "string"
+        @value_type = "string"
+        @value = value.to_s
+      when "integer"
+        @value_type = "integer"
+        @value = value.to_i
+      when "boolean"
+        @value_type = "boolean"
+        if value =~ /^t/i
+          @value = true
+        else
+          @value = false
+        end
+      else
+       # [FIXME] should be logged
+       @value_type = nil
+       @value = nil
+      end
+
+      return @value
+    end
+    
    # ball commment
 
   #has_many :users, :through => "ConfigurationData"

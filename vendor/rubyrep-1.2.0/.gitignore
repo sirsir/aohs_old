@@ -1,0 +1,7 @@
+statsvn/*
+coverage/*
+profile/*
+doc/*
+website/.*\.html$
+pkg/*
+tmp/*

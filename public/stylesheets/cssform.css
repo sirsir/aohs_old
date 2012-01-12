@@ -183,6 +183,20 @@
 .div-form-default-style1 .tbl-frm-details .input-text {
     width:200px;
 }
+.div-form-default-style1 .tbl-frm-details .input-text-short {
+    width:160px;
+}
+.div-form-default-style1 .tbl-frm-details .input-text-readonly, input.input-text-readonly {
+    border:0px solid #c0c0c0;
+	padding:2;
+	background:none;
+}
+.div-form-default-style1 .tbl-frm-details .input-text-car1 {
+    width:35px;
+}
+.div-form-default-style1 .tbl-frm-details .input-text-car2 {
+    width:40px;
+}
 .div-form-default-style1 .tbl-frm-details select {
     width:150px;
 }
@@ -206,8 +220,8 @@
     margin-top:13px;
     padding-top:3px;
     padding-bottom:3px;
-    padding-left:3px;
-    padding-right:3px;
+    padding-left:8px;
+    padding-right:8px;
 }
 .div-form-default-style1 .div-frm-message {
     width:550px;
@@ -291,6 +305,7 @@
     margin-top:5px;
     padding-top:3px;
     padding-bottom:3px;
-    padding-left:3px;
-    padding-right:3px;
+    padding-left:5px;
+    padding-right:5px;
+	
 }

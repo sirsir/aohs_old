@@ -10,13 +10,13 @@
   label {
     font-weight:bold;
   }
-  .txtbox {
+  .txtbox,#logger_type {
     width:200px;
 	padding:4px;
 	border:1px solid #87A4D6;
 	background-color:#FAFAFA;
   }
-  .btnok {
+  .btnok  {
     margin-top:9pt;
     padding:4px;
 	font-weight:bold;
@@ -40,44 +40,66 @@
 	background-position:bottom;
   	background-image:url('<%=image_path('bluebg001.png') %>');
   }
-  #body {
-
-  }
+  #logger_type {
+  	width:210px;	
+  } 
   .login-dialog {
   	background-repeat:repeat-x;
 	background-position:bottom;
 	background-color:#FFFFFF;
   }
 </style>
+<script type="text/javascript">
+	function switch_url_logger(){
+		var a = $("#logger_type option:selected");
+		window.location.href = a.val();
+	} 
+</script>
 <% end %>
 
 <table width="100%">
 	<tr>
 		<td align="center">
-			<div class="login-dialog" style="width:620px; margin-top:10%;padding:10px; padding-top:20px; border:0px solid #cccccc;">			
+			<div class="login-dialog" style="width:650px; margin-top:10%;padding:10px; padding-top:20px; border:0px solid #cccccc;">			
 			<table>
 				<tr>
-					<td valign="top" style="border-right:1px solid #cccccc; padding-top:20px;"><%=image_tag('customer_logo.png',{:alt => ''}) %></td>
-					<td valign="top" width="500px" style="padding-top:30px;">
-					<div align="center" style="margin-top:0px;"><%= image_tag 'ami_logo.gif',{:align => 'middle'} %></div>
-					<div align="center" style="margin-top:0px"><span class="sname">AmiVoice<sup>&reg;</sup> Operator's Help System Login</span></div>
+					<% if Aohs::WEB_CLOGO != false%>
+					<td valign="middle" style="border-right:1px solid #cccccc; padding-top:20px; padding-right:25px;"><%=image_tag("logo/#{Aohs::WEB_CLOGO}.png",{ :alt => Aohs::REPORT_HEADER_TITLE }) %></td>
+					<% end %>
+					<td valign="top" width="510" style="padding-top:30px; padding-left:10px;">
+					<div align="center" style="margin-top:0px;">
+						<%= image_tag 'ami_logo.gif',{:align => 'middle'} %><!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<%= image_tag 'logo/acsi_logo.png',{:align => 'middle'} %>-->
+					</div>
+					<div align="center" style="margin-top:15px"><span class="sname">AmiVoice<sup>&reg;</sup> Operator's Help System Login</span></div>
 					<div align="center" style="margin-top:15px;">
 					<% if @reset == false %>
-					<% form_tag session_path do -%>
+					<%= form_tag session_path do -%>
 			  			<table cellspacing="2">
 				    		<tr><td align="left"><label for="login">Username:</label></td></tr>
 				    		<tr><td align="left"><%= text_field_tag 'login',params[:login],{:class => 'txtbox',:autocomplete => 'OFF'} %></td></tr>
 				    		<tr><td align="left"><label for="password">Password:</label></td></tr>
-				    		<tr><td align="left"><%= password_field_tag 'password',"",{:class => 'txtbox',:autocomplete => 'OFF' } %></td></tr>
-				    		<tr><td></td></tr>
+				    		<tr><td align="left"><%= password_field_tag 'password','',{:class => 'txtbox',:autocomplete => 'OFF' } %></td></tr>
+				    		<% if Aohs::SHOW_LOGGER_SWITCH %>
+							<tr><td align="left"><label for="login">Logger:</label></td></tr>
+							<tr><td align="left">
+								<select id="logger_type" name="logger_type" onchange="switch_url_logger()">
+									<% xid = AmiConfig.get('client.aohs_web.activeId').to_i %>
+									<% Aohs::LOGGERS_LIST.each do |x| %>
+										<option value="<%=x[:url] %>" <%= "selected" if xid == x[:id] %>><%=x[:name] %></option>
+									<% end %>
+								</select>
+							</td></tr>
+							<% end %>
+							<tr><td></td></tr>
 				    		<!-- <tr><td align="left"><%= check_box_tag 'remember_me' %> <label for="remember_me">Remember me on this computer</label></td></tr> -->
 				    		<tr><td></td></tr>
 				    		<tr><td><%= submit_tag ' Log in ',{:class => 'btnok'} %></td></tr>
 			  			</table>
 					<% end %>
+                                        </div>
 					<% else %>
 					<!-- For change password from default -->
-					<% form_tag session_path do -%>
+					<%= form_tag session_path do -%>
 					  <%= hidden_field_tag 'change_password','true' %>
 					  <table cellspacing="2">
 					    <tr><td align="left"><label for="login">Username:</label></td></tr>
@@ -102,7 +124,7 @@
 					</td>
 				</tr>
 			</table>
-
+                          
 			</div>			
 		</td>
 	</tr>

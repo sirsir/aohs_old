@@ -19,14 +19,13 @@ class StatisticsType < ActiveRecord::Base
    #   :value_type
    # for example,
    #  {:target_model=>"ResultKeyword",:by_agent=>false, :value_type=>"sum"}
+   
    def self.find_statistics(params)
-        StatisticsType.find(:first,
-                          :conditions=>[":target_model=target_model and :by_agent=by_agent and :value_type=value_type",
-                                        params])
+        StatisticsType.where([":target_model=target_model and :by_agent=by_agent and :value_type=value_type",params]).first
    end
+   
    def self.find_statistics_all(params)
-        StatisticsType.find(:all,
-                          :conditions=>[":target_model=target_model and :by_agent=by_agent and value_type in (:value_type) ",
-                                        params])
+        StatisticsType.where([":target_model=target_model and :by_agent=by_agent and value_type in (:value_type) ",params])
    end
+   
 end

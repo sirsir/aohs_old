@@ -6,8 +6,8 @@ class TopPanelController < ApplicationController
    
    def index
 
-     @calls_browser_url = AmiConfig.get("client.aohs_web.callBrowserShotcut")
-     @min_update_report_today = AmiConfig.get("client.aohs_web.autoUpdateReportToday")
+     @calls_browser_url = $CF.get("client.aohs_web.callBrowserShotcut")
+     @min_update_report_today = $CF.get("client.aohs_web.autoUpdateReportToday")
      
    end
 
@@ -16,12 +16,13 @@ class TopPanelController < ApplicationController
       with_my_agents = true
                 
       # today all agent
-      rs = find_report_today({:with_agent => permission_by_name('tree_filter')})
+      rs = find_report_today({:with_agent => permission_by_name('tree_filter'), :me => (permission_by_name('tree_mycall') and Aohs::LOGIN_BY_AGENT)})
         
       rs_all = rs[:all]
       rs_my = rs[:my]
       rs_my_all = rs[:my_all]
-        
+      rs_me = rs[:me]
+      
       result = { :all => nil, :my => nil, :my_all => nil, :date => Time.new.strftime("%Y-%m-%d %H:%M:%S") }
       
       unless rs_all.nil?
@@ -49,7 +50,7 @@ class TopPanelController < ApplicationController
           :calls => number_with_delimiter(rs_my[:calls]),
           :inbound => number_with_delimiter(rs_my[:inbound]),
           :outbound => number_with_delimiter(rs_my[:outbound]),  
-          :duration => format_sec(rs_all[:duration]),
+          :duration => format_sec(rs_my[:duration]),
           :ngwords => number_with_delimiter(rs_my[:ngwords]),
           :mustwords => number_with_delimiter(rs_my[:mustwords]),         
           :agent => rs_my[:avg_agent],
@@ -73,9 +74,25 @@ class TopPanelController < ApplicationController
          :ngwords  => "#{float_with_delimiter(rs_my_all[:ngwords])}%"              
        }        
      end
-                         
+
+     unless rs_me.nil?
+       result[:me] = { 
+         :agents => "#{number_with_delimiter(rs_me[:agents])}",
+         :calls => "#{number_with_delimiter(rs_me[:calls])}",
+         :inbound => "#{number_with_delimiter(rs_me[:inbound])}",
+         :outbound => "#{number_with_delimiter(rs_me[:outbound])}",
+         :duration => "#{number_with_delimiter(rs_me[:duration])}",            
+         :mustwords=> "#{number_with_delimiter(rs_me[:mustwords])}",            
+         :ngwords  => "#{number_with_delimiter(rs_me[:ngwords])}"              
+       }
+     end
+     
       render :json => result
 
    end 
 
+   def denied
+     
+   end
+ 
 end

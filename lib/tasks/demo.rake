@@ -39,13 +39,8 @@ namespace :demo do
 
    end
 
-   desc "test"
-   task :test => :setup do
-     AmiConfig.set_database_configuration
-   end
-
   desc 'map agent to extension and dids'
-  task :map_agent_to_did do
+  task :map_agent_to_did => :setup do
      STDOUT.puts "---- start mapping agent's  extension for dids number. ----"
      emap = ExtensionToAgentMap.find(:all)
      unless emap.empty?
@@ -64,5 +59,11 @@ namespace :demo do
      else
      STDOUT.puts "---- can not found agent's extension task terminated ~!"
      end
-  end  
-end
+  end
+
+  desc 'test'
+  task :test => :setup do
+    AmiScheduler.create_job
+  end
+
+ end

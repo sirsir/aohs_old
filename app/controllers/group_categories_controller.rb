@@ -11,14 +11,14 @@ class GroupCategoriesController < ApplicationController
         conditions[:id] = params[:tabc] if params[:tabc].to_i > 0
       end
       
-      @group_category_types = GroupCategoryType.find(:all,:order => 'order_id asc', :include => "categories",:conditions => conditions)
-      @group_category_types_all = GroupCategoryType.find(:all,:order => 'order_id asc')
+      @group_category_types = GroupCategoryType.includes("categories").where(conditions).order('order_id asc')
+      @group_category_types_all = GroupCategoryType.order('order_id asc')
      
    end
 
    def new
 
-      category_type = GroupCategoryType.find(:all)
+      category_type = GroupCategoryType.all
 
       category_type.each do |x|
         if x.name == params[:type_name]
@@ -130,7 +130,7 @@ class GroupCategoriesController < ApplicationController
 
    def can_delete(id)
 
-     gcate = GroupCategorization.find(:all,:conditions => {:group_category_id => id})
+     gcate = GroupCategorization.where({:group_category_id => id}).all
 
      if gcate.empty?
        return true
@@ -142,7 +142,7 @@ class GroupCategoriesController < ApplicationController
 
    def display_tree
 
-     gcdts = GroupCategoryDisplayTree.find(:all)
+     gcdts = GroupCategoryDisplayTree.all
      n = 0
      cate_type = []
      if !gcdts.empty?
@@ -178,7 +178,7 @@ class GroupCategoriesController < ApplicationController
 
        parent_id = nil
        order_list.each_with_index do |x,i|
-         gcdt = GroupCategoryDisplayTree.find(:first,:include => 'group_category_type',:conditions => "group_category_types.name like '#{x[:name]}'")
+         gcdt = GroupCategoryDisplayTree.includes('group_category_type').where("group_category_types.name like '#{x[:name]}'").first
          GroupCategoryDisplayTree.update(gcdt.id,{:parent_id => parent_id })
          parent_id = gcdt.id
          
@@ -191,7 +191,7 @@ class GroupCategoriesController < ApplicationController
      
      flash[:notice] = "Save change was successfully."
      
-     redirect_to :controller => 'group_category',:action => 'display_tree'
+     redirect_to :controller => 'group_categories',:action => 'display_tree'
      
    end
 
@@ -199,7 +199,7 @@ class GroupCategoriesController < ApplicationController
 
     GroupCategoryDisplayTree.delete_all
     
-    gcts = GroupCategoryType.find(:all,:order => 'order_id asc')
+    gcts = GroupCategoryType.order('order_id asc')
 
     tree_list = []
     gcts_id = []
@@ -211,7 +211,7 @@ class GroupCategoriesController < ApplicationController
     parent_id = nil
     gcts_id.each do |gct|
       GroupCategoryDisplayTree.new({:group_category_type => gct,:parent_id => parent_id }).save!
-      gcdt_id = GroupCategoryDisplayTree.find(:first,:conditions => {:group_category_type => gct}).id
+      gcdt_id = GroupCategoryDisplayTree.where({:group_category_type => gct}).first.id
       parent_id = gcdt_id
     end
 

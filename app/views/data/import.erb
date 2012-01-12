@@ -47,13 +47,13 @@
   <span class="span-upload">Import data: <%= @upload_type %></span>
   <div id="div-ctrl-control">
     <span>
-      Please choose CSV source file to upload (UTF-8) only. <br> Before import data, please check data, file encoding and file format.<br>
+      Please choose source file to upload (UTF-8). <br> Before import data, please check data and format  <br>
     </span>
     <div style="margin-top:10px;">
       <% if flash.has_key?(:uperror) %>
       <div class="div-error"><%= flash[:uperror]%></div>
       <% end %>
-      <% form_tag({:action => 'upload_file',:q => @upload_type},:multipart => true) do |f|  %>
+      <%= form_tag({:action => 'upload_file',:q => @upload_type},:multipart => true) do |f|  %>
         <p><label><b>Source file</b></label> :
         <%= file_field 'upload', 'datafile', {:class => 'fupload'} %></p>
         <br/>

@@ -1,15 +1,17 @@
 <%
-@tl_enabled = (AmiConfig.get('client.aohs_web.enableCallsTimeline').to_i == 1 ? true : false)
+	@tl_enabled = (($CF.get('client.aohs_web.enableCallsTimeline').to_i == 1 ? true : false) and Aohs::CALL_TIMELINE_ONCUST)
 %>
 <% content_for :header do %>
 
+  <%= stylesheet_src_path '/jquery/jquery.autocomplete/jquery.autocomplete_blue.css' %>
+  <%= stylesheet_src_path '/jquery/jquery-image-dropdown-2.36/msdropdown/dd.css' %>
   <%= javascript_src_path '/jquery/jquery.autocomplete/lib/jquery.bgiframe.min.js' %>
-  <%#= javascript_src_path '/jquery/jquery.autocomplete/lib/jquery.dimensions.js' %>
   <%= javascript_src_path '/jquery/js/jquery.download.js' %>
   <%= javascript_src_path 'webtoolkit.url.js' %>
   <%= stylesheet_src_path 'for_callsearch.css' %>
   <%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
-      
+  <%= javascript_src_path '/jquery/jquery.autocomplete/jquery.autocomplete.min.js' %>
+        
   <style type="text/css">
 
     .div-cond-ctrl {
@@ -23,14 +25,14 @@
     }
     #ami-viewer {
         margin-top:2px;
-        margin-left:2px;
+        margin-left:0px;
         margin-bottom:2px;        
         border:1px solid #cccccc;
         background:url('<%= image_path('gradient-mod.png') %>');
     }
     #voicelog-tbl {
         margin-top:2px;
-        margin-left:2px;
+        margin-left:0px;
         margin-bottom:2px;          
         border:1px solid #b4e1ff;
     }
@@ -74,19 +76,29 @@
     }
 
     function resizeWindow(e) {
+		
         var intBrowserHeight = $(window).height();
         var intBrowserWidth = $(window).width();
+		var headerHeight = $("#header").height();		
         var divCustCtrlWidth = $("#div-custCtrl").width();
-        $("#ami-viewer").css("width",intBrowserWidth-divCustCtrlWidth-6);
-        $("#voice-timeline").css("width",intBrowserWidth-divCustCtrlWidth-4);
-        $("#div-tblCtrl").css("width",intBrowserWidth-divCustCtrlWidth-4);
-        $("#div-tbl-outer").css("width",intBrowserWidth-divCustCtrlWidth+12);
-        var divTblOuter = $("#div-tbl-outer");
-        var divTblInner = $("#div-tbl-inner");
-        divTblOuter.css("height",intBrowserHeight-$("#voice-timeline").height()-$("#ami-viewer").height()-$("#header").height()-57);
-        divTblInner.css("height",divTblOuter.height()-$("#div-tblCtrl").height()-15);
-        divTblInner.css("width",$(".tbl-header").width()+10);
-    }
+		var searchPanelWidth = $("#div-cond-ctrl").width();
+		var pageCtrlWidth = intBrowserWidth-searchPanelWidth-6;
+		
+        $("#ami-viewer").css("width",pageCtrlWidth);
+        $("#voice-timeline").css("width",pageCtrlWidth);
+        $("#div-tblCtrl").css("width",pageCtrlWidth);
+        
+		$(".expand-cell").css("width",pageCtrlWidth+10);
+		
+		var divTblOuter = $("#div-tbl-outer");       
+		divTblOuter.css("height",intBrowserHeight-$("#ami-viewer").height()-$("#header").height()-57);
+        divTblOuter.css("width",pageCtrlWidth+5);
+		
+		var divTblInner = $("#div-tbl-inner");
+		divTblInner.css("height",divTblOuter.height()-$("#div-tblCtrl").height()-33);
+        divTblInner.css("width",pageCtrlWidth+3);
+    
+	}
 
     $(document).ready(function(){
         
@@ -168,13 +180,13 @@
 </script>
 
 <% end %>
-
+ 
 <%= render :partial => 'customers/customer_dialog'%>
 <%= render :partial => 'shared/voice_log_rmenu'%>
 
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
-    <td class="div-cond-ctrl" valign="top">
+    <td class="div-cond-ctrl" id="div-cond-ctrl" valign="top">
         <div style="padding-left:0px; overflow:hidden; width:205px;" id="divSearchPanel"><%= render :partial => 'customers/customer_cond' %></div>
 		<div style="overflow:hidden; width:16px;" id="divBtnShowPanel" style="display:none; padding-top:3px; padding-left:2px; padding-right:2px"><a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a></div>
     </td>

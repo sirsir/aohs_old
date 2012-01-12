@@ -9,21 +9,19 @@ class ConfigurationsController < ApplicationController
 
     @config = []
 
-    @cfs = ConfigurationGroup.find(:all,
-                              :conditions => {:configuration_type => 'C'},
-                              :group => 'name')
+    @cfs = ConfigurationGroup.where({:configuration_type => 'C'}).group('name')
 
     @config_type = ['Baseline','Groups','Users']
     @cfl = {}
     @cfl[:Baseline] = []
-    @cfl[:Groups] = Group.find(:all,:select => 'id,name',:order => 'name')
-    @cfl[:Users] = User.find(:all,:select => 'id,login as name,group_id',:order => 'login')
+    @cfl[:Groups] = Group.select('id,name').order('name')
+    @cfl[:Users] = User.select('id,login as name,group_id').order('login')
 
   end
 
   def new
 
-    @configuration = Configuration.new()
+    @configuration = Configuration.new
 
   end
 
@@ -72,7 +70,7 @@ class ConfigurationsController < ApplicationController
   def get_config
 
     result = []
-    is_error = false
+    
     cf_src = params[:q].strip
 
     cf_type, cf_sect, cf_subsect, cf_of = cf_src.split(".")
@@ -84,11 +82,7 @@ class ConfigurationsController < ApplicationController
       conditions << "configuration_groups.name = '#{cf_sect}'"
 
       cf1 = nil # default
-      cf1 = Configuration.find(:all,
-                              :include => [:configuration_group],
-                              :conditions => conditions.join(' and '),
-                              :order => 'configurations.variable')
-
+      cf1 = Configuration.includes([:configuration_group]).where(conditions.join(' and ')).order('configurations.variable')
       cfd_type = 0
       cfd_type_id = 0
 
@@ -105,36 +99,25 @@ class ConfigurationsController < ApplicationController
           cfd_type_id = 0        
       when /^groups/
           cfd_type = 1
-          g = Group.find(:first,:conditions => {:name => cf_of})
-		  unless g.nil?
-			conditions << "((configuration_datas.config_type = 0 and configuration_datas.config_type_id is null) or (configuration_datas.config_type = 1 and configuration_datas.config_type_id = #{g.id}))"     
-			cfd_type_id = g.id
-		  else
-			is_error = true
-		  end
+          g = Group.where({:name => cf_of}).first
+          conditions << "((configuration_datas.config_type = 0 and configuration_datas.config_type_id is null) or (configuration_datas.config_type = 1 and configuration_datas.config_type_id = #{g.id}))"     
+          cfd_type_id = g.id        
       when /^users/
           cfd_type = 2
-          u = User.find(:first,:conditions => {:login => cf_of})     
-		  unless u.nil?
-			  if u.group_id.to_i > 0
-				conditions << "((configuration_datas.config_type = 0 and configuration_datas.config_type_id is null) or (configuration_datas.config_type = 1 and configuration_datas.config_type_id = #{u.group_id.to_i}) or (configuration_datas.config_type = 2 and configuration_datas.config_type_id = #{u.id}))"
-			  else
-				conditions << "((configuration_datas.config_type = 0 and configuration_datas.config_type_id is null) or (configuration_datas.config_type = 2 and configuration_datas.config_type_id = #{u.id}))"            
-			  end
-			  cfd_type_id = u.id
-		  else
-		      is_error = true
-		  end
+          u = User.where({:login => cf_of}).first     
+          if u.group_id.to_i > 0
+            conditions << "((configuration_datas.config_type = 0 and configuration_datas.config_type_id is null) or (configuration_datas.config_type = 1 and configuration_datas.config_type_id = #{u.group_id.to_i}) or (configuration_datas.config_type = 2 and configuration_datas.config_type_id = #{u.id}))"
+          else
+            conditions << "((configuration_datas.config_type = 0 and configuration_datas.config_type_id is null) or (configuration_datas.config_type = 2 and configuration_datas.config_type_id = #{u.id}))"            
+          end
+          cfd_type_id = u.id        
       else #default
         
       end 
       
       conditions << "configuration_datas.configuration_id in (#{(cf1.map { |y| y.id }).join(',')})"
       if(cf_subsect != "default")
-        cf2 = ConfigurationData.find(
-                  :all, 
-                  :conditions => conditions.join(' and '),
-                  :order => 'configuration_datas.config_type asc')
+        cf2 = ConfigurationData.where(conditions.join(' and ')).order('configuration_datas.config_type asc')
       end
         
       cf1.each_with_index do |c,i|
@@ -196,8 +179,6 @@ class ConfigurationsController < ApplicationController
       
     end
 
-	result = [] if is_error
-	
     render :text => result.reverse.to_json
     
   end
@@ -234,7 +215,7 @@ class ConfigurationsController < ApplicationController
 				if cf_value.nil?
 				  cfd = ConfigurationData.delete_all({:configuration_id => cf_id, :config_type => cfd_type})
 				else
-				  cfd = ConfigurationData.find(:first,:conditions => {:configuration_id => cf_id, :config_type => cfd_type})
+				  cfd = ConfigurationData.where({:configuration_id => cf_id, :config_type => cfd_type}).first
 				  if cfd.nil?
 					new_val = cf_value unless cf_value.nil?
 					ncfd = {:configuration_id => cf_id, :config_type => cfd_type, :value => cf_value}
@@ -251,7 +232,7 @@ class ConfigurationsController < ApplicationController
 				if cf_value.nil?
 				  cfd = ConfigurationData.delete_all({:configuration_id => cf_id, :config_type => cfd_type,:config_type_id => cfd_type_id})
 				else
-				  cfd = ConfigurationData.find(:first,:conditions => {:configuration_id => cf_id, :config_type => cfd_type,:config_type_id => cfd_type_id})
+				  cfd = ConfigurationData.where({:configuration_id => cf_id, :config_type => cfd_type,:config_type_id => cfd_type_id}).first
 				  if cfd.nil?
 					new_val = cf_value unless cf_value.nil?
 					ncfd = {:configuration_id => cf_id, :config_type => cfd_type,:config_type_id => cfd_type_id, :value => cf_value}
@@ -268,7 +249,7 @@ class ConfigurationsController < ApplicationController
 				if cf_value.nil?
 				  cfd = ConfigurationData.delete_all({:configuration_id => cf_id, :config_type => cfd_type,:config_type_id => cfd_type_id})
 				else
-				  cfd = ConfigurationData.find(:first,:conditions => {:configuration_id => cf_id, :config_type => cfd_type,:config_type_id => cfd_type_id})
+				  cfd = ConfigurationDatad.where({:configuration_id => cf_id, :config_type => cfd_type,:config_type_id => cfd_type_id}).first
 				  if cfd.nil?
 					new_val = cf_value unless cf_value.nil?
 					ncfd = {:configuration_id => cf_id, :config_type => cfd_type,:config_type_id => cfd_type_id, :value => cf_value}
@@ -281,7 +262,7 @@ class ConfigurationsController < ApplicationController
 				  end
 				end			
 			  else #default
-				cf = Configuration.find(:first,:conditions => {:id => cf_id})
+				cf = Configuration.where({ :id => cf_id }).first
 				unless cf.nil?
 				  old_val = cf.default_value unless cf.default_value.nil? 
 				  new_val = cf_value unless cf_value.nil?     
@@ -321,14 +302,11 @@ class ConfigurationsController < ApplicationController
       conditions << "configuration_groups.name like '#{config_group}'"
     end
 
-    cf1 = Configuration.find(:all,
-                            :include => [:configuration_group],
-                            :conditions => conditions.join(' and '),
-                            :order => 'configuration_groups.name,configurations.variable')
+    cf1 = Configuration.includes([:configuration_group]).where(conditions.join(' and ')).order('configuration_groups.name,configurations.variable')
 
     cfd_type = 2
-    
-    u = User.find(:first,:conditions => "id = '#{user_id}' or login = '#{user}'")
+     
+    u = User.where("(id = '#{user_id}' or login = '#{user}')").first
     
     cf_txt = []
     if not u.nil? and not cf1.empty?
@@ -343,10 +321,7 @@ class ConfigurationsController < ApplicationController
       cfd_type_id = u.id
       
       conditions << "configuration_datas.configuration_id in (#{(cf1.map { |y| y.id }).join(',')})"
-      cf2 = ConfigurationData.find(:all,
-                              :conditions => conditions.join(' and '),
-                              :order => 'configuration_id,config_type desc')
-
+      cf2 = ConfigurationData.where(conditions.join(' and ')).order('configuration_id,config_type desc')
 
       cf_group = nil
       cf1.each_with_index do |c,i|
@@ -382,9 +357,9 @@ class ConfigurationsController < ApplicationController
       end
     end
 
-    log("Export","Configuration",true,"user_id:#{params[:user_id]}")
+    ##log("Export","Configuration",true,"user_id:#{params[:user_id]}")
 
-    send_data cf_txt.join("\r\n"),{:filename => 'configuration.txt',:disposition => 'attachment',:type => 'plain/text'}
+    send_data cf_txt.join("\r\n"), {:filename => 'configuration.txt',:disposition => 'attachment',:type => 'plain/text'}
     
   end
 

@@ -16,13 +16,13 @@ class GroupCategoryTypesController < ApplicationController
 
    end
 
-   def edit   
-
-      begin
-        @group_category_type = GroupCategoryType.find(params[:id])
-      rescue
-        redirect_to :controller => 'group_category',:action => 'index'
-      end
+   def edit
+     
+     begin
+       @group_category_type = GroupCategoryType.where(:id => params[:id]).first
+     rescue
+       redirect_to :controller => 'group_category',:action => 'index'
+     end
 
    end
 
@@ -41,8 +41,8 @@ class GroupCategoryTypesController < ApplicationController
          @group_category_type.update_attributes({:order_id => (max_id + 1)})
          
          #update category display tree
-         gct_id = GroupCategoryType.find(:first,:conditions => { :name => @group_category_type.name })
-         gcdt = GroupCategoryDisplayTree.find(:first,:select => 'max(id) as id')
+         gct_id = GroupCategoryType.where(:name => @group_category_type.name).first
+         gcdt = GroupCategoryDisplayTree.select('max(id) as id').first
          if gcdt.nil?
             GroupCategoryDisplayTree.new(:group_category_type => gct_id,:parent_id => nil).save!
          else
@@ -51,9 +51,7 @@ class GroupCategoryTypesController < ApplicationController
 
          log("Add","CategoryType",true,"id:#{@group_category_type.id}, name:#{@group_category_type.name}")
 
-         flash[:notice] = 'Create category type was successfully.'
-
-         redirect_to :action => 'index'
+         redirect_to :controller => 'group_category', :action => 'index'
      else
         log("Add","CategoryType",false)
         flash[:message] = 'Please check you category type\'s name.'
@@ -64,7 +62,7 @@ class GroupCategoryTypesController < ApplicationController
 
    def update
 
-      @group_category_type = GroupCategoryType.find(params[:id])
+      @group_category_type = GroupCategoryType.where(:id => params[:id]).first
 
      if @group_category_type.update_attributes(params[:group_category_type])
           log("Update","CategoryType",true,"id:#{params[:id]}, name:#{@group_category_type.name}")
@@ -85,13 +83,13 @@ class GroupCategoryTypesController < ApplicationController
   
    def destroy
 
-        @group_category_type = GroupCategoryType.find(params[:id])
+        @group_category_type = GroupCategoryType.where(:id => params[:id]).first
 
         gct_id = @group_category_type.id
 
         if can_delete(gct_id)
           
-          gcdts = GroupCategoryDisplayTree.find(:all)
+          gcdts = GroupCategoryDisplayTree.all
           cate_type = []
           if !gcdts.nil?
           gcdts.each { |x| cate_type << {:id => x.id, :name => x.group_category_type.name, :parent_id => x.parent_id } if not x.parent_id }
@@ -103,28 +101,32 @@ class GroupCategoryTypesController < ApplicationController
           # reset display tree
           parent_id = nil
 
-          gctdp = GroupCategoryDisplayTree.find(:first,:include => 'group_category_type',:conditions => "group_category_types.name like '#{@group_category_type.name}'")
+          gctdp = GroupCategoryDisplayTree.joins(:group_category_type)
+          gctdp = gctdp.where("group_category_types.name like '#{@group_category_type.name}'")
+          gctdp = gctdp.first
           unless gctdp.nil?
             gctdp.destroy
           end
           
           cate_type.each do |x|
             if not x[:name] == @group_category_type.name
-              gcdt = GroupCategoryDisplayTree.find(:first,:include => 'group_category_type',:conditions => "group_category_types.name like '#{x[:name]}'")
+              gcdt = GroupCategoryDisplayTree.joins(:group_category_type)
+              gcdt = gcdt.where("group_category_types.name like '#{x[:name]}'")
+              gcdt = gcdt.first
               GroupCategoryDisplayTree.update(gcdt.id,{:parent_id => parent_id })
               parent_id = gcdt.id
             end
           end
           
           if @group_category_type.destroy
-             gc = GroupCategory.find(:all,:conditions => {:group_category_type_id => gct_id})
+             gc = GroupCategory.where(:group_category_type_id => gct_id)
              if not gc.empty?
                GroupCategory.delete_all(:group_category_type_id => gct_id)
 
                gc_ids = []
                gc.each { |x| gc_ids << x.id }
 
-               grp = GroupCategorization.find(:all,:conditions => "group_category_id in (#{gc_ids.join(',')})")
+               grp = GroupCategorization.where("group_category_id in (#{gc_ids.join(',')})")
                if not grp.empty?
                  GroupCategorization.delete_all("group_category_id in (#{gc_ids.join(',')})")
                end
@@ -141,18 +143,18 @@ class GroupCategoryTypesController < ApplicationController
             flash[:error] = 'Delete category type was failed because is using'
         end
 
-        redirect_to :action => 'index'
+        redirect_to :controller => 'group_category', :action => 'index'
    end
 
    def can_delete(id)
 
-     gc = GroupCategory.find(:all,:conditions => {:group_category_type_id => id})
+     gc = GroupCategory.where(:group_category_type_id => id)
 
      if not gc.empty?
        gc_ids = []
        gc.each { |x| gc_ids << x.id }
 
-       grp = GroupCategorization.find(:all,:conditions => "group_category_id in (#{gc_ids.join(',')})")
+       grp = GroupCategorization.where("group_category_id in (#{gc_ids.join(',')})")
        
        # problem! now not check delete group conditions
 

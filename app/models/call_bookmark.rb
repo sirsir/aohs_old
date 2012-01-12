@@ -15,52 +15,75 @@
 
 class CallBookmark < ActiveRecord::Base
   
-   belongs_to :voice_log
-
+  belongs_to :voice_log
+  
   @del_voice_id = nil
 
-   def start_sec
-      start_msec.to_f / 1000
-   end
-   def end_sec
-      end_msec.to_f / 1000
-   end
+  def start_sec
+    (start_msec.to_f / 1000)
+  end
+  
+  def end_sec
+    (end_msec.to_f / 1000)
+  end
 
-#   def after_save
-#    # execute "call sum_voice_log_counter(#{self.voice_log_id},0);"
-##    STDERR.puts "voice log is "
-##    STDERR.puts self.id
-##    STDERR.puts self.voice_log_id_was
-# #   STDERR.puts record.voice_log_id
-#    if self.voice_log_id_was.blank?
-#        #  STDERR.puts 'new record found'
-#       if VoiceLogCounter.exists?({:voice_log_id => self.voice_log_id})
-#        #   STDERR.puts 'update counter'
-#          before_voice_counter  = VoiceLogCounter.find(:first,:select => "id,bookmark_count",:conditions =>{:voice_log_id => self.voice_log_id})
-#          after_bookmark_count =  before_voice_counter.bookmark_count + 1
-#          VoiceLogCounter.update(before_voice_counter.id,:bookmark_count => after_bookmark_count)
-#       else
-#         # STDERR.puts 'add new counter'
-#          new_voice_counter = VoiceLogCounter.new(:keyword_count => 0,:ngword_count => 0,:mustword_count => 0,
-#                                            :bookmark_count => 1)
-#          new_voice_counter.save!
-#       end
-#    end
-#    end
-#
-##     def before_destroy
-##       @del_voice_id = self.voice_log_id
-##     end
-#
-#     def after_destroy
-#       #   STDERR.puts self.id
-#        #  STDERR.puts @del_voice_id
-#          if VoiceLogCounter.exists?({:voice_log_id => self.voice_log_id})
-#              before_voice_counter  = VoiceLogCounter.find(:first,:select => "id,bookmark_count",:conditions =>{:voice_log_id => self.voice_log_id})
-#              after_bookmark_count =  before_voice_counter.bookmark_count - 1
-#              VoiceLogCounter.update(before_voice_counter.id,:bookmark_count => after_bookmark_count)
-#           end
-#     end
+  def bookmark_counter
     
-   end
+    voice_log_id = self.voice_log_id
+    
+    bookmarks_count = CallBookmark.count(:id).where({ :voice_log__id => voice_log_id })
+    
+    vc = VoiceLogCounter.init_voice_log_counter(voice_log_id)
+    if vc == true
+      vc = VoiceLogCounter.first.where({ :voice_log_id => voice_log_id })
+      if vc.bookmark_count != bookmarks_count
+        vc.update_attributes({:bookmark_count => bookmarks_count})
+      end  
+    end
+  
+  end
+
+  def self.update_bookmarks(voice_log_id,bookmarks=[])
+    
+    v = VoiceLogTemp.where({:id => voice_log_id })
+    
+    unless v.nil?
+    
+      cbs = CallBookmark.where({:voice_log_id => voice_log_id})
+      unless cbs.empty?
+        cbs.each do |cb|
+          
+          cb2 = bookmarks.pop
+          
+          if cb2.nil?
+            CallBookmark.destroy(cb.id)
+          else
+            if (cb.start_msec.to_f) == cb2[:start_time] and 
+               (cb.end_msec.to_f == cb2[:end_time]) and 
+               (cb.title == cb2[:title]) and 
+               (cb.body == cb2[:body])
+               #Skip
+            else
+               #Replace
+               CallBookmark.update(cb.id,cb2)
+            end            
+          end
+
+        end #end cbs
+
+      end
+      
+      while not bookmarks.empty?
+        cb2 = bookmarks.pop
+        CallBookmark.create(cb2);
+      end
+      
+      return true
+    else
+      return false
+    end
+    
+  end
+  
+end
 

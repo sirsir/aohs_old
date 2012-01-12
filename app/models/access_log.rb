@@ -1,13 +1,14 @@
 class AccessLog < ActiveRecord::Base
 
-  def self.update_access_logs(login_name,mac_address,remote_ip,srcs=[])
+  def self.update_access_logs(login_name, mac_address, remote_ip, srcs=[])
   
     succ_count = 0
+    al_srcs = srcs
     
     if not login_name.nil? and not mac_address.nil?
     
-      unless srcs.empty?
-        srcs.each do |src|
+      unless al_srcs.empty?
+        al_srcs.each do |src|
           ui = {
             :last_access_time => src[:access_time],
             :url => src[:url],
@@ -25,8 +26,10 @@ class AccessLog < ActiveRecord::Base
         
     end
     
+    al_srcs = nil
+    
     return succ_count
     
   end
-      
+
 end

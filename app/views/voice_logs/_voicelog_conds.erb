@@ -31,13 +31,18 @@
           margin-top:2px;
       }
       #vcLengthStart,#vcLengthEnd {
-          width:45px;
+          width:40px;
+		  text-align:center;
       }
       #vcDuraCond {
           width:40px;
       }
 	  #keyword_name {
 	  	  width:190px;
+	  }
+	  #vcTransfCountTo,#vcTransfCountFr {
+	  	  width:30px;
+		  text-align:center;
 	  }
       .div-line {
         padding-top:0px;
@@ -71,9 +76,12 @@
           background-image:url('<%=image_src_path('/images/greenbtn.png') %>');
       }
       .condName1 {
-          font-size:11.5px;
+          font-size:11px;
           display:block;
           margin-top:2px;
+		  margin-bottom:1px;
+		  font-weight:700;
+		  color:#5b5b5b;
       }
 	  #vcFromDate,#vcToDate {
 	  	  background-repeat:no-repeat;
@@ -82,6 +90,12 @@
 	  }
       #custom-periods { margin-left:8px;}
       #div-button { border-bottom:1px solid #c7c6c6; padding-bottom:3px;}
+	  .ui-button-text {
+	  	padding:0px;
+		margin:0px;
+		margin-bottom:-3px;
+		margin-top:-2px;
+	  }
     </style>
 	    
     <script type="text/javascript">
@@ -100,7 +114,11 @@
         dur: "",
         caller:"",
         dialed:"",
-		keyword: ""
+		keyword: "",
+		trfc: "no",
+        agents: "none",
+        groups: "none",
+		with_trnf: false
       }
 
       function isBlank(variable){
@@ -117,19 +135,18 @@
 
 		  var xagents = $("#tvOfAgents").val();
 		  var xgroups = $("#tvOfGroups").val();
+		  var skipMsg = true;
 		  
 		  var a = isBlank(xagents);
 		  var b = isBlank(xgroups);
+          
+          searchKey.keys = "agents=none";
           if(!a){
-             searchKey.keys = "agents=" + xagents;
-          } else {
-             searchKey.keys = "agents=none";
+             searchKey.keys = "agents=" + xagents;             
           }
+          searchKey.keys += "__groups=none";
           if(!b){
 		  	searchKey.keys += "__groups=" + xgroups;
-		  }
-		  else {
-		  	searchKey.keys += "__groups=none";
 		  }
 		  
           var periods = $("#vcPeriods option:selected").val();
@@ -176,22 +193,40 @@
 
           var callerNo = jQuery.trim($("input[name=vcCaller]").val());
           if(!isBlank(callerNo)){
-              searchKey.caller = callerNo;
+		  	  if(callerNo.length >= 4){
+			  	searchKey.caller = callerNo;
+			  } else {
+			  	skipMsg = "Caller number must be require at least four digits.";
+			  }
           }else{
               searchKey.caller = "";
           }
           var dialedNo = jQuery.trim($("input[name=vcDialed]").val());
           if(!isBlank(dialedNo)){
-              searchKey.dialed = dialedNo;
+		  	if(dialedNo.length >= 4){
+				searchKey.dialed = dialedNo;
+			} else {
+				skipMsg = "Dialed number must be require at least four digits.";
+			}
           }else{
               searchKey.dialed = "";
           }
 
 		  var keyword = jQuery.trim($("input[name=keyword_name]").val());
 		  if(!isBlank(keyword)){
-		  	  searchKey.keyword = keyword;
+		  	if(keyword.length >= 3){
+				searchKey.keyword = keyword;
+			} else {
+				skipMsg = "Keyword's name must be require at least three charactors.";
+			}
 		  } else {
 		  	  searchKey.keyword = "";
+		  }
+		  
+		  if($("input[name=vcFindWithTrf]").attr('checked')){
+			searchKey.with_trnf = true;
+		  } else {
+			searchKey.with_trnf = false;
 		  }
 		  
           var cd = "";
@@ -202,6 +237,15 @@
           if($("input[name=vcCD3]").attr("checked"))
             cd = cd + $("input[name=vcCD3]").val();
 
+          if($("input[name=vcTransf]").attr("checked")){
+		  	searchKey.trfc = "yes";
+		  } else {
+		  	searchKey.trfc = "no";
+		  }
+		  
+		  searchKey.trfcfr = jQuery.trim($("input[name=vcTrannfCountFr]").val());
+		  searchKey.trfcto = jQuery.trim($("input[name=vcTrannfCountTo]").val());
+		  		  
           var duration = ""
           var st_du_val = jQuery.trim($("input[name=vcLengthFrom]").val());
           var ed_du_val = jQuery.trim($("input[name=vcLengthTo]").val());
@@ -221,49 +265,61 @@
               searchKey.calld = cd;
           } else {
               searchKey.calld = "";
+			  skipMsg = "Please choose call direction at least one direction.";
           }
 
+		  return skipMsg;
       }
 
       function searchVoice(){
-
-          progressEnabled(true);
-          
-          $("#mytable tbody").html("");
-
-          onVoiceReset(0);
-          vc_start = true;
-          getSearchKeys();
-
-          $.ajax({ url: "<%= url_for(:controller => 'voice_logs',:action => 'search_voice_log') %>",
-          type: "POST",
-          data:
-          {
-              keys: searchKey.keys,
-              periods: searchKey.periods,
-              stdate: searchKey.stdate,
-              sttime: searchKey.sttime,
-              eddate: searchKey.eddate,
-              edtime: searchKey.edtime,
-              ext: searchKey.ext,
-              calld: searchKey.calld,
-              caller: searchKey.caller,
-              dialed: searchKey.dialed,
-              stdur: searchKey.stdu,
-              eddur: searchKey.eddu,
-			  keyword: searchKey.keyword,
-              page: ctrlPage.selectPage,
-			  perpage: ctrlPage.perPage,
-              sortby: ctrlSort.colName,
-              od: ctrlSort.order
-          },
-          dataType: "json",
-          success: function(data){
-              vc_start = false;
-              loadDataTable(data);
-              VLloadTimeLine();
-          }});
-
+          var skipMsg = getSearchKeys();
+          if(skipMsg == true){
+		  	
+	          progressEnabled(true);
+	          
+	          $("#mytable tbody").html("");
+	
+	          onVoiceReset(0);
+	          vc_start = true;	
+			  		
+	          $.ajax({ url: "<%= url_for(:controller => 'voice_logs',:action => 'search_voice_log') %>",
+	          type: "POST",
+	          data:
+	          {
+	              keys: searchKey.keys,
+                  agents: searchKey.agents,
+                  groups: searchKey.groups,
+	              periods: searchKey.periods,
+	              stdate: searchKey.stdate,
+	              sttime: searchKey.sttime,
+	              eddate: searchKey.eddate,
+	              edtime: searchKey.edtime,
+	              ext: searchKey.ext,
+	              calld: searchKey.calld,
+	              caller: searchKey.caller,
+	              dialed: searchKey.dialed,
+				  trfc: searchKey.trfc,
+	              stdur: searchKey.stdu,
+	              eddur: searchKey.eddu,
+				  trfcfr: searchKey.trfcfr,
+				  trfcto: searchKey.trfcto,
+				  keyword: searchKey.keyword,
+	              page: ctrlPage.selectPage,
+				  perpage: ctrlPage.perPage,
+	              sortby: ctrlSort.colName,
+	              od: ctrlSort.order,
+				  withtrnf: searchKey.with_trnf
+	          },
+	          dataType: "json",
+	          success: function(data){
+	              vc_start = false;
+	              loadDataTable(data);
+	              VLloadTimeLine();
+	          }});		  	
+		  } else {
+		  	vc_start = false;
+			alert(skipMsg);
+		  }
       }
 
       function VLloadTimeLine(){
@@ -286,20 +342,25 @@
 
       function onbtnReset(){
           onLoadCond();
-          $("input[name=vcFromDate]").val("");
-          $("input[name=vcFromTime]").val("");
-          $("input[name=vcToDate]").val("");
-          $("input[name=vcToTime]").val("");
-          $("input[name=vcExt]").val("");
-          $("input[name=vcLengthFrom]").val("");
-          $("input[name=vcLengthTo]").val("");
-          $("input[name=vcCaller]").val("");
-          $("input[name=vcDialed]").val("");
+		  try {
+	          $("input[name=vcFromDate]").val("");
+	          $("input[name=vcFromTime]").val("");
+	          $("input[name=vcToDate]").val("");
+	          $("input[name=vcToTime]").val("");
+	          $("input[name=vcExt]").val("");
+	          $("input[name=vcLengthFrom]").val("");
+	          $("input[name=vcLengthTo]").val("");
+	          $("input[name=vcCaller]").val("");
+	          $("input[name=vcDialed]").val("");
+			  $("input[name=vcTransfCountFr]").val("");
+			  $("input[name=vcTransfCountTo]").val("");		  	
+		  } catch(e) {}
       }
       $(document).ready(function(){
 
         //onLoadCond();
-         
+        $(".chk-direction").buttonset();
+		$(".chk-call-transfered").buttonset(); 
         $("#vcPeriods").change(function(){
           var period_selt = $("#vcPeriods option:selected").val();
           if(period_selt == 0){
@@ -327,6 +388,7 @@
 		$(".callTime").click(function(){
 			$(this).select();
 		});
+		
       });
 
       $(function(){
@@ -336,8 +398,7 @@
 		  $("input[name=vcFromDate]").mask("9999-99-99");
 		  $("input[name=vcToDate]").mask("9999-99-99");
 		  $("input[name=vcExt]").mask("9999");
-		  $(".callDur").numeric();
-		  $(".phone").numeric();
+		  $(".input-int-only").numeric();
 		  $(".callDur").blur(function(){
 		  	var t = $(this);
 			var a = jQuery.trim(t.val());
@@ -346,9 +407,11 @@
 				t.val("0" + a + ":00");
 			} else if(a.length == 2){
 				t.val(a + ":00");
-			} else if(a.length >= 3){
-				var b = a.substring(0,2);
-				var c = a.substring(2);
+			} else if(a.length == 3){
+				t.val(a + ":00");				
+			} else if(a.length >= 4){
+				var b = a.substring(0,3);
+				var c = a.substring(3);
 				if(c.length==1){
 					c = c + "0";
 				}
@@ -372,16 +435,20 @@
     <input type="button" value="Search" class="btnConditions" onclick="onbtnSearch()" name="btnSearch" id="btnSearch">
     <input type="button" value="Clear" class="btnConditions" onclick="onbtnReset()" name="btnSearch" id="btnClear"> 
 	&nbsp;<a href="#" onclick="ShowOrHidePanel()" title="Hide"><%=image_tag('hide_panel2.png',{:border => 0}) %></a>
-  </div>
-  <div class="condStyle1">
+  </div> 
+  <div class="condStyle1"> 
     <span class="condName1">Period:</span>
     <select name="vcPeriods" id="vcPeriods">
       <option value="1" <%= ((@conds == false) ? "selected" : "") %>>Today</option>
       <option value="2">Yesterday</option>
+      <option value="11">7 days ago</option>
+      <option value="9">30 days ago</option>
       <option value="3">This week</option>
       <option value="4">Last week</option>
       <option value="5">This month</option>
       <option value="6">Last month</option>
+	  <option value="9">1 month ago</option>
+      <option value="10">6 month ago</option>		  
       <option value="7">This year</option>
       <option value="8">All</option>
       <option value="0" <%= ((@conds != false) ? "selected" : "") %>>Custom ...</option>
@@ -408,24 +475,36 @@
           <td><span class="condName1">Ext:</span></td>
         </tr>
         <tr>
-          <td><input type="text" name="vcCaller" id="vcCaller" class="phone" maxlength="10" title="Caller number"></td>
-          <td><input type="text" name="vcDialed" id="vcDialed" class="phone" maxlength="10" title="Dialed number"></td>
-          <td><input type="text" name="vcExt" id="vcExt" title="Extension number"></td>
+          <td><input type="text" name="vcCaller" id="vcCaller" class="phone input-int-only" maxlength="10" title="Caller number"></td>
+          <td><input type="text" name="vcDialed" id="vcDialed" class="phone input-int-only" maxlength="10" title="Dialed number"></td>
+          <td><input type="text" name="vcExt" class="input-int-only" id="vcExt" title="Extension number"></td>
         </tr>
     </table>
   </div>
   <div class="condStyle1">
-    <span class="condName1">Call Duration (mm:ss):</span>
-    <input type="text" name="vcLengthFrom" id="vcLengthStart" class="callDur" value="" maxlength="4" title="mm:ss"><label class="label-frm"> To </label><input type="text" class="callDur" name="vcLengthTo" id="vcLengthEnd" maxlength="4" title="mm:ss" value="">
+    <span class="condName1">Call Duration (mmm:ss):</span>
+    <input type="text" name="vcLengthFrom" id="vcLengthStart" class="input-int-only callDur" value="" maxlength="5" title="mmm:ss"><label class="label-frm"> <span class="condName1" style="display:inline;">To</span> </label><input type="text" class="callDur input-int-only" name="vcLengthTo" id="vcLengthEnd" maxlength="5" title="mm:ss" value="">
   </div>
   <div class="condStyle1">
     <span class="condName1">Call Direction:</span>
-    <input type="checkbox" name="vcCD1" id="vcCD1" value="i" checked> <label class="vcCD">In</label>
-    <input type="checkbox" name="vcCD2" id="vcCD2" value="o" checked> <label class="vcCD">Out</label>
-    <input type="checkbox" name="vcCD3" id="vcCD3" value="e" checked> <label class="vcCD">Other</label>
+	<div class="chk-direction">
+	<% if @conds == false %>
+	    <input type="checkbox" name="vcCD1" id="vcCD1" value="i" checked> <label for="vcCD1" class="vcCD">In</label>
+	    <input type="checkbox" name="vcCD2" id="vcCD2" value="o" checked> <label for="vcCD2" class="vcCD">Out</label>		
+	<% else %>
+	    <input type="checkbox" name="vcCD1" id="vcCD1" value="i" <%= ((@conds[:cd].nil? or @conds[:cd] == 'i') ? "checked" : "") %>> <label for="vcCD1" class="vcCD">In</label>
+	    <input type="checkbox" name="vcCD2" id="vcCD2" value="o" <%= ((@conds[:cd].nil? or @conds[:cd] == 'o') ? "checked" : "") %>> <label for="vcCD2" class="vcCD">Out</label>	
+	<% end %>
+    <input type="checkbox" name="vcCD3" id="vcCD3" value="e" checked> <label for="vcCD3" class="vcCD">Other</label>
+    </div>
   </div>
-  <div class="condStyle1">
-  	<span class="condName1">Keyword:</span>	
+  <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_CALL_TRANSFER %>">
+    <span class="condName1">Number of transfer calls:</span>
+	<input type="text" class="input-int-only" name="vcTrannfCountFr" id="vcTransfCountFr" maxlength="2" value="">&nbsp;<span class="condName1" style="display:inline;">To</span>&nbsp;<input type="text" class="input-int-only" name="vcTrannfCountTo" id="vcTransfCountTo" maxlength="2" value=""></span>
+    <br/><span class="condName1" style="display:none;"><input type="checkbox" name="vcFindWithTrf" id="vcFindWithTrf" value="yes">Include search transfer calls</span>
+  </div>
+  <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_KEYWORDS %>">
+  	<span class="condName1">Keyword:</span>	 
 	<input type="text" name="keyword_name" maxlength="100" id="keyword_name" title="For each words separated by space">
   </div>
 </div>

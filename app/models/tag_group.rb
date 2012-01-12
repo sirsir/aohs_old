@@ -12,7 +12,7 @@
 
 class TagGroup < ActiveRecord::Base
 
-  has_many   :tags
+  has_many   :tags, :class_name => 'Tags'
 
   validates_length_of      :name, :minimum => 4
   validates_uniqueness_of  :name, :case_sensitive => false

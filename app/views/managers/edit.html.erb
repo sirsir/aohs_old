@@ -1,7 +1,7 @@
 <% content_for :header do %>
 
 <%= stylesheet_src_path '/jquery/jquery.timepickr/ui-timepickr/dist/themes/default/ui.timepickr.css' %>
-
+<%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
 <style type="text/css">
 
     .ygtvcheck0 { background: url(../../YUI.2.7/build/treeview/assets/check0.gif) 0 0 no-repeat; width:14px; height:17px; cursor:pointer }
@@ -93,7 +93,11 @@
     }
 
     $(document).ready(function(){
-
+    	 $("#use_default_p").click(function(){
+	    $("#manager_password").val("#USEDEFAULTPASSWORD#");
+	    $("#manager_password_confirmation").val("#USEDEFAULTPASSWORD#");
+	 });
+	$("#manager_id_card").mask("9999999999999");
        expandSelectedTeam();
        <%sts = 1%>
        <%if @manager.state.to_s == 'active'%>
@@ -230,7 +234,7 @@
     function expandSelectedTeam()
     {
 
-      var managers = [<%= (@grp_managers.map { |m| "'#{m.manager.login}'" }).join(',') %>];
+      var managers = [<%= ((@grp_managers.map { |m| "'#{m.manager.login}'" }).join(',')).html_safe %>];
       for(var i=0; i < managers.length; i++ ){
         var ct = managers[i];
         var select_for_expand = tree.getNodesByProperty("label",ct);
@@ -299,14 +303,14 @@
   </div>
 <% end %>
 
-<div id="change-usertype-dialog" style="display:none;">
+<div id="change-usertype-dialog" style="display:none;" title="Change type of user">
 	<div>
 		<span>Are you sure to change user type from "Manager" to "Agent"?</span></br></br>
 		<span style="font-style:italic;">If you click "Yes" then information about group leader and access level of this user will be reset.</span>
 		</br></br>Please choose group for agent.
 		<div style="padding-top:5px;">
 		<select name="agent-group">
-		<% Group.find(:all,:order => 'name').each do |r| %>
+		<% Group.order('name').each do |r| %>
 			<option value="<%=r.id %>"><%=r.name %></option>	
 		<% end %>
 		</select>
@@ -323,7 +327,7 @@
 
 <div id="div-block-manager">
    <div class="div-form-default-style1">
-     <% form_for(@manager) do |f| %>
+     <%= form_for(@manager) do |f| %>
         <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
             <td><span class="span-form-name">Manager infomation</span></td>
@@ -347,7 +351,9 @@
             </tr>			
             <tr>
               <td><label>CTI Agent ID:</label></td>
-              <td><%= f.text_field :cti_agent_id,{:class => 'input-text',:size => 20,:maxsize => 30} %></td>
+              <td><%= f.text_field :cti_agent_id,{:class => 'input-text',:size => 20,:maxsize => 30} %>
+			   <br><span class="note">Citizen ID is composed of 13 digits.</span>
+			  </td>
             </tr>
 			<!-- ID CARD-->			
             <tr>
@@ -384,11 +390,16 @@
     <tr>
       <td>
         <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+	    <tr>
+		<td></td>
+		<td><span class="span-field-note">If you are not change password, all fields should be blank.</span></td>
+	    </tr>
             <tr>
               <td valign="top" width="130px"><label>Password:</label></td>
               <td>
                 <%= f.password_field :password, :size => 25, :maxsize => 20,:class =>'input-text' %><span class="span-require">*</span>
-                <br><span class="span-field-note">Password must have a minimum of 6 characters</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" id="use_default_p" name="use_default_p" value="Use Default Password"/>
+		<br/><span class="span-field-note">Password must have a minimum of 6 characters</span>
               </td>
             </tr>
             <tr>
@@ -402,7 +413,7 @@
             </tr>
             <tr>
               <td></td>
-              <td><%= submit_tag "Update manager",{:class => 'btnAccept'} %></td>
+              <td><%= submit_tag "Save",{:class => 'btnAccept'} %></td>
             </tr>
         </table>
       </td>
@@ -414,7 +425,7 @@
 
 <div id="div-block-groups" style="display:none">
    <div class="div-form-default-style1">
-     <% form_tag do %>
+     <%= form_tag "#" do %>
      <%=display_frm_error(flash[:message]) %>
         <table width="100%" cellpadding="0" cellspacing="0" width="100%">
         <tr>

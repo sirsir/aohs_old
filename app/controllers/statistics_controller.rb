@@ -19,8 +19,21 @@ class StatisticsController < ApplicationController
     end
     @period = params[:period] 
     
+    if permission_by_name('tree_filter')
+      show_groups = []
+      gs = GroupMember.select("group_id").where({:user_id => current_user.id }).all
+      if gs.empty?
+        show_groups = [0]
+      else
+        show_groups = gs.map { |g| g.group_id }
+      end
+      @grps = Group.select("id,name").where({:id => show_groups}).order("name")
+    else
+      @grps = Group.select("id,name").order("name")
+    end
+    
     find_statistics_agent
-
+    
   end
 
   def export
@@ -51,7 +64,7 @@ class StatisticsController < ApplicationController
           ].concat(col1),
           [].concat(col2)
         ],
-        :csv => ['No','Group','Agent','Total'].concat(@display_second_labels),
+        :csv => ['No','Group','Agent','Total'].concat(@display_single_labels),
         :summary => [
           [['',1,1],['Total',1,2]]
         ]  
@@ -125,10 +138,11 @@ class StatisticsController < ApplicationController
    end
 
    def find_statistics_agent
-        
+  
      @report = {}
      @report[:title_of] = Aohs::REPORT_HEADER_TITLE
-
+     use_default_agent = true
+     
      case params[:period]
      when /^daily/
        #
@@ -149,63 +163,78 @@ class StatisticsController < ApplicationController
      ag_conditions = []
      select = []
      select2 = []
+     select3 = []
      
      from_date = params[:stdate]
      to_date = params[:eddate]
-                
-     @groups_id = []
-     if params.has_key?(:group) and not params[:group].empty?
-       @groups_id = params[:group].to_s
-       @groups_id = @groups_id.strip.split(',').compact.uniq
-       unless @groups_id.empty?
-         agents = Agent.find(:all, :select => 'id', :conditions => { :group_id => @groups_id })
-         unless agents.empty?
-            tmp = (agents.map {|a| a.id }).join(',')
-            conditions << "s.agent_id in (#{tmp})"
-            ag_conditions << "u.id in (#{tmp})"
-            tmp = nil
-          else
-            @groups_id = []
-          end
+       
+     agent_cond = []     
+     @agents_id = []
+     @groups_id = [] 
+     use_default_agent = true
+     use_tree_filter = true  
+     my_agents = false
+     
+     if permission_by_name('tree_filter')
+        myagents = find_owner_agent
+        myagents = [] if myagents.blank?
+        #fix manager
+        myagents = myagents.concat(find_watch_managers)
+        unless myagents.blank?
+          my_agents = myagents.map { |a| a.id }
+        else
+          my_agents = [0]
         end
      end
-      
-     @agents_id = []
-     if params.has_key?(:agent) and not params[:agent].empty?
-       agents_id = params[:agent].to_s
-       agents_id = agents_id.strip.split(",").compact.uniq    
-       unless agents_id.empty?
-          tmp = agents_id.join(',')
-          conditions << "s.agent_id in (#{tmp})"
-          ag_conditions << "u.id in (#{tmp})"
-          @agents_id = agents_id
-       else
-          conditions << "s.agent_id = 0"
-          ag_conditions << "u.id = 0"
-       end
+
+     if params.has_key?(:agent_name) and not params[:agent_name].empty?
+       agent_name = params[:agent_name]           
+       agent_cond << "(login like '#{agent_name}%' or display_name like '#{agent_name}%')"
      end
 
-     if @agents_id.empty?
-        if permission_by_name('tree_filter')
-          myagents = find_owner_agent
-          unless myagents.blank?
-            @agents_id = myagents.map { |a| a.id }
-            tmp = @agents_id.join(',')
-            conditions << "s.agent_id in (#{tmp})"
-            ag_conditions << "u.id in (#{tmp})"
-          else
-            conditions << "s.agent_id = 0"
-            ag_conditions << "u.id = 0"
-          end
+     if params.has_key?(:group) and not params[:group].empty?
+       group_id = params[:group].to_s
+       group_id = group_id.strip.split(',').compact.uniq
+       agent_cond << "(group_id in (#{group_id.join(',')}))"
+       @groups_id = group_id
+     end
+
+     unless agent_cond.empty?
+        use_default_agent = false
+        use_tree_filter = false
+        agent_cond << "id in (#{my_agents.join(",")})" if my_agents
+        agents = Agent.alive.select("id").where(agent_cond.join(" AND ")).all
+        unless agents.empty?
+          @agents_id = @agents_id.concat((agents.map {|a| a.id }))
         else
-          # all agents
-          agents = Agent.find(:all,:select => 'id')
-          unless agents.empty?
-            @agents_id = (agents.map { |a| a.id })
-            agents = nil
-          end
-        end        
-      end
+          @agents_id = [-1]
+        end
+        # add unknown agent for unknown group
+        @agents_id << 0 if (@groups_id.include?("0") or @groups_id.include?(0))
+     end
+   
+     if use_tree_filter
+        if params.has_key?(:agent) and not params[:agent].strip.empty?
+          agents_id = params[:agent].to_s.strip.split(",")
+          @agents_id = agents_id 
+          use_default_agent = false
+        end   
+     end
+   
+     if @agents_id.empty? and use_default_agent
+        # use default
+        if my_agents != false
+          @agents_id = my_agents
+        else
+          @agents_id = []
+        end
+     end
+
+     unless @agents_id.empty?
+        tmp = @agents_id.join(',')
+        conditions << "s.agent_id in (#{tmp})"
+        ag_conditions << "u.id in (#{tmp})"
+     end
       
       @sub_type, statistics_type_id, rptitle = find_statistics_type_with_tabname(params[:sec],"agent-report")
       
@@ -216,7 +245,7 @@ class StatisticsController < ApplicationController
       case @period
       when 'daily'
         
-        number_of_daily = AmiConfig.get('client.aohs_web.number_of_daily')
+        number_of_daily = $CF.get('client.aohs_web.number_of_daily')
         statistics_model = DailyStatistics
         dates = find_statistics_date_rank(from_date, to_date, number_of_daily, 'daily')
         number_of_daily = dates.length
@@ -226,6 +255,7 @@ class StatisticsController < ApplicationController
 
         @display_first_labels = (dates.map{ |x| x.strftime('%b') }).uniq
         @display_second_labels = dates.map{ |x| x.strftime('%d').to_i }
+        @display_single_labels = dates.map{ |x| x.strftime('%d/%b') }
         @display_cols_count = []
         @display_first_labels.each { |x| @display_cols_count << (dates.select {|y| x == y.strftime('%b')}).length }
         @display_columns = dates.map { |x| x.strftime('%Y-%m-%d')}
@@ -238,20 +268,26 @@ class StatisticsController < ApplicationController
         
       when 'weekly'
         
-        @nweeks = 12 * Aohs::WEEKS_PER_MONTH #AmiConfig.get('client.aohs_web.number_of_monthly').to_i * Aohs::WEEKS_PER_MONTH
+        filter_nmonths = $CF.get('client.aohs_web.filter.nof_recent_months').to_i
+        number_of_monthly = $CF.get('client.aohs_web.number_of_monthly').to_i
+        if filter_nmonths <= number_of_monthly
+          filter_nmonths = number_of_monthly
+        end
+        ##filter_weeks = $CF.get('client.aohs_web.filter.nof_recent_months').to_i
+        @nweeks = filter_nmonths * Aohs::WEEKS_PER_MONTH
         
-        number_of_weekly = AmiConfig.get('client.aohs_web.number_of_weekly')
-        begin_of_weekly = AmiConfig.get('client.aohs_web.beginning_of_week')
+        number_of_weekly = $CF.get('client.aohs_web.number_of_weekly')
+        begin_of_weekly = $CF.get('client.aohs_web.beginning_of_week')
         statistics_model = WeeklyStatistics
-        dates = find_statistics_date_rank(params[:stdate],params[:eddate],number_of_weekly,'weekly',DAYS_OF_THE_WEEK.index("#{begin_of_weekly}").to_i)
+        dates = find_statistics_date_rank(params[:stdate],params[:eddate],number_of_weekly,'weekly',Aohs::DAYS_OF_THE_WEEK.index("#{begin_of_weekly}").to_i)
 
         @report[:title] = "Agents Weekly Report (#{rptitle})"
         @report[:desc] = "Period from #{dates.first.strftime("%Y-%b-%d")} to #{dates.last.strftime("%Y-%b-%d")}"
 
         @display_first_labels = (dates.map{ |x| x.strftime('%b') }).uniq
-        start_week = DAYS_OF_THE_WEEK.index("#{begin_of_weekly}").to_i
+        start_week = Aohs::DAYS_OF_THE_WEEK.index("#{begin_of_weekly}").to_i
         @display_second_labels = dates.map{ |x| "#{x.strftime('%d').to_i}-#{(x.end_of_week+start_week).strftime('%d').to_i}"  }
-          
+        @display_single_labels = dates.map{ |x| "#{x.strftime('%d/%b')} - #{(x.end_of_week+start_week).strftime('%d/%b')}"  }  
         @display_cols_count = []
         @display_first_labels.each { |x| @display_cols_count << (dates.select {|y| x == y.strftime('%b')}).length }
         @display_columns = dates.map { |x| x.strftime('%Y-%m-%d')}
@@ -262,10 +298,14 @@ class StatisticsController < ApplicationController
                         
       else
         
-		@nmonths = 12 #AmiConfig.get('client.aohs_web.number_of_monthly').to_i
-		
-        number_of_monthly = AmiConfig.get('client.aohs_web.number_of_monthly')
-        begin_of_month = AmiConfig.get('client.aohs_web.beginning_of_month')
+        filter_nmonths = $CF.get('client.aohs_web.filter.nof_recent_months').to_i
+        number_of_monthly = $CF.get('client.aohs_web.number_of_monthly')
+        if filter_nmonths <= number_of_monthly
+          filter_nmonths = number_of_monthly
+        end
+        @nmonths = filter_nmonths
+        
+        begin_of_month = $CF.get('client.aohs_web.beginning_of_month')
         statistics_model =  MonthlyStatistics
         dates = find_statistics_date_rank(params[:stdate],params[:eddate],number_of_monthly,'monthly',begin_of_month - 1)
 
@@ -274,7 +314,8 @@ class StatisticsController < ApplicationController
         
         @display_first_labels = (dates.map{ |x| x.strftime('%Y') }).uniq
         @display_second_labels = dates.map{ |x| x.strftime('%b') }
-            
+        @display_single_labels = dates.map{ |x| x.strftime('%b/%Y') }
+        
         @display_cols_count = []
         @display_first_labels.each { |x| @display_cols_count << (dates.select {|y| x == y.strftime('%Y')}).length }
         @display_columns = dates.map { |x| x.strftime('%Y-%m-%d')}
@@ -285,7 +326,7 @@ class StatisticsController < ApplicationController
         
       end
 
-      order = "s.total"
+      order = "u.group_name"
       case params[:sort]
       when 'agent'
           order = 'u.agent_name'
@@ -302,15 +343,17 @@ class StatisticsController < ApplicationController
         when 'asc'
           order = "#{order} asc"
         else
-          order = "#{order} desc"
+          order = "#{order} asc"
       end
       
       select << "s.agent_id"
       select << "sum(s.value) as total"
       select2 << "sum(s.value) as total"
+      select3 << "sum(s.total) as total"
       dates.each_with_index do |d,i|
           select << "sum(if(s.start_day = '#{d}',value,0)) as c#{i+1}"
           select2 << "sum(if(s.start_day = '#{d}',value,0)) as c#{i+1}"
+          select3 << "sum(s.c#{i+1}) as c#{i+1}"
       end
       
       conditions << "s.start_day >= '#{dates.min}'"
@@ -322,15 +365,38 @@ class StatisticsController < ApplicationController
       end
      
       sql1 = ""
-      sql1 << "select u.id as agent_id2, u.group_id, u.display_name as agent_name, g.name as group_name "
-      sql1 << "from users u left join groups g on u.group_id = g.id where u.type = 'Agent' "
+      #sql1 << "select u.id as agent_id2, u.group_id, u.display_name as agent_name, g.name as group_name "
+      #sql1 << "from users u left join groups g on u.group_id = g.id "
+      sql1 << "select u.id as agent_id2, u.group_id, u.agent_name, u.group_name from (( " 
+      sql1 << "select u.*, if(g.id is null,u.display_name,CONCAT(u.display_name,\" (Leader)\")) as agent_name, group_concat(g.name) as group_name "
+      sql1 << "from users u left join groups g on u.id = g.leader_id "
+      sql1 << "where type = \"Manager\" group by u.id) "
+      sql1 << "union all ( "
+      sql1 << "select u.*,u.display_name as agent_name ,g.name as group_name "
+      sql1 << "from users u left join groups g on u.group_id = g.id "
+      sql1 << "where type = \"Agent\")) u " 
+      
+      if Aohs::REPORT_USERTYPE_FILTER == :agent
+        sql1 << "where u.type = 'Agent' "
+      elsif Aohs::REPORT_USERTYPE_FILTER == :manager
+        sql1 << "where u.type = 'Manager' "
+      else
+        sql1 << "where u.role_id > 0 "
+      end
+      
+      unless Aohs::REPORT_ROLE_FILTER.empty?
+        roles = Role.where(:id => Aohs::REPORT_ROLE_FILTER)
+        sql1 << "and u.role_id in (#{ (roles.map { |r| r.id }).join(',') }) "
+      end
+      
       sql1 << "and #{ag_conditions.join(' and ')} " unless ag_conditions.empty?
       
-      if params.has_key?(:agent) and not params[:agent].empty? and params[:agent].split(',').include?("0")
-        sql1_1 = ""
-        sql1_1 << " select 0 as agent_id2, 0, 'UnknownAgent' as agent_name, 'UnknownGroup' as group_name "
-        
-        sql1 = "select * from ((#{sql1}) union (#{sql1_1})) u "
+      if @agents_id != false
+        if @agents_id.empty? or @agents_id.include?(0) or @agents_id.include?("0")
+          sql1_1 = ""
+          sql1_1 << " select 0 as agent_id2, 0, 'UnknownAgent' as agent_name, 'UnknownGroup' as group_name "
+          sql1 = "select * from ((#{sql1}) union (#{sql1_1})) u "
+        end
       end
       
       sql2 = ""
@@ -376,12 +442,11 @@ class StatisticsController < ApplicationController
       end
       result.clear
 
-      sql2 = ""
-      sql2 << "select #{select2.join(',')} "
-      sql2 << "from #{statistics_model.table_name} s "
-      sql2 << "where #{conditions.join(" and ")} " unless conditions.empty?     
+      sql4 = ""
+      sql4 << "select #{select3.join(',')} "
+      sql4 << "from (#{sql3}) s "  
    
-      result = statistics_model.find_by_sql(sql2)
+      result = statistics_model.find_by_sql(sql4)
       
       @grand_total = []
       unless result.empty?
@@ -401,14 +466,66 @@ class StatisticsController < ApplicationController
    end
 
     def agent
-      
-     find_agents_keyword
-     render :layout => 'blank'
+     
+     if Aohs::MOD_KEYWORDS   
+       find_agents_keyword
+       render :layout => 'blank'
+     else
+       find_agents_keyword 
+       redirect_to :controller => 'voice_logs', :action => 'index', :period => params[:period], :agent_id => params[:agent_id], :st => @st_date, :ed => @ed_date, :cd => @call_direct, :layout => 'report'
+     end
      
     end
 
     def fing_agent_call
+      case params[:period]
+      when /^daily/
+        #
+      when /^monthly/
+        #
+      when /^weekly/
+        #
+      else
+        params[:period] = 'monthly'
+      end
+      period = params[:period] 
+        
+      sldate = params[:date]
+      st_type = params[:type]
+
+      if sldate.empty?
+        vc_conditions << "v.start_time between '#{params[:st]} 00:00:00' and '#{params[:ed]} 23:59:59' "
+        st_date = params[:st]
+        ed_date = params[:ed]
+      else
+        sldate = Date.parse(sldate)
+        st_date = nil
+        ed_date = nil
+        case period
+          when 'monthly'
+            bm = $CF.get('client.aohs_web.beginning_of_month')
+            st_date = sldate.beginning_of_month + bm - 1
+            ed_date = sldate.end_of_month + bm - 1
+          when 'weekly'
+            bw = begin_of_weekly = Aohs::DAYS_OF_THE_WEEK.index($CF.get('client.aohs_web.beginning_of_week')).to_i
+            st_date = sldate.beginning_of_week + bw
+            ed_date = st_date + 7 - 1 #sldate.end_of_week + bw + 1
+          else 'daily'
+            st_date = sldate
+            ed_date = sldate
+        end
+        if ed_date > Date.today
+           ed_date = Time.now.strftime("%Y-%m-%d")
+        else
+           ed_date = Time.parse("#{ed_date} 23:59:59").strftime("%Y-%m-%d")
+        end
+        @label_col = "#{st_date} - #{ed_date}"
+        vc_conditions << "v.start_time between '#{st_date} 00:00:00' and '#{ed_date} 23:59:59' "
+      end
       
+      @st_date = st_date
+      @ed_date = ed_date
+                           
     end
     
     def find_agents_keyword
@@ -427,10 +544,11 @@ class StatisticsController < ApplicationController
                    
       vc_conditions = []
       conditions = []
-
+      kw_conditions = []
+      
       agent_id = params[:agent_id]
       vc_conditions << "v.agent_id = #{agent_id.to_i}"
-      @agent_detail = Agent.find(:first,:conditions => {:id => agent_id})
+      @agent_detail = Agent.where({:id => agent_id}).first
               
       sldate = params[:date]
       st_type = params[:type]
@@ -443,7 +561,7 @@ class StatisticsController < ApplicationController
           order = "r.name"
         when 'type'
           order = "keyword_type"
-        when 'calls'
+        when 'calls','in','out'
           order = "calls_count"
         else
           order = "kcount"
@@ -459,20 +577,38 @@ class StatisticsController < ApplicationController
 
       case st_type
         when 'ng'
-          conditions << "k.keyword_type = 'n'"
+          kw_conditions << "keyword_type = 'n'"
           @k_type = "NG words"
         when 'must'
-          conditions << "k.keyword_type = 'm'"
+          kw_conditions << "keyword_type = 'm'"
           @k_type = "Must words"
         when 'action'
-          conditions << "k.keyword_type = 'a'"
+          kw_conditions << "keyword_type = 'a'"
           @k_type = "Action words"
         else
           @k_type = "Keywords"
-          conditions << "k.keyword_type in ('a','m','n')"
+          kw_conditions << "keyword_type in ('a','m','n')"
           #all 
       end
       
+      unless kw_conditions.empty?
+        keywords = Keyword.select('id').where(kw_conditions.join(" and ")).all
+        keywords_id = keywords.map { |k| k.id }
+        kw_conditions = []
+        kw_conditions << "r.keyword_id in (#{keywords_id.join(',')})"
+      end
+      
+      case st_type
+      when 'in'
+        @call_direct = "i"
+        vc_conditions << "v.call_direction = 'i'"
+      when 'out'
+        @call_direct = "o"
+        vc_conditions << "v.call_direction = 'o'"
+      else
+        @call_direct = nil
+      end
+
       if sldate.empty?
         #vc_conditions << "v.start_time <= '#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}' "
         vc_conditions << "v.start_time between '#{params[:st]} 00:00:00' and '#{params[:ed]} 23:59:59' "
@@ -484,13 +620,13 @@ class StatisticsController < ApplicationController
         ed_date = nil
         case period
           when 'monthly'
-            bm = AmiConfig.get('client.aohs_web.beginning_of_month')
+            bm = $CF.get('client.aohs_web.beginning_of_month')
             st_date = sldate.beginning_of_month + bm - 1
             ed_date = sldate.end_of_month + bm - 1
           when 'weekly'
-            bw = begin_of_weekly = DAYS_OF_THE_WEEK.index(AmiConfig.get('client.aohs_web.beginning_of_week')).to_i
+            bw = Aohs::DAYS_OF_THE_WEEK.index($CF.get('client.aohs_web.beginning_of_week')).to_i
             st_date = sldate.beginning_of_week + bw
-            ed_date = sldate.end_of_week + bw + 1
+            ed_date = st_date + 7 - 1 #sldate.end_of_week + bw + 1
           else 'daily'
             st_date = sldate
             ed_date = sldate
@@ -520,12 +656,14 @@ class StatisticsController < ApplicationController
       sql1 << "group by k.id, v.id "
       
       sql2 = "select r.voice_log_id,sum(r.words_count) as words_count, r.keyword_id, r.name, r.keyword_type from ((#{sql0}) union (#{sql1})) r "
+      sql2 << "where #{kw_conditions.join(" and ")}" unless kw_conditions.empty? 
       sql2 << "group by r.voice_log_id, r.keyword_id "
       
       sql = "select r.keyword_id, r.name,g.name as keyword_group, sum(r.words_count) as kcount, r.keyword_type as keyword_type, count(r.voice_log_id) as calls_count from "
       sql << "(#{sql2}) r "
-      sql << "join (keyword_group_maps kg, keyword_groups g) on r.keyword_id = kg.keyword_id and kg.keyword_group_id = g.id group by r.keyword_id "
-      sql << "order by #{order}"
+      sql << "join (keyword_group_maps kg, keyword_groups g) on r.keyword_id = kg.keyword_id and kg.keyword_group_id = g.id "
+      sql << "where #{conditions.join(" AND ")} " unless conditions.empty?
+      sql << "group by r.keyword_id order by #{order}"
       
       if(params[:action] == "export_agent" or params[:action] == "print_agent")
         @result = VoiceLogTemp.find_by_sql(sql)
@@ -548,9 +686,9 @@ class StatisticsController < ApplicationController
         end
       end
 
-      sql = "select count(voice_log_id) as calls_count, sum(words_count) as words_count from (select r.voice_log_id, sum(r.words_count) as words_count from (#{sql2}) r group by r.voice_log_id) r "
+      sqlsum = "select count(voice_log_id) as calls_count, sum(words_count) as words_count from (select r.voice_log_id, sum(r.words_count) as words_count from (#{sql2}) r group by r.voice_log_id) r "
             
-      result = VoiceLogTemp.find_by_sql(sql).first
+      result = VoiceLogTemp.find_by_sql(sqlsum).first
       calls_count = VoiceLogTemp.find_by_sql("select count(id) as calls_count from (#{vc_sql}) v").first.calls_count.to_i
       
       @grand_total = { :calls_count => result.calls_count, :words_count => result.words_count, :total_calls => calls_count}

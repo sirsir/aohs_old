@@ -91,8 +91,8 @@
 				  <label>Citizen ID:</label> <input class="input-int" type="text" maxlength="13" style="width:80px;" name="manager-id_card" value="<%=params[:id_card] %>">
 				  <label>Username:</label> <input class="input-text" type="text" maxlength="50" name="manager-login" value="<%=params[:login] %>">
 				  <label>Name:</label> <input class="input-text" type="text" maxlength="100" name="manager-name" value="<%=params[:name] %>">
-				  <label>Role:</label> <select name="manager-role"><option value=""></option><%= @roles.map { |r| r == params[:role] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" } %></select>		  		
-		  		  <label>Status:</label> <select name="manager-status"><%= ['','Active','Inactive'].map { |r| r == params[:status] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" } %></select>	
+				  <label>Role:</label> <select name="manager-role"><option value=""></option><%= (@roles.map { |r| r == params[:role] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" }).join.html_safe %></select>		  		
+		  		  <label>Status:</label> <select name="manager-status"><%= (['','Active','Inactive'].map { |r| r == params[:status] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" }).join.html_safe %></select>	
 				</td>
 				<td align="right">
 					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>

@@ -11,17 +11,24 @@
   <%= stylesheet_link_tag 'base' %>
   <%= stylesheet_link_tag 'table' %>
   <%= stylesheet_link_tag 'qtip' %>
-  <%= stylesheet_src_path '/jquery/jquery-ui-1.8.6.custom/css/ui-lightness/jquery-ui-1.8.6.custom.css' %>
+  <%= stylesheet_link_tag '/jquery/jquery-ui-1.8.7.custom/css/cupertino/jquery-ui-1.8.7.custom.css' %>  
   <%= stylesheet_link_tag 'will_paginate' %>
   <%= stylesheet_link_tag 'cssform' %>
   <!-- JS -->
   <%= javascript_src_path '/jquery/js/jquery-1.4.2.min.js' %>
   <%= javascript_src_path '/jquery/js/jquery.bgiframe.min.js' %>
-  <%= javascript_src_path '/jquery/jquery-ui-1.8.6.custom/js/jquery-ui-1.8.6.custom.min.js' %>
+  <%= javascript_include_tag '/jquery/jquery-ui-1.8.7.custom/js/jquery-ui-1.8.7.custom.min.js' %>
   <%= javascript_src_path 'strftime-min.js' %>
   <%= javascript_src_path '/jquery/jquery.qTip/qTip.js' %>
   <%= javascript_src_path 'application.js' %>
   <%= yield :header %>
+  <script type="text/javascript">
+  	$(function(){
+		if(window.history.length <= 0){
+			$(".div-btn").css("display","none");
+		}		
+	});
+  </script>
 </head>
 <body class='yui-skin-sam'>
 <%= render :partial => 'shared/dialog' %>
@@ -38,7 +45,6 @@
 					<td align="right"><span style="font-weight:bold; font-size:11pt;">Call List</span></td>
 				</tr>
 			</table>
-			
 		</div>
 		<!-- sub menu -->
 		<%= yield :submenu %>	

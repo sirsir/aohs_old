@@ -4,7 +4,7 @@
 <script type="text/javascript">
 
     var curtlUrl = "";
-
+ 
     function makeTimeLine(strUrl){
       <% if @tl_enabled %>
       var amiTimeLineFx = document.getElementById("amiTimeLineFx");  
@@ -43,7 +43,7 @@
     function reloadTimeLine(){
        if(curtlUrl.length > 3) { makeTimeLine(curtlUrl); }
     }
-
+	
 </script>
 <% end %>
 <input type="text" id="testurl" style="display:none"/>

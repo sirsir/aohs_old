@@ -35,7 +35,8 @@ class TagGroupsController < ApplicationController
   def edit
 
     begin
-      @tag_group = TagGroup.find(params[:id])
+#      @tag_group = TagGroup.find(params[:id])
+      @tag_group = TagGroup.where(:id => params[:id]).first
     rescue => e
       log("Edit","GroupTag",false,"#{e.message}")
       redirect_to :controller => 'call_tags', :action => 'index'
@@ -96,18 +97,18 @@ class TagGroupsController < ApplicationController
   def can_delete?(gt_id)
 
     can_delete = false
-    tags = Tag.find(:all,:conditions => {:tag_group_id => gt_id})
-    unless tags.blank?
-      tags_id = tags.map { |t| t.id }
-      tags_list = Taggings.find(:all,:conditions => "tag_id in (#{tags_id.join(',')})")
-      if tags_list.empty?
-        can_delete = true  
-      end
-    else
-      can_delete = true
-    end
+    #tags = Tag.find(:all,:conditions => {:tag_group_id => gt_id})
+    #unless tags.blank?
+    #  tags_id = tags.map { |t| t.id }
+    #  tags_list = Taggings.find(:all,:conditions => "tag_id in (#{tags_id.join(',')})")
+    #  if tags_list.empty?
+    #    can_delete = true  
+    #  end
+    #else
+    #  can_delete = true
+    #end
 
-    return can_delete
+    return true #can_delete
 
   end
   

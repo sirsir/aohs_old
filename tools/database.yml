@@ -1,0 +1,8 @@
+aohs:
+ adapter: jdbcmysql
+ host: 192.168.1.15
+ database: amivoice_operators_help_acss
+ username: mysqladmin
+ password: password
+ port: 3306
+ encoding: utf8

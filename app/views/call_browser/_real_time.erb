@@ -2,10 +2,195 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 %>
-<applet name="speechmonitor" id="sp-monit" codebase="<%= Aohs::SITE_ROOT %>/applets/speechmonitor/" width="100%" height="110px">
-  <param name="jnlp_href" value="launch.jnlp"/>
-  <param name="currentUser" value="1" />
-  <param name="site_root" value="<%= Aohs::SITE_ROOT %>" />
-  <param name="configURL" value="<%= Aohs::SITE_ROOT %>/applets/speechmonitor/speechmonitor.conf" />
-  <param name="keyword_available" value="<%= Aohs::MOD_KEYWORDS %>" />
-</applet>
+
+<style type="text/css">
+  
+  span.topic {display: inline-block; font-weight: bold;}
+  span.detail {display: inline-block; padding-left: 4px;}
+  span.num {display: inline-block; width: 80px; border-bottom: 1px dashed #C3C3C3; text-align: center;}
+  span.sli-lbl {display: inline-block; font-size: 9px; float: left; margin-bottom: 3px;}
+  span#a-status {display: inline-block; width: 70px; color: #C3C3C3; text-align: center;}
+
+  div.meter-border {width: 120px; height: 15px; border: 1px solid #C3C3C3; padding: 0;}
+  div.meter-draw {background-color: #C3C3C3; height: 15px; width: 0%;}
+  
+  .ui-slider .ui-slider-handle { width: 10px; }
+  .ui-slider-horizontal { height: 6px; }
+
+  table#monit td.header {padding: 0px 0px 2px 2px; font-size: 10px; font-weight: bold; background-color: #0B0B61; color: white;}
+
+  table#monit-anim { margin-bottom: 2px; }
+  table#monit-anim td {padding: 0px 3px 3px 3px;}
+  
+</style>
+
+<script type="text/javascript">
+
+  var span_min = -10;
+  var span_max =  10;
+  var span_dft =  0;
+
+  var volm_min = 0;
+  var volm_max = 100;
+  var volm_dft = 40;
+
+  var setRtp = {
+
+    span_set: function(s){ $("#span-sli").slider("value", s); },
+    span_val: function(s){ return $("#span-sli").slider("value"); },
+    span: function(s){
+      document.speechmonitor.setSpan(s);
+    },
+
+    volm_set: function(v){ $("#volm-sli").slider("value", v); },
+    volm_val: function( ){ return $("#volm-sli").slider("value"); },
+    volm: function(v){
+      document.speechmonitor.setVol(v);
+    }
+
+  }
+
+  function initiate_slider() {
+
+    $('#span-sli').slider({
+      min: span_min,
+      max: span_max,
+      value: span_dft,
+      slide: function(event, ui){
+        setRtp.span(ui.value/span_max);
+      }
+    });
+
+    $('#volm-sli').slider({
+      min: volm_min,
+      max: volm_max,
+      step: 1,
+      value: volm_dft,
+      slide: function(event, ui){
+        setRtp.volm(ui.value/volm_max);
+      }
+    });
+  }
+
+  /* call by speech_monitor */
+  function initiate_volmspan(){
+
+    var s = setRtp.span_val();
+    var v = setRtp.volm_val();
+
+    setRtp.span(s/span_max);
+    setRtp.volm(v/volm_max);
+  }
+
+  function reset_span(){
+    setRtp.span_set(span_dft);
+    setRtp.span(span_dft/span_max);
+  }
+  function reset_volm(){
+    setRtp.volm_set(volm_dft);
+    setRtp.volm(volm_dft/volm_max);
+  }
+
+  function update_agent_label(cti, name, group, ext){
+    $('#agent-name').text(name);
+    $('#agent-group').text(group);
+    $('#agent-ext').text(ext);
+  }
+
+  function update_currentcall_label(st_time, direction, from, to){
+
+    direction = (direction == "i" ? "Inbound" : "Outbound");
+
+    $('#call-start').text(st_time);
+    $('#call-direction').text(direction);
+    $('#num-L').text(from);
+    $('#num-R').text(to);
+  }
+
+  function clear_current_call_label(){
+    $('div.current-call-label span.detail').text("-");
+    $('span.num').text("");
+  }
+
+  function monitor_status(sts){
+    $('span#a-status').text(sts);
+  }
+
+  function draw_meter(chn, val){
+    var hi = val +"%";
+    $('div#meter-'+chn).css("width", hi);
+  }
+
+  
+</script>
+
+<table id="monit" cellpadding="0" cellspacing="0" width="100%">
+
+  <tr>
+    <td class="header">
+      <div style="display: none;">
+        <applet name="speechmonitor" id="sp-monit" codebase="<%= Aohs::SITE_ROOT %>/applets/speechmonitor/" width="0px" height="0px">
+          <param name="jnlp_href" value="launch.jnlp"/>
+          <param name="currentUser" value="1" />
+          <param name="site_root" value="<%= Aohs::SITE_ROOT %>" />
+          <param name="configURL" value="<%= Aohs::SITE_ROOT %>/applets/speechmonitor/speechmonitor.conf" />
+          <param name="keyword_available" value="<%= Aohs::MOD_KEYWORDS %>" />
+        </applet>
+      </div>
+      <div style="clear: both; float: left;">
+        <span>Current Agent</span><br/>
+        <span class="topic">Name:</span><span id="agent-name" class="detail" style="width: 140px;">-</span>
+        <span class="topic">Group:</span><span id="agent-group" class="detail" style="width: 100px;">-</span>
+        <span class="topic">Extension:</span><span id="agent-ext" class="detail" style="width: 40px;">-</span>
+      </div>
+      <div style="float: right; padding: 3px 10px 0px 0px; font-style:italic; font-family:Verdana;">
+        AmiVoice<sup>&reg;</sup> Call Browser
+      </div>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding: 2px 0px 2px 0px; ">
+      <div class="current-call-label" style="clear: both; float: left; padding: 2px 0px 2px 2px;">
+        <span class="topic">Start:</span><span id="call-start" class="detail" style="width: 150px;">-</span>
+        <span class="topic">Direction:</span><span id="call-direction" class="detail" style="width: 80px;">-</span>
+        <% if Aohs::MOD_KEYWORDS %>
+          <span class="topic">NG Word:</span><span id="ng-count" class="detail" style="width: 40px;">-</span>
+          <span class="topic">Must Word:</span><span id="mst-count" class="detail" style="width: 40px;">-</span>
+        <% end %>
+      </div>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <table id="monit-anim" cellpadding="0" cellspacing="0">
+        <tr>
+          <td><span class="topic" style="width: 90px;">agent side:</span></td>
+          <td><span class="detail num" id="num-L"></span></td>
+          <td>
+            <div class="meter-border">
+              <div id="meter-L" class="meter-draw"></div>
+            </div>
+          </td>
+          <td rowspan="2"><span id="a-status">...</span></td>
+          <td rowspan="2" style="padding-left: 10px;" valign="top">
+            <span class="sli-lbl"><a href="#" onclick="reset_span();">balance:</a></span><br/>
+            <div id="span-sli" style="width: 70px;"></div>
+          </td>
+          <td rowspan="2" style="padding-left: 30px;" valign="top">
+            <span class="sli-lbl"><a href="#" onclick="reset_volm();">volume:</a></span><br/>
+            <div id="volm-sli" style="width: 70px;"></div>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="topic" style="width: 90px;">customer side:</span></td>
+          <td><span class="detail num" id="num-R"></span></td>
+          <td>
+            <div class="meter-border"><div id="meter-R" class="meter-draw"></div></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

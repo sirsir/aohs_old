@@ -4,15 +4,15 @@ class CreateVoiceLogs < ActiveRecord::Migration
       t.integer :system_id
       t.integer :device_id
       t.integer :channel_id
-      t.string  :ani, :limit => 30
+      t.string  :ani, :limit => 30 
       t.string  :dnis, :limit => 30
       t.string  :extension, :limit => 30
       t.date    :start_date
       t.time    :start_time
-      t.integer :duration
+      t.integer :duration, :default => 0
       t.integer :hangup_cause
       t.integer :call_reference
-      t.integer :agent_id
+      t.integer :agent_id, :default => 0
       t.string  :agent_name
       t.integer :group_id
       t.string  :group_name

@@ -1,106 +1,91 @@
-# This controller handles login or logout function of the site.
+# This controller handles the login/logout function of the site.  
 class SessionsController < ApplicationController
 
-   require 'socket'
-
-   def index
-     redirect_to login_path
-   end
-   
-   def new
-     @reset = false
-   end
-
-   def create
-     
-      flash[:loginfailed] = nil
-       
-      @reset = false
-      begin
-        
-        if not params[:login].empty? and params[:password] == Aohs::DEFAULT_PASSWORD
-          
-          @old_password = Aohs::DEFAULT_PASSWORD
-          @reset = true
-          render :action => 'new'
-          
-        else
-          
-          if params.has_key?(:change_password) and params[:change_password] == 'true'
-              @old_password = Aohs::DEFAULT_PASSWORD
-              flash[:loginfailed] = nil
-              @reset = true
-              user = User.find(:first,:conditions => {:login => params[:login]})
-              unless user.nil?
-                user = User.find(user.id)
-                if user.update_attributes({:password => params[:password],:password_confirmation => params[:password_confirmation]})
-                  log("ChangePassword","Session",true,params[:login])
-                  redirect_to login_path                  
-                else
-                  flash[:loginfailed] = "Change password was failed. Please try again."
-                  log("ChangePassword","Session",false,params[:login])
-                  render :action => 'new'
-                end
-             else
-                redirect_to login_path
-             end
-            
-          else
-            
-            self.current_user = User.authenticate(params[:login], params[:password])
+  # Be sure to include AuthenticationSystem in Application Controller instead
+  include AuthenticatedSystem
+  skip_before_filter :verify_authenticity_token, :only => [:client_http_authenticate]
   
-            if logged_in?
-               if current_user.type == "Manager"
-                 if params[:remember_me] == "1"
-                    current_user.remember_me unless current_user.remember_token?
-                    cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
-                 end
-                 #log("Login","Session",true,current_user.login)
-                 flash[:loginfailed] = false
-                 redirect_back_or_default(:controller => "top_panel",:action => "index")               
-               else
-                 destroy
-               end
-            else
-               #log("Login","Session",false,"#{params[:login]}:#{User.error_msg}")
-               flash[:loginfailed] = User.error_msg
-               render :new
-            end 
-          
+  def new
+    @reset = false
+  end
+
+  def create
+
+    flash[:loginfailed] = nil   
+    @reset = false
+
+    if not params[:login].empty? and params[:password] == Aohs::DEFAULT_PASSWORD and Aohs::ALLOW_CHANGE_PASS_FRMSCR
+      @old_password = Aohs::DEFAULT_PASSWORD
+      @reset = true
+      render :action => 'new'
+    else
+      if params.has_key?(:change_password) and params[:change_password] == 'true' and Aohs::ALLOW_CHANGE_PASS_FRMSCR
+        
+        @old_password = Aohs::DEFAULT_PASSWORD
+        flash[:loginfailed] = nil
+        @reset = true
+        
+        user = User.alive.select({:login => params[:login]}).first
+        if not user.nil?
+          ##user = User.find(user.id)
+          if user.update_attributes({:password => params[:password],:password_confirmation => params[:password_confirmation]})
+            log("ChangePassword","Session",true,params[:login])
+            redirect_to login_path
+          else
+            flash[:loginfailed] = "Change password was failed. Please try again."
+            log("ChangePassword","Session",false,params[:login])
+            render :action => 'new'
           end
+        else
+          redirect_to login_path
         end
-        
-      rescue => e
-        
-		    log("Login","Session",false,"#{e.message}")
-        redirect_to login_path
-        
-      end  
-   end
-
-   def destroy
-
-      begin
-        #log("Logout","Session",true,"#{current_user.login}")
-        self.current_user.forget_me if logged_in?
-        cookies.delete :auth_token
-        reset_session 
-      rescue => e
-        #log("Logout","Session",false,e.message)
+      else
+		
+      logout_keeping_session!
+      if Aohs::LOGIN_BY_AGENT
+        user = User.authenticate(params[:login], params[:password])  
+      else
+        user = Manager.authenticate(params[:login], params[:password])  
       end
-      
-      redirect_back_or_default login_path
+			
+			if user and not user.is_expired_date?
+			  # Protects against session fixation attacks, causes request forgery
+			  # protection if user resubmits an earlier form using back
+			  # button. Uncomment if you understand the tradeoffs.
+			  # reset_session
+			  self.current_user = user
+			  new_cookie_flag = (params[:remember_me] == "1")
+			  handle_remember_cookie! new_cookie_flag
+			  redirect_to :controller => 'top_panel', :action => 'index'
+			  ##redirect_back_or_default('/')
+			else
+			  flash[:loginfailed] = "Login has been failed, please check your username and password."
+			  note_failed_signin
+			  @login       = params[:login]
+			  @remember_me = params[:remember_me]
+			  render :action => 'new'
+			end	
+			
+		end
+	
+	end
 
-   end
+  end
+
+  def destroy
+    logout_killing_session!
+    redirect_to :controller => 'top_panel', :action => 'index'
+    #redirect_back_or_default('/', :notice => "You have been logged out.")
+  end
 
    def error
-
+ 
    end
 
    def expired?(expired_date)
        expired_date <= Date.today
    end
-
+   
    def http_authenticate
      
      user_login = params[:user]
@@ -115,5 +100,26 @@ class SessionsController < ApplicationController
      end
 
    end
-   
+
+   def client_http_authenticate
+     
+     user_login = params[:user]
+     password = params[:pass]
+
+     u = User.authenticate(user_login, password)
+
+     unless u.nil?
+       render :json => {:success => true, :message => "success", :user => u.login, :display_name => u.display_name }
+     else
+       render :json => {:sucesss => false, :message => "failed" }
+     end
+
+   end
+
+protected
+  # Track failed login attempts
+  def note_failed_signin
+    flash.now[:error] = "Couldn't log you in as '#{params[:login]}'"
+    logger.warn "Failed login for '#{params[:login]}' from #{request.remote_ip} at #{Time.now.utc}"
+  end
 end

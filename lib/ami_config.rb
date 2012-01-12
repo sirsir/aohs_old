@@ -1,105 +1,93 @@
 require 'yaml'
 
 module AmiConfig
-
-  MIMETYPE_CSV = "application/csv"
-  MIMETYPE_PDF = "application/pdf"
-  MIMETYPE_TXT = "text/plain"
-      
-  def self.set_user(user_id)
-     @@user = User.find(user_id)
-  end
+    
+  class UserConf
+    
+    @@user = nil
+    @username = "ALLUSER"
+    
+    def initialize(user_id=0)
+      @@user = User.select("id,login,group_id").where({ :id => user_id }).first rescue nil
+      unless @@user.nil?
+        @username = @@user.login
+      else
+        @username = "Default"
+      end
+    end
+    
+    def get(key)
   
+      #
+      # configuration pattern => format : type.group.variable
+      #
+      
+      cf_value = nil
+      begin
+        
+        cf_type, cf_group, cf_var = key.strip.split(".",3)
+        cf_type = cf_type.split("").first.upcase
+  
+        cf = Configuration.includes([:configuration_group]).where({ :configuration_groups => { :configuration_type => cf_type, :name => cf_group}, :variable => cf_var}).first
+
+        unless cf.nil?
+          
+          conditions = []
+          unless @@user.nil?
+            if @@user.group_id.to_i > 0
+              conditions << "((configuration_datas.config_type = 0 and configuration_datas.config_type_id is null) or (configuration_datas.config_type = 1 and configuration_datas.config_type_id = #{@@user.group_id.to_i}) or (configuration_datas.config_type = 2 and configuration_datas.config_type_id = #{@@user.id}))"
+            else
+              conditions << "((configuration_datas.config_type = 0 and configuration_datas.config_type_id is null) or (configuration_datas.config_type = 2 and configuration_datas.config_type_id = #{@@user.id}))"
+            end
+          end        
+
+          conditions << "configuration_datas.configuration_id = #{cf.id}"
+          
+          cfd = ConfigurationData.where(conditions.join(' and ')).order('configuration_id, config_type desc')          
+          unless cfd.empty?
+            cfd.each do |x|
+              cf_value = convert_type(x.value,cf.variable_type)
+              break
+            end
+          else
+            cf_value = convert_type(cf.default_value,cf.variable_type)
+          end
+  
+          if cf_value.nil? or cf_value == "NULL" or cf_value == "null"
+            cf_value = nil
+          end          
+             
+        end
+        
+        STDOUT.puts "[Configuration - #{@username}] #{key}=#{cf_value}"
+  
+      rescue => e
+        STDERR.puts "[Configuration - #{@username}] #{key}=#{e.message}"
+      end
+        
+      return cf_value 
+           
+    end
+        
+    def convert_type(value,value_type)
+      return Configuration.convert_type(value,value_type)
+    end
+
+  end
+        
   def self.get(key)
 
     # key
-    # format : type.group.variable
-
-    cf_value = nil
-
-    begin
-      
-      cf_str = key.strip.split(".")
-      cf_type = cf_str[0].split("").first.upcase
-
-      cf = Configuration.find(:first,
-                              :include => :configuration_group,
-                              :conditions => {
-                                      :configuration_groups => {:configuration_type => cf_type,:name => cf_str[1]},
-                                      :variable => cf_str[2]})
-
-      conditions = []
-      if defined? @@user and not @@user.nil?
-        if @@user.group_id.to_i > 0
-          conditions << "((configuration_datas.config_type = 0 and configuration_datas.config_type_id is null) or (configuration_datas.config_type = 1 and configuration_datas.config_type_id = #{@@user.group_id.to_i}) or (configuration_datas.config_type = 2 and configuration_datas.config_type_id = #{@@user.id}))"
-        else
-          conditions << "((configuration_datas.config_type = 0 and configuration_datas.config_type_id is null) or (configuration_datas.config_type = 2 and configuration_datas.config_type_id = #{@@user.id}))"
-        end
-      end   
-
-      unless cf.nil?
-        conditions << "configuration_datas.configuration_id = #{cf.id}"
-        cfd = ConfigurationData.find(:all,:conditions => conditions.join(' and '),:order => 'configuration_id,config_type desc')
-        unless cfd.empty?
-          cfd.each do |x|
-            cf_value = convert_type(x.value,cf.variable_type)
-            break
-          end
-        else
-          cf_value = convert_type(cf.default_value,cf.variable_type)
-        end
-
-        if cf_value.nil? or cf_value == "NULL" or cf_value == "null"
-          cf_value = nil
-        end
-      end
-
-    rescue => e
-      STDERR.puts "Config:#{key} - #{e.message}"
-      Rails.logger.error "Config:#{key} - #{e.message}"
-    end
-
-    cf_value
+    # format : type.group.variable    
     
+    syscf = UserConf.new
+    
+    return syscf.get(key)
+        
   end
 
   def self.convert_type(value,value_type)
-
-     type_name, value_ranges = value_type.split(/[\[\]]/)
-
-     case value_ranges
-      when /^(\d+)\.\.\.?(\d+)$/
-         @valid_range = ($1.to_i)..($2.to_i)
-      when /,/
-         @valid_data_list = value_ranges.split(',')
-      else
-         # [FIXME] should be logged
-         @valid_range = nil
-         @valid_data_list = nil
-      end
-
-      case type_name
-      when "string"
-         @value_type = "string"
-         @value = value.to_s
-      when "integer"
-         @value_type = "integer"
-         @value = value.to_i
-      when "boolean"
-         @value_type = "boolean"
-         if value =~ /^t/i
-            @value = true
-         else
-            @value = false
-         end
-      else
-         # [FIXME] should be logged
-         @value_type = nil
-         @value = nil
-      end
-
-    @value
-    
+    return Configuration.convert_type(value,value_type)  
   end
 
   def self.set_database_configuration
@@ -153,7 +141,7 @@ module AmiConfig
     STDOUT.puts "=> Checking system configuration"
     
     configuration_file = "CONFIGURATIONS.txt"
-    configuration_file = File.join(RAILS_ROOT,'lib','tasks',configuration_file)
+    configuration_file = File.join(Rails.root.to_s,'lib','tasks',configuration_file)
   
     begin
       if File.exist?(configuration_file)

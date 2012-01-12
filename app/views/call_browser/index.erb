@@ -2,8 +2,14 @@
 
 <% end %>
 
+<%= javascript_src_path '/jquery/jquery-ui-1.7.2/development-bundle/ui/ui.slider.js' %>
+
 <style type="text/css">
-  html { overflow: hidden;}
+  html,body { overflow-y: hidden; margin: 0; padding: 0;}
+
+  A:link { color: #000000; text-decoration: none}
+  A:visited { color: #000000; text-decoration: none}
+  A:hover {text-decoration: underline;}
 
   div#tree, div#realtime, div#realtime-status, div#call-hist{
     float: left;
@@ -25,12 +31,6 @@
     color: #384970;
   }
 
-  div.div-show {
-    overflow-y: scroll;
-    overflow-x: hidden;
-    border: 1px solid #B8B8B8;
-  }
-
 </style>
 
 <script type="text/javascript">
@@ -44,56 +44,39 @@
   $(document).ready(function(){
     keyword_available = <%= Aohs::MOD_KEYWORDS %>;
     call_transfer_available = <%= Aohs::MOD_CALL_TRANSFER %>;
+
+    initiate_slider();
   });
 
   function resize_wrap() {
+    /* height flag */
+    var hf = 6;
+    /* window height */
+    var wh = $(window).height() - hf;
+    /* window width */
+    var ww = $(window).width();
 
-    var win_h = $(window).height();
-    var win_w = $(window).width();
-
-    var agnt_cnd_w = $('div#agent-tree').width();
-    var sp_monit_h = $('#sp-monit').height();
-
-    // temp
-    var call_search_h = $('div#call-search').height();
-    var all_cb_vis = $('div#all-cb').css("display");
-
-    /* /call_browser/agent_tree */
-    $('div#agent-tree').css("height",win_h - 37);
-    var agnt_cnd_h = $('div#agent-tree').height();
-
-    /* /call_browser/agent_status */
-    var div_show_w = win_w - agnt_cnd_w - 13;
-    var div_show_h = agnt_cnd_h - sp_monit_h - call_search_h - 4;
-
-    if(all_cb_vis == "block")
-      div_show_h = Math.floor(div_show_h / 2);
-
-    $('div#agent-status').css("height", div_show_h);
-    $('div#agent-status').css("width", div_show_w);
-    $('div#realtime').css("width", div_show_w);
+    /* define agent tree height */
+    $("div#a-tree").css("height", wh);
     
-    var agnt_tbl_w = $('div#agent-status').width() - 20;
-    $('table#agent-status-tbl').css('width',agnt_tbl_w);
-    $('table#call-hist-tbl').css('width',agnt_tbl_w);
-
-    /* time table */
-    var cb_agent_inf_w = $('div#cb-agent-inf').width();
-    var cb_agent_inf_h = $('div#cb-agent-inf').height() - call_search_h;
-    $('div#cb-time-info').css("height", cb_agent_inf_h);
-    $('div#cb-time-info').css("width", win_w - agnt_cnd_w - cb_agent_inf_w - 30);
-
-    var h = div_show_h - cb_agent_inf_h - 29;
-    $('div#cb-call-hist').css("height", h);
-    $('div#cb-call-hist').css("width", div_show_w);
-
+    /* define agent status height */
+    var monit_h = $("#monit").height();
+    var sts_h = wh - monit_h;
+    $("div#ac-status").css("height", sts_h);
   }
 
 </script>
-
-<div style="clear: both; float: left; margin-top: 2px;">
-  <div id="tree"><%= render :partial => "/call_browser/agent_tree" %></div>
-  <div id="realtime"><%= render :partial => "/call_browser/real_time" %></div>
-  <div id="realtime-status"><%= render :partial => "/call_browser/current_status" %></div>
-  <div id="call-hist"><%= render :partial => "/call_browser/call_history" %></div>
-</div>
+<table id="glob-part">
+  <tr>
+    <td id="tree" valign="top">
+      <%= render :partial => "/call_browser/agent_tree" %>
+    </td>
+    <td width="100%" valign="top">
+      <table id="work-part" cellpadding="0" cellspacing="0" valign="top" width="100%">
+        <tr><td valign="top"><%= render :partial => "/call_browser/real_time" %></td></tr>
+        <tr><td valign="top"><%= render :partial => "/call_browser/current_status" %></td></tr>
+        <tr><td valign="top"><%#= render :partial => "/call_browser/call_history" %></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>

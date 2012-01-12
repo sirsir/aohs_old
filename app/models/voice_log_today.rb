@@ -27,4 +27,8 @@ class VoiceLogToday < ActiveRecord::Base
 
   set_table_name("voice_logs_today_1")
   
+  def self.table_name_prefix
+    return "voice_logs_today_"
+  end
+  
 end

@@ -46,6 +46,7 @@
 		width:20px;   
 		margin-bottom:1px;
 		font-weight:normal;
+		height:100px;
 	}
     .row-btn td {
       background-image:url('../images/bg002.png');
@@ -79,7 +80,8 @@
 	        <td align="left">
 	          <ul>
 	            <li><%= link_image_tag('New role','new.png',{:controller => "role",:action => "new"},{:title=> 'Add new role'}) %></li>
-	          </ul>
+	          	<li><%= link_image_tag('Role Priority','icon_priority.gif',{:controller => "permission",:action => "manage_role"},{:title=> 'Role Priority'}) %></li>
+			  </ul>
 	        </td>
 	        <td align="right">
 			
@@ -101,7 +103,7 @@
 <% end %>
 <div class="div-default-table">
 <% dp_grp = nil %>  
-<% form_tag :controller => "permission", :action=>'addpermission', :method=>'post', :name=>'frmPermission' do %>
+<%= form_tag :controller => "permission", :action=>'addpermission', :method=>'post', :name=>'frmPermission' do %>
   <table cellspacing="0" cellpadding="0" class="tbl-permission tbl-hover">
     <tr class="thead">
       <th style="width:32px;">No</th>
@@ -125,7 +127,7 @@
     <tr class="<%= cycle('odd','even') %> app-<%=privilege.application.downcase %>">
       <td class="no" style="width:30px;"><%= i+1 %></td>
       <td align="left">&nbsp;<%= privilege.description %></td>
-      <td align="center" class="col-role"><%=  @role_names.map{|r| check_box_tag("x[#{r}][#{privilege.id}]",privilege.id,privilege[r])}.join("</td><td class=\"col-role\" align=\"center\">") %></td>
+      <td align="center" class="col-role"><%=  (@role_names.map{|r| check_box_tag("x[#{r}][#{privilege.id}]",privilege.id,privilege[r])}.join("</td><td class=\"col-role\" align=\"center\">")).html_safe %></td>
       <td width="15px;">&nbsp;</td>	
 	</tr>
     <% end %>

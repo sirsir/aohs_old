@@ -1,14 +1,15 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-
 require 'logger'
 
 module AmiLog
-
+  
+  class OperationLog
+        
+  end
+      
   ## ===== save log table ===== ##
   
   $APP_LOG_NAME = "AOHS"
-  
+   
   def get_user
 
     begin
@@ -89,7 +90,7 @@ module AmiLog
 
   def self.set_flog
 
-     $SCHLOG = Logger.new(File.join(RAILS_ROOT,'log','application.log'),'daily')
+     $SCHLOG = Logger.new(File.join(Rails.root.to_s,'log','application.log'),'daily')
     
   end
 
@@ -117,22 +118,24 @@ module AmiLog
 
   end
 
-  ## ===== scheduler for logs ===== ##
-
+  #
+  # ===== scheduler for logs ===== #
+  # backup operation from table to log file.
+  
   def self.auto_backup_log
+    
+    keep_days = Aohs::DAY_KEEP_LOGS.to_i
     
     result = true
     msg = nil
-    
-    keep_days = Aohs::DAY_KEEP_LOGS #AmiConfig.get('client.aohs_web.keepLogDays').to_i
-    
+        
     if keep_days > 0
-
+    
       begin
 
         delete_day = Date.today - keep_days
         
-        logs = Logs.find(:all,:conditions => "start_time < '#{delete_day} 00:00:00'", :order => "start_time")
+        logs = Logs.where("start_time < '#{delete_day} 00:00:00'").order("start_time")
         f_count = 0
         f_rec = 0       
         logs_bak = {}
@@ -151,8 +154,8 @@ module AmiLog
             
             f_count += 1
             
-            log_dir = File.join(RAILS_ROOT,'log')
-            log_fname = "aohs_operation_log.log.#{k}"
+            log_dir = File.join(Rails.root,'log')
+            log_fname = "operation_log.log.#{k}"
             log_fpath = File.join(log_dir,log_fname)
             
             f = File.open(log_fpath,"a")

@@ -50,8 +50,6 @@
         <td align="left">
           <ul>
             <li><%= link_image_tag('Back','back.png',{:controller => "extension",:action => 'index'},{:title => 'Back to extension list'}) %></li>
-            <li><%= link_image_tag('Add did','new.png',{:controller => "extension",:action => 'new_did',:ext_id => params[:id]},{:title => 'Add new did number'}) %></li>
-            <li><%= link_image_tag('Extension details','detail.png',{:controller => "extension",:action=>"show", :id => @extension.id},{:title => 'Show details'}) %></li>
             <li><%= link_image_tag('Delete extension','delete.png','#',{:onclick => "del_manager(#{@extension.id},\"#{@extension.number}\")",:title => 'Delete'}) %></li>
           </ul>
         </td>
@@ -63,11 +61,10 @@
   </div>
 <% end %>
 <div class="div-form-default-style1">
-     <% form_for(@extension,:url=>{:controller=>'extension',:action=>'update',:id => @extension.id})  do |f| %>
+     <%= form_for(@extension,:url=>{:controller=>'extension',:action=>'update',:id => @extension.id})  do |f| %>
         <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-            <td><span class="span-form-name">Extension infomation</span>
-            </td>
+            <td><span class="span-form-name">Extension information</span></td>
         </tr>
         <tr>
             <td>
@@ -76,53 +73,30 @@
             <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
             <tr>
               <td width="130px" align="left" valign="top"><label>Extension number:</label></td>
-              <td width="300px"><%= f.text_field :number,{:class =>'input-text',:size => 20,:maxsize => 20} %><span class="span-require">*</span></td>
+              <td width="300px"><%= f.text_field :number,{:class =>'input-text',:size => 5,:maxsize => 20} %><span class="span-require">*</span></td>
             </tr>
+            <tr>
+              <td width="150px" valign="top"><label for="number">Did(s):</label></td>
+              <td><input type="text" name="dids" value="<%= (@extension.dids.empty? ? '' : (@extension.dids.map { |d| d.number } ).join(',') )%>" class="input-text">
+			  <br/><span class="note">Did are seprated by ",". Example is 029999999,028888888, ...</span></td>
+            </tr>
+			<% if Aohs::COMPUTER_EXTENSION_LOOKUP %>
+            <tr>
+              <td width="150px" valign="top"><label for="number">Computer's Name:</label></td>
+              <td><input type="text" name="comp" value="<%= (@extension.computer_extension_map.nil? ? '' : (@extension.computer_extension_map.computer_name) ) %>" class="input-text">
+			  <br/><span class="note">Client computer'name</span></td>
+            </tr>						
+            <tr>
+              <td width="150px" valign="top"><label for="number">IP Address:</label></td>
+              <td><input type="text" name="ipadr" value="<%= (@extension.computer_extension_map.nil? ? '' : (@extension.computer_extension_map.ip_address) ) %>" class="input-text">
+			  <br/><span class="note">IP Address format 0.0.0.0</span></td>
+            </tr>	
+			<% end %>
             <tr>
               <td></td>
-              <td><%= submit_tag "Update extension",{:class => 'btnAccept'} %></td>
+              <td><%= submit_tag "Save",{:class => 'btnAccept'} %></td>
             </tr>
         </table>
-      </td>
-    </tr>
-    <tr>
-    <tr>
-      <td><span class="span-form-name">Dids</span></td>
-    </tr>
-      <td style="padding-top:5px;">
-        <div class="div-tbl-default-style1">
-          <table cellpadding="0" cellspacing="0" >
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>Number</th>
-                <th>Edit</th>
-                <th>Delete</th>
-            </tr>
-            </thead>
-            <tbody id="diddetail">
-            <% unless @extension.dids.blank? %>
-                <% @extension.dids.each_with_index do |dn,i| %>
-                <tr class="<%=cycle('tr-odd','tr-even')%>" >
-                    <td width="40px"><%= i + 1 %></td>
-                    <td class="string"><%= dn.number unless dn.number.nil? %></td>
-                    <td width="45px">
-                <%=link_image_tag('','edit.png','#',{:onclick => "window.location.href=\"#{url_for(:controller => 'extension',:action =>"edit_did",:id =>dn.id)}\";",:title => 'edit',:style => 'display:block;',:id=>"l1"}) %>
-                    </td>
-                    <td width="45px">
-                <%= link_image_tag('','delete.png','#',{:onclick => "del_did(#{dn.id},\"#{dn.number}\")",:title => 'Delete'}) %>
-                    </td>
-                </tr>
-                <% end %>
-            <% else %>
-               <tr align="center">
-                  <td colspan="4"><span class="span-display-none">No dids.</span></td>
-               </tr>
-              <% end %>
-              </tbody>
-          </table>
-          <br>
-        </div>
       </td>
     </tr>
   </table>

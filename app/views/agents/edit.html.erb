@@ -1,5 +1,6 @@
 <% content_for :header do %>
-    <%= stylesheet_src_path '/jquery/jquery.timepickr/ui-timepickr/dist/themes/default/ui.timepickr.css' %>
+<%= stylesheet_src_path '/jquery/jquery.timepickr/ui-timepickr/dist/themes/default/ui.timepickr.css' %>
+<%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
 <script type="text/javascript">
     function del_agent(id,name){
         $("#delDialog").text("");
@@ -41,12 +42,12 @@
        <%end%>
          $("#agent_state<%=sts%>").attr("checked",true);
          $("#agent_expired_date").datepicker({ showAnim: 'fold' ,dateFormat: 'yy-mm-dd'});
-
+		$("#agent_id_card").mask("9999999999999");
     });
 </script>
 <% end %>
 
-<div id="change-usertype-dialog" style="display:none;">
+<div id="change-usertype-dialog" style="display:none;" title="Change type of user">
 	<div>
 		<span>Are you sure to change user type from "Agent" to "Manager"?</span></br></br>
 		<span style="font-style:italic;">
@@ -84,8 +85,9 @@
 
 <div id="div-block-agent">
 <div class="div-form-default-style1">
-  <% form_for(@agent,:url => {:controller => 'agents',:action=>"update",:id=>"#{@agent.id}"}) do |f| %>
+  <%= form_for(@agent,:url => {:controller => 'agents',:action=>"update",:id=>"#{@agent.id}"}) do |f| %>
   <%=display_frm_error(flash[:message]) %>
+  <%= f.hidden_field(:role_id,{:value => Role.where({:name => 'Agent'}).first.id}) %>
   <table class="tblfrm" width="100%" cellpadding="0" cellspacing="0">
     <tr>
       <td><span class="span-form-name">Agent infomation</span></td>
@@ -113,7 +115,8 @@
 			<!-- ID CARD -->				   
             <tr>
               <td width="150px" valign="top"><label for="id_card">Citizen ID:</label></td>
-              <td><%= f.text_field :id_card, :size => 20, :maxsize => 50, :class =>'input-text' %></td>
+              <td><%= f.text_field :id_card, :size => 20, :maxsize => 50, :class =>'input-text' %>
+			  <br><span class="note">Citizen ID is composed of 13 digits.</span></td>
             </tr> 		
 			         
             <tr>
@@ -123,7 +126,7 @@
            
              <tr>
               <td valign="top"><label for="expired_date">Account expired date:</label></td>
-              <td><%= f.text_field :expired_date,{:class => 'input-text'}%><span class="span-require">*</span>
+              <td><%= f.text_field :expired_date,{:class => 'input-text'}%>
               <br><span class="note">Format date is "yyyy-mm-dd"</span></td>
              </tr>
                <tr>
@@ -135,6 +138,7 @@
             </table>
       </td>
     </tr>
+	<% if Aohs::LOGIN_BY_AGENT %>
     <tr>
       <td><span class="span-form-name">Authentication details</span></td>
     </tr>
@@ -154,11 +158,17 @@
           </tr>
             <tr>
               <td></td>
-              <td><%= submit_tag " Update agent ",{:class => 'btnAccept'} %></td>
+              <td><%= submit_tag "Save",{:class => 'btnAccept'} %></td>
             </tr>
           </table>
       </td>
     </tr>
+	<% end %>
+	<tr>
+		<table class="tbl-frm-details" cellpadding="0" cellspacing="0">
+			<tr><td><%= submit_tag "Save",{:class => 'btnAccept'} %></td></tr>
+		</table>
+	</tr>
   </table>
   <% end %>
 </div>

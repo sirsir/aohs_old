@@ -48,7 +48,7 @@ class PdfReport
   DOC_MRG_BOTTOM = 25
   
   BREAK_LINE = "\n"
-  REPORT_LOGO_FPATH = "#{Rails.public_path}/images/logo/logo.png"
+  REPORT_LOGO_FPATH = "#{Rails.public_path}/images/logo/#{Aohs::WEB_CLOGO}_report.png"
   CELL_PADDING = 4
   CELL_PADDING_TOP = -1
   CELL_PADDING_BOTTOM = 5
@@ -265,8 +265,10 @@ class PdfReport
       ph = Phrase.new(@report_name,Font.new(boldf,DEFAULT_FONT_SIZE+2,1))
       ColumnText.showTextAligned(@cb,Element.ALIGN_CENTER,ph,@cb_center,@cb_top,0)       
       
+      marg_logo = 0
+      marg_logo = 73 if Aohs::WEB_CLOGO != false
       ph = Phrase.new(@report_title,Font.new(norf,DEFAULT_FONT_SIZE))
-      ColumnText.showTextAligned(@cb,Element.ALIGN_LEFT,ph,@cb_left + 65,@cb_top,0) 
+      ColumnText.showTextAligned(@cb,Element.ALIGN_LEFT,ph,@cb_left + marg_logo,@cb_top,0) 
 
       ph = Phrase.new("Page: #{page_number}",Font.new(norf,DEFAULT_FONT_SIZE))
       ColumnText.showTextAligned(@cb,Element.ALIGN_RIGHT,ph,@cb_right,@cb_top,0) 
@@ -276,13 +278,14 @@ class PdfReport
 
       ph = Phrase.new(@report_description,Font.new(norf,DEFAULT_FONT_SIZE,1))
       ColumnText.showTextAligned(@cb,Element.ALIGN_CENTER,ph,@cb_center,@cb_top - 23,0) 
-                                    
-      logo = Image.getInstance(REPORT_LOGO_FPATH)
-      logo.setAbsolutePosition(0,0)
-      tp = @cb.createTemplate(65,55);
-      tp.addImage(logo);
-      @cb.addTemplate(tp,@cb_left,@cb_top - 20);
-
+      
+      if Aohs::WEB_CLOGO != false
+        logo = Image.getInstance(REPORT_LOGO_FPATH)
+        logo.setAbsolutePosition(0,0)
+        tp = @cb.createTemplate(70,55);
+        tp.addImage(logo);
+        @cb.addTemplate(tp,@cb_left,@cb_top - 20);
+      end
       ph, logo = nil, nil
        
       STDOUT.puts "StartPage:#{page_number}"

@@ -1,0 +1,34 @@
+<% content_for :header do %>
+<style>
+	div.div-access-denied {
+		width:100%;
+		text-align:center;
+		margin-top:100px;
+	}
+	div.msg-denied {
+		font-weight:bold;
+		font-size:11pt;
+		color:#6F7EA1;
+	}
+	div.msg-denied2 {
+		margin-top:5px;
+		font-size:10pt;
+		color:#6F7EA1;
+	}	
+</style>
+<% end %>
+
+<div class="div-access-denied">
+	<table width="630">
+		<tr>
+			<td align="center" width="130"><%= image_tag('accessDenied.gif') %></td>
+			<td>
+				<div class="msg-denied">Sorry, you don't have the required permission to access this page.</div>
+				<div class="msg-denied2">Please contact your administrator, or goto <a href="<%= url_for(:controller=> 'top_panel',:action => 'index') %>">Home</a></div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2"><div></div></td>
+		</tr>
+	</table>	
+</div>

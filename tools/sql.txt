@@ -1,0 +1,64 @@
+CREATE TABLE `NewTable` (
+`id`  bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT ,
+`system_id`  int(10) NULL DEFAULT NULL ,
+`device_id`  int(10) NULL DEFAULT NULL ,
+`channel_id`  int(10) NULL DEFAULT NULL ,
+`ani`  varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`dnis`  varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`extension`  varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`duration`  int(10) NULL DEFAULT NULL ,
+`hangup_cause`  int(10) NULL DEFAULT NULL ,
+`call_reference`  int(10) NULL DEFAULT NULL ,
+`agent_id`  int(10) NULL DEFAULT NULL ,
+`voice_file_url`  varchar(300) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`call_direction`  varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT 'u' ,
+`start_time`  datetime NULL DEFAULT NULL ,
+`digest`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`call_id`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`site_id`  int(10) NULL DEFAULT NULL ,
+INDEX `id` USING BTREE (`id`) 
+)
+ENGINE=MRG_MYISAM
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+UNION=(`voice_logs_today_1`,`voice_logs_201005`,`voice_logs_201006`,`voice_logs_201007`,`voice_logs_201008`,`voice_logs_201009`,`voice_logs_201010`)
+INSERT_METHOD=LAST
+ROW_FORMAT=DYNAMIC
+;
+
+
+CREATE DEFINER = `mysqladmin`@`%` FUNCTION `NewProc`()
+ RETURNS bigint(20)
+BEGIN
+  DECLARE unused_id BIGINT DEFAULT 0;
+	SELECT id INTO unused_id FROM (
+	SELECT id 
+	FROM    (
+					SELECT  1 AS id
+					) q1
+	WHERE   NOT EXISTS
+					(
+					SELECT  1
+					FROM    voice_logs_test 
+					WHERE   id = 1
+					)
+	UNION ALL
+	SELECT  *
+	FROM    (
+					SELECT  id + 1
+					FROM    voice_logs_test t
+					WHERE   NOT EXISTS
+									(
+									SELECT  1
+									FROM    voice_logs_test ti
+									WHERE   ti.id = t.id + 1
+									)
+					ORDER BY
+									id
+					LIMIT 1
+					) q2
+	ORDER BY
+					id
+	LIMIT 1
+  ) x;
+	RETURN unused_id;
+END;

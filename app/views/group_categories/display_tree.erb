@@ -121,15 +121,15 @@
     </tr>
     <tr>
       <td>
-        <% form_tag :controller => 'group_category',:action => 'update_display_tree' do %>
+        <%= form_tag :controller => 'group_categories',:action => 'update_display_tree' do %>
         <table class="tbl-frm-details">
           <tr>
             <td colspan="2"><span class="span-field-description">Use order button to order categories list for display in agents tree.</span></td>
           </tr>
           <tr>
             <td>
-              <%= select_tag('display_tree',@cate_type,{:multiple => true, :id => 'display_tree',:class => 'selection',:name => 'list'}) %>
-              <%= hidden_field_tag "cate_type" %>
+              <%= (select_tag('display_tree',@cate_type.html_safe,{:multiple => true, :id => 'display_tree',:class => 'selection',:name => 'list'})).html_safe %>
+              <%= (hidden_field_tag "cate_type").html_safe %>
             </td>
             <td align="center">
               <input type="button" value="Up" id="click-up" onClick="move(this.form.list.selectedIndex,-1)"><br>

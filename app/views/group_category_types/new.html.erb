@@ -8,7 +8,7 @@
       <tr>
         <td align="left">
           <ul>
-            <li><%= link_image_tag('Back','back.png',group_category_path,{:title => 'Back to category list'}) %></li>
+            <li><%= link_image_tag('Back','back.png',{:controller => 'group_category',:action => 'index'},{:title => 'Back to category list'}) %></li>
           </ul>
         </td>
         <td align="right">
@@ -30,7 +30,7 @@
             </tr>
     <tr>
       <td class="frmmain">
-        <% form_tag :action => 'create' do %>
+        <%= form_tag :action => 'create' do %>
         <%=display_frm_error(flash[:message]) %>
           <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
             <tr>
@@ -40,7 +40,7 @@
             </tr>
             <tr>
               <td></td>
-              <td><%= submit_tag "Add category type",{:class => 'btnAccept'} %>&nbsp;&nbsp;<%#= submit_tag "Reset",{:type => 'reset',:class => 'btnAccept'} %></td>
+              <td><%= submit_tag "Add",{:class => 'btnAccept'} %>&nbsp;&nbsp;<%#= submit_tag "Reset",{:type => 'reset',:class => 'btnAccept'} %></td>
             </tr>
             </table>
         <% end %>

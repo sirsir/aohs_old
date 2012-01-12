@@ -1,6 +1,18 @@
- module AmiReport
-
-  DAYS_OF_THE_WEEK = %w[mo tu we th fr sa su]
+module AmiReport
+  
+  def find_watch_managers
+    if permission_by_name('tree_filter')
+      gm = GroupManager.where(:user_id => current_user.id)
+      unless gm.empty?
+        managers = Manager.where(:id => gm.map { |m| m.manager_id })
+      else
+        managers = []
+      end
+      return managers
+    else
+      return nil
+    end
+  end
   
   def find_owner_groups
 
@@ -8,13 +20,9 @@
     
     if permission_by_name('tree_filter')
 
-      grps_tmp1 = Group.find(:all,
-                           :select => 'id',
-                           :conditions => "leader_id = #{current_user.id}")
+      grps_tmp1 = Group.select("id").where("leader_id = #{current_user.id}")        
+      grps_tmp2 = GroupMember.select("group_id").where({:user_id => current_user.id})
 
-      grps_tmp2 = GroupMember.find(:all,
-                                 :select => 'group_id',
-                                 :conditions => {:user_id => current_user.id})
       grps_tmp = []
       grps_tmp = grps_tmp.concat(grps_tmp1.map { |x| x.id }) unless grps_tmp1.empty?
       grps_tmp = grps_tmp.concat(grps_tmp2.map { |x| x.group_id }) unless grps_tmp2.empty?
@@ -36,7 +44,13 @@
 
     unless groups.nil?
       unless groups.empty?
-        agents = Agent.find(:all,:conditions => {:group_id => groups})
+        agents = Agent.where({:group_id => groups})
+        
+        # add leader
+        leaders = Group.select('leader_id').where(:id => groups).all
+        unless leaders.empty?
+          agents = agents.concat(Manager.where(:id => leaders.map { |l| l.leader_id }).all)
+        end
       end
     end
 
@@ -83,6 +97,14 @@
             when 'action'
                 statistics_type_id = StatisticsType.find_statistics(:target_model => "ResultKeyword",:by_agent => true,:value_type => "sum:a").id
                 rptitle = "Action Words"
+            when 'in'
+                tabname = 'in'
+                statistics_type_id = StatisticsType.find_statistics(:target_model => "VoiceLog",:by_agent => true,:value_type => "count:i").id
+                rptitle = "Agent's Calls (Inbound)"    
+            when 'out'
+                tabname = 'out'
+                statistics_type_id = StatisticsType.find_statistics(:target_model => "VoiceLog",:by_agent => true,:value_type => "count:o").id
+                rptitle = "Agent's Calls (Outbound)"                    
             else #calls
                 tabname = 'calls'
                 statistics_type_id = StatisticsType.find_statistics(:target_model => "VoiceLog",:by_agent => true,:value_type => "count").id
@@ -212,12 +234,12 @@
         start_date = stdate
         end_date = start_date
       when 'weekly'
-        begin_of_weekly = AmiConfig.get('client.aohs_web.beginning_of_week')
-        begin_of_weekly = DAYS_OF_THE_WEEK.index("#{begin_of_weekly}").to_i
+        begin_of_weekly = $CF.get('client.aohs_web.beginning_of_week')
+        begin_of_weekly = Aohs::DAYS_OF_THE_WEEK.index("#{begin_of_weekly}").to_i
         start_date = stdate.beginning_of_week + begin_of_weekly
-        end_date = stdate.end_of_week + begin_of_weekly - 1
+        end_date = start_date + 7 - 1 #stdate.end_of_week + begin_of_weekly - 1
       when 'monthly'
-        begin_of_month = AmiConfig.get('client.aohs_web.beginning_of_month')
+        begin_of_month = $CF.get('client.aohs_web.beginning_of_month')
         start_date = stdate.beginning_of_month + begin_of_month - 1
         end_date = stdate.end_of_month + begin_of_month - 1
       else
@@ -292,12 +314,25 @@
 
   end
 
+  def voice_logs_default_filters
+	
+	conditions = []
+	
+	v = VoiceLogTemp.table_name
+	if Aohs::VFILTER_DURATION_MIN.to_i > 0
+		conditions << "#{v}.duration >= #{Aohs::VFILTER_DURATION_MIN.to_i}"
+	end
+	
+	return conditions
+	
+  end
+  
   def find_report_today(opt={})
 
     result = { :all => nil , :my => nil, :my_all => nil }
       
     select_date = Time.new.strftime("%Y-%m-%d")
-    ##select_date = "2010-10-01"
+    ##select_date = "2011-07-01"
     
     vl = VoiceLogTemp.table_name
     vc = VoiceLogCounter.table_name
@@ -305,23 +340,27 @@
     start_time = "#{select_date} 00:00:00"
     end_time = "#{select_date} 23:59:59"
     
+    filt_cond = voice_logs_default_filters
+    
     selects_sum_by_calls = "COUNT(#{vl}.id) as calls,SUM(IF(call_direction='i',1,0)) as inbound, SUM(IF(call_direction='o',1,0)) as outbound, SUM(#{vl}.duration) as duration, SUM(#{vc}.ngword_count) as ngwords, SUM(#{vc}.mustword_count) as mustwords"
     
     if true
-           
-      st_tmp = VoiceLogTemp.find(
-                    :first,
-                    :joins => "left join #{vc} on #{vl}.id = #{vc}.voice_log_id",
-                    :select => selects_sum_by_calls,
-                    :conditions => "#{vl}.start_time BETWEEN '#{start_time}' and '#{end_time}'")
-                    
-      sql1 = " SELECT (#{vl}.agent_id) as agent_id,COUNT(#{vl}.id) as calls,SUM(IF(#{vl}.call_direction='i',1,0)) as inbound,SUM(IF(#{vl}.call_direction='o',1,0)) as outbound, SUM(#{vl}.duration) as duration, SUM(#{vc}.ngword_count) as ngword, SUM(#{vc}.mustword_count) as mustword "
+    
+      st_tmp = VoiceLogTemp.select(selects_sum_by_calls).joins("left join #{vc} on #{vl}.id = #{vc}.voice_log_id").where("#{vl}.start_time BETWEEN '#{start_time}' and '#{end_time}'")
+      st_tmp = st_tmp.where(filt_cond) unless filt_cond.empty?
+      st_tmp = st_tmp.first
+      
+      sql1 = " SELECT IFNULL(#{vl}.agent_id,0) as agent_id,COUNT(#{vl}.id) as calls,SUM(IF(#{vl}.call_direction='i',1,0)) as inbound,SUM(IF(#{vl}.call_direction='o',1,0)) as outbound, SUM(#{vl}.duration) as duration, SUM(#{vc}.ngword_count) as ngword, SUM(#{vc}.mustword_count) as mustword "
       sql1 << " FROM #{vl} LEFT JOIN #{vc} ON #{vl}.id = #{vc}.voice_log_id "
       sql1 << " WHERE #{vl}.start_time BETWEEN '#{start_time}' AND '#{end_time}' "
-      sql1 << " GROUP BY #{vl}.agent_id "
+      sql1 << " AND #{filt_cond.join(' AND ')} " unless filt_cond.empty?
+      sql1 << " GROUP BY #{vl}.agent_id " 
+      
+      sql1 = " SELECT agent_id,SUM(calls) as calls,SUM(inbound) as inbound,SUM(outbound) as outbound, SUM(duration) as duration, SUM(ngword) as ngword, SUM(mustword) as mustword FROM (#{sql1}) tbl GROUP BY agent_id "
+      
       sql0 = " SELECT COUNT(agent_id) as agents, AVG(calls) as calls,AVG(inbound) as inbound, AVG(outbound) as outbound, AVG(duration) as duration, AVG(ngword) as ngword, AVG(mustword) as mustword "
       sql0 << " FROM (#{sql1}) tbl "
-        
+    
       st_tmp2 = VoiceLogTemp.find_by_sql(sql0).first  
       
       rs_tmp = {:agents => 0, :calls => 0, :duration => 0, :ngwords => 0, :mustwords => 0}
@@ -349,24 +388,44 @@
                        
     end
     
+    if opt[:me] == true
+      me = current_user.id      
+      st_tmp = VoiceLogTemp.select(selects_sum_by_calls).where("#{vl}.start_time BETWEEN '#{start_time}' and '#{end_time}' and #{vl}.agent_id = #{me}").joins("left join #{vc} on #{vl}.id = #{vc}.voice_log_id")
+      st_tmp = st_tmp.where(filt_cond) unless filt_cond.empty?
+      st_tmp = st_tmp.first
+      
+      rs_tmp = {:agents => 0, :calls => 0, :duration => 0, :ngwords => 0, :mustwords => 0}
+      unless st_tmp.nil?
+        rs_tmp = {
+            :agents => 1, 
+            :calls => st_tmp.calls.to_i,
+            :inbound => st_tmp.inbound.to_i,
+            :outbound => st_tmp.outbound.to_i,
+            :duration => st_tmp.duration.to_i, 
+            :ngwords => st_tmp.ngwords.to_i,
+            :mustwords => st_tmp.mustwords.to_i
+        }
+      end
+      result[:me] = rs_tmp
+    end
+        
     if opt[:with_agent] == true
       
        my_agents = find_owner_agent
        unless my_agents.blank?
-         my_agents = (my_agents.map{ |a| "'#{a.id}'" }).uniq
+         my_agents = (my_agents.map{ |a| "#{a.id}" }).uniq
        else
-         my_agents = [999999] # High value
+         my_agents = [-1] # lowest value
        end
        
-       st_tmp = VoiceLogTemp.find(
-                    :first,
-                    :joins => "left join #{vc} on #{vl}.id = #{vc}.voice_log_id",
-                    :select => selects_sum_by_calls,
-                    :conditions => "#{vl}.start_time BETWEEN '#{start_time}' and '#{end_time}' and #{vl}.agent_id IN (#{my_agents.join(',')})")
-       
+       st_tmp = VoiceLogTemp.select(selects_sum_by_calls).where("#{vl}.start_time BETWEEN '#{start_time}' and '#{end_time}' and #{vl}.agent_id IN (#{my_agents.join(',')})").joins("left join #{vc} on #{vl}.id = #{vc}.voice_log_id")
+       st_tmp = st_tmp.where(filt_cond) unless filt_cond.empty?
+       st_tmp = st_tmp.first
+      
        sql1 = " SELECT (#{vl}.agent_id) as agent_id,COUNT(#{vl}.id) as calls, SUM(IF(#{vl}.call_direction='i',1,0)) as inbound,SUM(IF(#{vl}.call_direction='o',1,0)) as outbound, SUM(#{vl}.duration) as duration, SUM(#{vc}.ngword_count) as ngword, SUM(#{vc}.mustword_count) as mustword "
        sql1 << " FROM #{vl} LEFT JOIN #{vc} ON #{vl}.id = #{vc}.voice_log_id "
        sql1 << " WHERE #{vl}.start_time BETWEEN '#{start_time}' AND '#{end_time}' AND #{vl}.agent_id IN (#{my_agents.join(',')})"
+       sql1 << " AND #{filt_cond.join(' AND ')} " unless filt_cond.empty?
        sql1 << " GROUP BY #{vl}.agent_id "
        sql0 = " SELECT COUNT(agent_id) as agents, AVG(calls) as calls,AVG(calls) as calls, AVG(inbound) as inbound, AVG(outbound) as outbound, AVG(duration) as duration, AVG(ngword) as ngword, AVG(mustword) as mustword "
        sql0 << " FROM (#{sql1}) tbl "

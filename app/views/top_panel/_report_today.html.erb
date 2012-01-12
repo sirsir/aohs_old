@@ -53,6 +53,9 @@
 		  }
           var d = data["my"];
 		  if(d){
+              if(parseInt(d["agents"])==0){
+                  $(".tr-mygroup").css("display","none");
+              }
 			  $("#lb_agents2").html(d["agents"]);
 			  $("#lb_calls2").html(d["calls"]);
 			  $("#lb_inbound2").html(d["inbound"]);
@@ -67,7 +70,9 @@
 			  $("#lb_avg_duration2").html(d["avg_duration"]);
 			  $("#lb_avg_mustword2").html(d["avg_mustword"]);
 			  $("#lb_avg_ngword2").html(d["avg_ngword"]); 		  	
-		  }
+		  } else {
+              $(".tr-mygroup").css("display","none");
+          }
 		  var d = data["my_all"];
 		  if(d){
 		  	  $("#lb_agents3").html(d["agents"]);
@@ -79,7 +84,16 @@
 	          $("#lb_ngwords3").html(d["ngwords"]);
 			  $("#lb_avg_agent3").html(d["agent"]); 			  
 		  }
-		  
+		  var d = data["me"];
+		  if(d){
+		  	  $("#lb_me_agent").html(d["agents"]);
+			  $("#lb_me_calls").html(d["calls"]);
+			  $("#lb_me_inbound").html(d["inbound"]);
+			  $("#lb_me_outbound").html(d["outbound"]);
+			  $("#lb_me_duration").html(d["duration"]);
+	          $("#lb_me_mustwords").html(d["mustwords"]);
+	          $("#lb_me_ngwords").html(d["ngwords"]);			  
+		  }
 		  data = undefined;
 		  d = undefined;
 		 
@@ -118,8 +132,10 @@
 				  <th>Inbound</th>
 				  <th>Outbound</th>
 				  <th>Call Duration</th>
+				  <% if Aohs::MOD_KEYWORDS %>
 		          <th class="ng-word">NG Words</th>
 		          <th class="must-word">Must Words</th>
+				  <% end %>
 		        </tr>
 		        <tr>
 		          <td class="lb_topic none" rowspan="2" valign="top"></td>
@@ -128,9 +144,11 @@
 		          <td><span id="lb_calls" class="today_lb callcount">-</span></td>
 				  <td><span id="lb_inbound" class="today_lb inbound-call">-</span></td>
 				  <td><span id="lb_outbound" class="today_lb outbound-call">-</span></td>
-				  <td><span id="lb_duration" class="today_lb callduration">-</span></td>				  
+				  <td><span id="lb_duration" class="today_lb callduration">-</span></td>	
+				  <% if Aohs::MOD_KEYWORDS %>			  
 		          <td><span id="lb_ngwords" class="today_lb ngword ng-word">-</span></td>
 		          <td><span id="lb_mustwords" class="today_lb mustword must-word">-</span></td>
+				  <% end %>
 		        </tr>
 		        <tr>
 		          <td class="lb_topic">Avg All agents</td>
@@ -139,12 +157,14 @@
 				  <td><span id="lb_avg_inbound" class="today_lb inbound-call">-</span></td>
 				  <td><span id="lb_avg_outbound" class="today_lb outbound-call">-</span></td>				  
 				  <td><span id="lb_avg_duration" class="today_lb callduration">-</span></td>
+				  <% if Aohs::MOD_KEYWORDS %>
 		          <td><span id="lb_avg_ngword" class="today_lb ng-word">-</span></td>
 		          <td><span id="lb_avg_mustword" class="today_lb must-word">-</span></td>
+				  <% end %>
 		        </tr>
 				<tr><td colspan="9"></td></tr>		
-		         <% if permission_by_name('tree_filter') %>
-		        <tr>
+		        <% if permission_by_name('tree_filter') %>
+		        <tr class="tr-mygroup">
 		          <td class="lb_topic none" rowspan="3" valign="top"></td>
 				  <td class="lb_topic">My agents</td>
 				  <td><span id="lb_agents2" class="today_lb usrcount">-</span></td>
@@ -152,8 +172,10 @@
 				  <td><span id="lb_inbound2" class="today_lb inbound-call">-</span></td>
 				  <td><span id="lb_outbound2" class="today_lb outbound-call">-</span></td>				  
 				  <td><span id="lb_duration2" class="today_lb callduration">-</span></td>
+				  <% if Aohs::MOD_KEYWORDS %>
 		          <td><span id="lb_ngwords2" class="today_lb ng-word">-</span></td>
 		          <td><span id="lb_mustwords2" class="today_lb must-word">-</span></td>
+				  <% end %>
 		        </tr>
 		        <tr style="display:none;">
 		          <td class="lb_topic">Avg My agents</td>
@@ -162,20 +184,39 @@
 				  <td><span id="lb_avg_inbound2" class="today_lb inbound-call">-</span></td>
 				  <td><span id="lb_avg_outbound2" class="today_lb outbound-call">-</span></td>				  
 				  <td><span id="lb_avg_duration2" class="today_lb callduration">-</span></td>
+				  <% if Aohs::MOD_KEYWORDS %>
 		          <td><span id="lb_avg_ngword2" class="today_lb ng-word">-</span></td>
 		          <td><span id="lb_avg_mustword2" class="today_lb must-word">-</span></td>
+				  <% end %>
 		        </tr>
-		        <tr>
+		        <tr class="tr-mygroup">
 		          <td class="lb_topic">Avg My agents(%)</td>
 				  <td><span id="lb_agents3" class="today_lb usrcount">-</span></td>
 		          <td><span id="lb_calls3" class="today_lb callcount">-</span></td>
 				  <td><span id="lb_inbound3" class="today_lb inbound-call">-</span></td>
 				  <td><span id="lb_outbound3" class="today_lb outbound-call">-</span></td>				  
 				  <td><span id="lb_duration3" class="today_lb callduration">-</span></td>
+				  <% if Aohs::MOD_KEYWORDS %>
 		          <td><span id="lb_ngwords3" class="today_lb ng-word">-</span></td>
 		          <td><span id="lb_mustwords3" class="today_lb must-word">-</span></td>
-		        </tr>				
-		        <% end %>    
+				  <% end %>
+		        </tr>			
+		        <% end %> 
+                <% if permission_by_name('tree_mycall') and Aohs::LOGIN_BY_AGENT %>
+		        <tr style="">
+		          <td class="lb_topic none" rowspan="3" valign="top"></td>
+		          <td class="lb_topic">My Calls</td>
+				  <td><span id="lb_me_agent" class="today_lb usrcount">-</span></td>
+		          <td><span id="lb_me_calls" class="today_lb callcount">-</span></td>
+				  <td><span id="lb_me_inbound" class="today_lb inbound-call">-</span></td>
+				  <td><span id="lb_me_outbound" class="today_lb outbound-call">-</span></td>				  
+				  <td><span id="lb_me_duration" class="today_lb callduration">-</span></td>
+				  <% if Aohs::MOD_KEYWORDS %>
+		          <td><span id="lb_me_ngword" class="today_lb ng-word">-</span></td>
+		          <td><span id="lb_me_mustword" class="today_lb must-word">-</span></td>
+				  <% end %>
+		        </tr>               
+                <% end %>                   
 		      </table>
 		<% end %>		
 	</div>

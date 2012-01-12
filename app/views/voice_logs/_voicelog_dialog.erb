@@ -4,7 +4,7 @@
 
     var ins_el;
     var ins_vc;
-    
+     
     function vcMessage(msg){
         $("#vc_dialog").text(msg);
         $("#vc_dialog").dialog("open");
@@ -43,11 +43,14 @@
         stdur: searchKey.stdu,
         eddur: searchKey.eddu,
 		keyword: searchKey.keyword,
+		trfcfr: searchKey.trfcfr,
+		trfcto: searchKey.trfcto,		
         page: ctrlPage.selectPage,
 		perpage: ctrlPage.perPage,
         sortby: ctrlSort.colName,
         od: ctrlSort.order,
-        usr: '<%= @username %>'
+        usr: '<%= @username %>',
+		withtrnf: searchKey.with_trnf
       },function(data){
           $("#div-exporting").css("display","none");
       });
@@ -78,11 +81,14 @@
         stdur: searchKey.stdu,
         eddur: searchKey.eddu,
 		keyword: searchKey.keyword,
+	    trfcfr: searchKey.trfcfr,
+	    trfcto: searchKey.trfcto,		
         page: ctrlPage.selectPage,
 		perpage: ctrlPage.perPage,
         sortby: ctrlSort.colName,
         od: ctrlSort.order,
-        usr: '<%= @username %>'
+        usr: '<%= @username %>',
+		withtrnf: searchKey.with_trnf
       }
 
       var url = ""

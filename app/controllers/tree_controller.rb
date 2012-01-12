@@ -1,5 +1,5 @@
 class TreeController < ApplicationController
-
+ 
   before_filter :login_required,:except => [:tree_source_xml]
 
   include AmiTree
@@ -71,8 +71,8 @@ class TreeController < ApplicationController
       
     src_cfg = []
       
-    parent_types.each do |p|
-      cf_groups = ConfigurationGroup.find(:all, :conditions => {:configuration_type => p['NodeId']}, :group => 'name')
+    parent_types.to_a.each do |p|
+      cf_groups = ConfigurationGroup.where({ :configuration_type => p['NodeId'] }).group('name').all
       unless cf_groups.empty?
         p[:children] = []
         cf_groups.each do |g|
@@ -100,14 +100,14 @@ class TreeController < ApplicationController
              
     case params[:type] 
     when /^groups/
-      groups = Group.find(:all,:order => 'name')
+      groups = Group.order('name')
       unless groups.empty?
         groups.each do |g|
           src_members << {:type => node_type,:label => g.name,:expanded => false,:id => "G-#{g.id}",'NodeLabel' => g.name,'NodeType' => 'group','GroupId'=> g.id, 'ModeDisp' => 3}
         end
       end
     else
-      usrs = User.find(:all,:order => 'login')
+      usrs = User.order('login')
       unless usrs.empty?
         usrs.each do |u| 
           src_members << {:type => node_type,:label => u.login,:expanded => false,:id => "U-#{u.id}",'NodeLabel' => u.login,'NodeType' => 'user','UserId'=> u.id, 'ModeDisp' => 4}

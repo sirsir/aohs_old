@@ -95,7 +95,7 @@
 				  <label>Citizen ID:</label> <input type="text" class="input-int" name="agent-idcard" style="width:80px;" value="<%=params[:id_card] %>">
 				  <label>Username:</label> <input type="text" name="agent-login" value="<%=params[:login] %>">
 				  <label>Name:</label> <input type="text" name="agent-name" value="<%=params[:name] %>">
-				  <label>Group:</label> <select name="agent-group"><option value=""></option><%= @groups.map { |r| r == params[:group] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" } %></select>  	  		
+				  <label>Group:</label> <select name="agent-group"><option value=""></option><%= (@groups.map { |r| r == params[:group] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" }).join.html_safe %></select>  	  		
 		  		</td>
 				<td align="right">
 					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>

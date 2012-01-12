@@ -50,7 +50,7 @@
   function onOpenCallSearch(keyword_id) {
   	 var keyword_id = keyword_id || "";
 	 var layout = "report";
-  	 var url = "<%=url_for(:controller => 'voice_logs', :action => 'index', :period => params[:period], :agent_id => params[:agent_id], :st => @st_date, :ed => @ed_date) %>";
+  	 var url = "<%=url_for(:controller => 'voice_logs', :action => 'index', :period => params[:period], :agent_id => params[:agent_id], :st => @st_date, :ed => @ed_date, :cd => @call_direct) %>";
 	 window.location = url + "&keyword_id=" + keyword_id + "&layout=" + layout;
   }
   $(document).ready(function(){

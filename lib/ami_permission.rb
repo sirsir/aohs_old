@@ -2,30 +2,26 @@
 module AmiPermission
 
   def permission_require
-
+      
     if not have_permission?
-      begin
-        log("Check","Permission",false,"#{params[:controller]}/#{params[:action]}")
-      rescue
-      end 
-      flash[:error] = "Sorry, you have been denied access to this page. Please contact administrator."
-      redirect_to :controller => 'top_panel', :action => 'index'
+      #flash[:error] = "Sorry, you have been denied access to this page. Please contact web administrator."
+      redirect_to :controller => 'top_panel', :action => 'denied'
     end
 
   end
-
+ 
   def list_of_controllers
 
     controller_list = []
 
-    ary_controllers = Dir.new("#{RAILS_ROOT}/app/controllers").entries
+    ary_controllers = Dir.new("#{Rails.root}/app/controllers").entries
     ary_controllers.each do |ctl|
       if ctl =~ /_controller/
-        cont = ctl.camelize.gsub(".rb","")
-        controller_list << cont
+        controller_list << ctl.camelize.gsub(".rb","")
       end
     end
-
+    ary_controllers = nil
+    
     return controller_list
 
   end
@@ -40,6 +36,11 @@ module AmiPermission
               :agents => {
                       'view'   => ['index'],
                       'manage' => ['new','create','edit','update','delete']},
+              :call_browser => {
+                      'map'    => :calls_browser },
+              :calls_browser => {
+                      'view'   => ['index'],
+                      'manage' => []},
               :call_tags => {
                       'view'   => ['index'],
                       'manage' => ['new','create','edit','update','delete']},
@@ -117,7 +118,7 @@ module AmiPermission
 
       ctl = details[str_controller_name.to_sym]
       if not ctl['map'].nil?
-        key1 = ctl['map'].to_s
+        key1 = ctl['map']
         ctl = details[ctl['map']]
       end
 
@@ -152,7 +153,7 @@ module AmiPermission
     login_user = nil
 
     unless user_id.nil?
-      login_user = User.find(:first, :conditions => {:id => user_id})
+      login_user = User.where({ :id => user_id }).first
     else
       login_user = current_user
     end
@@ -194,7 +195,7 @@ module AmiPermission
       bln_permission = false
     end
     
-    STDOUT.puts "[Permission-#{usr_role_id}] #{privilege_key_name} => #{bln_permission}"
+    STDOUT.puts "[Permission - #{usr_role_id}] #{privilege_key_name} => #{bln_permission}"
     
     return bln_permission
 

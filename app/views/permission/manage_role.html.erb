@@ -1,52 +1,52 @@
 <% content_for :header do %>
 <script type="text/javascript">
-  $(document).ready(function(){
-    loadoption();
-  });
+    $(document).ready(function(){
 
-  function loadoption()
-  {
-    $("#roleView").empty();
-    var opthtml = "";
-    <%unless @all_role.nil?%>
-    <%@all_role.each_with_index do |ar,i|%>
-      opthtml += "<option id=\"idx<%=i+1%>\" value=\"<%=ar.id%>\"><%=ar.name%></option>"
-    <%end%>
-    <%end%>
-    $("#roleView").append(opthtml);
-  }
+      $("#roleView").focus(function(){
+        var list = document.getElementById("roleView");
+          var theList = "";
+          // start with a "?" to make it look like a real query-string
+          for (i = 0; i <= list.options.length-1; i++) {
+            theList += (i+1).toString() + "=" + list.options[i].text;
+            //theList += list.options[i].value + "=" + list.options[i].text;
+            // a "&" only BETWEEN the items, so not at the end
+            if (i != list.options.length-1) theList += ",";
+          }
+          $("#role_list").val(theList);
+          //$("#values").val(theList);
+      });
 
-  function moveup()
-  {
-    var curpos = "#roleView option:selected";
-    var order = parseInt($(curpos).attr("id").toString().substr(3,1));
-    var tmpid = $(curpos).attr("id");
-    var tmpval = $(curpos).val();
-    var tmptext = $(curpos).text();
-    var uppos = "#roleView option[id=idx"+(order-1).toString()+"]";
-    $(curpos).attr("id","");$(curpos).attr("id",$(uppos).attr("id"));
-    $(curpos).val("");$(curpos).val($(uppos).val());
-    $(curpos).text("");$(curpos).text($(uppos).text());
-    $(uppos).attr("id","");$(uppos).attr("id",tmpid);
-    $(uppos).val("");$(uppos).val(tmpval);
-    $(uppos).text("");$(uppos).text(tmptext);
-    $(uppos).attr("selected","seleted");
-  }
-  function movedown()
-  {
-    var order = parseInt($("#roleView option:selected").attr("id").toString().substr(3,1));
-    var tmpid = $("#roleView option:selected").attr("id");
-    var tmpval = $("#roleView option:selected").val();
-    var tmptext = $("#roleView option:selected").text();
-    var uppos = "#roleView option[id=idx"+(order+1).toString()+"]";
-    $("#roleView option:selected").attr("id",$(uppos).attr("id"));
-    $("#roleView option:selected").val($(uppos).val());
-    $("#roleView option:selected").text($(uppos).text());
-    $(uppos).attr("id",tmpid);
-    $(uppos).val(tmpval);
-    $(uppos).text(tmptext);
-    $(uppos).attr("selected","seleted");
-  }
+    });
+
+    function move(index,to) {
+      var list = document.getElementById("roleView");
+      var total = list.options.length-1;
+
+      if (index == -1) return false;
+      if (to == +1 && index == total) return false;
+      if (to == -1 && index == 0) return false;
+
+      var items = new Array;
+      var values = new Array;
+
+      for (i = total; i >= 0; i--) {
+        items[i] = list.options[i].text;
+        values[i] = list.options[i].value;
+      }
+
+      for (i = total; i >= 0; i--) {
+        if (index == i) {
+          list.options[i + to] = new Option(items[i],values[i + to], 0, 1);
+          list.options[i] = new Option(items[i + to], values[i]);
+          i--;
+        }
+        else {
+          list.options[i] = new Option(items[i], values[i]);
+        }
+      }
+
+      list.focus();
+     }
   
 </script>
  <style>
@@ -92,33 +92,37 @@
     <div class="div-form-default-style1">
   <table class="tblfrm" width="100%" cellpadding="0" cellspacing="0">
     <tr>
-        <td><span class="span-form-title">Categories List</span></td>
+        <td><span class="span-form-title">Role Priority</span></td>
     </tr>
     <tr>
-        <td><span class="span-form-name">Categories List</span></td>
+        <td><span class="span-form-name">Role List</span></td>
     </tr>
     <tr>
       <td>
+      	<%= form_tag :controller => 'permission',:action => 'manage_role', :order => 'update' do %>
         <table class="tbl-frm-details">
           <tr>
-            <td colspan="2"><span class="span-field-description">Use order button to order categories list for display in agents tree.</span></td>
+            <td colspan="2"><span class="span-field-description">Use order button to order role for display.</span></td>
           </tr>
           <tr>
             <td>
-               <select id="roleView" multiple="multiple" style="height:250px;width:200px;">
-               
+               <select id="roleView" multiple="multiple" name="roles" style="height:250px;width:200px;">
+               <% @roles.each do |r| %>
+			   		<option id="role-<%=r.id %>" value="<%=r.id %>"><%=r.name %></option>
+			   <% end %>
                </select>
+			   <%= (hidden_field_tag "role_list").html_safe %>
             </td>
             <td align="center">
-              <input type="button" value="Up" id="click-up" onClick="moveup();"><br>
-              <input type="button" value="Down" id="click-down" onClick="movedown();"><br>
-              <input type="button" value="Reset" id="click-reset" onClick="loadoption();" disabled>
+              <input type="button" value="Up" id="click-up" onClick="move(this.form.roles.selectedIndex,-1)"><br>
+              <input type="button" value="Down" id="click-down" onClick="move(this.form.roles.selectedIndex,+1)"><br>
             </td>
           </tr>
           <tr>
             <td colspan="2"><%= submit_tag('Save change',{:class => 'btnAccept'}) %></td>
           </tr>
         </table>
+		<% end %>
       </td>
     </tr>
   </table>

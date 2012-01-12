@@ -1,15 +1,16 @@
-# This file is auto-generated from the current state of the database. Instead of editing this file, 
-# please use the migrations feature of Active Record to incrementally modify your database, and
-# then regenerate this schema definition.
+# This file is auto-generated from the current state of the database. Instead
+# of editing this file, please use the migrations feature of Active Record to
+# incrementally modify your database, and then regenerate this schema definition.
 #
-# Note that this schema.rb definition is the authoritative source for your database schema. If you need
-# to create the application database on another system, you should be using db:schema:load, not running
-# all the migrations from scratch. The latter is a flawed and unsustainable approach (the more migrations
+# Note that this schema.rb definition is the authoritative source for your
+# database schema. If you need to create the application database on another
+# system, you should be using db:schema:load, not running all the migrations
+# from scratch. The latter is a flawed and unsustainable approach (the more migrations
 # you'll amass, the slower it'll run and the greater likelihood for issues).
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101215084114) do
+ActiveRecord::Schema.define(:version => 20110704043313) do
 
   create_table "access_logs", :force => true do |t|
     t.datetime "last_access_time"
@@ -44,6 +45,24 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
 
   add_index "call_informations", ["voice_log_id"], :name => "index_call_informations_on_voice_log_id"
 
+  create_table "car_numbers", :force => true do |t|
+    t.integer  "customer_id"
+    t.string   "car_no",      :limit => 15
+    t.string   "flag",        :limit => 1
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "car_numbers", ["customer_id"], :name => "cust_index1"
+
+  create_table "computer_extension_maps", :force => true do |t|
+    t.integer  "extension_id"
+    t.string   "computer_name", :limit => 100
+    t.string   "ip_address",    :limit => 15
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "computer_logs", :force => true do |t|
     t.datetime "check_time"
     t.string   "computer_name"
@@ -54,6 +73,7 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
     t.string   "audioviewer_version"
     t.string   "cti_version"
     t.string   "versions"
+    t.string   "remote_ip",           :limit => 15
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -86,6 +106,26 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
     t.integer  "configuration_group_id"
   end
 
+  create_table "current_channel_status", :force => true do |t|
+    t.integer  "system_id"
+    t.integer  "device_id"
+    t.integer  "channel_id"
+    t.string   "ani",            :limit => 30
+    t.string   "dnis",           :limit => 30
+    t.string   "extension",      :limit => 15
+    t.integer  "duration"
+    t.datetime "start_time"
+    t.integer  "hangup_cause"
+    t.integer  "call_reference"
+    t.integer  "agent_id",                      :default => 0
+    t.string   "voice_file_url", :limit => 300
+    t.string   "call_direction", :limit => 1,   :default => "u"
+    t.string   "call_id",        :limit => 20
+    t.integer  "site_id"
+    t.string   "digest"
+    t.string   "connected",      :limit => 15
+  end
+
   create_table "current_computer_status", :force => true do |t|
     t.datetime "check_time"
     t.string   "computer_name"
@@ -108,6 +148,7 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
     t.string   "extension2"
     t.string   "login_name"
     t.string   "remote_ip"
+    t.string   "ctistatus"
   end
 
   create_table "customer_numbers", :force => true do |t|
@@ -117,10 +158,13 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
     t.datetime "updated_at"
   end
 
+  add_index "customer_numbers", ["customer_id"], :name => "cust_index1"
+
   create_table "customers", :force => true do |t|
     t.string   "customer_name"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "flag"
   end
 
   add_index "customers", ["customer_name"], :name => "index_customers_on_customer_name"
@@ -256,6 +300,14 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
     t.datetime "updated_at"
   end
 
+  create_table "job_schedulers", :force => true do |t|
+    t.string   "name",       :limit => 50
+    t.string   "parameters"
+    t.string   "desc"
+    t.datetime "updated_at"
+    t.string   "state",      :limit => 20
+  end
+
   create_table "keyword_group_maps", :force => true do |t|
     t.integer  "keyword_id",       :null => false
     t.integer  "keyword_group_id", :null => false
@@ -343,14 +395,9 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
     t.string   "name"
     t.string   "description"
     t.integer  "lock_version"
+    t.integer  "order_no"
     t.datetime "created_at"
     t.datetime "updated_at"
-  end
-
-  create_table "statistic_jobs", :force => true do |t|
-    t.date    "start_date", :limit => 10
-    t.integer "keyword_id"
-    t.string  "act"
   end
 
   create_table "statistics_types", :force => true do |t|
@@ -386,7 +433,7 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
     t.integer "tag_group_id"
   end
 
-  create_table "user_activities", :force => true do |t|
+  create_table "user_activity_logs", :force => true do |t|
     t.datetime "start_time"
     t.integer  "duration"
     t.string   "process_name"
@@ -396,7 +443,7 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
     t.string   "mac_address"
   end
 
-  create_table "user_idles", :force => true do |t|
+  create_table "user_idle_logs", :force => true do |t|
     t.datetime "start_time"
     t.integer  "duration"
     t.string   "login_name"
@@ -431,14 +478,27 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
 
   add_index "users", ["cti_agent_id"], :name => "index_users_on_cti_agent_id"
 
+  create_table "voice_log_cars", :force => true do |t|
+    t.integer "voice_log_id",  :limit => 8
+    t.integer "car_number_id"
+  end
+
+  add_index "voice_log_cars", ["voice_log_id", "car_number_id"], :name => "vlcar_index"
+
   create_table "voice_log_counters", :force => true do |t|
-    t.integer  "voice_log_id",   :limit => 8,                :null => false
-    t.integer  "keyword_count",               :default => 0
-    t.integer  "ngword_count",                :default => 0
-    t.integer  "mustword_count",              :default => 0
-    t.integer  "bookmark_count",              :default => 0
+    t.integer  "voice_log_id",        :limit => 8,                :null => false
+    t.integer  "keyword_count",       :limit => 2, :default => 0
+    t.integer  "ngword_count",        :limit => 2, :default => 0
+    t.integer  "mustword_count",      :limit => 2, :default => 0
+    t.integer  "bookmark_count",      :limit => 1, :default => 0
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "transfer_call_count", :limit => 1, :default => 0
+    t.integer  "transfer_in_count",   :limit => 1, :default => 0
+    t.integer  "transfer_out_count",  :limit => 1, :default => 0
+    t.integer  "transfer_duration",                :default => 0
+    t.integer  "transfer_ng_count",   :limit => 2, :default => 0
+    t.integer  "transfer_must_count", :limit => 2, :default => 0
   end
 
   add_index "voice_log_counters", ["voice_log_id"], :name => "index_voice_log_counters_on_voice_log_id"
@@ -450,36 +510,139 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
 
   add_index "voice_log_customers", ["voice_log_id", "customer_id"], :name => "index1"
 
-  create_table "voice_logs", :force => true do |t|
+  create_table "voice_logs", :id => false, :force => true do |t|
+    t.integer  "id",                  :limit => 8,                    :null => false
     t.integer  "system_id"
     t.integer  "device_id"
     t.integer  "channel_id"
-    t.string   "ani",            :limit => 30
-    t.string   "dnis",           :limit => 30
-    t.string   "extension",      :limit => 30
-    t.integer  "duration"
+    t.string   "ani",                 :limit => 30
+    t.string   "dnis",                :limit => 30
+    t.string   "extension",           :limit => 30
+    t.integer  "duration",                           :default => 0
     t.integer  "hangup_cause"
     t.integer  "call_reference"
-    t.integer  "agent_id"
-    t.string   "voice_file_url", :limit => 300
-    t.string   "call_direction", :limit => 1,   :default => "u"
+    t.integer  "agent_id",                           :default => 0
+    t.string   "voice_file_url",      :limit => 300
+    t.string   "call_direction",      :limit => 1,   :default => "u"
     t.datetime "start_time"
     t.string   "digest"
     t.string   "call_id"
     t.integer  "site_id"
-    t.string   "ori_call_id",    :limit => 50
-    t.string   "flag_tranfer",   :limit => 1
-    t.string   "xfer_ani",       :limit => 45
-    t.string   "xfer_dnis",      :limit => 45
+    t.string   "ori_call_id",         :limit => 50
+    t.string   "flag_tranfer",        :limit => 4
+    t.string   "xfer_ani",            :limit => 45
+    t.string   "xfer_dnis",           :limit => 45
     t.string   "log_trans_ani"
     t.string   "log_trans_dnis"
+    t.string   "log_trans_extension"
   end
 
   add_index "voice_logs", ["ani"], :name => "index_voice_logs_on_ani"
   add_index "voice_logs", ["call_id"], :name => "index_voice_logs_on_call_id"
   add_index "voice_logs", ["dnis"], :name => "index_voice_logs_on_dnis"
+  add_index "voice_logs", ["id"], :name => "index_id", :unique => true
+  add_index "voice_logs", ["ori_call_id"], :name => "index_voice_logs_on_ori_call_id"
   add_index "voice_logs", ["start_time", "agent_id"], :name => "vc_index1"
   add_index "voice_logs", ["start_time"], :name => "index_voice_logs_on_start_time"
+
+  create_table "voice_logs_201107", :force => true do |t|
+    t.integer  "system_id"
+    t.integer  "device_id"
+    t.integer  "channel_id"
+    t.string   "ani",                 :limit => 30
+    t.string   "dnis",                :limit => 30
+    t.string   "extension",           :limit => 30
+    t.integer  "duration",                           :default => 0
+    t.integer  "hangup_cause"
+    t.integer  "call_reference"
+    t.integer  "agent_id",                           :default => 0
+    t.string   "voice_file_url",      :limit => 300
+    t.string   "call_direction",      :limit => 1,   :default => "u"
+    t.datetime "start_time"
+    t.string   "digest"
+    t.string   "call_id"
+    t.integer  "site_id"
+    t.string   "ori_call_id",         :limit => 50
+    t.string   "flag_tranfer",        :limit => 4
+    t.string   "xfer_ani",            :limit => 45
+    t.string   "xfer_dnis",           :limit => 45
+    t.string   "log_trans_ani"
+    t.string   "log_trans_dnis"
+    t.string   "log_trans_extension"
+  end
+
+  add_index "voice_logs_201107", ["ani"], :name => "index_voice_logs_on_ani"
+  add_index "voice_logs_201107", ["call_id"], :name => "index_voice_logs_on_call_id"
+  add_index "voice_logs_201107", ["dnis"], :name => "index_voice_logs_on_dnis"
+  add_index "voice_logs_201107", ["ori_call_id"], :name => "index_voice_logs_on_ori_call_id"
+  add_index "voice_logs_201107", ["start_time", "agent_id"], :name => "vc_index1"
+  add_index "voice_logs_201107", ["start_time"], :name => "index_voice_logs_on_start_time"
+
+  create_table "voice_logs_template", :force => true do |t|
+    t.integer  "system_id"
+    t.integer  "device_id"
+    t.integer  "channel_id"
+    t.string   "ani",                 :limit => 30
+    t.string   "dnis",                :limit => 30
+    t.string   "extension",           :limit => 30
+    t.integer  "duration",                           :default => 0
+    t.integer  "hangup_cause"
+    t.integer  "call_reference"
+    t.integer  "agent_id",                           :default => 0
+    t.string   "voice_file_url",      :limit => 300
+    t.string   "call_direction",      :limit => 1,   :default => "u"
+    t.datetime "start_time"
+    t.string   "digest"
+    t.string   "call_id"
+    t.integer  "site_id"
+    t.string   "ori_call_id",         :limit => 50
+    t.string   "flag_tranfer",        :limit => 4
+    t.string   "xfer_ani",            :limit => 45
+    t.string   "xfer_dnis",           :limit => 45
+    t.string   "log_trans_ani"
+    t.string   "log_trans_dnis"
+    t.string   "log_trans_extension"
+  end
+
+  add_index "voice_logs_template", ["ani"], :name => "index_voice_logs_on_ani"
+  add_index "voice_logs_template", ["call_id"], :name => "index_voice_logs_on_call_id"
+  add_index "voice_logs_template", ["dnis"], :name => "index_voice_logs_on_dnis"
+  add_index "voice_logs_template", ["ori_call_id"], :name => "index_voice_logs_on_ori_call_id"
+  add_index "voice_logs_template", ["start_time", "agent_id"], :name => "vc_index1"
+  add_index "voice_logs_template", ["start_time"], :name => "index_voice_logs_on_start_time"
+
+  create_table "voice_logs_today", :force => true do |t|
+    t.integer  "system_id"
+    t.integer  "device_id"
+    t.integer  "channel_id"
+    t.string   "ani",                 :limit => 30
+    t.string   "dnis",                :limit => 30
+    t.string   "extension",           :limit => 30
+    t.integer  "duration",                           :default => 0
+    t.integer  "hangup_cause"
+    t.integer  "call_reference"
+    t.integer  "agent_id",                           :default => 0
+    t.string   "voice_file_url",      :limit => 300
+    t.string   "call_direction",      :limit => 1,   :default => "u"
+    t.datetime "start_time"
+    t.string   "digest"
+    t.string   "call_id"
+    t.integer  "site_id"
+    t.string   "ori_call_id",         :limit => 50
+    t.string   "flag_tranfer",        :limit => 4
+    t.string   "xfer_ani",            :limit => 45
+    t.string   "xfer_dnis",           :limit => 45
+    t.string   "log_trans_ani"
+    t.string   "log_trans_dnis"
+    t.string   "log_trans_extension"
+  end
+
+  add_index "voice_logs_today", ["ani"], :name => "index_voice_logs_on_ani"
+  add_index "voice_logs_today", ["call_id"], :name => "index_voice_logs_on_call_id"
+  add_index "voice_logs_today", ["dnis"], :name => "index_voice_logs_on_dnis"
+  add_index "voice_logs_today", ["ori_call_id"], :name => "index_voice_logs_on_ori_call_id"
+  add_index "voice_logs_today", ["start_time", "agent_id"], :name => "vc_index1"
+  add_index "voice_logs_today", ["start_time"], :name => "index_voice_logs_on_start_time"
 
   create_table "watcher_logs", :force => true do |t|
     t.datetime "check_time"
@@ -488,6 +651,7 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
     t.string   "extension2"
     t.string   "login_name"
     t.string   "remote_ip"
+    t.string   "ctistatus"
   end
 
   create_table "weekly_statistics", :force => true do |t|
@@ -506,12 +670,18 @@ ActiveRecord::Schema.define(:version => 20101215084114) do
   add_index "weekly_statistics", ["start_day", "keyword_id", "statistics_type_id"], :name => "weekly_index2"
 
   create_table "xfer_logs", :force => true do |t|
-    t.datetime "start_time"
-    t.string   "ani",        :limit => 45
-    t.string   "dnis",       :limit => 45
-    t.string   "call_id1",   :limit => 50
-    t.string   "call_id2",   :limit => 50
+    t.datetime "xfer_start_time"
+    t.string   "xfer_ani",        :limit => 45
+    t.string   "xfer_dnis",       :limit => 45
+    t.string   "xfer_extension",  :limit => 45
+    t.string   "xfer_call_id1",   :limit => 50
+    t.string   "xfer_call_id2",   :limit => 50
     t.datetime "updated_on"
+    t.string   "msg_type",        :limit => 10
+    t.string   "xfer_type",       :limit => 20
+    t.integer  "mapping_status",  :limit => 1
+    t.string   "sender",          :limit => 10
+    t.string   "ip",              :limit => 20
   end
 
 end

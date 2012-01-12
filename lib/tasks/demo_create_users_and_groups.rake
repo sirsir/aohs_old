@@ -44,10 +44,15 @@ def create_category
     categories_type = [
       {:name => "Department",:member => ["Dept A1","Dept B1","Dept C1","Dept D1","Dept A2","Dept B2","Dept C2"]},
       {:name => "Branch",:member => ["Branch A","Branch B","Branch C","Branch D"]},
-      {:name => "Site",:member => ["Bangkok","ChiangMai","Khonkaen","HadYai"]},
+      {:name => "Site",:member => ["Bangkok","ChiangMai","HadYai"]},
       {:name => "Country",:member => ["Thailand"]}
     ]
 
+#    categories_type = [
+#      {:name => "Department",:member => ["Non-Motor","Motor","Finance"]},
+#      {:name => "Site",:member => ["Bangkok","Khonkaen"]}
+#    ]
+    
     categories = {}
     categories_type.each do |x|
 
@@ -90,14 +95,14 @@ end
 
 def create_groups_and_users
 
-    $NUMBER_OF_GROUP = 10
-    $NUMBER_OF_USER_PER_GROUP = 10
+    $NUMBER_OF_GROUP = 12
+    $NUMBER_OF_USER_PER_GROUP = 6
 	
     STDERR.puts "--> Creating users and groups ..."
     STDERR.puts "   -> Groups [#{$NUMBER_OF_GROUP}]"
     STDERR.puts "   -> Users  [#{$NUMBER_OF_GROUP * $NUMBER_OF_USER_PER_GROUP}]"
     
-	  agent_cti_id = 1000
+	agent_cti_id = 1000
   
     id_card = 1000
   
@@ -124,7 +129,7 @@ def create_groups_and_users
       last_name << "#{line.to_s.strip}".downcase
     end
 
-    roles = Role.find(:all)
+    roles = Role.where("name != 'Agent'")
     agent_run_number = 0
     
     fi = 0
@@ -148,7 +153,7 @@ def create_groups_and_users
             lname = last_name[li]
             login = "#{fname}#{lname.first}"
             agent = Agent.new({:display_name => "#{fname} #{lname}", :role_id => 2, :login => login, :group_id => team_id, :cti_agent_id => agent_cti_id, :id_card => sprintf("%013d",id_card) })
-            agent.reset_password "aohsweb"
+            agent.reset_password Aohs::DEFAULT_PASSWORD_NEW
             agent.save!
             agent.state = "active"
             agent.save!
@@ -166,8 +171,8 @@ def create_groups_and_users
 		nlogin = "#{nfname}#{nlname.first}"
 		id_card += 1
         m = Manager.new({:display_name => "#{nfname} #{nlname}", :login => nlogin, :cti_agent_id => agent_cti_id, :email => "#{nfname}@mailserver.com",:id_card => sprintf("%013d",id_card) })
-        m.role = roles.rand
-        m.reset_password "aohsweb"
+        m.role = roles[rand(roles.length)]
+        m.reset_password Aohs::DEFAULT_PASSWORD_NEW
         m.save!
         m.state = "active"
         m.save!
@@ -185,7 +190,7 @@ def create_groups_and_users
 
 	  STDERR.puts "   -> Updating Manager User ..."
 	  
-	  Role.find(:all).each do |r|
+	  Role.where("name != 'Agent'").each do |r|
 		i = 1
 		5.times do 
       id_card += 1  
@@ -195,7 +200,7 @@ def create_groups_and_users
 			nlogin = "#{nfname}#{nlname.first}"
 			
 			m = Manager.new({:display_name => "#{nfname} #{nlname}",:role_id => r.id , :login => nlogin, :cti_agent_id => agent_cti_id, :email => "#{nlogin}@mailserver.com", :id_card => sprintf("%013d",id_card)})
-			m.reset_password "aohsweb"
+			m.reset_password Aohs::DEFAULT_PASSWORD_NEW
 			m.save!
 			m.state = "active"
 			m.save!

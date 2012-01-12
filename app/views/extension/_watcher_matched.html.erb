@@ -1,0 +1,41 @@
+<div id="tbl-wlogs" class="div-default-table">
+  <table cellpadding="0" cellspacing="0" class="tbl-hover"> 
+    <tr class="tname">
+      	<td colspan="11">Watcher Report - Matched User</td>
+    </tr>
+    <tr class="thead">
+      <th rowspan="2">No.</th>
+      <th rowspan="2">Extension</th>
+      <th rowspan="2">Computer Name</th>
+      <th rowspan="2">IP</th>
+      <th colspan="4">Watcher Log/Computer Log</th>
+      <th colspan="2">User List</th>
+      <th rowspan="2">VoiceLog Found</th>
+    </tr>
+    <tr class="thead">
+      <th>Computer Name</th>
+      <th>Remote IP</th>
+      <th>Username</th>
+      <th>Checked Time</th>
+      <th>Username</th>
+      <th>Group</th>
+    </tr>
+    <% @logs.each_with_index do |l,i| %>
+      <tr>
+        <td><%=i+1 %></td>
+        <td><%=l.extension %>&nbsp;</td>
+        <td><%=l.comp1 %>&nbsp;</td>
+        <td><%=l.ip1 %>&nbsp;</td>
+        <td><%=l.comp2 %>&nbsp;</td>
+        <td><%=l.ip2 %>&nbsp;</td>
+        <td><%=l.login_name %>&nbsp;</td>
+        <td><%=l.check_time %>&nbsp;</td>
+        <td><%=l.username %>&nbsp;</td>
+        <td><%=l.group_name %>&nbsp;</td>
+	<td><%= "Yes" if l.agent_id2.to_i >= 1 %>&nbsp;</td>
+      </tr>
+    <% end %>
+  </table>
+  <p>* List of user that system matched successfully.</p>
+</div>
+</div>

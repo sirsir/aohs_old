@@ -1,9 +1,9 @@
-require 'cgi'
+require 'cgi' 
 
 class VoiceLogsController < ApplicationController
 
    before_filter :login_required
-   before_filter :permission_require, :except => [:voice_log_cols,:timeline_source,:manage_bookmark,:manage_keyword,:search_voice_log,:save_change_bookmark]
+   before_filter :permission_require, :except => [:voice_log_cols,:timeline_source,:manage_bookmark,:manage_keyword,:search_voice_log,:save_change_bookmark,:get_transfer_calls,:get_call_info,:file]
 
    include AmiTimeline
    include AmiCallSearch
@@ -11,7 +11,9 @@ class VoiceLogsController < ApplicationController
    def search_voice_logs(ctrl={})
      
     vl_tbl_name = VoiceLogTemp.table_name
-
+    vltrf_tbl = "transfer_logs_#{vl_tbl_name}"
+    vlc_tbl = VoiceLogCounter.table_name
+    
     conditions = []
     skip_search = false
 
@@ -19,10 +21,13 @@ class VoiceLogsController < ApplicationController
 
     # agents conditions
     if params.has_key?(:keys) and not params[:keys].empty?
-
+      params[:keys] = CGI::unescape(params[:keys])
+      
       begin
         if not ctrl[:user_id].nil?
           set_current_user_for_call_search(ctrl[:user_id].to_i)
+        else
+          set_current_user_for_call_search(current_user.id)
         end
       rescue => e
         skip_search = true
@@ -51,17 +56,31 @@ class VoiceLogsController < ApplicationController
             agents = find_agent_by_group([])
         end
       end
-      agents = nil if agents.empty?
+      
+      if CGI::unescape(params[:keys]) == "agents=none__groups=none"
+        # find all
+        agents = find_owner_agents
+        agents << 0 # unknown agent
+      else
+        agents = nil if agents.empty?
+      end  
       
       if agents.nil?
-		if permission_by_name('tree_filter')
-			conditions << "(agent_id is null or agent_id = 0)"
-		end
+        #if permission_by_name('tree_filter')
+          #show_as_unk = ($CF.get('client.aohs_web.displayDeletedAgentAsUnk').to_i == 1)
+          #if show_as_unk
+          #  agents = User.deleted.map { |a| a.id }
+          #else 
+          #  agents = []
+          #end
+          #agents << 0
+          #conditions << "(#{vl_tbl_name}.agent_id is null or #{vl_tbl_name}.agent_id in (#{agents.join(',')}))"
+        #end
       else
         if agents.empty?
           skip_search = true
         else
-          conditions << "agent_id in (#{agents.join(',')})"
+          conditions << "#{vl_tbl_name}.agent_id in (#{agents.join(',')})"
         end
       end
 
@@ -70,21 +89,28 @@ class VoiceLogsController < ApplicationController
     end
 
     # call date / time
+    if params.has_key?(:sttime) and not params[:sttime].empty?
+      params[:sttime] = CGI::unescape(params[:sttime])
+    end
+    if params.has_key?(:edtime) and not params[:edtime].empty?
+      params[:edtime] = CGI::unescape(params[:edtime])
+    end
+    
     conditions << retrive_datetime_condition(params[:periods],params[:stdate],params[:sttime],params[:eddate],params[:edtime])
 
     # extension
     if params.has_key?(:ext) and not params[:ext].empty?
-      conditions << "#{vl_tbl_name}.extension like '#{params[:ext]}%'"
+      conditions << "#{vl_tbl_name}.extension like '%#{params[:ext]}%'"
     end
 
     #ani
     if params.has_key?(:caller) and not params[:caller].empty?
-      conditions << "#{vl_tbl_name}.ani like '#{params[:caller].strip}%'"
+      conditions << "#{vl_tbl_name}.ani like '%#{params[:caller].strip}%'"
     end
 
     #dnis
     if params.has_key?(:dialed) and not params[:dialed].empty?
-      conditions << "#{vl_tbl_name}.dnis like '#{params[:dialed].strip}%'"
+      conditions << "#{vl_tbl_name}.dnis like '%#{params[:dialed].strip}%'"
     end
 
     # call direction
@@ -92,71 +118,79 @@ class VoiceLogsController < ApplicationController
     if params.has_key?(:calld) and not params[:calld].empty?
       cd_ary = CGI::unescape(params[:calld]).split('')
       cd_ary.to_s.each_char do |c|
-        call_directions << "#{c}"
-        if c == 'e'
-          call_directions << "u"
-          call_directions << "e"
-        end
+        call_directions << c
+        call_directions.concat(['u','e']) if c == 'e'     
       end
-	  call_directions = call_directions.uniq
-	  if call_directions.include?('i') and call_directions.include?('o') and call_directions.include?('e')
-		call_directions = []
-	  end
-	  call_directions = call_directions.map { |cd| "'#{cd}'" }
+      call_directions = [] if call_directions.uniq.sort == ['i','o','u','e'].sort 
+      call_directions = call_directions.uniq.map { |c| "'#{c}'"}
     else
-      ##call_directions = ['i','o','e','u']
+      skip_search = true
+    end
+    
+    unless call_directions.empty?
+      case call_directions.length
+      when 1
+        conditions << "#{vl_tbl_name}.call_direction = '#{call_directions.first.gsub('\'','')}'"
+      else
+        conditions << "#{vl_tbl_name}.call_direction in (#{call_directions.join(',')})"
+      end    
+    end
+  
+    trfc_from = nil  
+    trfc_to = nil
+    if params.has_key?(:trfcfr) and not params[:trfcfr].empty?
+      trfc_from = params[:trfcfr].to_i 
+    end
+    if params.has_key?(:trfcto) and not params[:trfcto].empty?
+      trfc_to = params[:trfcto].to_i
     end
 
-    case call_directions.length
-	when 0
-	  ## find all direction
-    when 1
-      conditions << "#{vl_tbl_name}.call_direction = '#{call_directions.first.gsub('\'','')}'"
-    else
-      conditions << "#{vl_tbl_name}.call_direction in (#{call_directions.join(',')})"
+    if not trfc_from.nil? and not trfc_to.nil?
+      if trfc_from == trfc_to
+        conditions << "#{vlc_tbl}.transfer_call_count = #{trfc_from}"
+      else
+        conditions << "#{vlc_tbl}.transfer_call_count between #{trfc_from} and #{trfc_to}"
+      end
+    elsif not trfc_to.nil?
+       conditions << "#{vlc_tbl}.transfer_call_count <= #{trfc_to}"
+    elsif not trfc_from.nil?
+      conditions << "#{vlc_tbl}.transfer_call_count >= #{trfc_from}"
     end
 
     # call duration
+    if params.has_key?(:stdur) and not params[:stdur].empty?
+      params[:stdur] = CGI::unescape(params[:stdur])
+    end
+    if params.has_key?(:eddur) and not params[:eddur].empty?
+      params[:eddur] = CGI::unescape(params[:eddur])
+    end
+    
     conditions << retrive_duration_conditions(params[:stdur],params[:eddur])
 
     if params.has_key?(:keyword) and not params[:keyword].empty?
-      
-      # step 1 find keyword group without partial search
-      # step 2 find keyword with partial search (if group not found)
       knames = CGI::unescape(params[:keyword]).split(" ")
-      
-      keywords 	= []
-      #step 1 find keyword groups
-      kgroups 	= KeywordGroup.find(:all,:select => "id", :conditions => (knames.map {|k| "name like '#{k.to_s}'"}).join(" or "))
-      if kgroups.empty?
-	 # step 2 find keyword group with keywords that matched
-	 keyword_groups = KeywordGroup.find(:all,:joins => [:keywords],:conditions => (knames.map {|k| "keyword_groups.name like '#{k.to_s}'"}).join(" or ") + " AND keywords.deleted = false",:group => "id")
-	 if keyword_groups.length == 1
-	    keywords = Keyword.find(:all,:select => "keywords.id",:joins => [:keyword_group_maps], :conditions => ["keyword_group_maps.keyword_group_id in (?) and deleted = false",keyword_groups.map { |k| k.id }])
-	 else
-	    # step 3 find from keywords
-	    keywords = Keyword.find(:all,:select => 'id', :conditions => "(#{(knames.map { |k| "name like '%#{k.to_s}%'" }).join(" or ")}) and deleted = false" )
-	 end
-      else 
-	 keywords = Keyword.find(:all,:select => "keywords.id",:joins => [:keyword_group_maps], :conditions => ["keyword_group_maps.keyword_group_id in (?) and deleted = false",kgroups.map { |k| k.id }])
-      end
-      
+      keywords = Keyword.select('id').where((knames.map { |k| "name like '%#{k}%'" }).join(" or ")).all
       if keywords.empty?
         skip_search = true
       else
         keywords = (keywords.map { |k| k.id }).join(',')
         conditions << "#{ResultKeyword.table_name}.keyword_id in (#{keywords})"
       end
-      
     end
       
     # ==========================================================================
 
     $PER_PAGE_VC = params[:perpage].to_i 
     if $PER_PAGE_VC <= 0
-      $PER_PAGE_VC = AmiConfig.get('client.aohs_web.number_of_display_voice_logs').to_i  
+      $PER_PAGE_VC = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i  
     end  
-      
+    
+	if params[:withtrnf] == "true"
+		ctrl[:find_transfer] = true
+	else
+		ctrl[:find_transfer] = false
+	end
+	
     page = 1
     page = params[:page].to_i if params.has_key?(:page) and not params[:page].empty? and params[:page].to_i > 0
 
@@ -173,7 +207,7 @@ class VoiceLogsController < ApplicationController
       offset = 0
       limit = false
       page = false
-      max_show = AmiConfig.get("client.aohs_web.number_of_max_calls_export").to_i
+      max_show = $CF.get("client.aohs_web.number_of_max_calls_export").to_i
       if max_show > 0
         offset = 0
         limit = max_show
@@ -183,8 +217,7 @@ class VoiceLogsController < ApplicationController
       offset = start_row
       limit = $PER_PAGE_VC
     end
-    
-    voice_logs = []
+
     unless skip_search
         voice_logs, summary, page_info, agents = find_agent_calls({
                 :select => [],
@@ -196,6 +229,8 @@ class VoiceLogsController < ApplicationController
                 :perpage => $PER_PAGE_VC,
                 :summary => true,
                 :ctrl => ctrl })
+    else
+      voice_logs = []
     end
 
     @voice_logs_ds = {:data => voice_logs, :page_info => page_info,:summary => summary }
@@ -205,11 +240,11 @@ class VoiceLogsController < ApplicationController
   # ======= end seach voice log ======== #
 
   def index
-
-    @cd_color = CALL_DIRECTION_COLORS
+    
+    @cd_color = Aohs::CALL_DIRECTION_COLORS
     @username = current_user.login
 
-    @numbers_of_display = AmiConfig.get('client.aohs_web.number_of_display_voice_logs').to_i
+    @numbers_of_display = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i
 
     @conds = {}
     case params[:period]
@@ -229,34 +264,35 @@ class VoiceLogsController < ApplicationController
     when /^(daily)/,/^(weekly)/,/^(monthly)/
       @conds[:st] = params[:st]
       @conds[:ed] = params[:ed]
-      
+        
       keywords = params[:keyword_id].to_s.split(",")
-      keywords = Keyword.find(:all,:select => 'name',:conditions => {:id => keywords})
-      
-      @conds[:keywords] = (keywords.map { |k| k.name }).join(" ")
-      
+      @conds[:keywords] = ((Keyword.select('name').where({:id => keywords})).map { |k| k.name }).join(" ")
+    
       @conds[:agents_id] = []      
-      if params.has_key?(:agent_id) and not params[:agent_id].empty?
-	@conds[:agents_id] = params[:agent_id].to_s.split(",")
-      end
-
-      if params.has_key?(:group_id) and not params[:group_id].empty?
-	group_id = params[:group_id]
-	group = Group.find(:first,:select => :leader_id ,:conditions => { :id => group_id })
-	unless group.nil?
-	 @conds[:agents_id] << group.leader_id.to_i if group.leader_id.to_i > 0 
-	end
-	
-	agents_id = User.find(:all,:select => 'id', :conditions => {:group_id => group_id})
-	#agents_id = User.find(:all,:select => 'id', :conditions => {:group_id => group_id, :role_id => [0,Role.find(:first,:conditions => {:name => 'Agent'}).id]})
-	@conds[:agents_id] = @conds[:agents_id].concat(agents_id.map { |u| u.id })
-      end
+  	  if params.has_key?(:agent_id) and not params[:agent_id].empty?
+  	    @conds[:agents_id] = params[:agent_id].to_s.split(",")
+  	  end
+  
+  	  if params.has_key?(:group_id) and not params[:group_id].empty?
+  	    group_id = params[:group_id]
+  	    group = Group.select(:leader_id).where({ :id => group_id }).first
+  	    unless group.nil?
+          @conds[:agents_id] << group.leader_id.to_i if group.leader_id.to_i > 0 
+  	    end
+  	    agents_id = User.select('id').where({:group_id => group_id})
+  	    @conds[:agents_id] = @conds[:agents_id].concat(agents_id.map { |u| u.id })
+  	  end
         
       @conds[:agents_id] = @conds[:agents_id].join(',') unless @conds[:agents_id].nil?
       
     else
       # find all
       @conds = false
+    end
+    
+    cd = params[:cd]
+    if ['i','o','e','u'].include?(cd)
+      @conds[:cd] = cd  
     end
     
     case params[:layout]
@@ -266,49 +302,22 @@ class VoiceLogsController < ApplicationController
     
   end
 
-#  def show
-#
-#    begin
-#    @voice_log = VoiceLogTemp.find(params[:id])
-#    @customer = VoiceLogCustomer.find(:first,:conditions =>{:voice_log_id => params[:id]})
-#    keywords = Keyword.find(
-#                        :all,
-#                        :select => 'id,name,keyword_type',
-#                        :conditions => {:deleted => false},
-#                        :order => 'name asc')
-#    @keywords_str_ary = []
-#     unless keywords.blank?
-#       keywords.each do |k|
-#         kwg = KeywordGroup.find(:all,:select => "keyword_groups.name",:joins => :keyword_group_maps,
-#               :conditions =>{:keyword_group_maps => {:keyword_id => k.id}})
-#         unless kwg.empty?
-#           kwg_str = kwg.map { |kgn| "#{kgn.name}" }.join(",")
-#         else
-#          kwg_str = "UnGroup"
-#        end
-#         @keywords_str_ary << "{name:'#{k.name}',ktype:'#{k.keyword_type}',kgroup:'#{kwg_str}'}"
-#       end
-#     end
-#    rescue => e
-#      log("Show","VoiceLogs",false,e.message)
-#    end
-#
-#    render :layout => 'blank_old'
-#
-#  end
-
-  # new 20101216
   def show
 
     voice_log_id = params[:id]
 
     get_keyword_pattern
+    
+    # if eq nil not check
+    @my_agents = get_my_agent_id_list
 
-    begin
-      @voice_log = VoiceLogTemp.find(:first, :conditions => {:id => voice_log_id})
-    rescue => e
-      log("Show", "VoiceLogs", false, e.message)
-    end
+    #begin
+      @voice_log = VoiceLogTemp.where({:id => voice_log_id}).first
+    #rescue => e
+    #  log("Show", "VoiceLogs", false, e.message)
+    #end
+
+#    @voice_log = VoiceLogTemp.find(:first, :conditions => {:id => voice_log_id})
 
     render :layout => 'blank'
 
@@ -316,8 +325,7 @@ class VoiceLogsController < ApplicationController
 
   # new 20101216
   def get_keyword_pattern
-    @keyword_pattern = Keyword.find(:all, :select => ['keywords.id as id, keywords.name as name, keywords.keyword_type as keyword_type, keyword_groups.id as group_id, keyword_groups.name as group_name'],:joins=> :keyword_groups, :order => 'name asc')
-    
+    @keyword_pattern = Keyword.select('keywords.id, keywords.name, keywords.keyword_type as keyword_type, keyword_groups.id as group_id, keyword_groups.name as group_name').joins(:keyword_groups).order('name asc')
   end
 
   def search_voice_log
@@ -330,38 +338,67 @@ class VoiceLogsController < ApplicationController
 
   def export 
 
-    show_all = ( (params[:type] =~ /true/) ? true : false )
-    
-    search_voice_logs({:show_all => show_all, :timeline_enabled => false, :tag_enabled => false, :user_id => current_user.id })
+     show_all = ( (params[:type] =~ /true/) ? true : false )
+
+     search_voice_logs({:show_all => show_all, :summary => true, :show_sub_call => true, :timeline_enabled => false, :tag_enabled => false, :user_id => current_user.id })
 
      @report = {}
      @report[:title_of] = Aohs::REPORT_HEADER_TITLE
-     @report[:title] = "Agent's call List Report"
+     @report[:title] = "Agent's Call List Report"
 
-     @report[:cols] = {
-         :cols => [
-           ['No','no',3,1,1],
-           ['Date/Time','date',10,1,1],
-           ['Duration','int',7,1,1],
-           ['Caller Number','',8,1,1],
-           ['Dailed Number','',8,1,1],
-           ['Ext','',4,1,1],
-           ['Agent','',12,1,1], 
-           ['Direction','sym',4,1,1], 
-           ['NG','int',5,1,1],   
-           ['Must','int',5,1,1],
-           ['Bookmark','int',5,1,1]  
-         ]
-     }
+     @report[:cols] = {}
+     @report[:cols][:cols] = []
+     @report[:cols][:cols] << ['No','no',3,1,1]
+     @report[:cols][:cols] << ['Date/Time','date',10,1,1]
+     @report[:cols][:cols] << ['Duration','int',7,1,1]
+     @report[:cols][:cols] << ['Caller Number','',8,1,1]
+     @report[:cols][:cols] << ['Dailed Number','',8,1,1]
+     @report[:cols][:cols] << ['Ext','',4,1,1]
+     @report[:cols][:cols] << ['Agent','',12,1,1]
+     if Aohs::MOD_CUSTOMER_INFO
+      @report[:cols][:cols] << ['Customer','',10,1,1]
+      @report[:cols][:cols] << ['Car No','',5,1,1] if Aohs::MOD_CUST_CAR_ID
+     end
+     @report[:cols][:cols] << ['Direction','sym',4,1,1]
+     if Aohs::MOD_KEYWORDS
+      @report[:cols][:cols] << ['NG','int',5,1,1]
+      @report[:cols][:cols] << ['Must','int',5,1,1] 
+     end
+     @report[:cols][:cols] << ['Bookmark','int',5,1,1] 
      
      @report[:data] = []
      @voice_logs_ds[:data].each_with_index do |vc,i|
        unless vc[:no].blank?
-         vc[:no] = (i+1)
-         @report[:data] << [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent],vc[:cd],vc[:ngc],vc[:mustc],vc[:bookc]]
+         if vc[:trfc] == true
+           vc[:no] = "+ #{vc[:no]}"
+         else
+           if vc[:child] == true
+            vc[:no] = ""  
+           else
+            vc[:no] = "   #{vc[:no]}" 
+           end
+         end
+         p = [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent]]
+         if Aohs::MOD_CUSTOMER_INFO
+          p << vc[:cust]
+          p << vc[:car_no]
+         end
+         p << vc[:cd]
+         if Aohs::MOD_KEYWORDS  
+           p << vc[:ngc]
+           p << vc[:mustc]
+         end
+         p << vc[:bookc]
+         @report[:data] << p
        end
      end
-
+     
+     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}"
+     if Aohs::MOD_KEYWORDS  
+       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}"
+       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}"
+     end
+      
      @voice_logs_ds = nil
     
      @report[:fname] = "AgentCallList"
@@ -377,38 +414,67 @@ class VoiceLogsController < ApplicationController
 
   def print
     
-    show_all = ( (params[:type] =~ /true/) ? true : false )
+     show_all = ((params[:type] =~ /true/) ? true : false )
 
-    search_voice_logs({:show_all => show_all, :timeline_enabled => false, :tag_enabled => false, :user_id => current_user.id })
+     search_voice_logs({:show_all => show_all, :summary => true, :show_sub_call => true, :timeline_enabled => false, :tag_enabled => false, :user_id => current_user.id })
 
      @report = {}
      @report[:title_of] = Aohs::REPORT_HEADER_TITLE
-     @report[:title] = "Agent's call List Report"
-
-     @report[:cols] = {
-         :cols => [
-           ['No','no',3,1,1],
-           ['Date/Time','date',10,1,1],
-           ['Duration','int',7,1,1],
-           ['Caller Number','',8,1,1],
-           ['Dailed Number','',8,1,1],
-           ['Ext','',4,1,1],
-           ['Agent','',12,1,1], 
-           ['Direction','sym',4,1,1], 
-           ['NG','int',5,1,1],   
-           ['Must','int',5,1,1],
-           ['Bookmark','int',5,1,1]  
-         ]
-     }
+     @report[:title] = "Agent's Call List Report"
+      
+     @report[:cols] = {}
+     @report[:cols][:cols] = []
+     @report[:cols][:cols] << ['No','no',3,1,1]
+     @report[:cols][:cols] << ['Date/Time','date',10,1,1]
+     @report[:cols][:cols] << ['Duration','int',6,1,1]
+     @report[:cols][:cols] << ['Caller Number','',8,1,1]
+     @report[:cols][:cols] << ['Dailed Number','',8,1,1]
+     @report[:cols][:cols] << ['Ext','',4,1,1]
+     @report[:cols][:cols] << ['Agent','',12,1,1]
+     if Aohs::MOD_CUSTOMER_INFO
+      @report[:cols][:cols] << ['Customer','',10,1,1]
+      @report[:cols][:cols] << ['Car No','',9,1,1] if Aohs::MOD_CUST_CAR_ID
+     end
+     @report[:cols][:cols] << ['Direction','sym',5,1,1]
+     if Aohs::MOD_KEYWORDS
+      @report[:cols][:cols] << ['NG','int',5,1,1]
+      @report[:cols][:cols] << ['Must','int',5,1,1] 
+     end
+     @report[:cols][:cols] << ['Bookmark','int',5,1,1] 
      
      @report[:data] = []
      @voice_logs_ds[:data].each_with_index do |vc,i|
        unless vc[:no].blank?
-         vc[:no] = (i+1)
-         @report[:data] << [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent],vc[:cd],vc[:ngc],vc[:mustc],vc[:bookc]]
+         if vc[:trfc] == true
+           vc[:no] = "+ #{vc[:no]}"
+         else
+           if vc[:child] == true
+            vc[:no] = ""  
+           else
+            vc[:no] = "   #{vc[:no]}" 
+           end
+         end
+         p = [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent]]
+         if Aohs::MOD_CUSTOMER_INFO
+          p << vc[:cust]
+          p << report_car_breakline(vc[:car_no])
+         end
+         p << vc[:cd]
+         if Aohs::MOD_KEYWORDS  
+           p << vc[:ngc]
+           p << vc[:mustc]
+         end
+         p << vc[:bookc]
+         @report[:data] << p
        end
      end
-
+     
+     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}"
+     if Aohs::MOD_KEYWORDS  
+       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}"
+       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}"
+     end
+     
      @voice_logs_ds = nil
     
      @report[:fname] = "AgentCallList"
@@ -437,6 +503,50 @@ class VoiceLogsController < ApplicationController
        render :text => "No voicelogs"
      end
 
+   end
+
+   def get_transfer_calls
+     
+     voice_log_id = params[:voice_log_id].to_i
+       
+     transfer_voice_logs = find_transfer_calls(voice_log_id)
+     
+     render :json => transfer_voice_logs, :layout => false
+     
+   end
+
+   def get_transfer_list
+    
+   end
+
+   def get_call_info
+     voice_log_id = params[:voice_log_id].to_i
+
+     callinfo = []
+     callinfos = CallInformation.where(:voice_log_id => voice_log_id)
+     unless callinfos.nil?
+       callinfos.each do |cnf|
+         callinfo << {:st => cnf.start_msec, :en => cnf.end_msec, :evt=> cnf.event}
+       end
+     end
+
+     render :json => callinfo
+   end
+   
+   def file
+    
+      voice_log_id = params[:id]
+      
+      v = VoiceLog.where(:id => voice_log_id).first
+      
+      STDOUT.puts "GET File ID : #{v.id} url=#{v.voice_file_url}"
+      
+      unless v.nil?
+        send_data v.voice_file_url
+      else
+        send_data "", :type => 'application/octet-stream'
+      end
+      
    end
 
 end

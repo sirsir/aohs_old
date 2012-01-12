@@ -19,17 +19,14 @@
 		}).mouseout(function(){
 			$(this).removeClass('hover');
 		}).click(function(){
-			if(redirect_to){
-				var url = $(this).attr("url");
-				var openwith = $(this).attr("openwith");
-				if(openwith=="dialog"){
-					var call_browser_page = window.open(url,"call_browser","status=yes,toolbar=no,location=no,menubar=no,resizable=yes,width=1000,height=600");
-                                        call_browser_page.moveTo((screen.width - 1000)/2, (screen.height - 600)/2);
-				} else {
-					window.setTimeout("window.location = \"" + url + "\";",300);
-				}
+			var url = $(this).attr("url");
+			var openwith = $(this).attr("openwith");
+			if(openwith=="dialog"){
+                          var call_browser_page = window.open(url,"call_browser","status=yes,toolbar=no,location=no,menubar=no,resizable=yes,width=1000,height=600");
+                          call_browser_page.moveTo((screen.width - 1000)/2, (screen.height - 600)/2);
+			} else {
+                          window.setTimeout("window.location = \"" + url + "\";",300);
 			}
-				
 		});
 		$("#recentDays").click(function(){
 			redirect_to = false;
@@ -42,7 +39,7 @@
 <div class="home-main-menu">
 	<div class="title">Check activities of agents, Calls search, stats, you can define keyword.</div>
 	<div class="sub-mn">
-		<% if permission_by_name("calls_browser") %>
+		<% if permission_by_name("calls_browser") and Aohs::MOD_CALL_BROWSER %>
 		<div class="div-sub-mn" url="<%=url_for(:controller => 'call_browser',:action => 'index')%>" openwith="dialog">
 		<table cellpadding="0" cellspacing="0">
 			<tr>
@@ -55,7 +52,7 @@
 		</table>
 		</div>
         <% end %>
-		
+
 		<% if link_permission_require('voice_logs','index') %>
 		<div class="div-sub-mn" url="<%=url_for(:controller => 'voice_logs',:action => 'index')%>">
 		<table cellpadding="0" cellspacing="0">
@@ -74,7 +71,7 @@
 			</tr>
 		</table>
 		</div>
-        <% end %>	
+        <% end %>
 
 		<% if link_permission_require('favorites','index') %>
 		<div class="div-sub-mn" url="<%=url_for(:controller => 'favorites',:action => 'index')%>">
@@ -89,7 +86,7 @@
 		</table>
 		</div>
         <% end %>
-		
+
 		<% if link_permission_require('customers','index') %>
 		<div class="div-sub-mn" url="<%=url_for(:controller => 'customers' ,:action => 'index')%>">
 		<table cellpadding="0" cellspacing="0">
@@ -118,7 +115,7 @@
 		</div>
         <% end %>
 
-		<% if link_permission_require('keywords','index') %>
+		<% if link_permission_require('keywords','index') and Aohs::MOD_KEYWORDS %>
 		<div class="div-sub-mn" url="<%=url_for(:controller => 'keywords',:action => 'index')%>">
 		<table cellpadding="0" cellspacing="0">
 			<tr>
@@ -131,18 +128,5 @@
 		</table>
 		</div>
         <% end %>
-	        <% if permission_by_name('exports-calls') %>
-		<div class="div-sub-mn" url="<%="#{Aohs::VOICE_EXPORT_AUTH_URL}?wauth=#{VoiceExportKey.strkey(current_user.login)}&login=#{current_user.id}" %>">
-		<table cellpadding="0" cellspacing="0">
-			<tr>
-				<td rowspan="2" width="30px" align="center"><%= image_tag "menu_icon/export-voices.png" %></td>
-				<td><span class="mn-name">Export Calls</span></td>
-			</tr>
-			<tr>
-				<td><span class="title2">Export calls data to your customer.</span></td>
-			</tr>
-		</table>
-		</div>		
-		<% end %>
 	</div>
 </div>

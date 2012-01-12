@@ -5,7 +5,7 @@
       delete_cols = - 1
   else
       delete_cols = 0
-  end
+  end 
 %>
 <% content_for :header do %>
 <%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
@@ -26,7 +26,6 @@
 		  width:90px;	
    }	 
   </style>
-  <%= javascript_src_path 'webtoolkit.url.js' %>
 <script type="text/javascript">
   var kwg_list = [<%= @kwg.map{|kwg| "'#{kwg.name}'"}.join(",") %>];
   var statisticsKey = {
@@ -176,8 +175,8 @@
 		//});		        
       });
 
-      $("input[name=keywordDateFrom]").datepicker({ showAnim: null,duration: 0,dateFormat: 'yy-mm-dd' });
-      $("input[name=keywordDateTo]").datepicker({ showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
+      $("input[name=fr]").datepicker({ showAnim: null,duration: 0,dateFormat: 'yy-mm-dd' });
+      $("input[name=to]").datepicker({ showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
       $(".input-date-picker").mask("9999-99-99");
    }); 
 
@@ -187,11 +186,16 @@
       statisticsKey.keywn = Url.encode(jQuery.trim($("input[name=keywordName]").val()));
 	  try {
 	  	statisticsKey.stdate = jQuery.trim($("select[name=fr] option:selected").val());	
-		statisticsKey.eddate = jQuery.trim($("select[name=to] option:selected").val());	  
+		statisticsKey.eddate = jQuery.trim($("select[name=to] option:selected").val());		  	
+	  	if((App.isBlank(statisticsKey.stdate)) && (App.isBlank(statisticsKey.eddate))){
+		  	statisticsKey.stdate = jQuery.trim($("input[name=fr]").val());	
+			statisticsKey.eddate = jQuery.trim($("input[name=to]").val());				
+		}
 	  } catch(e){
 	  	statisticsKey.stdate = jQuery.trim($("input[name=fr]").val());	
-		statisticsKey.eddate = jQuery.trim($("input[name=to]").val());	  	
+		statisticsKey.eddate = jQuery.trim($("input[name=to]").val());	
 	  }
+	  
       statisticsKey.keywg = Url.encode(jQuery.trim($("#keywordGroup").val()));
 	  if (checkPeriodCond(statisticsKey.stdate, statisticsKey.eddate)) {
 	  	window.location = "<%= url_for(:controller => 'keywords',:action => 'index') %>?" + getStatisticsParamsUrl();
@@ -335,7 +339,7 @@
 			        </tr>
 					<% end %>
 			        <% end %>
-			        <tr class="tsum">
+			        <tr class="tsum" style="<%= ((@keywords2.total_pages != @keywords2.current_page and Aohs::SHOW_TOTAL_ROW_AT_LAST_PAGE ) ? 'display:none;' : '') %>">
 			        	<% x = @keywords_total.shift %>
 			            <% @keywords_total.each do |gta| %>
 			                <td class"int" align="right"><%= number_with_delimiter(gta) %><br/><%=image_tag('padding.png',{:width=> '30px',:height => '1px'})%></td>
@@ -379,7 +383,7 @@
             <% end %>
         </tr>
         <% end %>
-        <tr class="tsum">
+        <tr class="tsum" style="<%= ((@keywords2.total_pages != @keywords2.current_page and Aohs::SHOW_TOTAL_ROW_AT_LAST_PAGE ) ? 'display:none;' : '') %>">
         	<td class="no">&nbsp;</td>
             <td colspan="<%= @sub_type == "group" ? (1) : (2) %>" align="center">Total</td>
             <td class="int"><%= number_with_delimiter(x) %><br/><%=image_tag('padding.png',{:width=> '50px',:height => '1px'})%></td>
@@ -397,7 +401,7 @@
 			<td><%=image_tag('padding.png',{:width=> '1px',:height => '1px'})%></td>
 	    </tr>
       <% else %>
-        <tr class="tsum">
+        <tr class="tsum" style="<%= ((@keywords2.total_pages != @keywords2.current_page and Aohs::SHOW_TOTAL_ROW_AT_LAST_PAGE ) ? 'display:none;' : '') %>">
         	<td class="no">&nbsp;</td>
             <td colspan="<%= @sub_type == "group" ? (1) : (2) %>" align="center">Total</td>
             <td class="int"><%= number_with_delimiter(x) %><br/><%=image_tag('padding.png',{:width=> '50px',:height => '1px'})%></td>

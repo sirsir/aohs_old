@@ -1,0 +1,29 @@
+<div id="tbl-wlogs" class="div-default-table">
+  <table cellpadding="0" cellspacing="0" class="tbl-hover"> 
+    <tr class="tname">
+      	<td colspan="10">Watcher Report - Unknown Users (Not exist in user list) </td>
+    </tr>
+    <tr class="thead">
+      <th rowspan="2">No.</th>
+      <th colspan="4">Watcher Log/Computer Log</th>
+    </tr>
+    <tr class="thead">
+      <th>Computer Name</th>
+      <th>Remote IP</th>
+      <th>Username</th>
+      <th>Checked Time</th>
+    </tr>
+    <% @logs.each_with_index do |l,i| %>
+      <tr>
+        <td><%=i+1 %></td>
+	<td><%=l.comp2 %>&nbsp;</td>
+	<td><%=l.ip2 %>&nbsp;</td>
+	<td style="background-color:#FFFFCC;"><%=l.login_name %>&nbsp;</td>
+	<td><%=l.check_time %>&nbsp;</td>
+      </tr>
+    <% end %>
+  </table>
+  <p>* List of username (windows's account) that not found in user list.</p>
+  <p>* Please check them are exist in user list or not?.</p>
+</div>
+</div>

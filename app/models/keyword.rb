@@ -24,6 +24,8 @@ class Keyword < ActiveRecord::Base
    validates_presence_of     :keyword_type
    validates_length_of       :name, :minimum => 3
    
+   after_update :after_update_keyword
+   
    @@display_keyword_types = {
       "a"=>"Action",
       "m"=>"Must",
@@ -38,28 +40,31 @@ class Keyword < ActiveRecord::Base
       @@display_keyword_types[sym]
    end
 
-   def after_update
+   def after_update_keyword
+     
       begin
-    #  STDERR.puts self.keyword_type
-    #  STDERR.puts self.keyword_type_was
-    #  STDERR.puts self.deleted
-      if self.keyword_type != self.keyword_type_was
-        sj = StatisticJob.new(:start_date => self.created_at,:keyword_id => self.id,:act => "change_type")
-        sj.save
-      elsif self.deleted
-        if  ResultKeyword.exists?({:keyword_id => self.id}) or EditKeyword.exists?({:keyword_id => self.id})
-            sj = StatisticJob.new(:start_date => self.created_at,:keyword_id => self.id,:act => "delete")
-            sj.save
-        else
-            self.destroy
+            
+        # when type change or deleted
+        # recheck all keywords statistics table daily, weekly and monthly
+        # 
+        if (self.keyword_type != self.keyword_type_was) or self.deleted
+          js = JobScheduler.new({:name => "statistics.repair.all", :state => "pedding", :parameters => "keyword=all;agent=none" })
+          js.save!
+
+          js = JobScheduler.new({:name => "voice_logs.counter.all", :state => "pedding", :parameters => "keyword=#{self.id};agent=all" })
+          js.save!
         end
-        DailyStatistics.delete_all({:keyword_id => self.id}) if DailyStatistics.exists?({:keyword_id => self.id})
-        WeeklyStatistics.delete_all({:keyword_id => self.id}) if WeeklyStatistics.exists?({:keyword_id => self.id})
-        MonthlyStatistics.delete_all({:keyword_id => self.id}) if MonthlyStatistics.exists?({:keyword_id => self.id})
+        
+        if self.deleted
+          DailyStatistics.delete_all({:keyword_id => self.id}) if DailyStatistics.exists?({:keyword_id => self.id})
+          WeeklyStatistics.delete_all({:keyword_id => self.id}) if WeeklyStatistics.exists?({:keyword_id => self.id})
+          MonthlyStatistics.delete_all({:keyword_id => self.id}) if MonthlyStatistics.exists?({:keyword_id => self.id})          
+        end
+        
+      rescue => e
+        STDERR.puts e.message
       end
-      rescue => ex
-        STDERR.puts ex.message
-      end
+    
    end
   
 end

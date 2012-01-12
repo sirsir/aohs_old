@@ -1,5 +1,5 @@
 <% content_for :header do %>
-
+ 
   <%= stylesheet_src_path('/YUI.2.7/build/treeview/assets/skins/default/tree.css') %>
   <%#= stylesheet_src_path('/YUI.2.7/build/button/assets/skins/sam/button.css') %>
   <%= javascript_src_path('/YUI.2.7/build/yahoo-dom-event/yahoo-dom-event.js') %>
@@ -123,8 +123,16 @@
             tree.collapseAll();
             collapseOrExpandNode();
             tree.render();
-		
 	}
+
+        function refresh_tree(prev_node, current_node){
+          var c = tree.getNodeByProperty("GroupId",current_node);
+          previous_node.unhighlight();
+          tree.getRoot().unhighlight();
+          c.toggleHighlight();
+          c.parent.expand();
+          previous_node = c;
+        }
 		
 	function initTreeView(){
 		var agents = $("#firstLoadAgent").val() || "";

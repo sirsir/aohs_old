@@ -37,7 +37,7 @@ class TagController < ApplicationController
       when "add"
 
          new_tag = params[:new_tags]
-         vc = VoiceLogTemp.find(voice_log_id)
+         vc = VoiceLogTemp.where(:id => voice_log_id).first
          tags = new_tag.split(',')
          tags.each do |tg|
           vc.tag_list.add(tg)
@@ -48,14 +48,14 @@ class TagController < ApplicationController
       when "remove"
 
          remove_tag = params[:new_tags]
-         vc = VoiceLogTemp.find(voice_log_id)
+         vc = VoiceLogTemp.where(:id => voice_log_id).first
          vc.tag_list.remove(remove_tag)
          vc.save
          tag_action = "Delete"
 
       when "remove_all"
 
-         vc = VoiceLogTemp.find(voice_log_id)
+         vc = VoiceLogTemp.where(:id => voice_log_id).first
          vc.tag_list.remove(vc.tag_list)
          vc.save
          tag_action = "Delete"
@@ -63,7 +63,7 @@ class TagController < ApplicationController
       when "update"
 
          new_tag = params[:new_tags]
-         vc = VoiceLogTemp.find(voice_log_id)
+         vc = VoiceLogTemp.where(:id => voice_log_id).first
          tags = new_tag.split(',')
          vc.tag_list.remove(vc.tag_list,:parse => true)
          tags.each do |tg|
@@ -74,7 +74,7 @@ class TagController < ApplicationController
       
       when "show"
 
-         vc = VoiceLogTemp.find(voice_log_id)
+         vc = VoiceLogTemp.where(:id => voice_log_id).first
          msg = vc.tag_list
          if msg.blank?
            msg = "No Tag."
@@ -100,7 +100,7 @@ class TagController < ApplicationController
 
     # Begin : remove
     unless del_tag.empty?
-      vc = VoiceLogTemp.find(voice_log_id)
+      vc = VoiceLogTemp.where(:id => voice_log_id).first
       del_tag.each do |tg|
         vc.tag_list.remove(tg)
         vc.save
@@ -111,7 +111,7 @@ class TagController < ApplicationController
 
     # Begin : add
     unless new_tag.empty?
-      vc = VoiceLogTemp.find(voice_log_id)
+      vc = VoiceLogTemp.where(:id => voice_log_id).first
       new_tag.each do |tg|
         vc.tag_list.add(tg)
         vc.save

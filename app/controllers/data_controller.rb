@@ -15,7 +15,7 @@ class DataController < ApplicationController
   def import
 
     @upload_type = params[:q]
-          
+    
     @upload_format = "-"
     case @upload_type
       when 'keywords'
@@ -23,9 +23,17 @@ class DataController < ApplicationController
       when 'users','Users'
         @upload_format = "agent_id, citizen_id, username*, full_name*, e-mail, group_name, sex*, role*, status*, expired_date"
       when 'customers'
-        @upload_format = "customer's namm*, phone1*, phone2, ... , phoneN"
+        if Aohs::MOD_CUST_CAR_ID
+          @upload_format = "customer's name*, phone, car id"
+        else
+          @upload_format = "customer's name*, phone1*, phone2, ... , phoneNx"
+        end
       when 'dnis_agents'
         @upload_format = "DNIS(10), CTI Login(50), Team(50)"
+      when 'extensions'
+        @upload_format = "extension*, "
+        @upload_format << "computer's name, ip address, " if Aohs::COMPUTER_EXTENSION_LOOKUP
+        @upload_format << "phone number1,phone number2,phone numberN" if Aohs::CTI_EXTENSION_LOOKUP 
       else
         @upload_format = "Failed to check format!"
     end
@@ -40,7 +48,7 @@ class DataController < ApplicationController
     @replace_option = false
     
     case params[:q]
-    when 'dnis_agents'
+    when 'dnis_agents','extensions'
       @replace_option = true
     end
     
@@ -57,7 +65,7 @@ class DataController < ApplicationController
         up_fname = fname
         @file_info[:fname] = fname
 
-        @file_info[:fsize] = File.size(upload['datafile'])
+        @file_info[:fsize] = upload['datafile'].size ##File.size(upload['datafile'])
         if @file_info[:fsize] <= 0
 
           upload_cont = false
@@ -141,7 +149,7 @@ class DataController < ApplicationController
       end
       
       unless msg[:msg].empty?
-        txt << ", Messages: #{ msg[:msg].join(',') }"
+        txt << ", Message: #{ msg[:msg].join(',') }"
       end
       
       log("Import","Data",true,txt)

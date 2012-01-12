@@ -1,3 +1,5 @@
+require 'iconv'
+
 class CsvReport
   
   def generate_report(report,op={})
@@ -43,8 +45,18 @@ class CsvReport
     else
       lines << "No record found."     
     end 
-
-    return lines.join("\r\n"), mkfname(report[:fname])
+    
+    body = lines.join("\r\n")
+    
+    #fix THAI 
+    begin
+      body = Iconv.conv("ISO-8859-11", "UTF8", body)
+    rescue => e
+      STDERR.puts "CSV - Conver UTF8 failed: #{e.message}"
+      body = body
+    end
+  
+    return body, mkfname(report[:fname])
     
   end
   

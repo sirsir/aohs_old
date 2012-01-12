@@ -1,10 +1,10 @@
 <div class="div-menus">
 <ul>
-	<%= create_header_link('Home',{:controller => "top_panel", :action => "index"},'Goto home.',controller.controller_name,["top_panel"]) %>
+	<%= create_header_link('Home',{:controller => "top_panel", :action => "index"},'Go to home.',controller.controller_name,["top_panel"]) %>
 	<%= create_header_link('Agent Calls Search',{:controller => "voice_logs", :action => "index" ,:period => nil},'Searching calls of agents.',controller.controller_name,["voice_logs"]) if link_permission_require('voice_logs','index') %>
 	<%= create_header_link('Customer Calls Search',{:controller => "customers", :action => "index"},'Searching calls of customer',controller.controller_name,["customers"]) if link_permission_require('customers','index') %>
-	<%= create_header_link('Tag Calls Search',{:controller => "favorites", :action => "index"},'Show calls with tags',controller.controller_name,["favorites"]) if link_permission_require('favorites','index') %>
-	<%= create_header_link('Agents Report',{:controller => "statistics", :action => "index"},'Agents call and keywords report',controller.controller_name,["statistics"]) if link_permission_require('statistics','index') %>
-	<%= create_header_link('Keywords Report',{:controller => "keywords", :action => "index"},'Keywords report',controller.controller_name,["keywords","keyword_group"]) if link_permission_require('keywords','index') %>
+	<%= create_header_link('Tag Calls Search',{:controller => "favorites", :action => "index"},'Searching calls with tags',controller.controller_name,["favorites"]) if link_permission_require('favorites','index') %>
+	<%= create_header_link('Agents Report',{:controller => "statistics", :action => "index"},"Agents report",controller.controller_name,["statistics"]) if link_permission_require('statistics','index') %>
+	<%= create_header_link('Keywords Report',{:controller => "keywords", :action => "index"},"Keywords report",controller.controller_name,["keywords","keyword_group"]) if link_permission_require('keywords','index') if Aohs::MOD_KEYWORDS %> 
 </ul>
 </div>

@@ -28,7 +28,7 @@
 
   div#cb-time-search{
     float: right;
-    padding-bottom: 2px;
+    margin-bottom: 2px;
   }
 
   div.div-num { text-align: left; float:left;}
@@ -47,7 +47,7 @@
     background-image:url('<%=image_src_path('/images/calendar.png') %>');
   }
 
-  table#call-hist-tbl { border-collapse: collapse; margin: 0px 0px 2px 2px;}
+  table#call-hist-tbl { border-collapse: collapse; margin: 2px 0px 2px 2px;}
 
   tr.tr-date { height: 25px; }
   tr.tr-head { font-weight: bold; background-color: #D4E9FF; text-align: center;}
@@ -266,10 +266,6 @@
       <div id="cb-time-search" disabled>
         <span style="font-weight: bold;">Date:&nbsp;</span>
         <input type="text" id="date" title="yyyy-mm-dd" size="14" disabled/>
-        <!--span style="font-weight: bold; margin-left: 6px;">Time:&nbsp;</span>
-        <input type="text" alt="time" value="00:00" id="time-from" maxlength="5" size="2" title="hh:mm" disabled />
-        <span style="font-weight: bold;">To:&nbsp;</span>
-        <input type="text" alt="time" value="23:59" name="vcToTime" id="time-to" maxlength="5" size="2" title="hh:mm" disabled /-->
         <input type="button" id="browse-btn" value="browse" onclick="show_agent_call()" style="margin-left: 3px;"/>
       </div>
 
@@ -309,7 +305,7 @@
       </div>
     </div>
 
-    <div id="cb-call-hist" class="div-show" style="clear: both; margin-top: 2px;">
+    <div id="cb-call-hist" class="div-show" style="margin-top: 3px; clear: both;">
       <table id="call-hist-tbl" cellspacing="0"></table>
     </div>
   </div>

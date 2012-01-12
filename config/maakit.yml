@@ -1,0 +1,14 @@
+master: 
+  adapter: jdbcmysql
+  database: amivoice_operators_help_v3
+  host: 192.168.1.15
+  port: 3306
+  username: mysqladmin
+  password: password
+slave: 
+  adapter: jdbcmysql
+  database: amivoice_operators_help_aeoncol
+  host: 192.168.1.15
+  port: 3306
+  username: mysqladmin
+  password: password

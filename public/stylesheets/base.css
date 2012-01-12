@@ -6,7 +6,7 @@ body,html
     background-color: white;
     overflow:hidden;
 }
-html,body,form,h1,h2,h3,h4,h5,p,label,input,select,textarea,div 
+html,body,form,h1,h2,h3,h4,h5,p,label,input,select,textarea,div
 {
     margin:0px 0px 0px 0px;
     padding:0px 0px 0px 0px;
@@ -15,7 +15,7 @@ html
 {
 	overflow-y:scroll;
 }
-input, select, label,textarea 
+input, select, label, textarea, a 
 {
 	font-size: 8pt;
     font-family: sans-serif;	
@@ -91,7 +91,15 @@ img {
 /* Footer */
 .div-page-footer 
 {
-
+	
+}
+.div-page-footer .footer-detail {
+	border-bottom: 1px solid #CCCCCC;
+	color:#93B2CC; 
+	font-size:7pt; 
+	position:absolute; 
+	bottom:0px;  
+	padding:3px;
 }
 /* all */
 .div-page-header, .div-page-body, .div-page-footer 
@@ -365,7 +373,14 @@ a.link03:hover {
     color:white;
     text-decoration:underline;
 }
-
+a.link04,a.link04:visited {
+    color:#0000ff;
+    text-decoration:underline;
+}
+a.link04:hover {
+    color:#0000ff;
+    text-decoration:underline;
+}
 .login-name {
     font-weight:bold;
 }

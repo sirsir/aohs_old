@@ -1,6 +1,6 @@
 class CallBrowserController < ApplicationController
 
-  before_filter :login_required, :except => [:get_info, :get_current_channels_status, :get_prvious_call, :call_stat, :search_voice_log]
+  before_filter :login_required, :except => [:get_info, :get_current_channels_status, :get_prvious_call, :call_stat, :search_voice_log, :get_destination_agent]
   #before_filter :permission_required
 
   include AmiCallSearch
@@ -11,47 +11,43 @@ class CallBrowserController < ApplicationController
   @@call_transfer_available = Aohs::MOD_CALL_TRANSFER
 
   def index
+
+    @usrs = get_my_agent_id_list
+    @usrs = nil if @usrs.nil?
     
-  end
-
-  def get_previous_call
-
-    prev_call_id = [];
-    if(params.has_key?(:agent_id) and not params[:agent_id].empty?)
-      agent_id = params[:agent_id]
-      pv = VoiceLogTemp.find(:all, :select => :id, :conditions => "agent_id = #{agent_id} and date(start_time) = date(now())", :order => "id desc", :limit => 2)
-      unless pv.nil?
-        pv.each do |p|
-          prev_call_id << {:id => p.id}
-        end
-      end
-    end
-
-    render :json => prev_call_id
   end
   
   def get_current_channels_status
     
     ccs_result = nil
     if (params.has_key?(:agent_id) and not params[:agent_id].empty?)
+      
       agent_id = params[:agent_id]
-      c = CurrentChannelStatus.find(:first, :select => "id as call_id, system_id, device_id, channel_id, ani, dnis, call_direction, start_time, connected, timediff(now(), start_time) as diff, voice_file_url",
-                                    :conditions => "agent_id = #{agent_id} and date(start_time) = '#{Time.now.strftime("%Y-%m-%d")}'",
-                                    :order => "start_time desc")
-      unless c.nil?
+      v = VoiceLogTemp.table_name
+      c = CurrentChannelStatus.table_name
+
+      cs_select = "#{c}.call_id as call_id, #{c}.system_id, #{c}.device_id, #{c}.channel_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.start_time, #{c}.connected, timediff(now(), #{c}.start_time) as diff"
+      cs_join = ""
+      if @@keyword_available
+        vc = VoiceLogCounter.table_name
+        cs_select += ", vc.mustword_count as mst, vc.ngword_count as ng"
+        cs_join = "join #{v} v on v.call_id = #{c}.call_id and date(v.start_time) = date(now()) join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())"
+      end
+
+      cs = CurrentChannelStatus.select(cs_select)
+      cs = cs.joins(cs_join)
+      cs = cs.where("#{c}.agent_id = #{agent_id} and date(#{c}.start_time) = date(now()) and #{c}.connected = 'connected'").order("#{c}.start_time desc").first
+      
+      unless cs.nil?
         ng = 0
         mst = 0
-        vid = VoiceLogTemp.find(:first, :conditions => {:call_id => c.call_id}).id
-        unless vid.nil?
-          vc_counter = VoiceLogCounter.find(:first, :conditions => {:voice_log_id => vid})
-          if not vc_counter.nil?
-            ng = vc_counter.ngword_count.nil? ? 0 : vc_counter.ngword_count
-            mst = vc_counter.mustword_count.nil? ? 0 : vc_counter.mustword_count
-          end
+        if @@keyword_available
+          ng = cs.ng.nil? ? 0 : cs.ng
+          mst = cs.mst.nil? ? 0 : cs.mst
         end
 
-        ccs_result = {:call_id => c.call_id, :sys_id => c.system_id, :dvc_id => c.device_id, :chn_id => c.channel_id, :ani => c.ani, :dnis => c.dnis, :diff => c.diff,
-          :c_dir => c.call_direction, :st_time => c.start_time.strftime("%Y-%m-%d %H:%M:%S"), :conn => c.connected, :ng_count => ng, :mst_count => mst, :voice_url => c.voice_file_url}
+        ccs_result = {:call_id => cs.call_id, :sys_id => cs.system_id, :dvc_id => cs.device_id, :chn_id => cs.channel_id, :ani => cs.ani, :dnis => cs.dnis, :diff => cs.diff,
+          :c_dir => cs.call_direction, :st_time => cs.start_time.strftime("%Y-%m-%d %H:%M:%S"), :conn => cs.connected, :ng_count => ng, :mst_count => mst}
       end
     end
 
@@ -60,13 +56,15 @@ class CallBrowserController < ApplicationController
   end
 
   def get_info
-    
     user_info = [];
     statistics_types = {};
+    statistics_types[:call_count] = StatisticsType.where({:target_model => 'VoiceLog',:value_type => 'count',:by_agent => true}).first.id
+    statistics_types[:in_count] = StatisticsType.where({:target_model => 'VoiceLog',:value_type => 'count:i',:by_agent => true}).first.id
+    statistics_types[:out_count] = StatisticsType.where({:target_model => 'VoiceLog',:value_type => 'count:o',:by_agent => true}).first.id
 
     if @@keyword_available
-      statistics_types[:ng_count] = StatisticsType.find(:first, :conditions => {:target_model => 'ResultKeyword',:value_type => 'sum:n',:by_agent => true}).id
-      statistics_types[:mst_count] = StatisticsType.find(:first, :conditions => {:target_model => 'ResultKeyword',:value_type => 'sum:m',:by_agent => true}).id
+      statistics_types[:ng_count] = StatisticsType.where({:target_model => 'ResultKeyword',:value_type => 'sum:n',:by_agent => true}).first.id
+      statistics_types[:mst_count] = StatisticsType.where({:target_model => 'ResultKeyword',:value_type => 'sum:m',:by_agent => true}).first.id
     end
 
     daily_selects = []
@@ -82,29 +80,29 @@ class CallBrowserController < ApplicationController
       leader_id = Group.find(grp_id).leader_id
 
       v = VoiceLogTemp.table_name
-      vc = VoiceLogCounter.table_name
       c = CurrentChannelStatus.table_name
 
-      usr = User.find(:all, :select => "id, display_name, sex, cti_agent_id, group_id", :conditions => ["(group_id = ? or id = ?) and flag != 1", grp_id, leader_id])
+      usr = User.alive.select("id, display_name, sex, cti_agent_id, group_id").where(["(group_id = ? or id = ?) and flag != 1", grp_id, leader_id]).order("type desc, display_name").all
       unless usr.empty?
-        agent_id = usr.map{ |u| u.id}.join(', ')
-        vt = VoiceLogTemp.find(:all, :select => "agent_id, count(id) as call_count,
-                                 sum(case call_direction when 'o' then 1 else 0 end) as out_count,
-                                 sum(case call_direction when 'i' then 1 else 0 end) as in_count",
-                               :conditions => "date(start_time) = date(now()) and agent_id in (#{agent_id})", :group => :agent_id)
+        all_agent_id = usr.map{ |u| u.id}.join(', ')
 
-        cs = CurrentChannelStatus.find(:all,
-                                       :select => "#{c}.agent_id, #{c}.id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.connected, #{c}.voice_file_url,
-                                                   timediff(now(), #{c}.start_time) as diff, time(#{c}.start_time) as st_time,
-                                                   #{c}.system_id, #{c}.device_id, #{c}.channel_id, vc.mustword_count as mst, vc.ngword_count as ng",
-                                       :joins => "join #{v} v on v.call_id = #{c}.id and date(v.start_time) = date(now())
-                                                  join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())",
-                                       :conditions => "date(#{c}.start_time) = date(now()) and #{c}.agent_id in (#{agent_id}) and #{c}.connected = 'connected'",
-                                       :order => "#{c}.start_time desc")
+        ds = DailyStatistics.select("agent_id, #{daily_selects.join(",")}")
+        ds = ds.where("statistics_type_id in (#{stat_types.join(",")}) and start_day = date(now()) and agent_id in (#{all_agent_id})").group(:agent_id).all
 
-        ds = DailyStatistics.find(:all, :select => "agent_id, #{daily_selects.join(",")}",
-                                  :conditions => "statistics_type_id in (#{stat_types.join(",")}) and start_day = date(now()) and agent_id in (#{agent_id})",
-                                  :group => :agent_id)
+        cs_select = "#{c}.agent_id, #{c}.call_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.connected,
+                     timediff(now(), #{c}.start_time) as diff, time(#{c}.start_time) as st_time,
+                     #{c}.system_id, #{c}.device_id, #{c}.channel_id"
+        join_counter = ""
+
+        if @@keyword_available
+          vc = VoiceLogCounter.table_name
+          cs_select += ", vc.mustword_count as mst, vc.ngword_count as ng"
+          join_counter = "join #{v} v on v.call_id = #{c}.call_id and date(v.start_time) = date(now()) join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())"
+        end
+        
+        cs = CurrentChannelStatus.select(cs_select)
+        cs = cs.joins(join_counter)
+        cs = cs.where("date(#{c}.start_time) = date(now()) and #{c}.agent_id in (#{all_agent_id}) and #{c}.connected = 'connected'").order("#{c}.start_time desc").all
 
         usr.each do |u|
           current_user = {}
@@ -119,23 +117,17 @@ class CallBrowserController < ApplicationController
           current_user[:ext] = u.extensions_list.join(", ")
           current_user[:cti] = (u.cti_agent_id.nil? ? "-" : u.cti_agent_id)
 
-          # total call
-          unless vt.empty?
-            vt.each do |vtt|
-              if vtt.agent_id == u_id
-                current_user[:total_call] = vtt.call_count
-                current_user[:total_in] = vtt.in_count
-                current_user[:total_out] = vtt.out_count
-                break
-              end
-            end
-          end
           # daily statistic
           unless ds.empty?
             ds.each do |d|
               if d.agent_id == u_id
-                current_user[:total_ng] = d.ng_count
-                current_user[:total_mst] = d.mst_count
+                current_user[:total_call] = d.call_count
+                current_user[:total_in] = d.in_count
+                current_user[:total_out] = d.out_count
+                if @@keyword_available
+                  current_user[:total_ng] = d.ng_count
+                  current_user[:total_mst] = d.mst_count
+                end
                 break
               end
             end
@@ -144,7 +136,7 @@ class CallBrowserController < ApplicationController
           unless cs.empty?
             cs.each do |cc|
               if cc.agent_id == u_id
-                current_user[:call_id] = cc.id
+                current_user[:call_id] = cc.call_id
                 current_user[:call_start_time] = cc.st_time
                 current_user[:call_ani] = cc.ani
                 current_user[:call_dnis] = cc.dnis
@@ -154,9 +146,10 @@ class CallBrowserController < ApplicationController
                 current_user[:call_sys] = cc.system_id
                 current_user[:call_dev] = cc.device_id
                 current_user[:call_chn] = cc.channel_id
-                current_user[:call_ng] = cc.ng
-                current_user[:call_mst] = cc.mst
-                current_user[:call_voice_url] = cc.voice_file_url
+                if @@keyword_available
+                  current_user[:call_ng] = cc.ng
+                  current_user[:call_mst] = cc.mst
+                end
                 break
               end
             end
@@ -177,7 +170,7 @@ class CallBrowserController < ApplicationController
 
     call_summary = nil
     qry_select = []
-
+    
     s = 7
     e = 19
     (s..e).each_with_index do |t,i|
@@ -200,7 +193,7 @@ class CallBrowserController < ApplicationController
         conditions << "date(start_time) = date(now())"
       end
 
-      sum = VoiceLogTemp.find(:first, :select => qry_select.join(','), :conditions => conditions.join(' and '))
+      sum = VoiceLogTemp.select(qry_select.join(',')).where(conditions.join(' and ')).first
       unless sum.nil?
         call_summary = {:bfr_egh => sum.h0, :egh => sum.h1, :nine => sum.h2, :ten => sum.h3, :ele => sum.h4, :twlv => sum.h5, :thr => sum.h6,
                         :fort => sum.h7, :fift => sum.h8, :sixt => sum.h9, :sev => sum.h10, :eght => sum.h11, :aft_nint => sum.h12}
@@ -235,7 +228,7 @@ class CallBrowserController < ApplicationController
         conditions << "time(start_time) < '#{params[:time_to]}'"
       end
 
-      voice_logs = VoiceLogTemp.find(:all,:select => "id, start_time, duration, call_direction, ani, dnis", :conditions => conditions.join(' and '), :order => :start_time)
+      voice_logs = VoiceLogTemp.select("id, start_time, duration, call_direction, ani, dnis").where(conditions.join(' and ')).order(:start_time).all
       unless voice_logs.empty?
         voice_logs.each do |v|
           current_voice = {}
@@ -246,8 +239,8 @@ class CallBrowserController < ApplicationController
             :start_hour => v.start_time.strftime("%H"),
             :duration => v.duration,
             :call_direction => v.call_direction,
-            :ani => v.ani,
-            :dnis => v.dnis
+            :ani => format_phone(v.ani),
+            :dnis => format_phone(v.dnis)
           }
 
           if @@keyword_available
@@ -264,6 +257,27 @@ class CallBrowserController < ApplicationController
     end
 
     render :json => voices
+  end
+
+  def get_destination_agent
+
+    to_agent = nil
+
+    if (params.has_key?(:ext) and not params[:ext].empty?)
+
+      ext = params[:ext]
+      u = User.table_name
+      e = ExtensionToAgentMap.table_name
+      g = Group.table_name
+
+      agent = ExtensionToAgentMap.select("#{e}.agent_id as agent_id, u.login as login_name, u.display_name as name, u.group_id as group_id, u.cti_agent_id as cti, g.name as group_name")
+      agent = agent.joins("join #{u} u on #{e}.agent_id = u.id left join #{g} g on g.id = u.group_id").where("#{e}.extension = #{ext}").first
+      unless agent.nil?
+        to_agent = {:id => agent.agent_id, :login_name => agent.login_name, :name => agent.name, :group_id => agent.group_id, :cti => agent.cti, :group_name => agent.group_name}
+      end
+
+    end
+    render :json => to_agent
   end
 
 end

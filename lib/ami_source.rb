@@ -1,3 +1,4 @@
+require 'csv'
 
 module AmiSource
 
@@ -22,11 +23,13 @@ module AmiSource
     # check source files
 
     src_files = {
-            :users => 'users.csv',
-            :groups => 'groups.csv',
-            :customers => 'customers.csv',
-            :keywords => 'keywords.csv',
-            :dnis_agents => 'dnis_agents.csv'}
+      :users => 'users.csv',
+      :groups => 'groups.csv',
+      :customers => 'customers.csv',
+      :keywords => 'keywords.csv',
+      :dnis_agents => 'dnis_agents.csv',
+      :extensions => 'extensions.csv'
+    }
 
     # ===============================================================================
 
@@ -48,18 +51,22 @@ module AmiSource
               case key
               when :dnis_agents
                 DnisAgent.delete_all
+              when :extensions
+                Extension.delete_all
+                Did.delete_all
               else
                 # option wrong
               end
             end
             
+            # next key
+            vkey = nil
+            
             # insert or update
-			line_no = 0;
             File.open(File.join(directory,value.to_s)).each do |line|
-                
-			  line_no += 1
-			  
+    
               next if line.nil?
+              line = fix_comma_delimeter_rem(line)
               line = line.strip.gsub('"','').to_s
               next if line.empty?
               ##next if line.blank?
@@ -80,31 +87,26 @@ module AmiSource
                     u[:cti_agent_id], u[:id_card], u[:login], u[:display_name], u[:email], u[:group_name], u[:gender], u[:role_name], u[:status], u[:expired_date] = line.split(',',9)
                     
                     u[:password] = Aohs::DEFAULT_PASSWORD_NEW
-                      
+                    
                     u[:role_id], u[:role_type] = map_role_name(u[:role_name])
+                    u[:group_name] = u[:group_name].to_s.strip
                     u[:group_id] = map_group_name(u[:group_name])
                     u[:password] = map_password_blank(u[:login],u[:password])
                     u[:cti_agent_id] = check_cti_agent_id(u[:cti_agent_id])
-                    
-					# user_type 
-					u[:role_type] = verify_role_and_usr_type(u[:login],u[:role_type])
-
+                    u[:email] = nil if u[:email].to_s.strip.empty?
+		    
                     # save
                     kact = "SKIP"
                     case u[:role_type]
                       when :agent
-                        x = Agent.find(:first,:conditions => {:login => u[:login]})
+                        x = Agent.where({:login => u[:login]}).first
                         if x.nil?
                           xn = {:login => u[:login],:display_name => u[:display_name],:email => u[:email],:sex => u[:gender], :role_id => u[:role_id], :group_id => u[:group_id],:password => u[:password],:password_confirmation => u[:password],:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
                           xn = Agent.new(xn)
-                          if xn.save
-							  xn.update_attribute(:state,'active')
-							  kact = "INSERT"
-							  result[:new] += 1		
-						  else
-							  result[:error] += 1
-							  result[:msg] << "Line #{line_no}:#{xn.errors.full_messages}"	
-						  end
+                          xn.save!
+                          xn.update_attribute(:state,'active')
+                          kact = "INSERT"
+                          result[:new] += 1
                         else
                           if op[:update] == true
                             xu = {:display_name => u[:display_name],:email => u[:email],:sex => u[:gender], :role_id => u[:role_id], :group_id => u[:group_id],:state => 'active',:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
@@ -122,18 +124,14 @@ module AmiSource
                         end
                       when :manager
                         u[:group_id] = 0
-                        x = Manager.find(:first,:conditions => {:login => u[:login]})
+                        x = Manager.where({:login => u[:login]}).first
                         if x.nil?
                           xn = {:login => u[:login],:display_name => u[:display_name],:email => u[:email],:sex => u[:gender], :role_id => u[:role_id], :group_id => u[:group_id],:password => u[:password],:password_confirmation => u[:password],:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
                           xn = Manager.new(xn)
-                          if xn.save
-							xn.update_attribute(:state,'active')
-							kact = "INSERT"
-							result[:new] += 1
-						  else
-							result[:error] += 1
-							result[:msg] << "Line #{line_no}:#{xn.errors.full_messages}"
-						  end
+                          xn.save!
+                          xn.update_attribute(:state,'active')
+                          kact = "INSERT"
+                          result[:new] += 1
                         else
                           if op[:update] == true
                             # skip upd ,:password => u[:password],:password_confirmation => u[:password]
@@ -167,24 +165,36 @@ module AmiSource
                     # get
 
                     c = {}
-                    c[:name], c[:phones] = line.strip.split(',',2)
-                    c[:phones] = c[:phones].split(',')
-
+                    if not Aohs::MOD_CUST_CAR_ID
+                      c[:name], c[:phones] = line.strip.split(',',2)
+                      c[:phones] = c[:phones].split(',')
+                    else
+                      c[:name], c[:phones], c[:cars] = line.strip.split(',',3)
+                      if c[:name].strip.empty?
+                        c[:name] = vkey
+                      else
+                        vkey = c[:name]
+                      end
+                      c[:phones] = [c[:phones]]
+                    end
+                    
+                    c[:name] = fix_comma_delimeter_rep(c[:name])
+                    
                     # name
                     customer_id = 0
-                    cust = Customers.find(:first,:conditions => {:customer_name => c[:name]})
+                    cust = Customer.where({:customer_name => c[:name]}).first
                     if cust.nil?
                       xn = {:customer_name => c[:name]}
-                      xn = Customers.new(xn)
+                      xn = Customer.new(xn)
                       xn.save
-                      cust = Customers.find(:first,:conditions => {:customer_name => c[:name]})
+                      cust = Customer.where({:customer_name => c[:name]}).first
                       customer_id = cust.id
                       result[:new] += 1
                     else
                       customer_id = cust.id
                       if op[:update] == true
                         xc = {:customer_name => c[:name]}
-                        xc = Customers.update(cust.id,xc)
+                        xc = Customer.update(cust.id,xc)
                         result[:update] += 1
                       else
                         result[:skip] += 1
@@ -195,14 +205,26 @@ module AmiSource
                     unless c[:phones].blank?
                       c[:phones].each do |phone|
                         phone = phone.strip
-                        p = CustomerNumbers.find(:first,:conditions => {:customer_id => customer_id,:number => phone})
-                        if p.nil?
-                          p = {:customer_id => customer_id,:number => phone}
-                          p = CustomerNumbers.new(p).save
+                        unless phone.empty?
+                          p = CustomerNumber.where({:customer_id => customer_id,:number => phone}).first
+                          if p.nil?
+                            p = {:customer_id => customer_id,:number => phone}
+                            p = CustomerNumber.new(p).save
+                          end
                         end
                       end
+                    end                   
+                    
+                    #car
+                    unless c[:cars].blank?
+		      c[:cars] = c[:cars].gsub("_","")
+                      cn = CarNumber.where(:customer_id => customer_id, :car_no => c[:cars]).first
+                      if cn.nil?
+                        cn = CarNumber.new({:customer_id => customer_id, :car_no => c[:cars]})
+                        cn.save!
+                      end
                     end
-
+                  
                 when :keywords
 
                     # get
@@ -274,6 +296,54 @@ module AmiSource
                       dnis_agent = DnisAgent.update(dnis_agent.id,k)
                     end
                   end 
+                
+                when :extensions
+                  
+                  k = {}
+                  k = extension_info_split(line)
+                  
+                  if not k[:extension].nil? and not k[:extension].empty?
+                      STDOUT.puts "Extension : #{k[:extension]}, #{k[:comp]}, #{k[:ip]}, #{k[:phones]}"
+                      
+                      k[:extension] = k[:extension].strip
+                      k[:phones] = (k[:phones].split(",").map { |p| p.strip }) unless k[:phones].blank?
+                      
+                      et = Extension.where(:number => k[:extension]).first
+                      if et.nil?
+                        et = Extension.new({:number => k[:extension]})
+                        et.save!
+                        result[:new] += 1
+                      else
+                        result[:update] += 1
+                      end
+                    
+                      # dids
+                      if not k[:phones].nil? and not k[:phones].empty?
+                        k[:phones].each do |p|
+                          did = Did.where(:extension_id => et.id, :number => p).first
+                          if did.nil?
+                            Did.new(:extension_id => et.id, :number => p).save!
+                          end
+                        end
+                        Did.delete_all(["extension_id = ? and number not in (?)",et.id,k[:phones]])
+                      else
+                        Did.delete_all(:extension_id => et.id)
+                      end
+                      
+                      # computer map
+                      
+                      if k[:comp].blank? and k[:ip].blank?
+                        ComputerExtensionMap.delete_all(:extension_id => et.id)
+                      else
+                        cem = ComputerExtensionMap.where(:extension_id => et.id).first
+                        if cem.nil?
+                            ComputerExtensionMap.new({:extension_id => et.id, :computer_name => k[:comp], :ip_address => k[:ip]}).save!
+                        else
+                            cem.update_attributes({:computer_name => k[:comp], :ip_address => k[:ip]})
+                        end                         
+                      end
+                                   
+                  end # end if
                   
                 end # end when
 
@@ -293,20 +363,33 @@ module AmiSource
     
   end # def
 
+  def fix_comma_delimeter_rem(line)
+    fields = CSV.parse_line(line) 
+    return CSV.generate_line(fields.map { |f| f.to_s.gsub(",","$COMMA") })
+  end
+  
+  def fix_comma_delimeter_rep(field)
+    unless field.nil?
+      return field.gsub("$COMMA",",")
+    else
+      return field
+    end
+  end
+  
   def map_role_name(role_name)
 
     role_id = nil
     role_type = nil
-     
+
     if (role_name.strip.downcase == "agent") or (role_name.strip.downcase == "none")
       role_name = "Agent"
       role_type = :agent
     else
       role_type = :manager
     end
-    
+
     unless role_name.blank?
-      role = Role.find(:first, :conditions => {:name => role_name})
+      role = Role.where({:name => role_name}).first
       unless role.blank?
         role_id = role.id
       else
@@ -322,33 +405,32 @@ module AmiSource
     
   end
 
-	def verify_role_and_usr_type(login_name,role_type)
-		new_role_type = role_type
-		u_tmp = User.find(:first,:conditions => {:login => login_name})
-		unless u_tmp.nil?
-			if u_tmp.type.to_s == "Manager"
-				new_role_type = :manager
-			elsif u_tmp.type.to_s == "Agent"
-				new_role_type = :agent						    
-			end
-		end
-		return new_role_type
-	end
-					
+  def extension_info_split(line)
+    k = {}
+    if Aohs::COMPUTER_EXTENSION_LOOKUP and Aohs::CTI_EXTENSION_LOOKUP
+      k[:extension], k[:comp], k[:ip], k[:phones] = line.split(',',4)  
+    elsif Aohs::CTI_EXTENSION_LOOKUP
+      k[:extension], k[:phones] = line.split(',',2) 
+    elsif Aohs::COMPUTER_EXTENSION_LOOKUP
+      k[:extension], k[:comp], k[:ip] = line.split(',',3)  
+    end
+    return k
+  end
+  
   def map_group_name(group_name)
 
     group_id = nil
 
     unless group_name.blank?
-      group = Group.find(:first,:conditions => {:name => group_name})
-      unless group.blank?
+      group = Group.where({:name => group_name}).first
+      unless group.nil?
         group_id = group.id
         STDOUT.puts " -GET: Group->#{group_name}/#{group_id}"
       else
         xg = {:name => group_name}
         group = Group.new(xg)
         group.save
-        group_id = Group.find(:first,:conditions => {:name => group_name}).id
+        group_id = Group.where({:name => group_name}).first.id
         STDOUT.puts " -INSERT: Group->#{group_name}/#{group_id}"
       end
     end
@@ -363,8 +445,8 @@ module AmiSource
 
     unless categories.blank?
       categories.each_pair do |gt,g|
-        gct = GroupCategoryType.find(:first,:conditions => {:name => gt.to_s})
-        gc = GroupCategory.find(:first,:conditions => {:group_categroy_type => gct.id, :value => g})
+        gct = GroupCategoryType.where({:name => gt.to_s}).first
+        gc = GroupCategory.where({:group_categroy_type => gct.id, :value => g}).first
         group_categories_id << gc.id
       end
     end
@@ -377,19 +459,19 @@ module AmiSource
 
     manager_id = nil
 
-    x = Manager.find(:first,:conditions => {:name => u[:login]})
+    x = Manager.where({:name => u[:login]}).first
     if x.nil?
       xn = {:login => u[:login],:display_name => u[:login],:sex => nil, :role_id => nil, :group_id => nil,:password => "password",:password_confirmation => "password"}
       xn = Manager.new(xn)
       xn.save
-      x = Manager.find(:first,:conditions => {:name => u[:login]})
+      x = Manager.where({:name => u[:login]}).first
     end
     manager_id = x.id
     
     return manager_id
     
   end
-    
+
   def map_password_blank(login,password)
 
     if password.strip.blank?
@@ -463,7 +545,7 @@ module AmiSource
         cols = ['agent_id','citizen_id','username','full_name','e-mail','group','sex','role','status','expire_date']
         data = []
         usr_model.each do |md|
-          usrs = md.find(:all,:order => 'login')
+          usrs = md.alive.order('login asc')
           unless usrs.blank?
              usrs.each do |usr|
                data << ([
@@ -487,7 +569,7 @@ module AmiSource
 
           fname = "customers.csv"
           
-          customers = Customers.find(:all,:include => :customer_numbers, :order => "customer_name")
+          customers = Customer.find(:all,:include => :customer_numbers, :order => "customer_name")
 
           cols = ['customer_name','phone_number1','phone_number2']
           data = []
@@ -532,7 +614,35 @@ module AmiSource
             end
           end
           csv_src = chang_to_csv(cols,data)
+          
+      when :extensions
+        
+          fname = "extensions.csv"
 
+          cols = ['extension']
+          cols = ['extension','computer_name','ip'] if Aohs::COMPUTER_EXTENSION_LOOKUP
+          data = []
+          
+          if Aohs::CTI_EXTENSION_LOOKUP
+            max_dids = Did.select("count(number) as cnumber").group(:extension_id).order("count(number) desc").first
+            unless max_dids.nil?
+              max_dids.cnumber.to_i.times { |t| cols << "phone_#{t+1}"}  
+            end
+          end
+          
+          exts = Extension.order("number")
+          unless exts.empty?
+            exts.each do |ext|
+              dids = ext.dids_list.to_s.split(",")
+              d = [ext.number]
+              d << ext.current_remote_computer.computer_name if Aohs::COMPUTER_EXTENSION_LOOKUP
+              d << ext.current_remote_computer.remote_ip if Aohs::COMPUTER_EXTENSION_LOOKUP
+              d = d.concat(dids) if Aohs::CTI_EXTENSION_LOOKUP
+              data << (d.map { |g| "\"#{g}\"" }).join(',')
+            end
+          end
+          csv_src = chang_to_csv(cols,data)
+          
       else
 
         # error

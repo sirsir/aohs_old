@@ -12,6 +12,7 @@
 #
 
 class Role < ActiveRecord::Base
+  
    has_many :permissions
    has_many :privileges, :through => :permissions
 
@@ -20,4 +21,7 @@ class Role < ActiveRecord::Base
    validates_uniqueness_of   :name, :case_sensitive => false
    validates_length_of       :name, :within => 2..40
    
+   scope :managers, :conditions => "name != 'Agent'"
+   scope :agents,   :conditions => "name = 'Agent'"
+  
 end

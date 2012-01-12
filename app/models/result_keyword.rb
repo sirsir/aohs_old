@@ -17,7 +17,7 @@ class ResultKeyword < ActiveRecord::Base
 
    belongs_to :keyword
    belongs_to :voice_log
-   named_scope :without_flag,
+   scope :without_flag,
    lambda {|vid| { :conditions => ['voice_log_id = ? and edit_status != \'d\' or edit_status is null', vid] } }
 
 

@@ -28,5 +28,7 @@
 #
 
 class Agent < User
+  
   attr_accessible :state,:expired_date,:external_user_name,:type
+  
 end

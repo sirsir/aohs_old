@@ -16,26 +16,61 @@ client.aohs_web:
 mysqlDbConnectionString	"mysql database connection string"	string	"Server=192.168.1.15;Database=amivoice_operators_help;Uid=mysqladmin;Pwd=password;Port=3306"
 activeId	"active id"	integer	1
 serverRootUrl	"server root url"	string	"http://192.168.1.17:8080/AohsWeb"
-#audioBaseUrl	"audio base url"	string	""
 number_of_display_list	"number of record(s) can display of each page"	integer	20
 number_of_display_voice_logs	"number of record(s) can display of voice logs page"	integer	20
 number_of_daily	"maximum number of day(s) can display of daily tab"	integer	15
 number_of_weekly	"maximum number of week(s) for display of weekly tab"	integer	10
 number_of_monthly	"maximum number of month(s) for display of monthly tab"	integer	8
-#number_of_custsearch	"number of record(s) can display of customer page"	integer	20
 number_of_max_timeline	"number of record(s) can display on timeline [set 0 to disable]"	integer	100000
 number_of_max_calls_export	"number of records(s) can print or export"	integer	100000
 beginning_of_week	"beginning day of week"	string[mo,tu,we,th,fr,sa,su]	mo
 beginning_of_month	"begining day of month"	integer	1
-#keepLogDays	"number of days for keep application log [set 0 to disable]"	integer	90
 enableCallsTimeline	"enable(1)/disable(0) calls timeline"	integer	1
 reportHeaderName	"company name or report header name"	string	"AmiVoice Thai Co.,Ltd."
-#reportHeaderLogo	"logo images path [../rail_root/public]"	string	"ami.png"
-#activeCheckerPath	"file path for check active logger"	string	"/opt/checker-1.0/active.conf"
 reportUserNameDisplay	"show login name(0) or display name(1) in report"	integer	1
-#alwayShowFilterWhenSearch	"show(t)/hide(f) when filter is using"	boolean	"f"
 callBrowserShotcut	"Call Browser application shotcut url"	string	"http://192.168.1.162/start.jar"
 autoUpdateReportToday	"time for refresh report data (miniutes), set o to disable"	integer	2
 maxNumberOfCallPerPage	"maximum number of calls can show per page (web)"	integer	100
-
+highLightRow.Red	"display record which duration is greater than or equal, 0 disable"	integer	30
+audioViewer.runMode	"start audio player in activex or applet"	string	activex
+audioViewer.showVol	"show volume control on screen [0=hide,1=show]"	integer	1
+audioViewer.showSpeed	"show speed control on screen [0=hide,1=show]"	integer	1
+displayDeletedAgentAsUnk	"show call of deleted agent as unknown agents, 0=no,1=yes"	integer	0
+showKeywordTooltip	"show keyword tooltip on call search 1=show,0=hide"	integer	0
+showTagTooltip	"show tag tooltip on call search 1=show,0=hide"	integer	1
+enableVoiceRowHover	"enable row hover on call search page 1=use,0=not use"	integer	0
+filter.nof_recent_months	"number of months to show in month filter"	integer	10
+filter.nof_recent_weeks	"number of weeks to show in week filter"	integer	10
 #client.call_browser:
+
+client.watcher:
+#agentactivity.foreground_check.enabled	"Check which application is used at agent PC."	integer	"1"
+#agentactivity.idle_check.enabled	"Checking idle time at agent PC."	integer	"1"
+#agentactivity.idle_check.min_time.sec	"When no input time is over, it will report as idle."	integer	"300"
+#agentactivity.ie_history_check.enabled	"Check ie history."	integer	"1"
+#agentactivity.ie_history_check.timer.sec	"Time period to check IE history."	integer	"300"
+#agentactivity.localstorage.filename	"agent activity file local storage file name"	string	"%TEMP%\aa"
+#agentactivity.senddata.timer.sec	"Update agent activity data period."	integer	"300"
+#agentactivity.upload_fail_recoveryN	"When upload agentactivity file is failed, watcher does not upload again over this trial count."	integer	"24"
+#agentactivity.url	"agent activity upload URL"	string	"http://192.168.1.15:3001/users/update_agent_activity"
+computer_info	"target type to check computer info."	string[]	"cti,advw,java,os,mediaplayer,ie"
+computer_info.advw	"audio viewer application file path"	string	"C:\Program Files\AmiVoice\Audio Viewer\AmiAdvw.dll"
+computer_info.cti	"cti application file path."	string	"C:\Program Files\EventCapture\CTI_TOOLBAR.exe"
+#computer_info.moss	"MOSS version"	string	""
+target.enable_watching_ie_control	"enable to ie control watching. This is beta function.  It should be 0."	integer	"0"
+target.finding.executable_filename	"executable file name to watch"	string	"CTI_TO"	
+target.finding.window_class.name	"window class name in the executable file to watch"	string	"#32770"
+target.finding.window_class.position	"window class position in the executable file to watch. It is not good way to specify target. It should be 0."	integer	"0"
+target.finding.window_title.anti_pattern	"list of window title name patter which does not match."	string[]	""
+target.finding.window_title.anti_pattern_delim	"delimiter of target.finding.window_title.anti_pattern"	string	","
+target.window_title.number_of_characters	"character length of window title to compare"	integer	"100"
+target.window_title.pattern	"target window title pattern"	string	"SoftPhone :: ACD={\a+} : Ext={\a+} : Ag ID={\a+}"
+target.window_title.result_index.agentid	"agent id index"	integer	"2"
+target.window_title.result_index.extension	"extension index"	integer	"1"
+target.window_title.result_index.extension2	"extension2 index"	integer	"0"
+target.window_title.start_index	"start index of window title to compare"	integer	"0"
+update_computer.url	"WEB API url to update computer information."	string	"http://192.168.1.15:3001/computer_log/update"
+update_extension.url	"WEB API url to update agent and extension map information."	string	"http://192.168.1.15:3001/users/update_extension"
+watcher.log4cxx_properties.url	"log configuration file url"	string	"http://192.168.1.15:3001/watcher/watcher.properties"
+watcher.startup_delay.sec	"start up delay after program is started.  This is assumed to used for startup."	integer	"0"
+watcher.timer.msec	"interval time to check target application status."	integer	"1000"

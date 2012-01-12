@@ -9,7 +9,7 @@
 		return {
 			name: $("input[name=name-filter]").val(),
 			leader: $("input[name=leader-filter]").val(),
-			cate: getCategories()
+			category: getCategories()
 		}
 	}	
     function getCategories(){
@@ -88,48 +88,48 @@
 	    </table>		
 	</div>
 	<div id="div-FilterBox-group" class="filter-block">
-		<fieldset>
-		  <table cellpadding="0" cellspacing="0" border="0" width="100%">
-		  	<tr>
-		  		<td align="left">
-				  <label>Name: </label><input type="text" name="name-filter" value="<%= params[:name] %>"/>
-				  <label>Leader name: </label><input type="text" name="leader-filter" value="<%= params[:leader] %>"/>
-				  <label>Category: </label>
-				  <select id="group-filter-selected" onchange="add_filter()">
-				    <option value=""></option>
-				    <% @type.each do |t|%>
-				    <option value="<%= t.name %>"> <%= t.name %> </option>
-				    <% end %>
-				  </select>				  
-  				</td>
-				<td align="right">
-					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
-					<%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
-				</td>
-			</tr>
-			<tr>
-				<td colspan="2">
-				  <table id="added_filter" cellpadding="0" cellspacing="1" style="margin-top:3px;">
-				    <% @type.each_with_index do |t,idx| %>
-				    <tr class="<%= t.name %>" <%= "style=\"display:none\"" if not @added_fltr[t.name.downcase.to_sym] %>>
-				      <td align="right">
-				        <label><%= t.name %> : </label>
-				      </td>
-				      <td align="left" style="padding-left: 4px;">
-				        <select class="cate-list" id="<%= t.name %>">
-				          <option value=""></option>
-				          <%@filters[idx].each do |filter|%>
-				            <option value="<%= filter.value %>" <%= @select_fltr[t.name.downcase.to_sym] == filter.value ? "selected" : ""  %>><%= filter.value %> </option>
-				          <%end%>
-				        </select>
-				      </td>
-				    </tr>
-				    <%end%>
-				  </table>					
-				</td>
-			</tr>
-		  </table>
-		</fieldset>			
+          <fieldset>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td align="left">
+                  <label>Name: </label><input type="text" name="name-filter" value="<%= params[:name] %>"/>
+                  <label>Leader name: </label><input type="text" name="leader-filter" value="<%= params[:leader] %>"/>
+                  <label>Category: </label>
+                  <select id="group-filter-selected" onchange="add_filter()">
+                    <option value=""></option>
+                    <% @type.each do |t|%>
+                    <option value="<%= t.name %>"> <%= t.name %> </option>
+                    <% end %>
+                  </select>
+                </td>
+                <td align="right">
+                  <%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>
+                  <%= link_image_tag('Clear','reset.png',"#",{:onclick => "filterClear()"}) %>&nbsp;
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <table id="added_filter" cellpadding="0" cellspacing="1" style="margin-top:3px;">
+                    <% @type.each_with_index do |t,idx| %>
+                    <tr class="<%= t.name %>" style="display:<%= 'none' if not @added_fltr[t.name.downcase.to_sym] %>">
+                      <td align="right">
+                        <label><%= t.name %> : <%=@added_fltr[t.name.downcase.to_sym]%></label>
+                      </td>
+                      <td align="left" style="padding-left: 4px;">
+                        <select class="cate-list" id="<%= t.name %>">
+                          <option value=""></option>
+                          <%@filters[idx].each do |filter|%>
+                            <option value="<%= filter.value %>" <%= @select_fltr[t.name.downcase.to_sym] == filter.value ? "selected" : ""  %>><%= filter.value %> </option>
+                          <%end%>
+                        </select>
+                      </td>
+                    </tr>
+                    <%end%>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
 	</div>	
 </div>
 <%
@@ -163,7 +163,7 @@
       <td class="no"><%=row_no(i,@page,$PER_PAGE) %></td>
       <td class="string" width="160px"><%= blk(group.name) %></td>
       <td class="string"><%= group.leader.nil? ? "-" : blk(group.leader.display_name) %></td>
-	  <td class="string"><%= group.leader.nil? ? "-" : blk(group.leader.role.name) %></td>
+	  <td class="string"><%= group.leader.nil? ? "-" : (group.leader.role.nil? ? "" : blk(group.leader.role.name))  %></td>
 	  <td class="int" width="130px"><%=group.agent_count %>&nbsp;</td>
 	  <% @group_category_type_names.each do |category_type_name| %>
 	  <% gt_name = ( ((categories[category_type_name]).nil?) ? nil : categories[category_type_name]) %>

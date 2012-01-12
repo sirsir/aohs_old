@@ -1,0 +1,8 @@
+<div>
+  <div id="defaultTabsStyle1" style="margin-top:3px;">
+    <ul>
+      <li class="<%= ((params[:action] == 'index') ? "defaultliselected" : "")%>"><a href="<%=url_for(:controller => 'extension', :action => 'index')%>">Extension List</a></li>
+      <li class="<%= ((params[:action] == 'watcher_result') ? "defaultliselected" : "")%>"><a href="<%=url_for(:controller => 'extension', :action => 'watcher_result')%>">Watcher Report</a></li>
+    </ul>
+  </div>
+</div>

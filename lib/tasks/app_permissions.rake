@@ -77,7 +77,7 @@ def create_privilege
 
   # portal
   privileges_group1 = [
-    {:name => 'calls_browser',  :desc => 'Calls Browser'},      
+    {:name => 'calls_browser',  :desc => 'Calls Browser',:open => Aohs::MOD_CALL_BROWSER },      
     {:name => 'report-today',   :desc => 'Show report today (Home)'},
     {:name => 'voice_logs',     :desc => 'Access agents calls'},
     {:name => 'customers',      :desc => 'Access customers calls'},
@@ -86,14 +86,14 @@ def create_privilege
     {:name => 'favorites-upd',  :desc => 'Manage call tags'},
     {:name => 'voice_logs-exp', :desc => 'Export/Print calls report'},
     {:name => 'bookmarks-upd',  :desc => 'Manage call bookmarks'},
-    {:name => 'callskeyw-upd',  :desc => 'Manage call keywords'},
+    {:name => 'callskeyw-upd',  :desc => 'Manage call keywords', :open => Aohs::MOD_KEYWORDS},
     {:name => 'voice_logs-download', :desc => 'Export voice file'},
     {:name => 'statistics',     :desc => 'View agents report'},
     {:name => 'statistics-exp', :desc => 'Export/Print agents calls\'s report'},
-    {:name => 'keywords',       :desc => 'View keywords report'},
-    {:name => 'keywords-upd',   :desc => 'Manage keywords and keyword group'},
-    {:name => 'keywords-exp',   :desc => 'Export/Print keywords report'},
-    {:name => 'data-keywords',  :desc => 'Import/Export keywords data'},
+    {:name => 'keywords',       :desc => 'View keywords report', :open => Aohs::MOD_KEYWORDS },
+    {:name => 'keywords-upd',   :desc => 'Manage keywords and keyword group', :open => Aohs::MOD_KEYWORDS },
+    {:name => 'keywords-exp',   :desc => 'Export/Print keywords report', :open => Aohs::MOD_KEYWORDS },
+    {:name => 'data-keywords',  :desc => 'Import/Export keywords data', :open => Aohs::MOD_KEYWORDS },
     {:name => 'tree_filter',    :desc => 'Enable Groups/Agents filter'},
     {:name => 'tree_mycall',    :desc => 'Enable searching my call'}
  ]
@@ -108,8 +108,8 @@ def create_privilege
     {:name => 'data-users',     :desc => 'Import/Export users data'},
     {:name => 'groups',         :desc => 'View groups list'},
     {:name => 'groups-upd',     :desc => 'Manage groups'},
-    {:name => 'group_categories',     :desc => 'View group categories and catogory types list'},
-    {:name => 'group_categories-upd', :desc => 'Manage group categories'},
+    {:name => 'group_categories',         :desc => 'View group categories and catogory types list'},
+    {:name => 'group_categories-upd',     :desc => 'Manage group categories'},
     {:name => 'group_category_types-upd', :desc => 'Manage category type of groups'},
     {:name => 'call_tags',      :desc => 'View call tags'},
     {:name => 'call_tags-upd',  :desc => 'Manage call tags'},
@@ -118,10 +118,10 @@ def create_privilege
     {:name => 'dnis_agents',    :desc => 'Manage DnisAgent'},
     {:name => 'customer',       :desc => 'Manage customers'},
     {:name => 'log',            :desc => 'View logs'},
-	{:name => 'computer_log',   :desc => 'Computer Log'},
-    {:name => 'event',          :desc => 'View event'},
+	  {:name => 'computer_log',   :desc => 'Computer Log'},
+    {:name => 'event',          :desc => 'View event' , :open => false },
     {:name => 'configurations', :desc => 'View configurations system'},
-	{:name => 'configurations-upd',    :desc => 'Manage configurations system'},
+	  {:name => 'configurations-upd',        :desc => 'Manage configurations system'},
     {:name => 'permission',     :desc => 'Manage privileges and permission'},
     {:name => 'role-upd',       :desc => 'Manage roles'}
   ]
@@ -134,10 +134,16 @@ def create_privilege
   [privileges_group1,privileges_group2].each_with_index do |p,i|
     p.each do |x|
       if Privilege.find(:first,:conditions => {:name => x[:name]}).nil?
-        Privilege.new(:name => x[:name],:description => x[:desc],:order_no => order_no,:display_group => privileges_group_names[i], :application => application_name).save
+        if(x[:open] != false)
+          Privilege.new(:name => x[:name],:description => x[:desc],:order_no => order_no,:display_group => privileges_group_names[i], :application => application_name).save
+        end
       else
         upd = Privilege.find(:first,:conditions => {:name => x[:name]})
-        upd = Privilege.update(upd.id,{:name => x[:name],:description => x[:desc],:order_no => order_no,:display_group => privileges_group_names[i], :application => application_name})
+        if(x[:open] == false)
+          upd.destroy
+        else
+          upd = Privilege.update(upd.id,{:name => x[:name],:description => x[:desc],:order_no => order_no,:display_group => privileges_group_names[i], :application => application_name})        
+        end
       end
       order_no += 1
     end
@@ -162,6 +168,7 @@ def create_role
   ]
 
   roles.each do |x|
+     next if Role.exists?(:name => x[:name])
      Role.new(:name => x[:name], :description => x[:desc]).save!
   end
 
@@ -170,29 +177,5 @@ def create_role
 end
 
 def create_admin_user
-
-    # admin user
-
-    STDERR.puts "--> Creating admin user ..."
-
-    role_id = Role.find(:first,:conditions => {:name => 'Administrator'}).id
-
-    unless Manager.exists?(:login => 'AohsAdmin')
-      admin = Manager.new(
-        :login => 'AohsAdmin',
-        :password => 'AohsAdmin',
-        :password_confirmation => 'AohsAdmin',
-        :display_name => 'AohsWeb Admin',
-        :group_id => 0,
-        :sex => 'u',
-        :role_id => role_id
-      )
-      admin.save
-      admin.activate!
-      STDERR.puts "--> Creating admin user successfully [#{admin.login}/Administrator]"
-      
-    else
-      STDERR.puts "--> Creating admin user already exist"
-    end
-  
+    AmiUser.create_admin_account
 end

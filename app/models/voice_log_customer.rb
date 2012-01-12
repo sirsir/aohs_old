@@ -8,9 +8,9 @@
 #  customer_id  :integer(10)
 #
 
-class VoiceLogCustomer < ActiveRecord::Base
+class VoiceLogCustomer < ActiveRecord::Base 
 
   belongs_to :voice_log
-  belongs_to :customer, :class_name => "Customers"
+  belongs_to :customer
   
 end

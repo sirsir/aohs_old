@@ -6,7 +6,7 @@ class LogController < ApplicationController
 
    def index
 
-      @application_list = Logs.find(:all,:select => 'application',:group => 'application')
+      @application_list = Logs.select('application').group('application').all
       unless @application_list.empty?
         @application_list = (@application_list.map { |a| a.application }).compact
         unless @application_list.empty?
@@ -39,8 +39,8 @@ class LogController < ApplicationController
 
       order = "#{sort_key} #{check_order_name(params[:sort],"desc")}" 
      
-      @status = Logs.find(:all,:select => 'status', :group => 'status')
-      @actions = Logs.find(:all,:select=>'name',:group =>'name')
+      @status = Logs.select('status').group('status')
+      @actions = Logs.select('name').group('name')
       
       conditions = []
       starting = ""
@@ -91,7 +91,6 @@ class LogController < ApplicationController
        case params[:app]
        when /^aohs/: app_name = "AOHS"
        when /^moss/: app_name = "MOSS"
-       when /^callexport/: app_name = "CallExport"
        end
        conditions << "application = '#{app_name}'" unless app_name.nil?
      else
@@ -99,13 +98,9 @@ class LogController < ApplicationController
      end
          
       @page = ((params[:page].to_i <= 0) ? 1 : params[:page].to_i)
-       
-      @logs = Logs.paginate(
-                :page => params[:page],
-                :per_page => $PER_PAGE,
-                :order => order,
-                :conditions => conditions.join(" and "))
-     
+      
+      @logs = Logs.order(order).where(conditions.join(" and ")).paginate(:page => params[:page])
+
   end
   
 end

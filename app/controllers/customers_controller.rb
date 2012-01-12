@@ -10,8 +10,8 @@ class CustomersController < ApplicationController
   
   def index
 
-    @cd_color = CALL_DIRECTION_COLORS
-    @numbers_of_display = AmiConfig.get('client.aohs_web.number_of_display_voice_logs').to_i
+    @cd_color = Aohs::CALL_DIRECTION_COLORS
+    @numbers_of_display = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i
     
   end
 
@@ -25,19 +25,44 @@ class CustomersController < ApplicationController
     page = 1
     findby = ""
 
-    customer_id = params[:customer_id].to_i
+    customer_id = params[:cust_id].to_i  
+    
+    custs = []
+    if customer_id > 0
+      customer = Customer.where({:id => customer_id}).first
+      if customer.nil?
+        skip_search = true
+      else
+        custs << customer
+      end
+    elsif customer_id <= -1 and params.has_key?(:cust_name)
+      cust_name = params[:cust_name].strip
+      unless cust_name.empty?
+        customers = Customer.where("customer_name like '%#{cust_name}%'").all
+        if customers.empty?
+          skip_search = true
+        else
+          custs = custs.concat(customers.to_a)
+        end        
+      end
+    else
+      # no set 
+    end
+    
+    @customer_name = (params[:cust_name].blank? ? "UnknownCustomer" : params[:cust_name])
     
     phone_numbers = []
-    @customer_name = (params[:cust_name].blank? ? "UnknownCustomer" : params[:cust_name])
-    if customer_id > 0
-      customer = Customers.find(:first,:conditions => {:id => customer_id})
-      unless customer.blank?
-        @customer_name = customer.customer_name
-        unless customer.customer_numbers.blank?
-          customer.customer_numbers.each { |p| phone_numbers << p.number }
-        end
-      else
-        skip_search = true
+    cust_list = []
+    if not custs.empty?
+      custs_id = custs.map { |c| c.id }
+      custs_numbers = CustomerNumber.select("number").where({ :customer_id => custs_id })
+      unless custs_numbers.empty?
+        phone_numbers = custs_numbers.map { |p| p.number } 
+      end
+      cust_list = custs_id
+      if Aohs::MOD_CUSTOMER_LOOKUP
+        # search by name
+        conditions << "voice_log_customers.customer_id in (#{custs_id.join(",")})"
       end
     end
 
@@ -47,39 +72,78 @@ class CustomersController < ApplicationController
       phone_numbers = phone_numbers.concat(key_phone)
     end
 
-
     phone_numbers = phone_numbers.uniq
     unless phone_numbers.empty?
-      ani_cond = phone_numbers.map { |p| "#{vl_tbl_name}.ani = '#{p}'"}
-      dnis_cond = phone_numbers.map { |p| "#{vl_tbl_name}.dnis = '#{p}'"}
-      conditions << "(#{ani_cond.concat(dnis_cond).join(' or ')})"
+      ## %phone%
+      phone_numbers = phone_numbers.map { |p| "%#{p}%" }
+      pnumbers = phone_numbers.map { |p| "#{vl_tbl_name}.ani like '#{p}'"}
+      pnumbers = pnumbers.concat(phone_numbers.map { |p| "#{vl_tbl_name}.dnis like '#{p}'"})
+      
+      # add search key for voice_log_customers
+      pnumbers << "#{VoiceLogCustomer.table_name}.customer_id in (#{customer_id})" if customer_id > 0
+      
+      conditions << "(#{pnumbers.join(' or ')})"
     else
       skip_search = true
     end
 
-    conditions << retrive_datetime_condition(params[:dateCondition],params[:start_date],params[:start_time],params[:end_date],params[:end_time])
+    if params.has_key?(:no_phone) and not params[:no_phone].empty?
+      key_phone = (CGI::unescape(params[:no_phone])).split(',').compact.uniq
+      key_phone = key_phone.concat(key_phone.map { |p| "9#{p}" })
+      unless key_phone.empty?
+        key_phone = (key_phone.map { |p| "'#{p}'"}).join(",")
+        conditions << "(#{vl_tbl_name}.ani not in (#{key_phone}) and #{vl_tbl_name}.dnis not in (#{key_phone})) "
+      end
+    end
+    
+    # car no
+    if Aohs::MOD_CUST_CAR_ID
+      if params.has_key?(:car_no) and not params[:car_no].empty?
+          cn_tbl = VoiceLogCar.table_name
+          car_keys = params[:car_no].to_s.strip.split(",").uniq
+          car_keys = (car_keys.map { |c| "car_no like '%#{c.strip}%'" })
+          cns = CarNumber.where(car_keys.join(" or ")).group("car_no").all
+          STDOUT.puts cns.length
+          unless cns.empty?
+            #conditions << "(#{cn_tbl}.car_number_id in (#{ (cns.map { |c| c.id }).join(',') }) or #{cn_tbl}.car_number_id is null)"
+            conditions << "(#{cn_tbl}.car_number_id in (#{ (cns.map { |c| c.id }).join(',') }))"
+            skip_search = false
+          else
+            skip_search = true
+            conditions << "#{cn_tbl}.car_number_id = 0"
+          end
+      end
+    end
+  
+    if conditions.empty?
+      skip_search = true
+    else
+      skip_search = false
+    end
 
+    conditions << retrive_datetime_condition(params[:dateCondition],params[:start_date],params[:start_time],params[:end_date],params[:end_time])
+    
     # call direction
     call_directions = []
     if params.has_key?(:calld) and not params[:calld].empty?
       cd_ary = CGI::unescape(params[:calld]).split('')
       cd_ary.to_s.each_char do |c|
-        call_directions << "'#{c}'"
-        if c == 'e'
-          call_directions << "'u'"
-        end
+        call_directions << c
+        call_directions.concat(['u','e']) if c == 'e'     
       end
+      call_directions = [] if call_directions.uniq.sort == ['i','o','u','e'].sort 
+      call_directions = call_directions.uniq.map { |c| "'#{c}'"}
     else
-      call_directions = ["'i'","'o'","'e'","'u'"]
+      skip_search = true
     end
-
-    case call_directions.length
-    when 0
-      # do nothing
-    when 1
-      conditions << "#{vl_tbl_name}.call_direction = '#{call_directions.first.gsub('\'','')}'"
-    else
-      conditions << "#{vl_tbl_name}.call_direction in (#{call_directions.join(',')})"
+    
+    unless call_directions.empty?
+      case call_directions.length
+      when 1
+        conditions << "#{vl_tbl_name}.call_direction = '#{call_directions.first.gsub('\'','')}'"
+      else
+        conditions << "#{vl_tbl_name}.call_direction in (#{call_directions.join(',')})"
+      end    
     end
 
     # call duration
@@ -89,7 +153,7 @@ class CustomersController < ApplicationController
 
     $PER_PAGE_CUST = params[:perpage].to_i 
     if $PER_PAGE_CUST <= 0
-      $PER_PAGE_CUST = AmiConfig.get('client.aohs_web.number_of_display_voice_logs').to_i  
+      $PER_PAGE_CUST =$CF.get('client.aohs_web.number_of_display_voice_logs').to_i  
     end
 
     page = params[:page].to_i if params.has_key?(:page) and not params[:page].empty? and params[:page].to_i > 0
@@ -112,7 +176,7 @@ class CustomersController < ApplicationController
     else
       offset = false
       limit = false
-      max_show = AmiConfig.get("client.aohs_web.number_of_max_calls_export").to_i
+      max_show = $CF.get("client.aohs_web.number_of_max_calls_export").to_i
       if max_show > 0
         offset = 0
         limit = max_show
@@ -145,7 +209,7 @@ class CustomersController < ApplicationController
 
   def customer_voice_log
     
-    find_voice_cust({:show_all => false, :timeline_enabled => false, :tag_enabled => true })
+    find_voice_cust({:show_all => false, :timeline_enabled => false, :tag_enabled => true,:summary => true })
     
     render :json => @voice_logs_ds
     
@@ -155,38 +219,67 @@ class CustomersController < ApplicationController
 
     show_all = ( (params[:type] =~ /true/) ? true : false )
 
-    find_voice_cust({:show_all => show_all, :timeline_enabled => false, :tag_enabled => false })
+    find_voice_cust({:show_all => show_all, :show_sub_call => true, :timeline_enabled => false, :tag_enabled => false })
 
      @display_columns = ["No","Date/Time","Duration","Caller Number","Dailed Number","Ext","Agent","Direction","NG word","Must word","Bookmark"]
 
     @report = {}
     @report[:title_of] = Aohs::REPORT_HEADER_TITLE
-    @report[:title] = "Customer's call List Report"
-
-    @report[:cols] = {
-        :cols => [
-          ['No','no',3,1,1],
-          ['Date/Time','date',10,1,1],
-          ['Duration','int',7,1,1],
-          ['Caller Number','',8,1,1],
-          ['Dailed Number','',8,1,1],
-          ['Ext','',4,1,1],
-          ['Agent','',12,1,1], 
-          ['Direction','sym',4,1,1], 
-          ['NG','int',5,1,1],   
-          ['Must','int',5,1,1],
-          ['Bookmark','int',5,1,1]  
-        ]
-    }
+    @report[:title] = "Customer's Call List Report"
     
-    @report[:data] = []
-    @voice_logs_ds[:data].each_with_index do |vc,i|
-      unless vc[:no].blank?
-        vc[:no] = (i+1)
-        @report[:data] << [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent],vc[:cd],vc[:ngc],vc[:mustc],vc[:bookc]]
-      end
-    end
+     @report[:cols] = {}
+     @report[:cols][:cols] = []
+     @report[:cols][:cols] << ['No','no',3,1,1]
+     @report[:cols][:cols] << ['Date/Time','date',10,1,1]
+     @report[:cols][:cols] << ['Duration','int',6,1,1]
+     @report[:cols][:cols] << ['Caller Number','',8,1,1]
+     @report[:cols][:cols] << ['Dailed Number','',8,1,1]
+     @report[:cols][:cols] << ['Ext','',4,1,1]
+     @report[:cols][:cols] << ['Agent','',12,1,1]
+     if Aohs::MOD_CUSTOMER_INFO
+      @report[:cols][:cols] << ['Customer','',10,1,1]
+      @report[:cols][:cols] << ['Car No','',9,1,1] if Aohs::MOD_CUST_CAR_ID
+     end
+     @report[:cols][:cols] << ['Direction','sym',5,1,1]
+     if Aohs::MOD_KEYWORDS
+      @report[:cols][:cols] << ['NG','int',5,1,1]
+      @report[:cols][:cols] << ['Must','int',5,1,1] 
+     end
+     @report[:cols][:cols] << ['Bookmark','int',5,1,1] 
+     
+     @report[:data] = []
+     @voice_logs_ds[:data].each_with_index do |vc,i|
+       unless vc[:no].blank?
+         if vc[:trfc] == true
+           vc[:no] = "+ #{vc[:no]}"
+         else
+           if vc[:child] == true
+            vc[:no] = ""  
+           else
+            vc[:no] = "   #{vc[:no]}" 
+           end
+         end
+         p = [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent]]
+         if Aohs::MOD_CUSTOMER_INFO
+          p << vc[:cust]
+          p << vc[:car_no]
+         end
+         p << vc[:cd]
+         if Aohs::MOD_KEYWORDS  
+           p << vc[:ngc]
+           p << vc[:mustc]
+         end
+         p << vc[:bookc]
+         @report[:data] << p
+       end
+     end
 
+     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}"
+     if Aohs::MOD_KEYWORDS  
+       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}"
+       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}"
+     end
+     
      @voice_logs_ds = nil
      @report[:fname] = "CustomerCallList" 
      csvr = CsvReport.new
@@ -202,38 +295,67 @@ class CustomersController < ApplicationController
 
     show_all = ( (params[:type] =~ /true/) ? true : false )
 
-    find_voice_cust({:show_all => show_all, :timeline_enabled => false, :tag_enabled => false })
+    find_voice_cust({:show_all => show_all, :show_sub_call => true, :timeline_enabled => false, :tag_enabled => false,:summary => true })
 
      @display_columns = ["No","Date/Time","Duration","Caller Number","Dailed Number","Ext","Agent","Direction","NG word","Must word","Bookmark"]
 
     @report = {}
     @report[:title_of] = Aohs::REPORT_HEADER_TITLE
-    @report[:title] = "Customer's call List Report"
+    @report[:title] = "Customer's Call List Report"
 
-    @report[:cols] = {
-        :cols => [
-          ['No','no',3,1,1],
-          ['Date/Time','date',10,1,1],
-          ['Duration','int',7,1,1],
-          ['Caller Number','',8,1,1],
-          ['Dailed Number','',8,1,1],
-          ['Ext','',4,1,1],
-          ['Agent','',12,1,1], 
-          ['Direction','sym',4,1,1], 
-          ['NG','int',5,1,1],   
-          ['Must','int',5,1,1],
-          ['Bookmark','int',5,1,1]  
-        ]
-    }
-    
-    @report[:data] = []
-    @voice_logs_ds[:data].each_with_index do |vc,i|
-      unless vc[:no].blank?
-        vc[:no] = (i+1)
-        @report[:data] << [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent],vc[:cd],vc[:ngc],vc[:mustc],vc[:bookc]]
-      end
-    end
+     @report[:cols] = {}
+     @report[:cols][:cols] = []
+     @report[:cols][:cols] << ['No','no',3,1,1]
+     @report[:cols][:cols] << ['Date/Time','date',10,1,1]
+     @report[:cols][:cols] << ['Duration','int',7,1,1]
+     @report[:cols][:cols] << ['Caller Number','',8,1,1]
+     @report[:cols][:cols] << ['Dailed Number','',8,1,1]
+     @report[:cols][:cols] << ['Ext','',4,1,1]
+     @report[:cols][:cols] << ['Agent','',12,1,1]
+     if Aohs::MOD_CUSTOMER_INFO
+      @report[:cols][:cols] << ['Customer','',10,1,1]
+      @report[:cols][:cols] << ['Car No','',9,1,1] if Aohs::MOD_CUST_CAR_ID
+     end
+     @report[:cols][:cols] << ['Direction','sym',5,1,1]
+     if Aohs::MOD_KEYWORDS
+      @report[:cols][:cols] << ['NG','int',5,1,1]
+      @report[:cols][:cols] << ['Must','int',5,1,1] 
+     end
+     @report[:cols][:cols] << ['Bookmark','int',5,1,1] 
+     
+     @report[:data] = []
+     @voice_logs_ds[:data].each_with_index do |vc,i|
+       unless vc[:no].blank?
+         if vc[:trfc] == true
+           vc[:no] = "+ #{vc[:no]}"
+         else
+           if vc[:child] == true
+            vc[:no] = ""  
+           else
+            vc[:no] = "   #{vc[:no]}" 
+           end
+         end
+         p = [vc[:no],vc[:sdate],vc[:duration],vc[:ani],vc[:dnis],vc[:ext],vc[:agent]]
+         if Aohs::MOD_CUSTOMER_INFO
+          p << vc[:cust]
+          p << report_car_breakline(vc[:car_no])
+         end
+         p << vc[:cd]
+         if Aohs::MOD_KEYWORDS  
+           p << vc[:ngc]
+           p << vc[:mustc]
+         end
+         p << vc[:bookc]
+         @report[:data] << p
+       end
+     end
 
+     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}"
+     if Aohs::MOD_KEYWORDS  
+       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}"
+       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}"
+     end
+     
     @voice_logs_ds = nil
     @report[:fname] = "CustomerCallList" 
     pdfr = PdfReport.new

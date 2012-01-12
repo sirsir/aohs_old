@@ -27,14 +27,11 @@ module AmiTimeline
 
     begin
    
-     svr_root = AmiConfig.get('client.aohs_web.serverRootUrl').to_s
-
-     #AmiLog.linfo("[javafx-library-builder] - var aohs_web.serverRootUrl=#{svr_root}")
-     #AmiLog.linfo("[javafx-library-builder] - var rails_root=#{RAILS_ROOT}")
+     svr_root =  Aohs::SITE_ROOT ##AmiConfig.get('client.aohs_web.serverRootUrl').to_s ||
+	 
+	 STDOUT.puts "=> Site Root is " + svr_root.to_s
+	 
      rpublic_path = Rails.public_path
-     #AmiLog.linfo("[javafx-library-builder] - var public_path=#{rpublic_path}")
-
-     #AmiLog.linfo("[javafx-library-builder] - writing resource to #{svr_root} ...")
 
      jfx_src = [
           {:src => 'javafx/dtfx-template.js', :dest => 'javafx/dtfx.js'},
@@ -43,11 +40,11 @@ module AmiTimeline
           {:src => 'javafx/amiTimeLine/amiTimeLine-template.jnlp', :dest => 'javafx/amiTimeLine/amiTimeLine.jnlp'}
      ]
      
-     STDOUT.puts "=> :: Updating source file"
+     #STDOUT.puts "=> :: Updating source file"
        
      jfx_src.each do |s|
 
-        STDOUT.puts "=> :: #{s[:src]} --> #{s[:dest]}"
+        #STDOUT.puts "=> :: #{s[:src]} --> #{s[:dest]}"
 
         if File.exist?(File.join(rpublic_path,s[:src]))
           a = File.open(File.join(rpublic_path,s[:src])).read

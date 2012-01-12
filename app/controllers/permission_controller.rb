@@ -5,16 +5,10 @@ class PermissionController < ApplicationController
    before_filter :login_required,:permission_require
 
    def index
-		
-	  begin
-	    @role_id = Role.find(:all,:order => 'order_no').map{ |x| x.id }
-		@role_names = Role.find(:all,:order => 'order_no').map{ |x| x.name }
-	  rescue => e
-		@role_id = Role.find(:all,:order => 'name').map{ |x| x.id }
-		@role_names = Role.find(:all,:order => 'name').map{ |x| x.name }
-	  end
-      
-      @privileges = Privilege.find(:all,:order => 'application asc,order_no asc').each do |privilege|
+
+      @role_id = Role.order('order_no asc').map{ |x| x.id }
+      @role_names = Role.order('order_no asc').map{ |x| x.name }
+      @privileges = Privilege.order('application asc,order_no asc').each do |privilege|
          privilege.roles.to_ary.each do |role|
             if @role_names.include?(role.name)
                privilege[role.name] = true
@@ -24,14 +18,34 @@ class PermissionController < ApplicationController
          end
       end
       
-      @application_list = (Privilege.find(:all,:select => 'application',:group => 'application').map { |g| g.application }).compact
+      @application_list = (Privilege.select('application').group('application').map { |g| g.application }).compact
       unless @application_list.empty?
         if @application_list.length <= 1
           @application_list = []
         end
       end
    end
-
+  
+   def manage_role
+      
+      if params.has_key?(:role_list) and not params[:role_list].empty?
+        
+        role_list = params[:role_list].split(",")
+        
+        role_list.each do |order_name|
+          order, name = order_name.split("=")
+          r = Role.where(:name => name.strip).first
+          unless r.nil?
+            r.update_attributes(:order_no => order.strip.to_i)
+          end
+        end
+        
+      end
+      
+      @roles = Role.order('order_no asc').all
+      
+   end
+   
   def addpermission
     
 #    if params[:add_new_role] != ""
@@ -51,7 +65,7 @@ class PermissionController < ApplicationController
 
     params[:x].each do|key,value|
       @countRound = 1
-      @role_id = Role.find(:first,:conditions=>{:name=>key}).id
+      @role_id = Role.where({:name => key}).first.id
       value.each do|key,v2|
         @privilege_id = v2
         Permission.create(:role_id=>@role_id,:privilege_id=>@privilege_id )

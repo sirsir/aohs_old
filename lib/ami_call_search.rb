@@ -1,24 +1,20 @@
 
 module AmiCallSearch
-
-  def set_current_user_for_call_search(user_id)
+ 
+  def set_current_user_for_call_search(user_id=nil)
 
     @app_user = nil
     
-    if not user_id.nil? and user_id.to_i > 0
-      @app_user = User.find(user_id)
+    if not user_id.nil? and user_id.to_i > 0 
+      @app_user = User.where({:id => user_id }).first
     else
-      @app_user = User.find(current_user.id)
+      @app_user = User.where({:id => current_user.id}).first
     end
 
+    @app_user = nil if @app_user.nil?
+    
   end
  
-  def voice_log_cols
-
-     return ["#","Date/Time","Duration","Caller Number","Dialed Number","Extention","Agent","Customer","Direction","NG Word","Must Word","Bookmark"]
-
-  end
-
   def retrive_sort_columns(sort_by,order_by="desc")
 
     orders = []
@@ -81,7 +77,15 @@ module AmiCallSearch
       when 7 #this year
         dt_cond = "#{vl_tbl_name}.start_time between '#{now.beginning_of_year} 00:00:00' and '#{now.end_of_year} 23:59:59'"
       when 8 #all => Search all
-        dt_cond = nil
+        dt_cond = "#{vl_tbl_name}.start_time >= '#{now - Aohs::LIMIT_SEARCH_DAYS} 00:00:00'"
+	  when 9 # one month ago
+		month_later = now - 30 
+		dt_cond = "#{vl_tbl_name}.start_time between '#{month_later} 23:59:59' and '#{now} 00:00:00'"
+	  when 10 # six month ago
+		six_month_later = now - (6 * 30)
+		dt_cond = "#{vl_tbl_name}.start_time between '#{six_month_later} 23:59:59' and '#{now} 00:00:00'"
+	  when 11 # one week ago
+		dt_cond = "#{vl_tbl_name}.start_time between '#{now - 7} 00:00:00' and '#{now} 23:59:59'"
       when 0 #custom ...
          stdate = nil
          sttime = nil
@@ -97,7 +101,7 @@ module AmiCallSearch
            eddate = Date.parse(ed_date).strftime("%Y-%m-%d")
          end
          if not ed_time.blank? and ed_time.to_s =~ /(\d\d):(\d\d)/
-           edtime = Time.parse(ed_time).strftime("%H:%M:59")
+           edtime = Time.parse(ed_time).strftime("%H:%M:%S")
          end
          
          if not stdate.blank? and not sttime.blank? and not eddate.blank? and not edtime.blank?
@@ -166,23 +170,21 @@ module AmiCallSearch
 
     if permission_by_name('tree_filter')
       
-      grps_tmp1 = Group.find(:all,
-                           :select => 'id',
-                           :conditions => "leader_id = #{@app_user.id}")
-
-      grps_tmp2 = GroupMember.find(:all,
-                                 :select => 'group_id',
-                                 :conditions => {:user_id => @app_user.id})
+      grps_tmp1 = Group.select('id').where("leader_id = #{@app_user.id}") 
+      grps_tmp2 = GroupMember.select('group_id').where({ :user_id => @app_user.id })
+      
       grps_tmp = []
       grps_tmp = grps_tmp.concat(grps_tmp1.map { |x| x.id }) unless grps_tmp1.empty?
       grps_tmp = grps_tmp.concat(grps_tmp2.map { |x| x.group_id }) unless grps_tmp2.empty?
 
       unless grps_tmp.empty?
-        agents = Agent.find(:all,
-                          :select => 'id',
-                          :conditions => "group_id in (#{grps_tmp.join(",")})")
+        agents = Agent.select('id').where("group_id in (#{grps_tmp.join(",")})")
         unless agents.empty?
           agents = agents.map { |y| y.id }
+        end
+        leaders = Group.select('leader_id').where("id in (#{grps_tmp.join(",")})")
+        unless leaders.empty?
+          agents = agents.concat(leaders.map { |y| y.leader_id })
         end
       end
 
@@ -201,7 +203,7 @@ module AmiCallSearch
 
     managers = []
 
-    mgs = GroupManager.find(:all,:conditions => {:user_id => @app_user.id})
+    mgs = GroupManager.where({ :user_id => @app_user.id })
     managers = mgs.map { |m| m.manager_id }
     
     return managers
@@ -223,6 +225,11 @@ module AmiCallSearch
 
   end
   
+  def get_my_agent_id_list
+    set_current_user_for_call_search
+    return find_owner_agents
+  end
+  
   def find_agent_by_group(groups_id)
 
     agents = []
@@ -230,13 +237,9 @@ module AmiCallSearch
     unless groups_id.empty?
        groups_id = groups_id.map {|g| g.to_i}
        if permission_by_name('tree_filter')
-           grps_tmp1 = Group.find(:all,
-                                 :select => 'id',
-                                 :conditions => "id in (#{groups_id.join(",")}) and leader_id = #{@app_user.id}")
+           grps_tmp1 = Group.select('id').where("id in (#{groups_id.join(",")}) and leader_id = #{@app_user.id}")
            
-           grps_tmp2 = GroupMember.find(:all,
-                                        :select => 'group_id',
-                                        :conditions => {:user_id => @app_user.id})
+           grps_tmp2 = GroupMember.select('group_id').where({:user_id => @app_user.id})
            
            grps_tmp = []
            grps_tmp = grps_tmp.concat(grps_tmp1.map { |x| x.id.to_i }) unless grps_tmp1.empty?
@@ -244,35 +247,38 @@ module AmiCallSearch
 
            fgroups = groups_id & grps_tmp
 
-           unless fgroups.empty?
-
-             agents = Agent.find(:all,
-                               :select => 'id',
-                               :conditions => "group_id in (#{fgroups.join(",")})")
-             unless agents.empty?
-              agents = agents.map { |y| y.id }
-             end
-           end
+          unless fgroups.empty?
+            agents = Agent.select('id').where("group_id in (#{fgroups.join(",")})")
+            unless agents.empty?
+	      agents = agents.map { |y| y.id }
+            end
+	    leaders = Group.select('leader_id').where(["id in (?)",fgroups])
+	    unless leaders.empty?
+	      agents = agents.concat(leaders.map { |y| y.leader_id })
+	    end             
+          end
        else
-             agents = Agent.find(:all,
-                               :select => 'id',
-                               :conditions => "group_id in (#{groups_id.join(",")})")
+             agents = Agent.select('id').where("group_id in (#{groups_id.join(",")})")
              unless agents.empty?
               agents = agents.map { |y| y.id }
              end
+	    leaders = Group.select('leader_id').where(["id in (?)",groups_id])
+	    unless leaders.empty?
+	      agents = agents.concat(leaders.map { |y| y.leader_id })
+	    end              
        end
     else
-           grps_tmp = Group.find(:all,
-                                 :select => 'id',
-                                 :conditions => "leader_id = #{@app_user.id}")
+           grps_tmp = Group.select('id').where("leader_id = #{@app_user.id}")
            unless grps_tmp.empty?
              grps_tmp = grps_tmp.map { |x| x.id }
-             agents = Agent.find(:all,
-                               :select => 'id',
-                               :conditions => "group_id in (#{grps_tmp.join(",")})")
+             agents = Agent.select('id').where("group_id in (#{grps_tmp.join(",")})")
              unless agents.empty?
               agents = agents.map { |y| y.id }
              end
+	     leaders = Group.select('leader_id as id').where("id in (#{grps_tmp.join(",")})")
+	     unless leaders.empty?
+	      agents = agents.concat(leaders.map { |y| y.id })
+	     end               
            end
     end
 
@@ -288,12 +294,9 @@ module AmiCallSearch
     agents = []
 
     unless cates_tmp.empty?
-      groups_id = GroupCategorization.find(:all,
-                                           :select => 'group_id,count(id) as rec_count',
-                                           :conditions => "group_category_id in (#{cates_tmp.join(",")})",
-                                           :group => 'group_id')
+      groups_id = GroupCategorization.select("group_id,count(id) as rec_count").where("group_category_id in (#{ cates_tmp.join(",") })").group('group_id')
       
-      groups_id_tmp = (groups_id.map { |x| x.rec_count.to_i == cates_tmp.length ? x.group_id.to_i : nil }).compact
+      groups_id_tmp = (groups_id.map { |x| (x.rec_count.to_i == cates_tmp.length) ? x.group_id.to_i : nil }).compact
   
       agents = find_agent_by_group(groups_id_tmp)
     end
@@ -301,16 +304,185 @@ module AmiCallSearch
     return agents
 
   end
+  
+  def voice_logs_transfer_query_builder(includes,joins,sc={})
+    
+    v = VoiceLogTemp.table_name
+    includes = (includes.concat(joins)).uniq
+    
+    sql = ""
+    sql << "SELECT IF((#{v}.ori_call_id = 1 OR #{v}.ori_call_id = '' OR #{v}.ori_call_id is null),#{v}.call_id,#{v}.ori_call_id) AS xcall_id "
+    
+    sql_frm = "#{v}"
+    if includes.include?(:voice_log_counter)
+      sql_frm = "(#{sql_frm} JOIN voice_log_counters ON #{v}.id = voice_log_counters.voice_log_id)"
+    end
+    if includes.include?(:result_keywords)
+      sql_frm = "(#{sql_frm} LEFT JOIN result_keywords ON #{v}.id = result_keywords.voice_log_id)"
+    end
+    if includes.include?(:voice_log_customer)
+      sql_frm = "(#{sql_frm} LEFT JOIN voice_log_customers ON #{v}.id = voice_log_customers.voice_log_id)"
+    end
+    if includes.include?(:voice_log_cars)
+      sql_frm = "(#{sql_frm} LEFT JOIN voice_log_cars ON #{v}.id = voice_log_cars.voice_log_id)"
+    end
+    if includes.include?(:taggings)
+      sql_frm = "(#{sql_frm} LEFT JOIN taggings ON #{v}.id = taggings.taggable_id)"  
+    end
+    
+    sql << " FROM #{sql_frm} "
+    sql << " WHERE #{sc[:conditions].join(' AND ')}" unless sc[:conditions].empty?
+    sql << " GROUP BY xcall_id "
 
+    return sql
+    
+  end
+  
+  def voice_logs_joins_query_builder(includes,joins,sc={})
+		
+	v = VoiceLogTemp.table_name
+	  includes = (includes.concat(joins)).uniq
+	    
+	  sql_frm = "#{v}"
+	  if includes.include?(:voice_log_counter)
+		sql_frm = "(#{sql_frm} JOIN voice_log_counters ON #{v}.id = voice_log_counters.voice_log_id)"
+	  end          
+	  if includes.include?(:result_keywords)
+		sql_frm = "(#{sql_frm} LEFT JOIN result_keywords ON #{v}.id = result_keywords.voice_log_id)"
+	  end
+	  if includes.include?(:voice_log_customer)
+		sql_frm = "(#{sql_frm} LEFT JOIN voice_log_customers ON #{v}.id = voice_log_customers.voice_log_id)"
+	  end
+	  if includes.include?(:voice_log_cars)
+		sql_frm = "(#{sql_frm} LEFT JOIN voice_log_cars ON #{v}.id = voice_log_cars.voice_log_id)"
+	  end 
+	  if includes.include?(:taggings)
+		sql_frm = "(#{sql_frm} LEFT JOIN taggings ON #{v}.id = taggings.taggable_id)"  
+	  end  
+	
+	  return sql_frm
+  end
+  
+  def voice_logs_summary_query_builder(includes,joins,sc={})
+    
+    v = VoiceLogTemp.table_name
+    c = VoiceLogCounter.table_name
+    
+    select_sql = ""
+    sql = ""
+    
+    case Aohs::CURRENT_LOGGER_TYPE
+      when :eone 
+          
+          includes = (includes.concat(joins)).uniq
+          
+          select_sql << " COUNT(v.id) AS call_count,SUM(v.duration) AS duration,SUM(v.ngword_count) AS ng_word, sum(v.mustword_count) as mu_word, "
+          select_sql << " SUM(IF(v.call_direction = 'i',1,0)) AS call_in, "
+          select_sql << " SUM(IF(v.call_direction = 'o',1,0)) AS call_out, "
+          select_sql << " SUM(IF((v.call_direction in ('e','u')),1,0)) AS call_oth " 
+          
+          sql_frm = "#{v}"
+          if includes.include?(:voice_log_counter)
+            sql_frm = "(#{sql_frm} JOIN voice_log_counters on #{v}.id = voice_log_counters.voice_log_id)"
+          end          
+          if includes.include?(:result_keywords)
+            sql_frm = "(#{sql_frm} LEFT JOIN result_keywords on #{v}.id = result_keywords.voice_log_id)"
+          end
+          if includes.include?(:voice_log_customer)
+            sql_frm = "(#{sql_frm} LEFT JOIN voice_log_customers on #{v}.id = voice_log_customers.voice_log_id)"
+          end
+          if includes.include?(:voice_log_cars)
+            sql_frm = "(#{sql_frm} LEFT JOIN voice_log_cars on #{v}.id = voice_log_cars.voice_log_id)"
+          end 
+          if includes.include?(:taggings)
+            sql_frm = "(#{sql_frm} LEFT JOIN taggings ON #{v}.id = taggings.taggable_id)"  
+          end  
+          
+          sql << " SELECT #{v}.id,#{v}.call_direction,#{v}.duration,#{c}.ngword_count,#{c}.mustword_count "
+          sql << " FROM #{sql_frm} "
+          sql << " WHERE #{sc[:conditions].join(' and ')} "
+          sql << " GROUP BY #{v}.id "
+          
+          sql = "SELECT #{select_sql} FROM (#{sql}) v "
+          
+      when :extension
+         sql_where = nil
+        case Aohs::VLOG_SUMMARY_BY
+        when :normal_or_main
+          select_sql << " COUNT(distinct v.id) AS call_count,SUM(v.duration) AS duration,SUM(v.ngword_count) AS ng_word, sum(v.mustword_count) as mu_word, "
+          select_sql << " SUM(IF(v.call_direction = 'i',1,0)) as call_in, "
+          select_sql << " SUM(IF(v.call_direction = 'o',1,0)) as call_out, "
+          select_sql << " SUM(IF((v.call_direction in ('e','u')),1,0)) AS call_oth " 
+          sql << " SELECT #{v}.id,#{v}.call_direction,(#{v}.duration + IFNULL(#{c}.transfer_duration,0)) as duration,(#{c}.ngword_count + IFNULL(#{c}.transfer_ng_count,0)) as ngword_count,(#{c}.mustword_count + IFNULL(#{c}.transfer_must_count,0)) as mustword_count "
+		  if sc[:ctrl][:find_transfer] == true
+			sql_frm = "#{v} JOIN (#{voice_logs_transfer_query_builder(includes,[],sc)}) transfer_log ON #{v}.call_id = transfer_log.xcall_id LEFT JOIN #{c} ON #{v}.id = #{c}.voice_log_id "
+		  else
+		    includes << :voice_log_counter
+			sql_frm = "#{voice_logs_joins_query_builder(includes,joins,sc)}" 
+			sql_where = "#{sc[:conditions].join(' and ')}"
+		  end
+		when :inc_trf
+          select_sql << " COUNT(distinct v.id) AS call_count,SUM(v.duration) AS duration,SUM(v.ngword_count) AS ng_word, sum(v.mustword_count) as mu_word, "
+          select_sql << " SUM(IF(v.call_direction = 'i',1,0) + IFNULL(v.transfer_in_count,0)) AS call_in, "
+          select_sql << " SUM(IF(v.call_direction = 'o',1,0) + IFNULL(v.transfer_out_count,0)) AS call_out, "
+          select_sql << " SUM(IF((v.call_direction in ('e','u')),1,0)) AS call_oth " 
+          sql << " SELECT #{v}.id,#{v}.call_direction,(#{v}.duration + IFNULL(#{c}.transfer_duration,0)) as duration,(#{c}.ngword_count + IFNULL(#{c}.transfer_ng_count,0)) as ngword_count,(#{c}.mustword_count + IFNULL(#{c}.transfer_must_count,0)) as mustword_count, #{c}.transfer_in_count, #{c}.transfer_out_count "
+          sql_frm = "#{v} JOIN (#{voice_logs_transfer_query_builder(includes,[],sc)}) transfer_log ON #{v}.call_id = transfer_log.xcall_id LEFT JOIN #{c} ON #{v}.id = #{c}.voice_log_id "
+
+		  if sc[:ctrl][:find_transfer] == true
+			sql_frm = "#{v} JOIN (#{voice_logs_transfer_query_builder(includes,[],sc)}) transfer_log ON #{v}.call_id = transfer_log.xcall_id LEFT JOIN #{c} ON #{v}.id = #{c}.voice_log_id "
+		  else
+		    includes << :voice_log_counter
+			sql_frm = "#{voice_logs_joins_query_builder(includes,joins,sc)}" 
+			sql_where = "#{sc[:conditions].join(' and ')}"
+		  end  
+		when :search_only
+          # not define
+        end      
+      
+        sql << " FROM #{sql_frm} "
+		sql << " WHERE #{sql_where} " unless sql_where.nil?
+		sql << " GROUP BY #{v}.id "
+        sql = "SELECT #{select_sql} FROM (#{sql}) v"  
+    
+    else
+      # error
+    end
+
+    return sql      
+    
+  end
+  
+  def voice_logs_default_filter
+	
+	conditions = []
+	
+	v = VoiceLogTemp.table_name
+	if Aohs::VFILTER_DURATION_MIN.to_i > 0
+		conditions << "#{v}.duration >= #{Aohs::VFILTER_DURATION_MIN.to_i}"
+	end
+	
+	return conditions
+	
+  end
+  
   def find_agent_calls(sc={})
 
     vl_tbl_name = VoiceLogTemp.table_name
+    vlc_tbl = VoiceLogCounter.table_name
+    
     set_current_user_for_call_search(sc[:ctrl][:user_id])
     
     voice_logs = []
     summary = {}
     page_info = {}
-    
+          
+    # -- voice_logs filter --
+	if Aohs::ENABLE_DEFAULT_VFILTER
+		filter_conds = voice_logs_default_filter
+		sc[:conditions] = sc[:conditions].concat(filter_conds) unless filter_conds.empty?
+	end
+	
     # -- voice_logs data --
 	
     sc[:conditions] = sc[:conditions].compact
@@ -318,52 +490,83 @@ module AmiCallSearch
       
     # for search
     joins = []
-    includes = [:voice_log_counter,:user]
+    includes = [:user]
     # for count and summary 
     joins2 = [:voice_log_counter]      
     includes2 = []
-        
+    
     sc[:conditions].each do |cond|
-      if cond =~ /^result_keywords/
+      if cond =~ /(voice_log_counters)/ or sc[:order] =~ /(voice_log_counters)/
+        includes << :voice_log_counter
+        joins2 << :voice_log_counter       
+      end
+      if cond =~ /(result_keywords)/
         includes << :result_keywords
         joins2 << :result_keywords
-        break
+      end
+      if cond =~ /(voice_log_customers)/
+        includes << :voice_log_customer
+        joins2 << :voice_log_customer   
+      end
+      if cond=~ /(voice_log_cars)/
+        includes << :voice_log_cars
+        joins2 << :voice_log_cars        
       end
     end
+    includes = includes.uniq
+    joins2 = joins2.uniq 
     
-    voice_logs = VoiceLogTemp.find(:all,
-                               :include => includes,
-                               :joins => joins,
-                               :conditions => sc[:conditions].join(' and '),
-                               :limit => sc[:limit],
-                               :offset => sc[:offset],
-                               :order => sc[:order])
+    cols1 = [:id,:system_id,:device_id,:channel_id,:ani,:dnis,:extension,:duration,:agent_id,:voice_file_url,:call_direction,:start_time,:call_id,:ori_call_id,:answer_time] 
+    cols1 = cols1.map { |c| "#{vl_tbl_name}.#{c.to_s}" }
+    selects = cols1.join(",")
+
+    voice_logs = []
+    case Aohs::CURRENT_LOGGER_TYPE
+      when :eone
+        # normal table
+        voice_logs = VoiceLogTemp.includes(includes).joins(joins).where(sc[:conditions].join(' and ')).order(sc[:order]).group("#{vl_tbl_name}.id").limit(sc[:limit]).offset(sc[:offset])  
+      when :extension
+        # transfer table
         
+        # find include sub
+        if sc[:ctrl][:timeline_enabled] == true && false
+          voice_logs = VoiceLogTemp.select(selects).includes(includes).joins(joins).where(sc[:conditions].join(' and ')).order(sc[:order]).group("#{vl_tbl_name}.id").limit(sc[:limit]).offset(sc[:offset])
+        else
+		  if sc[:ctrl][:find_transfer] == true
+			  main_condition = select_condition_for_main(sc[:conditions])
+			  main_condition << "(#{vl_tbl_name}.ori_call_id = 1 or #{vl_tbl_name}.ori_call_id = '' or #{vl_tbl_name}.ori_call_id is null)"
+			  sql_joins = voice_logs_transfer_query_builder(includes,joins,sc)
+			  sql_joins = "join (#{sql_joins}) transfer_log on transfer_log.xcall_id = #{vl_tbl_name}.call_id "
+			  if sc[:order] =~ /(voice_log_counter)/
+				sql_joins << "left join voice_log_counters on #{vl_tbl_name}.id = voice_log_counters.voice_log_id " 
+			  end
+			  if sc[:order] =~ /(users)/
+				sql_joins << "left join users on #{vl_tbl_name}.agent_id = users.id " 
+			  end         
+			  voice_logs = VoiceLogTemp.select(selects).joins(sql_joins).order(sc[:order]).where(main_condition.join(" AND ")).group("#{vl_tbl_name}.id").limit(sc[:limit]).offset(sc[:offset])                
+		  else
+			  sc[:conditions] << "(#{vl_tbl_name}.ori_call_id = 1 or #{vl_tbl_name}.ori_call_id = '' or #{vl_tbl_name}.ori_call_id is null)"
+			  voice_logs = VoiceLogTemp.select(selects).includes(includes).joins(joins).where(sc[:conditions].join(' and ')).order(sc[:order]).group("#{vl_tbl_name}.id").limit(sc[:limit]).offset(sc[:offset])  
+		  end
+        end
+    end
+   
     # -- summary data --
-
+    
+    STDOUT.puts "length= #{voice_logs.length}"
+    
+    sc[:limit] = false
+    sc[:offset] = false
+    
     summary = {:sum_dura => 0, :sum_ng => 0, :sum_mu => 0,:c_in => 0,:c_out => 0,:c_oth => 0}
-    if not voice_logs.blank? and sc[:summary] == true
-
+    record_count = 0
+    
+    if not voice_logs.empty? and sc[:summary] == true
+      
       v = VoiceLogTemp.table_name
       c = VoiceLogCounter.table_name
       
-      select_sql = ""
-      select_sql << " sum(v.duration) as duration,sum(v.ngword_count) as ng_word, sum(v.mustword_count) as mu_word, "
-      select_sql << " sum(IF(v.call_direction = 'i',1,0)) as call_in, "
-      select_sql << " sum(IF(v.call_direction = 'o',1,0)) as call_out, "
-      select_sql << " sum(IF((v.call_direction in ('e','u')),1,0)) as call_oth "
-      
-      sql = ""      
-      sql << " SELECT #{v}.id,#{v}.call_direction,#{v}.duration,#{c}.ngword_count,#{c}.mustword_count "
-      sql << " FROM (#{v} LEFT JOIN #{c} ON #{v}.id = #{c}.voice_log_id) "
-      if joins2.include?(:result_keywords)
-        sql << " LEFT JOIN result_keywords on #{v}.id = result_keywords.voice_log_id "
-      end
-      sql << " WHERE #{sc[:conditions].join(' and ')} " unless sc[:conditions].empty?
-      sql << " GROUP BY #{v}.id "
-      
-      sql = " SELECT #{select_sql} FROM (#{sql}) v"
-      
+      sql = voice_logs_summary_query_builder(includes2,joins2,sc)
       result = VoiceLogTemp.find_by_sql(sql).first
       
       unless result.blank?
@@ -373,70 +576,53 @@ module AmiCallSearch
         summary[:c_in] = number_with_delimiter(result.call_in.to_i)
         summary[:c_out] = number_with_delimiter(result.call_out.to_i)
         summary[:c_oth] = number_with_delimiter(result.call_oth.to_i)
+        record_count = result.call_count.to_i
       end
 
     end
 
     # page info
+    
+    page_info = { :page => 'true', :total_page => 0,:current_page => 0, :rec_count => 0, :tl_stdate => "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')}Z" }
 
     if not sc[:page] == false
-
-      record_count = 0
-      unless voice_logs.blank?
-
-        v = VoiceLogTemp.table_name
-        c = VoiceLogCounter.table_name        
-
-        sql = ""      
-        sql << " SELECT #{v}.id"
-        sql << " FROM (#{v} LEFT JOIN #{c} ON #{v}.id = #{c}.voice_log_id) "
-        if joins2.include?(:result_keywords)
-          sql << " LEFT JOIN result_keywords on #{v}.id = result_keywords.voice_log_id "
-        end
-        sql << " WHERE #{sc[:conditions].join(' and ')} " unless sc[:conditions].empty?
-        sql << " GROUP BY #{v}.id "
-                        
-        sql = "SELECT COUNT(id) as rec_count FROM (#{sql}) v"
-
-        record_count = VoiceLogTemp.find_by_sql(sql).first.rec_count
-        
-      end
-
       page = sc[:page]
-      total_page = 0
       total_page = ((record_count).to_f / sc[:perpage]).ceil
       page = 0 if total_page == 0
       tl_start_date = "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')}Z" if total_page == 0
       sc[:page] = page
-
-      page_info = {
-        :page => 'true',
-        :total_page => total_page,
-        :current_page => page,
-        :rec_count => record_count,
-        :tl_stdate => tl_start_date.nil? ? "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')}Z" : tl_start_date
-     }
-      
-    else
-      page_info[:page] = 'true'
-      page_info[:records_count] = 0
-      page_info[:tl_stdate] = "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')}Z"
+      page_info = { :page => 'true', :total_page => total_page, :current_page => page, :rec_count => record_count, :tl_stdate => tl_start_date.nil? ? "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')}Z" : tl_start_date }
     end
 
     agents = find_owner_agents
-	
+    
+    if Aohs::PRMVL_CHECK_NOTIN_MY
+      sc[:limit_display_users] = true  
+    end
+    
     if sc[:limit_display_users] == true
       voice_logs = convert_voice_logs_info(voice_logs,agents,sc)
     else
       voice_logs = convert_voice_logs_info(voice_logs,false,sc)
     end
      
-	  sc = nil
-	
+    sc = nil
+    
     return voice_logs,summary, page_info, agents
 
   end
-
+  
+  def select_condition_for_main(cond)
+    new_cond = []
+    cond.each do |cond2|
+      case cond2
+        when /(direction)/
+          new_cond << cond2
+      end
+    end
+    return new_cond
+  end
+  
   def find_customer_calls(sc={})
 
     sc[:limit_display_users] = true
@@ -449,157 +635,138 @@ module AmiCallSearch
 
   def find_call_with_tags(sc={})
 
-    vl_tbl_name = VoiceLogTemp.table_name
+    v = VoiceLogTemp.table_name
     
     set_current_user_for_call_search(sc[:ctrl][:user_id])
     skip_search = false
     
-    voice_logs = []
     summary = {}
     page_info = {}
     conditions = []
-        
-    key_tags = []
+    
+    tags_id = []  
       
     if not sc[:group_tag_id].empty? and sc[:group_tag_id].to_i > 0
+      tag_group_id = sc[:group_tag_id].to_i
       
-      tags = TagGroup.find(:all,:conditions => {:id => sc[:group_tag_id].to_i})
-      unless tags.empty?
-        tags.each do |t|
-           if t.tags.length > 0
-             key_tags.concat((t.tags.map {|t2| t2.name }))
-           end
+      tag_groups = TagGroup.includes(:tags).where({:id => tag_group_id})
+      unless tag_groups.empty?
+        tag_groups.each do |tg|
+          tags_id.concat((tg.tags.map {|tag| tag.id }))
         end
-      end         
-    elsif not sc[:tag_id].empty? and sc[:tag_id].to_i > 0
-      
-      tag = Tag.find(:first,:conditions => {:id => sc[:tag_id].to_i})
-      unless tag.nil?
-        key_tags << tag.name
       end
-      
-    elsif not sc[:tags].empty?
-      key_tags << "#{sc[:tags].strip}%"
-    else
-      key_tags << "%"
+      skip_search = true if tags_id.empty? # tag group not have tags
     end
- 
-    agents = find_owner_agents
     
+    if not sc[:tag_id].empty? and sc[:tag_id].to_i > 0
+      tag_id = sc[:tag_id].to_i
+      
+      tag = Tags.where({:id => tag_id}).first
+      if tag.nil?
+        skip_search = true
+      else
+        skip_search = false
+        tags_id << tag.id
+      end
+    end
+      
+    if not sc[:tags].empty?
+      tag_names = sc[:tags].to_s.strip
+      
+      tags = Tags.where("name like '#{tag_names}%'").all
+      unless tags.empty?
+        tags_id.concat((tags.map {|tag| tag.id })) 
+        skip_search = false
+      else
+        skip_search = true
+      end
+    end
+    
+    if tags_id.empty?
+      # all tag
+    else
+      tags_id = tags_id.join(",")
+      conditions << "taggings.tag_id IN (#{tags_id})"
+    end
+    
+    conditions << "(taggings.taggable_type = 'VoiceLog' AND taggings.context = 'tags')"
+    
+    # current agent
+    agents = find_owner_agents
     unless agents.nil?
       unless agents.empty?
-        conditions << "(#{vl_tbl_name}.agent_id in (#{agents.join(',')}) or #{vl_tbl_name}.agent_id is null or #{vl_tbl_name}.agent_id = 0)"
+        conditions << "(#{v}.agent_id in (#{agents.join(',')}) or #{v}.agent_id is null or #{v}.agent_id = 0)"
       end
     end
     
-    ctags = key_tags
-    unless ctags.empty?
-      ctags = "(#{(ctags.map { |t| "tags.name like '#{t}'"}).join(" or ")})"
-    else
-      ctags = []
-    end
-
-    new_cond = []
-    if conditions.empty?
-      new_cond << ctags
-    else
-      new_cond << Array.new(conditions).concat([ctags])
-    end
-
+    includes = [:taggings,:user,:voice_log_counter]
+    joins = []
+    
+    sc[:conditions] = sc[:conditions].concat(conditions)
+    sc[:order] = sc[:order].compact.join(',') unless sc[:order].blank? 
+    
     voice_logs = []
+    summary = {:sum_dura => 0, :sum_ng => 0, :sum_mu => 0,:c_in => 0,:c_out => 0,:c_oth => 0}
+    
     if not skip_search
-
-      voice_logs = VoiceLogTemp.find(:all,
-                               :joins => [:taggings,:tags],
-                               :include => [:user,:voice_log_counter],
-                               :conditions => new_cond.join(" and "),
-                               :limit => sc[:limit],
-                               :offset => sc[:offset],
-                               :group => "#{vl_tbl_name}.id",
-                               :order => sc[:order].join(','))
-
-      unless voice_logs.empty?
-        tagsc = key_tags.map { |k| "tags.name like '#{k}'" }
-        tags = Tag.find(:all,:conditions => "(#{tagsc.join(' or ')})")
-        tags_id = tags.map {|t| t.id }
-        conditions << "taggings.tag_id in (#{tags_id.join(',')})"
+                     
+      voice_logs = []
+      case Aohs::CURRENT_LOGGER_TYPE
+        when :eone
+          # normal table
+          voice_logs = VoiceLogTemp.includes(includes).joins(joins).where(sc[:conditions].join(' and ')).order(sc[:order]).group("#{v}.id").limit(sc[:limit]).offset(sc[:offset])  
+        when :extension
+          # transfer table
+          sql_joins = voice_logs_transfer_query_builder(includes,joins,sc)
+          sql_joins = "join (#{sql_joins}) transfer_log on transfer_log.xcall_id = #{v}.call_id"
+          voice_logs = VoiceLogTemp.joins(sql_joins).includes(includes).order(sc[:order]).where("(#{v}.ori_call_id = 1 or #{v}.ori_call_id = '' or #{v}.ori_call_id is null)").group("#{v}.id").limit(sc[:limit]).offset(sc[:offset])               
+        else
+          # error
       end
-
+      
+      STDOUT.puts "length=#{voice_logs.length}"
+      
+      if not voice_logs.empty? and sc[:summary] == true
+        
+        v = VoiceLogTemp.table_name
+        c = VoiceLogCounter.table_name
+        
+        sql = voice_logs_summary_query_builder(includes,joins,sc)
+        result = VoiceLogTemp.find_by_sql(sql).first
+        
+        unless result.blank?
+          summary[:sum_dura] = format_sec(result.duration.to_i)
+          summary[:sum_ng] = number_with_delimiter(result.ng_word.to_i)
+          summary[:sum_mu] = number_with_delimiter(result.mu_word.to_i)
+          summary[:c_in] = number_with_delimiter(result.call_in.to_i)
+          summary[:c_out] = number_with_delimiter(result.call_out.to_i)
+          summary[:c_oth] = number_with_delimiter(result.call_oth.to_i)
+          record_count = result.call_count.to_i
+        end
+  
+      end
+      
     end
     
-    summary = {:sum_dura => 0, :sum_ng => 0, :sum_mu => 0,:c_in => 0,:c_out => 0,:c_oth => 0}
-
-    if sc[:summary] == true and not voice_logs.empty?
-
-      select_sql = ""
-      select_sql << " sum(#{vl_tbl_name}.duration) as duration,sum(#{vl_tbl_name}.ngword_count) as ng_word, sum(#{vl_tbl_name}.mustword_count) as mu_word, "
-      select_sql << " sum(IF(#{vl_tbl_name}.call_direction like 'i',1,0)) as call_in, "
-      select_sql << " sum(IF(#{vl_tbl_name}.call_direction like 'o',1,0)) as call_out, "
-      select_sql << " sum(IF((#{vl_tbl_name}.call_direction like 'e' or #{vl_tbl_name}.call_direction like 'u'),1,0)) as call_oth "
-
-      result = nil
-      
-      #result = VoiceLogTemp.find(
-      #      :first,
-      #      :select => select_sql,
-      #      :joins => [:voice_log_counter,:taggings],
-      #      :conditions => conditions.join(' and '))
-
-      str_cond = ""
-      str_cond = "WHERE #{conditions.join(' and ')}" unless conditions.empty?
-      
-      result = VoiceLogTemp.find_by_sql("SELECT #{select_sql} FROM (SELECT #{vl_tbl_name}.id,#{vl_tbl_name}.duration,#{vl_tbl_name}.call_direction,voice_log_counters.ngword_count,voice_log_counters.mustword_count FROM (#{vl_tbl_name} JOIN voice_log_counters on #{vl_tbl_name}.id = voice_log_counters.voice_log_id) join taggings ON #{vl_tbl_name}.id = taggings.taggable_id #{str_cond} GROUP BY #{vl_tbl_name}.id) #{vl_tbl_name} ")
-      result = result.first
-
-      unless result.nil?
-        summary[:sum_dura] = format_sec(result.duration.to_i)
-        summary[:sum_ng] = number_with_delimiter(result.ng_word)
-        summary[:sum_mu] = number_with_delimiter(result.mu_word)
-        summary[:c_in] = number_with_delimiter(result.call_in)
-        summary[:c_out] = number_with_delimiter(result.call_out)
-        summary[:c_oth] = number_with_delimiter(result.call_oth)
-      end
-
-    end
-
     # page info
+    
+    page_info = { :page => 'true', :total_page => 0,:current_page => 0, :rec_count => 0, :tl_stdate => "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')}Z" }
 
-    if (not sc[:page] == false) and (not skip_search) and (not voice_logs.empty?)
+    if not sc[:page] == false
       page = sc[:page]
-      
-      record_count = VoiceLogTemp.count(
-              :id,
-              :include => [:taggings],
-              :conditions => conditions.join(' and '))
-
-      total_page = 0
       total_page = ((record_count).to_f / sc[:perpage]).ceil
       page = 0 if total_page == 0
       tl_start_date = "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')}Z" if total_page == 0
-
       sc[:page] = page
-      page_info = {
-        :page => 'true',
-        :total_page => total_page,
-        :current_page => page,
-        :rec_count => record_count,
-        :tl_stdate => tl_start_date.nil? ? "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')}Z" : tl_start_date
-      }
+      page_info = { :page => 'true', :total_page => total_page, :current_page => page, :rec_count => record_count, :tl_stdate => tl_start_date.nil? ? "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')}Z" : tl_start_date }
+    end    
 
-    else
-      page_info[:page] = 'true'
-      page_info[:rec_count] = 0
-      page_info[:current_page] = 0  
-      page_info[:tl_stdate] = "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')}Z"
-      page_info[:total_page] = 0   
-    end
-
-    agents = nil #find_owner_agents
+    agents = nil
 
     voice_logs = convert_voice_logs_info(voice_logs,agents,sc)
     
     return voice_logs,summary, page_info, agents
-
+    
   end
 
   def find_calls_for_timeline(sc={})
@@ -632,7 +799,7 @@ module AmiCallSearch
           tl_data[current_agent] = [""]
         else
           max_dt = datetime + vl.duration.to_i
-              tl_data[current_agent].first = "x,#{min_dt.strftime('%Y-%m-%d %H:%M:%S')},#{(max_dt + vl.duration.to_i).strftime('%Y-%m-%d %H:%M:%S')}"
+          tl_data[current_agent].first = "x,#{min_dt.strftime('%Y-%m-%d %H:%M:%S')},#{(max_dt + vl.duration.to_i).strftime('%Y-%m-%d %H:%M:%S')}"
         end
 
         tl_data[current_agent] << "#{vl.call_direction},#{datetime.strftime('%Y-%m-%d %H:%M:%S')},#{(datetime + vl.duration.to_i).strftime('%Y-%m-%d %H:%M:%S')}"
@@ -641,6 +808,21 @@ module AmiCallSearch
     end
 
     return tl_data
+    
+  end
+  
+  def find_transfer_calls(voice_log_id)
+  
+    vc = VoiceLogTemp.where({:id => voice_log_id}).first
+    if not vc.nil?
+      voice_logs = vc.transfer_calls  
+      sc = {:tag_enabled => true}
+      transfer_voice_logs = convert_voice_logs_info(voice_logs,false,{:perpage => 1, :page => 1, :ctrl => sc})
+    else
+      transfer_voice_logs = []
+    end
+    
+    return transfer_voice_logs
     
   end
   
@@ -661,108 +843,145 @@ module AmiCallSearch
     new_voice_logs = []
     ctrl = sc[:ctrl]
 
-    u_display_mode = AmiConfig.get('client.aohs_web.reportUserNameDisplay').to_i
-
     unless voice_logs.blank?
-
-      if sc[:page].blank? or sc[:page].to_i <= 0
-        sc[:page] = 1
-      end
-       
-	  start_row = sc[:perpage] * (sc[:page].to_i-1)
+      
+      sc[:page] = valid_page_no(sc[:page])
+      start_row = get_start_row_no(sc[:perpage],sc[:page]) 
 		
       voice_logs.each_with_index do |vc,i|
-    
-        datetime = nil
-        unless vc.start_time.nil?
-          if vc.start_time.is_a?(String)
-            datetime = Time.parse(vc.start_time)
-          else
-            datetime = vc.start_time
-          end
-        else
-          STDERR.puts "voice_logs datetime not found"
-        end
 
-        tags = "No tag."
+        datetime = vc.start_time_full
+
+        tags = "-"
         if ctrl[:tag_enabled] == true
-          tags = vc.tag_list
-          if tags.blank?
-            tags = "No tag."
+          if vc.tags_exist?
+            tags = vc.tag_list
           end
         end
 
         is_open = true
-        agent_name = "UnknownAgent"
-        if (vc.agent_id.to_i > 0) and (not vc.user.nil?)
-          agent_name = (u_display_mode == 0 ? vc.user.login : vc.user.display_name)
-          if not agents == false
-            is_open = call_open?(vc.agent_id,agents)
+        agent_name = Aohs::UNKNOWN_AGENT_NAME
+        if vc.agent_id.to_i > 0
+          u = vc.user
+          unless u.nil?
+            agent_name = u.display_name  
+            if not agents == false
+              is_open = call_open?(vc.agent_id,agents)
+            end
           end
         end
 
         customer_name = ""
-        #unless vc.voice_log_customer.nil?
-        # unless vc.voice_log_customer.customer.nil?
-        #    customer_name = vc.voice_log_customer.customer.customer_name rescue "-"
-        #  end
-        #end
-
+        customer_id = ""
+          if Aohs::MOD_CUSTOMER_INFO
+          unless vc.voice_log_customer.nil?
+           unless vc.voice_log_customer.customer.nil?
+              customer_id = vc.voice_log_customer.customer.id
+              customer_name = vc.voice_log_customer.customer.customer_name rescue ""
+            end
+          end
+        end
+      
+        car_no = ""
+        if Aohs::MOD_CUST_CAR_ID and Aohs::MOD_CUSTOMER_INFO
+          unless vc.voice_log_cars.empty?
+            car_no = []
+            car_id = []
+            vc.voice_log_cars.each do |c|
+              unless c.car_number.nil?
+                car_no << format_car_id(c.car_number.car_no)
+              end
+            end
+            car_no = car_no.join(",")
+          end
+        end
+      
         vc_ng_count = 0
         vc_must_count = 0
         vc_book_count = 0
-        unless vc.voice_log_counter.nil?
-          vc_ng_count = vc.voice_log_counter.ngword_count.to_i
-          vc_must_count = vc.voice_log_counter.mustword_count.to_i
-          vc_book_count = vc.voice_log_counter.bookmark_count.to_i
-        end
-
         transfer_call = nil
-        #unless true
-        #  transfer_call = nil
-        #end
-
-        xduration = 0
-        if vc.duration.nil?
-          xduration = 0
+        is_found_transfer = false 
+        
+        #vc_c = vc.voice_log_counter
+        if Aohs::MOD_CALL_TRANSFER 
+	  vc_c = VoiceLogCounter.select("ngword_count,mustword_count,bookmark_count,transfer_call_count").where(:voice_log_id => vc.id).first
         else
-          xduration = vc.duration.to_i
+	  vc_c = VoiceLogCounter.select("ngword_count,mustword_count,bookmark_count").where(:voice_log_id => vc.id).first
+	end
+        unless vc_c.nil?
+          vc_ng_count = vc_c.ngword_count.to_i
+          vc_must_count = vc_c.mustword_count.to_i
+          vc_book_count = vc_c.bookmark_count.to_i
+          
+          if Aohs::MOD_CALL_TRANSFER
+            if ctrl[:timeline_enabled] == true
+              # not check because find all
+            else
+              is_found_transfer = vc.have_transfered_call?(vc_c.transfer_call_count.to_i)
+            end
+          end
         end
 
-        xextension = ""
-        if not vc.extension.nil?
-           xextension = vc.extension
-        end
+        xduration = vc.duration.to_i
+
+        xextension = vc.extension_number.to_s
         
         new_voice_logs << {
             :no => (i+1)+start_row,
             :id => vc.id,
-            :sdate => "#{datetime.strftime('%Y-%m-%d %H:%M:%S')}",
-            :edate => "#{(datetime + xduration).strftime('%Y-%m-%d %H:%M:%S')}",
+            :sid => vc.system_id,
+            :did => vc.device_id,
+            :cid => vc.channel_id,
+            :sdate => "#{default_datetime_format(datetime)}",
+            :edate => "#{default_datetime_format(datetime + xduration)}",
+            :v_st => "#{default_time_format(datetime)}",
+            :v_en => "#{default_time_format(datetime + xduration)}",
             :duration => "#{format_sec(xduration)}",
             :dmin => (xduration/60),
-            :ani => vc.ani,
-            :dnis => vc.dnis,
+            :ani => format_phone(vc.ani),
+            :dnis => format_phone(vc.dnis),
             :ext => xextension,
             :agent => agent_name,
             :cust => customer_name,
+            :cust_id => customer_id,
+            :car_no => car_no,
             :cd => vc.call_direction_name,
             :cd_c => vc.call_direction,
             :ngc => vc_ng_count,
             :mustc => vc_must_count,
             :bookc => vc_book_count,
             :tags => tags,
-            :path => audio_src_path(vc.disposition),
+            :path => vc.disposition,
             :open => is_open,
-            :dev => vc.device_id,
-            :trfcall => transfer_call
+            :trfc => is_found_transfer,
+            :offset_sec => vc.start_position_sec
         }
+        
+        if is_found_transfer and (ctrl[:show_sub_call] == true)
+          ## add transfer log
+          trfs = find_transfer_calls(vc.id)
+          unless trfs.empty?
+            trfs.each do |t|
+              t[:child] = true
+              new_voice_logs << t
+            end
+          end
+        end
+        
       end
     end
 	
     voice_logs = nil
     return new_voice_logs
 
+  end
+  
+  def valid_page_no(page=1)
+    return ((page.to_i <= 0) ? 1 : page.to_i)
+  end
+  
+  def get_start_row_no(perpage,page)
+    return perpage * (page.to_i-1)
   end
   
 end

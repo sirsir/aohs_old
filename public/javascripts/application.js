@@ -22,6 +22,58 @@ var App = {
 			} else {
 				return "asc";
 			}
+	},
+	call_blank: function(v,df) {
+		var df = df || "&nbsp;";
+		var v = v || "";
+		if(jQuery.trim(v.toString()).length <= 0)
+			return df;
+		else
+			return v;
+	},
+	to_boolean: function(b){
+		if((b == "true") || (b == 1) || (b == '1'))
+			return true;
+		else
+			return false
+	},
+	isBlank: function(variable){
+      if(variable == null){
+          return true;
+      } else if(variable.length <= 0){
+          return true;
+      } else {
+          return false;
+      }
+    },
+	validThaiCarNo2: function(c){
+		var c = c || "";
+		var chr = "[0-9a-zA-Zกขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬ]";
+		var th_pattern = new RegExp("^(*{1,4}-*{1,5} *{1,4})$".replace(/\*/g,chr));
+		if(c.length > 0){
+			result = th_pattern.test(jQuery.trim(c));
+			return result;
+		} else {
+			return true;
+		}		
+	},
+	validThaiCarNo: function(c){
+		var c = c || "";
+		var chr = "[0-9a-zA-Zกขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬ]";
+		var th_pattern = new RegExp("^(****-***** ****)$".replace(/\*/g,chr));
+		if(c.length > 0){
+			var a = jQuery.trim(c).split(",");
+			var l=a.length,i=0;
+			var result = true;
+			while((i<l) && result){
+				result = th_pattern.test(jQuery.trim(a[i]));
+				//alert(jQuery.trim(a[i]) + ":=" + result);
+				i++;
+			}
+			return result;
+		} else {
+			return true;
+		}		
 	}
 };
 
@@ -89,6 +141,23 @@ function checkPeriodCond(st,ed){
 		return true;
 }
 
+function zeroPadAfter(num,count)
+{
+	var count = count || 0;
+	var numZeropad = num.toString() + '';
+	while(numZeropad.length < count) {
+		numZeropad = numZeropad + "0";
+	}
+	return numZeropad;
+}
+
+function number_with_delimiter(number, delimiter) {
+	number = number + '', delimiter = delimiter || ',';
+	var split = number.split('.');
+	split[0] = split[0].replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + delimiter);
+	return split.join('.');
+}
+	
 $(document).ready(function(){
 	rowTblHover();
 	subMenuHover();
