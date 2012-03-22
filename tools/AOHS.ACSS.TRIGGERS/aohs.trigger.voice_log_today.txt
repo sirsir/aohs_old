@@ -1,0 +1,85 @@
+CREATE TABLE `NewTable` (
+`id`  bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT ,
+`system_id`  int(10) NULL DEFAULT NULL ,
+`device_id`  int(10) NULL DEFAULT NULL ,
+`channel_id`  int(10) NULL DEFAULT NULL ,
+`ani`  varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`dnis`  varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`extension`  varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`duration`  int(10) NULL DEFAULT NULL ,
+`hangup_cause`  int(10) NULL DEFAULT NULL ,
+`call_reference`  int(10) NULL DEFAULT NULL ,
+`agent_id`  int(10) NULL DEFAULT NULL ,
+`voice_file_url`  varchar(300) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`call_direction`  varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT 'u' ,
+`start_time`  datetime NULL DEFAULT NULL ,
+`digest`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`call_id`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+`site_id`  int(10) NULL DEFAULT NULL ,
+PRIMARY KEY (`id`),
+INDEX `vc_index1` USING BTREE (`start_time`, `agent_id`) ,
+INDEX `index_voice_logs_on_start_time` USING BTREE (`start_time`) ,
+INDEX `index_voice_logs_on_ani` USING BTREE (`ani`) ,
+INDEX `index_voice_logs_on_dnis` USING BTREE (`dnis`) ,
+INDEX `index_voice_logs_on_call_id` USING BTREE (`call_id`) 
+)
+ENGINE=MyISAM
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+AUTO_INCREMENT=11000013
+CHECKSUM=0
+ROW_FORMAT=DYNAMIC
+DELAY_KEY_WRITE=0
+;
+
+CREATE DEFINER=`mysqladmin`@`%` TRIGGER `add_voicelogs_1_statistics_afins` AFTER INSERT ON `NewTable`
+FOR EACH ROW BEGIN
+
+	DECLARE xstatistic_type_id1 INT DEFAULT NULL;
+	DECLARE xstatistic_type_id2 INT DEFAULT NULL;
+	DECLARE daily_id1 INT DEFAULT NULL;
+	DECLARE daily_id2 INT DEFAULT NULL;	
+	DECLARE cd VARCHAR(1);
+
+	INSERT INTO voice_log_counters(voice_log_id,keyword_count,ngword_count,mustword_count,bookmark_count,created_at,updated_at) 
+	VALUES (new.id,0,0,0,0,NOW(),NOW());
+
+	CASE new.call_direction
+	WHEN 'i' THEN 
+		SET cd = 'i';
+	WHEN 'o' THEN 
+		SET cd = 'o';
+	ELSE 
+		SET cd = 'e';
+	END CASE;
+	
+	IF new.agent_id IS NOT NULL AND new.start_time IS NOT NULL THEN
+
+		SET xstatistic_type_id1 = find_statistic_type('VoiceLog','count',TRUE);
+
+		SELECT id INTO daily_id1 FROM daily_statistics 
+		WHERE start_day = CAST(new.start_time AS DATE) AND agent_id = new.agent_id AND statistics_type_id = xstatistic_type_id1 LIMIT 1;
+
+		IF daily_id1 IS NOT NULL THEN
+			UPDATE daily_statistics SET value = value + 1 WHERE id = daily_id1 LIMIT 1;
+		ELSE
+			INSERT INTO daily_statistics (start_day,agent_id,statistics_type_id,value,created_at,updated_at) 
+			VALUES (CAST(new.start_time AS DATE),new.agent_id,xstatistic_type_id1,1,NOW(),NOW());
+		END IF;
+
+		SET xstatistic_type_id2 = find_statistic_type('VoiceLog',CONCAT('count:',cd),TRUE);
+
+		IF xstatistic_type_id2 IS NOT NULL THEN	
+			SELECT id INTO daily_id2 FROM daily_statistics 
+			WHERE start_day = CAST(new.start_time AS DATE) AND agent_id = new.agent_id AND statistics_type_id = xstatistic_type_id2 LIMIT 1;				
+			IF daily_id2 IS NOT NULL THEN
+				UPDATE daily_statistics SET value = value + 1 WHERE id = daily_id2 LIMIT 1;
+			ELSE
+				INSERT INTO daily_statistics (start_day,agent_id,statistics_type_id,value,created_at,updated_at) 
+				VALUES (CAST(new.start_time AS DATE),new.agent_id,xstatistic_type_id2,1,NOW(),NOW());
+			END IF;
+		END IF;
+
+	END IF;
+
+END;
+

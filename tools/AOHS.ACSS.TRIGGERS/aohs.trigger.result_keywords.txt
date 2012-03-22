@@ -1,0 +1,196 @@
+CREATE TABLE `` (
+`id`  bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT ,
+`start_msec`  int(10) NULL DEFAULT NULL ,
+`end_msec`  int(10) NULL DEFAULT NULL ,
+`voice_log_id`  bigint(20) UNSIGNED NOT NULL ,
+`keyword_id`  int(10) NOT NULL DEFAULT 0 ,
+`created_at`  datetime NULL DEFAULT NULL ,
+`updated_at`  datetime NULL DEFAULT NULL ,
+`edit_status`  varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
+PRIMARY KEY (`id`),
+INDEX `index_result_keywords_on_voice_log_id` USING BTREE (`voice_log_id`) ,
+INDEX `index_result_keywords_on_keyword_id` USING BTREE (`keyword_id`) ,
+INDEX `rs_index1` USING BTREE (`voice_log_id`, `keyword_id`) 
+)
+ENGINE=InnoDB
+DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci
+AUTO_INCREMENT=34537
+ROW_FORMAT=COMPACT
+;
+
+CREATE DEFINER=`mysqladmin`@`%` TRIGGER `count_statistics_for_result_insert` AFTER INSERT ON `NewTable`
+FOR EACH ROW BEGIN
+
+	DECLARE xkeyword_type CHAR DEFAULT NULL;
+	DECLARE xdate DATE DEFAULT NULL;
+	DECLARE xvoice_id INT DEFAULT NULL;
+	DECLARE xuser_id INT DEFAULT 0;
+	DECLARE xstatistic_type_id1 INT DEFAULT NULL;
+	DECLARE xstatistic_type_id2 INT DEFAULT NULL;
+	DECLARE xstatistic_id1 INT DEFAULT NULL;	
+	DECLARE xstatistic_id2 INT DEFAULT NULL;
+
+	-- if new result keyword 
+	IF new.keyword_id IS NOT NULL AND new.edit_status IS NULL THEN
+				
+		SELECT keyword_type INTO xkeyword_type FROM keywords WHERE id = new.keyword_id;
+		
+		SELECT id,CAST(start_time AS DATE),agent_id INTO xvoice_id,xdate,xuser_id 
+		FROM voice_logs_1 WHERE id = new.voice_log_id LIMIT 1;
+		
+		IF xkeyword_type IS NOT NULL AND xdate IS NOT NULL AND new.voice_log_id IS NOT NULL THEN
+		
+			-- daily keywords by keyword
+			SET xstatistic_type_id1 = find_statistic_type('ResultKeyword','sum',FALSE);
+			IF xstatistic_type_id1 IS NOT NULL THEN
+				SELECT id INTO xstatistic_id1 FROM daily_statistics 
+				WHERE keyword_id = new.keyword_id AND start_day = xdate AND statistics_type_id = xstatistic_type_id1 LIMIT 1;
+				IF xstatistic_id1 IS NULL THEN
+					INSERT INTO daily_statistics(start_day,keyword_id,statistics_type_id,value,created_at,updated_at) 
+					VALUES (xdate,new.keyword_id,xstatistic_type_id1,1,NOW(),NOW());
+				ELSE
+					UPDATE daily_statistics SET value = value + 1, updated_at = NOW() WHERE id = xstatistic_id1;
+				END IF;
+			END IF;
+
+			-- daily keywords agent by agent/keyword_type
+			SET xstatistic_type_id2 = find_statistic_type('ResultKeyword',CONCAT('sum:',xkeyword_type),TRUE);	
+			IF xstatistic_type_id2 IS NOT NULL THEN
+				SELECT id INTO xstatistic_id2 FROM daily_statistics 
+				WHERE agent_id = xuser_id AND start_day = xdate AND statistics_type_id = xstatistic_type_id2 LIMIT 1;
+				IF xstatistic_id2 IS NULL THEN
+					INSERT INTO daily_statistics(start_day,agent_id,statistics_type_id,value,created_at,updated_at) 
+					VALUES (xdate,xuser_id,xstatistic_type_id2,1,NOW(),NOW());							
+				ELSE
+					UPDATE daily_statistics SET value = value + 1, updated_at = NOW() WHERE id = xstatistic_id2 LIMIT 1;
+				END IF;
+			END IF;
+
+			-- voice_logs_counter 
+			CASE xkeyword_type 
+			WHEN 'n' THEN
+				UPDATE voice_log_counters SET keyword_count = keyword_count + 1, ngword_count = ngword_count + 1 WHERE voice_log_id = new.voice_log_id LIMIT 1;
+			WHEN 'm' THEN 
+				UPDATE voice_log_counters SET keyword_count = keyword_count + 1, mustword_count = mustword_count + 1 WHERE voice_log_id = new.voice_log_id LIMIT 1;
+			END CASE;
+
+		END IF;
+
+	END IF;
+
+END;
+
+CREATE DEFINER=`mysqladmin`@`%` TRIGGER `count_statistics_for_result_change` AFTER UPDATE ON `NewTable`
+FOR EACH ROW BEGIN
+		
+	DECLARE xkeyword_type CHAR DEFAULT NULL;
+	DECLARE xdate DATE DEFAULT NULL;
+	DECLARE xvoice_id INT DEFAULT NULL;
+	DECLARE xuser_id INT DEFAULT 0;
+	DECLARE xstatistic_type_id1 INT DEFAULT NULL;
+	DECLARE xstatistic_type_id2 INT DEFAULT NULL;	
+	DECLARE xori_id INT DEFAULT NULL;
+	DECLARE xori_call_id VARCHAR(255) DEFAULT NULL;
+	
+	-- IF old.edit_status != new.edit_status THEN
+	
+		-- update if edit staus changed
+		IF new.edit_status = 'd' OR new.edit_status = 'e' THEN
+			
+			SELECT keyword_type INTO xkeyword_type FROM keywords WHERE id = new.keyword_id;
+			SELECT id,CAST(start_time AS DATE),agent_id INTO xvoice_id,xdate,xuser_id FROM voice_logs_1 WHERE id = new.voice_log_id LIMIT 1;	
+			
+			IF xkeyword_type IS NOT NULL AND xdate IS NOT NULL AND xvoice_id IS NOT NULL THEN
+
+				-- daily keywords by keyword
+				SET xstatistic_type_id1 = find_statistic_type('ResultKeyword','sum',FALSE);	
+				IF xstatistic_type_id1 THEN
+					UPDATE daily_statistics SET value = value - 1 
+					WHERE keyword_id = new.keyword_id AND start_day = xdate AND statistics_type_id = xstatistic_type_id1 LIMIT 1;
+				END IF;
+				
+				-- daily keywords agent by agent/keyword_type
+				SET xstatistic_type_id2 = find_statistic_type('ResultKeyword',CONCAT('sum:',xkeyword_type),TRUE);	
+				IF xstatistic_type_id2 IS NOT NULL THEN
+					UPDATE daily_statistics SET value = value - 1 
+					WHERE agent_id = xuser_id AND start_day = xdate AND statistics_type_id = xstatistic_type_id2 LIMIT 1;
+				END IF;
+
+				-- voice_logs_counter 
+				CASE xkeyword_type
+				WHEN 'n' THEN
+					UPDATE voice_log_counters SET keyword_count = keyword_count - 1, ngword_count = ngword_count - 1 
+					WHERE voice_log_id = new.voice_log_id LIMIT 1;
+				WHEN 'm' THEN 
+					UPDATE voice_log_counters SET keyword_count = keyword_count - 1, mustword_count = mustword_count - 1 
+					WHERE voice_log_id = new.voice_log_id LIMIT 1;
+				END CASE;
+
+			END IF;
+			
+		END IF;	
+	-- END IF;
+
+END;
+
+CREATE DEFINER=`mysqladmin`@`%` TRIGGER `count_statistics_for_result_del` AFTER DELETE ON `NewTable`
+FOR EACH ROW BEGIN
+
+	DECLARE xkeyword_type CHAR DEFAULT NULL;
+	DECLARE xdate DATE DEFAULT NULL;
+	DECLARE xvoice_id INT DEFAULT NULL;
+	DECLARE xuser_id INT DEFAULT 0;
+	DECLARE xstatistic_type_id1 INT DEFAULT NULL;
+	DECLARE xstatistic_type_id2 INT DEFAULT NULL;
+	DECLARE xstatistic_id1 INT DEFAULT NULL;	
+	DECLARE xstatistic_id2 INT DEFAULT NULL;
+
+	-- if new result keyword 
+	IF old.keyword_id IS NOT NULL and old.edit_status IS NULL THEN
+            
+	SELECT keyword_type INTO xkeyword_type FROM keywords WHERE id = old.keyword_id;
+	    
+        SELECT id,CAST(start_time AS DATE),agent_id INTO xvoice_id,xdate,xuser_id 
+        FROM voice_logs_1 WHERE id = old.voice_log_id LIMIT 1;
+	
+        IF xkeyword_type IS NOT NULL AND xdate IS NOT NULL AND old.voice_log_id IS NOT NULL THEN
+        
+            -- daily keywords by keyword
+            SET xstatistic_type_id1 = find_statistic_type('ResultKeyword','sum',FALSE);
+            IF xstatistic_type_id1 IS NOT NULL THEN
+                    SELECT id INTO xstatistic_id1 FROM daily_statistics 
+                    WHERE keyword_id = old.keyword_id AND start_day = xdate AND statistics_type_id = xstatistic_type_id1 LIMIT 1;
+                    IF xstatistic_id1 IS NULL THEN
+                            INSERT INTO daily_statistics(start_day,keyword_id,statistics_type_id,value,created_at,updated_at) 
+                            VALUES (xdate,old.keyword_id,xstatistic_type_id1,0,NOW(),NOW());
+                    ELSE
+                            UPDATE daily_statistics SET value = value - 1, updated_at = NOW() WHERE id = xstatistic_id1;
+                    END IF;
+            END IF;
+
+            -- daily keywords agent by agent/keyword_type
+            SET xstatistic_type_id2 = find_statistic_type('ResultKeyword',CONCAT('sum:',xkeyword_type),TRUE);	
+            IF xstatistic_type_id2 IS NOT NULL THEN
+                    SELECT id INTO xstatistic_id2 FROM daily_statistics 
+                    WHERE agent_id = xuser_id AND start_day = xdate AND statistics_type_id = xstatistic_type_id2 LIMIT 1;
+                    IF xstatistic_id2 IS NULL THEN
+                            INSERT INTO daily_statistics(start_day,agent_id,statistics_type_id,value,created_at,updated_at) 
+                            VALUES (xdate,xuser_id,xstatistic_type_id2,0,NOW(),NOW());							
+                    ELSE
+                            UPDATE daily_statistics SET value = value - 1, updated_at = NOW() WHERE id = xstatistic_id2 LIMIT 1;
+                    END IF;
+            END IF;
+
+            -- voice_logs_counter 
+            CASE xkeyword_type 
+            WHEN 'n' THEN
+                    UPDATE voice_log_counters SET keyword_count = keyword_count - 1, ngword_count = ngword_count - 1 WHERE voice_log_id = old.voice_log_id LIMIT 1;
+            WHEN 'm' THEN 
+                    UPDATE voice_log_counters SET keyword_count = keyword_count - 1, mustword_count = mustword_count - 1 WHERE voice_log_id = old.voice_log_id LIMIT 1;
+            END CASE;
+
+        END IF;
+
+	END IF;
+
+END; 
