@@ -182,9 +182,13 @@ class StatisticsController < ApplicationController
         myagents = myagents.concat(find_watch_managers)
         unless myagents.blank?
           my_agents = myagents.map { |a| a.id }
+          # remove deleted agents
+          my_agents = User.alive.where(:id => my_agents).map { |a| a.id }
         else
           my_agents = [0]
         end
+     else
+       my_agents = User.alive.all.map { |a| a.id }
      end
 
      if params.has_key?(:agent_name) and not params[:agent_name].empty?
