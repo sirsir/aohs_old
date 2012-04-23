@@ -162,7 +162,11 @@ class User < ActiveRecord::Base
      dams = DidAgentMap.where(:agent_id => self.id).group('number').order('number asc').all
      @@phones_list = dams.map { |m| m.number } 
    end
-      
+
+   def get_deleted_login_name
+     return self.login.to_s + "__" + self.id.to_s
+   end
+   
    protected
    
 end

@@ -154,7 +154,8 @@ class ManagersController < ApplicationController
         manager = Manager.find(params[:id])
 
         if can_delete(manager.id)
-          if manager.update_attributes(:flag => 1, :state => 'deleted')
+          del_login_name = manager.get_deleted_login_name
+          if manager.update_attributes(:login => del_login_name, :flag => 1, :state => 'deleted')
             manager.deleted_releated_data
             manager.do_delete
             manager.save!
@@ -162,7 +163,7 @@ class ManagersController < ApplicationController
             log("Delete","Manager",true,"id:#{params[:id]}, name:#{manager.login}")
             flash[:notice] = 'Delete manager has been successfully.'
           else
-            log("Delete","Manager",false,"id:#{params[:id]}, name:#{manager.login}, delete was cancelled")
+            log("Delete","Manager",false,"id:#{params[:id]}, name:#{manager.login}, #{manager.errors.full_messages}")
             flash[:error] = 'Delete manager has been failed.'
           end
         else

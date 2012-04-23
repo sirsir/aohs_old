@@ -178,8 +178,8 @@ class AgentsController < ApplicationController
       begin
 
         @agent = Agent.find(params[:id])
-
-        if @agent.update_attributes(:flag => 1,:state => 'deleted')
+        del_login_name = @agent.get_deleted_login_name
+        if @agent.update_attributes(:login => del_login_name, :flag => 1,:state => 'deleted')
             log("Delete","Agent",true,"id:#{params[:id]}, name:#{@agent.login}")
         else
             log("Delete","Agent",false,"id:#{params[:id]}, name:#{@agent.login}, #{@agent.errors.full_messages}")
