@@ -119,7 +119,7 @@ class FavoritesController < ApplicationController
 
   def export
 
-    show_all = ( (params[:type] =~ /true/) ? true : false )
+    show_all = ( (params[:type] =~ /true/ or params[:type] =~ /all/) ? true : false )
       
     find_call_tag({:show_all => show_all, :timeline_enabled => false, :tag_enabled => false,:summary => true })
 
