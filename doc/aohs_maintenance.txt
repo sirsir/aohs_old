@@ -1,0 +1,40 @@
+=============================================================================================================================
+Maintenance Information
+=============================================================================================================================
+
+[-] Table voice_logs can not access or open.
+schema tables of voice_logs_today voice_logs and voice_logs_monthly must be same structure.
+if somebody add new column to table voice_logs_today, you must be add new column to voice_logs and voice_logs_monthly too
+and run command 
+  >> jruby -S rake application:voice_logs_table to refresh voice_logs table.
+
+[-] Report not correct.
+if report data not correct, you must be do following it
+  remove all data in daily_statistics, weekly_statistics and monthly_statistics
+  >> jruby -S rake application:reset_daily
+
+  Please check it.
+  voice_logs table
+    - call_direction, agent_id, start_time are not null
+	- call_direction must be 'i' or 'o' only
+    - default of agent id is 0
+	- agent_id should be exist in table users
+	- start_time must be correct (date and time)
+	
+  result_keyword
+    - keyword_id not null and exist in keywords table
+	- start_msec and end_msec is not null
+	- voice_log_id is not null
+	
+[-] Re-create function and trigger
+  Use this if function or trigger not working.
+  >> jruby -S rake application:triggers
+  >> jruby -S rake application:func
+  
+[-] Recreate or check voice_logs_counters data
+  Use this if counter data is not correct
+  >> jruby -S rake application:voice_logs:voice_log_counter2[2011]
+  >> jruby -S rake application:voice_logs:voice_log_counter2[201105]
+  >> jruby -S rake application:voice_logs:voice_log_counter2[20110501]
+  
+=============================================================================================================================

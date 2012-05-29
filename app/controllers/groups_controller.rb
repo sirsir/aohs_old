@@ -195,8 +195,6 @@ class GroupsController < ApplicationController
 
       if can_delete(group.id)
         if Group.destroy(group.id)
-
-
           log("Delete","Group",true,"id:#{params[:id]}, group:#{group.name}")
           flash[:notice] = "Delete group was successfully."
         else
@@ -214,8 +212,7 @@ class GroupsController < ApplicationController
 
    def can_delete(id)
 
-     users = User.where(:group_id => id)
-
+     users = Agent.alive.where(:group_id => id).all
      if users.empty?
         return true
      else
@@ -228,7 +225,7 @@ class GroupsController < ApplicationController
 
       @group = Group.where(:id => params[:id]).first
       @group_category_type_names = GroupCategoryType.all.map{|gct| gct.name}
-      @agents = Agent.where(:group_id => @group.id)
+      @agents = Agent.alive.where(:group_id => @group.id).all
 
       respond_to do |format|
         format.html # show.html.erb

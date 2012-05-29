@@ -1,0 +1,494 @@
+=============================================================================================================================
+Server Installation Step
+=============================================================================================================================
+
+0. Check time of server or update NTP
+
+	check time server is correct?
+	$> date
+	if not correct, please change it.
+   
+1. Install JDK 1.6.0 update 21 +
+ 
+	Please install or upgrage if not exist or older version.
+	
+	run java package and install to target directory /usr/local/jvm or /opt/jvm
+	create system variable name "JAVA_HOME"
+	 $> export JAVA_HOME=/usr/local/jvm/jdk.1.6.0
+	 $> update-alternatives --install /usr/bin/java java /usr/<java-bin-path> 1
+	
+2. Install JRuby 1.6.5 +
+	
+	uncompress jruby package and copy it to /opt -> /opt/jruby_1.6.0
+	create jruby symbolic link
+	 $> ln -s /opt/jruby-1.6.0 jruby
+	create system variable name "JRUBY_HOME" and export jruby path
+	 $> export JRUBY_HOME=/opt/jruby
+	 $> export PATH=$PATH:/opt/jruby/bin
+	set rails environment for rails application (production | development | test).
+	 $> export RAILS_ENV=production
+
+3. Install JRuby Gems (Rails 3.0.3 or Rails 2.3.4)
+    
+        you must be check rails application required which version?
+
+	goto gems directory or setup durectory, Please install gem for rails 3.x
+	rum command to install gems
+	 $> jruby -S gem install *.gem --local
+    	check gem list completed or not?
+     	 $> jruby -S gem list
+	
+	# Note
+	If server doesn't need to run rails application, you do not install gems.
+	 
+4. Install MySQL Server 5.1 or higher (recommended 5.5)
+    
+	execute rpm package in setup directory (check 32bit or 64bit)
+      	list of installation
+	 - mysql-client
+	 - mysql-devel
+	 - mysql-server
+	 - mysql-shared-compat
+	 
+	after install successfully, please set root account and password
+	 $> mysqladmin -u root password "password"
+	
+	access mysql console and run below command to create new account
+	 
+	 #AOHS
+	 mysql> GRANT ALL PRIVILEGES ON *.* TO 'mysqladmin'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;
+	 mysql> GRANT ALL PRIVILEGES ON *.* TO 'mysqladmin'@'<server_ip>' IDENTIFIED BY 'password' WITH GRANT OPTION;
+	 mysql> GRANT ALL PRIVILEGES ON *.* TO 'mysqladmin'@'<server_name>' IDENTIFIED BY 'password' WITH GRANT OPTION;
+	 mysql> GRANT ALL PRIVILEGES ON *.* TO 'mysqladmin'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;
+	 
+	 #QLOGGER
+	 mysql> GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' IDENTIFIED BY 'admin' WITH GRANT OPTION;
+	 mysql> GRANT ALL PRIVILEGES ON *.* TO 'admin'@'<server_ip>' IDENTIFIED BY 'admin' WITH GRANT OPTION;
+	 mysql> GRANT ALL PRIVILEGES ON *.* TO 'admin'@'<server_name>' IDENTIFIED BY 'admin' WITH GRANT OPTION;
+	 mysql> GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%' IDENTIFIED BY 'admin' WITH GRANT OPTION;	 
+	 
+	 mysql> FLUSH PRIVILEGES;
+	
+	** if you can not set privilege, you can set privilege by update statement at mysql.user.
+	** whenever you change hostname please check mysql privileges again.
+	
+	restart mysql service
+	 >> /etc/init.d/mysql restart
+	
+4. MySQL Configuration
+ 
+        What's to do?
+        - setup memory
+        - move binary log file to /var/log
+        - change data directory (if neccessery)
+
+	stop mysql service
+	 >> /etc/init.d/mysql stop
+	 
+	set up configuration
+	create /etc/my.cnf or /etc/mysql/my.cnf (or copy from ../mysql/my-huge.cnf)
+	
+	change configuration following lines in session "mysqld".
+	
+	...
+	[mysqld]
+	#log-bin=/var/log/mysql/mysql-bin
+	#log-bin-index=/var/lib/mysql/mysql-bin.index
+	expire_logs_days=7
+	max_binlog_size=512M
+	log-bin-trust-function-creators=1
+	...
+	
+	if you need to move binary log to /var/log/mysql please do following it
+	stop mysqld service first
+	 >> /etc/init.d/mysql stop
+	 
+	make directory /var/log/mysql
+	change mode, group and owner following directory /var/lib/mysql
+	 
+	move binary log file from /var/lib/mysql to /var/log/mysql
+	 >> mv /var/lib/mysql/mysql-bin.000xx /var/log/mysql/
+	 
+	change binary file path in /var/lib/mysql/mysql-bin.index and save change
+	 >> nano ./mysql-bin.index
+	 ./mysql-bin.00001 => /var/log/mysql/mysql-bin.00001
+	 
+        change configuration following it
+	
+	...
+	[mysqld]
+	log-bin=/var/log/mysql/mysql-bin
+	log-bin-index=/var/lib/mysql/mysql-bin.index	
+	...
+	
+	start mysql server
+	 >> /etc/init.d/mysql start 
+
+	if can not start service please check error log in /var/lib/mysql/xxx.error
+
+	# Note 
+	How to remove binary log, do not delete by hand.	
+	 >> mysql -u root -p
+	 mysql> PURGE BINARY LOGS TO 'mysql-bin.000015';
+	 OR
+	 mysql> PURGE BINARY LOGS BEFORE '2009-05-01 00:00:00';
+	 
+	check temporary directory size
+	mysql require free apace of /tmp at least 1GB
+	if spaces not enougth please remove junk or unnecessary file.
+	
+        # move data dir
+
+	For some reason your database expands at a high rate, you might need to consider to move your data to another disk. 
+	Here's a simple trick on how to move the MySQL database directory to another location or drive.
+
+	[0] If not sure please backup it first.
+
+	[1] First stop the mysql service
+
+	shell> sudo /etc/init.d/mysql stop
+
+	[2] Create new MySQL directory
+
+	shell> mkdir /db/mysql
+	or
+	shell> sudo mkdir /path/to/new/mysql
+
+	[3] Move the data from the current data directory to new data directory.
+
+	shell> sudo mv /var/lib/mysql /path/to/new/mysql
+
+	[4] Assign the MySQL group and owner for the new data directory.
+
+	shell> sudo chmod -R mysql:mysql /new/path/mysql
+	shell> chown -R mysql:mysql /data/mysql
+
+	[5] Edit the my.cnf file to update the new path
+
+	shell> sudo vi /etc/mysql/my.cnf
+	Look for:
+
+	datadir = /var/lib/mysql
+	and update to:
+
+	datadir = /path/to/new/mysql
+
+	[6] Restart the mysql deamon (best during off-peak hours in case of errors)
+
+	shell> sudo /etc/init.d/mysqld restart
+
+	[7] After few days or weeks if you feel confident and everything is good you can remove the old data:
+
+	sudo rm -rf /var/lib/mysql
+
+5. Install Apache/httpd (2.2.x)
+	
+	execute rpm package (32bit or 64bit)
+	after install successfully. please change configuration.
+	 - server name
+	 - listen port (must be change to port 8080 if glassfish use port 80)
+	restart service again
+	
+	test http service
+	open http://x.x.x.x:8080
+	 
+6. Install PHP5 (5.2.x) (optional)
+
+	execute rpm package (32bit or 64bit)
+	test php
+	 >> php -v
+	make phpinfo page in /var/www/html
+	 >> vi phpinfo.php
+	 - <?php phpinfo() ?>
+	test php script
+	 >> http://x.x.x.x:8080/phpinfo.php
+	
+7. Message Queue Configuration
+
+	if img service is running, please stop it before
+	 >> /etc/init.d/imq stop
+	 
+    	change mq configuration  
+	open ../etc/imqbrokerd.conf and change following it.
+	 
+	 ...
+	 AUTOSTART=YES	 
+	 ARGS=-name voicerecordmq -port 17676 -Dimq.jms.tcp.port=51727
+	 # please use this port number, do not change it.
+	 ...
+	 
+	start imq service
+	 >> /etc/init.d/imq start
+	 
+	# Note
+	If you not change default port (7676) to port 17676, glassfish can not start
+	
+8. Extract glassfish
+
+	unzip glassfish package sges-v3.zip to /opt/glassfishv3
+    	make glassfish symbolic link
+	 >> ln -s /opt/glassfishv3 glassfish
+	 
+	setup system variable (/etc/bashrc)
+	 >> export GLASSFISH_HOME=/opt/glassfish
+	 >> export PATH=$PATH:/opt/glassfish/glassfish/bin
+	 >> export RAILS_ENV=production
+	 
+	check hosts file to set server name -> /etc/hosts
+	 Example:
+	 127.0.0.1		serverdb	localhost	
+	 172.xxx.xxx.xxx	serverdb	localhost
+	 ::1            	serverdb	localhost
+	reboot server
+	 >> reboot
+	 
+	start server
+     	 >> asadmin start-domain
+
+	## setup web server variable ##
+	open glassfish admin console in browser --> http://0.0.0.0:4848
+	after that you can see console
+	
+	click Configuration > JVM Setting > JVM Option
+	change these variable following it
+		-XX:MaxPermSize=256m => -XX:MaxPermSize=1024m
+		-Xmx1024m => -Xmx1536m
+    	click save
+	 
+	click Configuration > Jruby container
+	    jruby home = /opt/jruby
+		init pool = 1
+		min pool = 1
+		max pool = 4
+    	click save
+
+    	click Configuration > Java Message Service > JMS HOSTs > default_JMS_host
+        port 7676 => 17575	 
+	click save
+
+    	restart server again	 
+
+    	# if you need to run application on port 80 (not 8080 default) please do following it
+	# when you change glassfish run on 80, you must change apache listen port to 8080 before
+	 
+	click Configuration > Network config > Network Listeners > http-listener-1
+	    port 8080 => 80
+		 
+	restart server again
+	 
+9. Add Glassfish service
+
+	copy glassfish (service file) from CD to /etc/init.d
+	and do following it
+	 >> chmod +x /etc/init.d/glassfish
+     	 >> chkconfig --add glassfish
+	 >> runlevel ==> 5
+     	 >> chkconfig --level 5 glassfish on
+	 >> chkconfig --list | grep "glassfish"
+	 
+	change /etc/init.d/glassfish and change JAVA_HOME and JRUBY_HOME are correct or not?
+	how to test
+	 >> /etc/init.d/glassfish start
+	 >> /etc/init.d/glassfish stop
+	
+	restart server to test glassfish startup
+	
+	more option
+	 >> chkconfig --level 5 glassfish off 			disable service
+	 >> chkconfig glassfish off				disable service
+	 >> chkconfig --del glassfish				remove service
+	 >> chkconfig --list                            	see list
+	 
+10. Install Maakit (Require for main and sub database but install only main database)
+
+    	execute maakit packages (32 bit or 64 bit)
+	how to test
+	 >> mk-table-sync --help
+
+11. Setup Appliication (AOHS)
+	
+	[1] Prepare env
+	unzip and copy AOHS.zip to /opt/applications/ -> /opt/applications/AOHS
+	change database configuration in database.yml
+	
+	create database amivoice_operators_help_<customer_name>_<database_no>     
+	 mysql> create database amivoice_operators_help_xxxx_1; -> Main server
+	 mysql> create database amivoice_operators_help_xxxx_2; -> Sub server
+	 mysql> show databases;
+	
+	check setting ../lib/aohs.rb for current environment system
+	
+	create database schema and initialize data
+	 >> cd /opt/applications/AOHS
+	 >> jruby -S rake application:rebuild
+	
+	[2] Deploy Application
+	deploy war file to glassfish
+	
+	 Single Application
+	 >> asadmin deploy AohsWeb.war    => /opt/glassfish/glassfihs/domain/domain1/applications/AohsWeb
+     	Multiple (Main and Sub) Applications
+	 >> asadmin deploy AohsWeb1.war   => /opt/glassfish/glassfihs/domain/domain1/applications/AohsWeb1
+	 >> asadmin deploy AohsWeb2.war   => /opt/glassfish/glassfihs/domain/domain1/applications/AohsWeb2
+	 
+	change database configuration in file ../AohsWeb/WEB-INF/config/database.yml
+	and change pool connections (size) for approximate. => change pool size to 15. 
+	check setting ../AohsWeb/WEB-INF/lib/aohs.rb for current environment system
+	
+	For main database only
+	change maakit configuration in file ../AohsWeb/WEB-INF/config/maakit.yml for master and slave database
+	check list of table that you need to sync from master to slave database in file ../AohsWeb/WEB-INF/config/table.sync
+	how to test
+	 >> jruby -S rake application:db_syncer
+	and after you executed this command successfully, data of slave database must be same master database.
+	 
+	restart glassfish
+	 >> /etc/init.d/glassfish restart
+	 
+	you can see deployed application on browser -> http://<server>/AohsWeb[1|2]
+		
+	# Note
+	If deployed not successfully, this problem occured because Java version, Glassfish installation, or war package
+	Please try uninstall or delete and install it again.
+	If problem come from war package, you can try another war files and test deploy again.
+
+11. Setup Call browser
+	
+	???
+	
+12. Watcher Configuration
+    
+	copy log4j.properties from watcher package to ../glassfish/glassfish/domains/domain1/docroot/watcher/log4j.properties
+    	check url
+	 http://x.x.x.x/watcher/log4j.properties
+	 
+13. Create Checker folder
+
+	copy checker-1.0 to /opt/checker-1.0
+	- main logger
+     	/opt/checker-1.0_main
+    	- sub logger database
+     	/opt/checker-1.0_sub
+
+    	if this directory not exist, system will use default.
+
+14. Prepare AOHS data
+
+[1] create new role
+		open control panel > permission > New role (create role)
+
+[2] set role priority
+		open control panel > permission > Role Priority
+		please move up or move down to set role priority
+
+[3] import user data (agent and manager)
+		open control panel > manager > import 
+		choose file to upload and import to system.
+		please check import result correct or not?
+		
+		# Note
+		After you import users list was finished, Please tell default password to user for login website.
+		
+[4] create categroy type
+		open control panel > category > new categroy type
+		create category following document i.e Site, Location, Department
+		
+[5] create category of each category type
+		open control panel > category > new categroy
+		create category following document i.e Bangkok, Modernform, Customer Service
+	
+[6] set category type priority
+		open control panel > category > Manage tree
+		please set priority of category type in order from high to low
+		
+[7] set group's category
+		open control panel > group
+		choose group to edit
+		set group's leader (group name is a username) and category following document
+
+[8] set access level for each manager (user)
+		open control panel > manager 
+		choose manager to edit
+		click tab 'access level'
+		check / uncheck group's authorization following document
+		
+[9] import keyword list
+		open keywords report > import
+		choose file to upload and import
+		please check import result correct or not?
+
+[10] import extension information
+		open control panel > extension > import
+		choose file to upload and import
+		please check data pattern and import result correct or not?
+		
+[11] set role permission
+		open control panel > permission
+		
+		For admin must be check all privileges except "Enable Groups/Agents filter"
+		Another role, please ask user or check by self for approximate.
+		
+[12] set server configuration
+		please check configuration for current environment <DEFAULT | BASELINE>.
+		- AOHS_WEB
+		- WATCHER
+
+		[Watcher] please check it first.
+		 update_extension.url = http://x.x.x.x/AohsWeb/users/update_extension
+		 watcher.log4cxx_properties.url = http://x.x.x.x/watcher/log4j.properties
+		 update_computer.url = http://x.x.x.x/AohsWeb/computer_log/update
+		
+		check export configuration
+			run http://x.x.x.x/AohsWeb/configurations.txt?user=AoshAdmin
+			if ok you can see file download
+			
+[13] import customer list
+		not available for this version
+		
+[14] start aohs schdeules
+		please type url http://x.x.x.x/AohsWeb/tools
+		and see schedules
+		click start button to start schedule following list:
+		- Log.BackupOperationLog
+		- Tool.CleanupStatusLog 
+		- Tool.CleanupTemporaryTable
+		- Tool.DatabaseSyncer (maakit require and start only master server)
+		- Tool.VerifyVoiceLogTable
+		- Tool.VoiceLogSwitcher (optional)
+		
+		for another scheduler used for fixed error data.
+		If no error in table, then not necessary to start them.
+
+[15] Check update data url (Watcher)
+
+		how to test 
+		- update_extension.url
+			http://x.x.x.x/AohsWeb/users/update_extension?ctilogin=X&remote_ip=X&username=X&extension=A,B
+		- update_computer.url
+			http://x.x.x.x/AohsWeb/computer_log/update?computer_name=X&remote_ip=X&loginname=X		
+			
+		plese see result in control panel > extension
+		
+		For lookup agent using CIT and agent id
+		agent_id, extension and did should be correct.
+		
+		For lookup agent using Computer Info and domain name
+		username, extension, computer_name and remote ip should correct.
+
+[16] Install Other program (support)
+		Please use install package from OS CDs.
+		- tar
+		- unzip
+		- nano
+		- emacs
+		- sox
+		- speex
+		- bzip2
+		- man
+		- ...?
+		
+		
+====================================================================================================================		
+====================================================================================================================
+I wish you a lucky day ...
+--------------------------------------------------------------------------------------------------------------------
