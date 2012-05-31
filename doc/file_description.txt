@@ -7,37 +7,46 @@ AgentController
 
 	manage agents (users) information as create, edit, update and delete
 
+	for import and export see DataController
+
 ManagerController
 
 	manage managers (managers) information as create, edit, update and delete
 	update tree permission / accessing level
 
+	for import and export see DataController
+
 BookmarkController
 	
-	manage call bookmark
+	manage call bookmark as create, edit, delete
 
 CallBrowserController
 
-	listen realtime call, this function will work with CallBrowser (Applet app)
+	for listen realtime call, this function will work with CallBrowser (Applet app)
+
+	see more
+	/public/applets/call_browser
 
 CallTagController
 
-	manage or do somethis about tag and call tag as create, change, edit tags
+	manage tag and call tag as create, change, edit tags, tagging call
 
 ComputerLogController
 
 	receive data from ami watcher and update to computer log
 	see list of ami watcher
+	update computer extension
 
 ConfigurationController
 
-	manage configuration data
-	create configuration file for download ( client software )
+	change configuration data (value)
+	create configuration file for download by some application such as moss popup, etc. (http://0.0.0.0/configuration.txt)
 
 CustomerController
 
 	manage customer data (customer info, customer number, customer car) as create, update, and delete 
-		
+	
+	for import and export see DataController	
 
 CustomersController
 
@@ -51,19 +60,20 @@ DataController
 	for import/export data as users, keywords, extension, customer, etc,
 	all function about import and export (except report csv and pdf) 
 
-	see AgentController, ManagerController, ExtensionController, KeywordController
-
+	pass link from AgentController, ManagerController, ExtensionController, KeywordController
+	
 DnisAgentController
 
 	** not available **
 
 EventController
 
-	display event log of application server
+	display event log of application server 
+	** not available **
 
 ExtensionController
 
-	display extension information and current extension matching status between agent and telephone
+	display extension information and current extension matching status between agent and telephone or computer
 	manage extension data
 	
 FavoritesController
@@ -167,8 +177,8 @@ Lib
 
 AmiCallSearch
 
-	contains function about search calls
-
+	contains function about search calls for AgentCallSearch, CustomerCallSearch and TagCallSearch
+	
 AmiConfig
 
 	read configuration value by key
@@ -179,7 +189,7 @@ AmiLog
 
 AmiPermission
 
-	check permission of controller/action for user
+	check permission of controller/action or name for user
 
 	.. before_filter :permission_require
 
@@ -189,13 +199,13 @@ AmiReport
 
 AmiScheduler
 
-	run function or some job in scheduler
-	such as cleanup log table, repair data, summary data, create table, etc.
+	run function or some job as schedule
+	such as cleanup log table, repair data, summary data, create voice log table, etc.
 
 AmiSource
 
-	used for import and export data
-
+	used for import and export data 
+	support CSV format only
 	see DataController
 
 AmiStatisticsReport
