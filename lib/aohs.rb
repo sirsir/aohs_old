@@ -14,32 +14,32 @@ module Aohs
   ## Application Setting ##
   
   # start or stop service
-  STOP_SERVICE                = false
+  STOP_SERVICE                	= false
   
-  APP_PATH                    = Rails.root
+  APP_PATH                    		= Rails.root
   
   # run application customer site?
-  CUSTOMER_SITE               = "aeon"                       
-                              # [false,"acss","acsib","aeon"] 
+  CUSTOMER_SITE               	= "aeon"	
+  							# [false,"acss","acsib","aeon"] 
   
   # web title and content's name
-  WEB_TITLE_NAME              = "AmiVoice Operator's Help System"
-  WEB_VERSION                 = "1.10"
-  WEB_AUTHOR                  = "AmiVoice (Thailand)"
-  WEB_CLOGO                   = CUSTOMER_SITE
-                              # <name>_<report|login>.png             
+  WEB_TITLE_NAME              	= "AmiVoice Operator's Help System"
+  WEB_VERSION                 	= "1.1.0"
+  WEB_AUTHOR                  	= "AmiVoice (Thailand)"
+  WEB_CLOGO                   	= CUSTOMER_SITE
+                              			# <name>_<report|login>.png             
   
   # web authentication #
-  LOGIN_BY_AGENT              = false
+  LOGIN_BY_AGENT              = false	# true  = allow agent login to application
   
-  DEFAULT_PASSWORD            = "aohsweb!QAZ@WSX" # change password
-  DEFAULT_PASSWORD_NEW        = "aohs*1234"       # all new account
-  ADMIN_PASSWORD              = "AohsAdmin"       # admin account
+  DEFAULT_PASSWORD            		= "aohsweb!QAZ@WSX" # default password for change password at login
+  DEFAULT_PASSWORD_NEW        	= "aohs*1234"       # default password for new account
+  ADMIN_PASSWORD              		= "AohsAdmin"       # default admin account
   
-  ALLOW_CHANGE_PASS_FRMSCR    = false
+  ALLOW_CHANGE_PASS_FRMSCR    = false	# ture = allow to change password from login page
   
   # protected system accounts #
-  PRIVATE_ACCOUNTS            = ['AohsAdmin']
+  PRIVATE_ACCOUNTS            = ['AohsAdmin']	# username which is hidden
   
   # Roles
   
