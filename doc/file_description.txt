@@ -1,0 +1,260 @@
+
+========================================================================================
+Controller
+========================================================================================
+
+AgentController
+
+	manage agents (users) information as create, edit, update and delete
+
+ManagerController
+
+	manage managers (managers) information as create, edit, update and delete
+	update tree permission / accessing level
+
+BookmarkController
+	
+	manage call bookmark
+
+CallBrowserController
+
+	listen realtime call, this function will work with CallBrowser (Applet app)
+
+CallTagController
+
+	manage or do somethis about tag and call tag as create, change, edit tags
+
+ComputerLogController
+
+	receive data from ami watcher and update to computer log
+	see list of ami watcher
+
+ConfigurationController
+
+	manage configuration data
+	create configuration file for download ( client software )
+
+CustomerController
+
+	manage customer data (customer info, customer number, customer car) as create, update, and delete 
+		
+
+CustomersController
+
+	for searching customer calls
+	export customer calls
+
+	see lib/AmiCallSearch
+
+DataController
+
+	for import/export data as users, keywords, extension, customer, etc,
+	all function about import and export (except report csv and pdf) 
+
+	see AgentController, ManagerController, ExtensionController, KeywordController
+
+DnisAgentController
+
+	** not available **
+
+EventController
+
+	display event log of application server
+
+ExtensionController
+
+	display extension information and current extension matching status between agent and telephone
+	manage extension data
+	
+FavoritesController
+
+	searching tagged calls
+	
+	see lib/AmiCallSearch
+
+GroupCategoriesController
+
+	create, edit, update, delete of group category
+
+GroupCategoryTypesController
+
+	create, edit, update, delete, sorting of group category type
+
+GroupController
+
+	display list, create, edit, update group
+
+KeywordGroupController
+
+	** not in use **
+
+KeywordController
+
+	display keyword report, manage keywords as create, edit, delete 
+	generate keyword list file which is downloaded by Keyword Dectector
+
+LogController
+
+	display operations log
+
+ManagerController
+
+	manage managers data
+
+PermissionController
+
+	manage role permission
+	create role
+
+QueryController
+
+	** not in use **
+
+RoleController
+
+	create new role
+
+Sessionscontroller
+
+	for user login and logout
+
+StatisticsController
+
+	display agent report
+
+TagController
+
+	display tag list and manage tag as create, edit, delete
+
+TagGroupController
+
+	manage group tag as create, edit, and delete
+
+TimelineController
+
+	for generate text file / data file that is used for TimeLine App
+
+	see TimeLine App
+
+ToolsController
+
+	see application information and manage application schedules
+
+TopPanelController
+
+	display menus and today report
+
+TreeController
+
+	contains function about tree
+	generate json file and used by YUI treeview
+	
+UsersController
+
+	change password, change user type
+	
+ 	get information about users from client computer via AmiWathcer (update_extension, updare_agent_activity)
+
+VoiceLogController
+
+	searching voice log / agent call search
+
+	see lib/AmiCallSearch
+
+===================================================================================
+Lib
+===================================================================================
+
+AmiCallSearch
+
+	contains function about search calls
+
+AmiConfig
+
+	read configuration value by key
+
+AmiLog
+
+	write operation log
+
+AmiPermission
+
+	check permission of controller/action for user
+
+	.. before_filter :permission_require
+
+AmiReport
+
+	contains function about report today, agent report and keyword reports
+
+AmiScheduler
+
+	run function or some job in scheduler
+	such as cleanup log table, repair data, summary data, create table, etc.
+
+AmiSource
+
+	used for import and export data
+
+	see DataController
+
+AmiStatisticsReport
+
+	contains function for compute and count calls and keywords and update them to statistics tables
+
+AmiTimeLine
+
+	make timeline text file
+
+AmiTool
+
+	contains functions to support application or maintenance
+
+AmiTree
+
+	contains functions for prepare treeview data 
+
+	- agroup and agent treeview
+
+AmiUser
+
+	** not in use **
+
+AmiVoiceLog
+
+	contains function about voice log as maintenance or repair voice log data
+
+Aohs
+
+	application setting / configuration / initial
+	application option
+
+AuthenticatedSystem, AuthericationRule
+
+	** plugin about user authertication **
+	required by SessionController and Applicationcontroller
+
+CsvReport
+
+	create csv file form report data
+
+Format
+
+	contains any functions about application, display pattern, convert data, do something with value etc.
+	
+	see ApplicationHelper
+
+PdfReport
+
+	make pdf file from report data
+
+=================================================================================================
+
+
+	
+	
+
+
+ 
+	
+	
