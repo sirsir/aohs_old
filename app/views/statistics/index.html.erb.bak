@@ -264,7 +264,7 @@
 			<td align="right">
 			<% params.delete(:authenticity_token) %>
             <% params.delete(:utf8) %>
-			<div id="paging"><%= will_paginate(@agents2,{:params => params}).gsub("%2C1","").gsub("%2C","").gsub("agent=","XXXX=") %></div>	
+			<div id="paging"><%= will_paginate(@agents2,{:params => params}).gsub("%2C","").gsub("agent=","XXXX=") %></div>	
 			</td>
 	      </tr>
 	    </table>		
