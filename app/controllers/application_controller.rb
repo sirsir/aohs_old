@@ -13,11 +13,12 @@ class ApplicationController < ActionController::Base
     
     $CF = AmiConfig::UserConf.new(session[:user_id])
     $PER_PAGE = $CF.get('client.aohs_web.number_of_display_list').to_i
+    #$SERVER_ROOT_URL = $CF.get('client.aohs_web.serverRootUrl').to_s
     $SERVER_ROOT_URL = Aohs::SITE_ROOT
     
     ## fixed
     AmiTool.switch_table_voice_logs
-  
+    
   end
     
 end

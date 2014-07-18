@@ -21,7 +21,13 @@ class User < ActiveRecord::Base
   validates :display_name,  :presence   => true,
                             :format     => { :with => Authentication.name_regex, :message => Authentication.bad_name_message },
                             :length     => { :maximum => 100 }
-  
+
+    validates :cti_agent_id,  :presence   => true,
+                            :format     => { :with => Authentication.name_regex, :message => Authentication.bad_name_message },
+                            :length     => { :maximum => 100 }
+
+
+
   validates_presence_of     :type
 	
   validates :email, :format     => { :with => Authentication.email_regex, :message => Authentication.bad_email_message },
@@ -166,7 +172,7 @@ class User < ActiveRecord::Base
    def get_deleted_login_name
      return self.login.to_s + "__" + self.id.to_s
    end
-   
+
    protected
    
 end

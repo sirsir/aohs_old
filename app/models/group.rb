@@ -29,7 +29,6 @@ class Group < ActiveRecord::Base
    validates_length_of       :name, :minimum => 3
     
    after_destroy :remove_group
-   before_save :default_values
    
    def agent_count
    
@@ -53,10 +52,4 @@ class Group < ActiveRecord::Base
      
    end
  
-   private
-
-   def default_values
-      self.leader_id ||= 0
-   end
-   
 end

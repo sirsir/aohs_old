@@ -78,14 +78,14 @@ module AmiCallSearch
         dt_cond = "#{vl_tbl_name}.start_time between '#{now.beginning_of_year} 00:00:00' and '#{now.end_of_year} 23:59:59'"
       when 8 #all => Search all
         dt_cond = "#{vl_tbl_name}.start_time >= '#{now - Aohs::LIMIT_SEARCH_DAYS} 00:00:00'"
-	  when 9 # one month ago
-		month_later = now - 30 
-		dt_cond = "#{vl_tbl_name}.start_time between '#{month_later} 23:59:59' and '#{now} 00:00:00'"
-	  when 10 # six month ago
-		six_month_later = now - (6 * 30)
-		dt_cond = "#{vl_tbl_name}.start_time between '#{six_month_later} 23:59:59' and '#{now} 00:00:00'"
-	  when 11 # one week ago
-		dt_cond = "#{vl_tbl_name}.start_time between '#{now - 7} 00:00:00' and '#{now} 23:59:59'"
+			when 9 # one month ago
+				month_later = now - 30 
+				dt_cond = "#{vl_tbl_name}.start_time between '#{month_later} 23:59:59' and '#{now} 00:00:00'"
+			when 10 # six month ago
+				six_month_later = now - (6 * 30)
+				dt_cond = "#{vl_tbl_name}.start_time between '#{six_month_later} 23:59:59' and '#{now} 00:00:00'"
+			when 11 # one week ago
+				dt_cond = "#{vl_tbl_name}.start_time between '#{now - 7} 00:00:00' and '#{now} 23:59:59'"
       when 0 #custom ...
          stdate = nil
          sttime = nil
@@ -315,7 +315,7 @@ module AmiCallSearch
     
     sql_frm = "#{v}"
     if includes.include?(:voice_log_counter)
-      sql_frm = "(#{sql_frm} JOIN voice_log_counters ON #{v}.id = voice_log_counters.voice_log_id)"
+      sql_frm = "(#{sql_frm} LEFT OUTER JOIN voice_log_counters ON #{v}.id = voice_log_counters.voice_log_id)"
     end
     if includes.include?(:result_keywords)
       sql_frm = "(#{sql_frm} LEFT JOIN result_keywords ON #{v}.id = result_keywords.voice_log_id)"
@@ -345,7 +345,7 @@ module AmiCallSearch
 	    
 	  sql_frm = "#{v}"
 	  if includes.include?(:voice_log_counter)
-		sql_frm = "(#{sql_frm} JOIN voice_log_counters ON #{v}.id = voice_log_counters.voice_log_id)"
+		sql_frm = "(#{sql_frm} LEFT OUTER JOIN voice_log_counters ON #{v}.id = voice_log_counters.voice_log_id)"
 	  end          
 	  if includes.include?(:result_keywords)
 		sql_frm = "(#{sql_frm} LEFT JOIN result_keywords ON #{v}.id = result_keywords.voice_log_id)"
@@ -377,13 +377,13 @@ module AmiCallSearch
           includes = (includes.concat(joins)).uniq
           
           select_sql << " COUNT(v.id) AS call_count,SUM(v.duration) AS duration,SUM(v.ngword_count) AS ng_word, sum(v.mustword_count) as mu_word, "
-          select_sql << " SUM(IF(v.call_direction = 'i',1,0)) AS call_in, "
-          select_sql << " SUM(IF(v.call_direction = 'o',1,0)) AS call_out, "
+          select_sql << " SUM(IF(v.call_direction = 'i',1,0)), "
+          select_sql << " SUM(IF(v.call_direction = 'o',1,0)), "
           select_sql << " SUM(IF((v.call_direction in ('e','u')),1,0)) AS call_oth " 
           
           sql_frm = "#{v}"
           if includes.include?(:voice_log_counter)
-            sql_frm = "(#{sql_frm} JOIN voice_log_counters on #{v}.id = voice_log_counters.voice_log_id)"
+            sql_frm = "(#{sql_frm} LEFT OUTER JOIN voice_log_counters on #{v}.id = voice_log_counters.voice_log_id)"
           end          
           if includes.include?(:result_keywords)
             sql_frm = "(#{sql_frm} LEFT JOIN result_keywords on #{v}.id = result_keywords.voice_log_id)"
@@ -399,14 +399,14 @@ module AmiCallSearch
           end  
           
           sql << " SELECT #{v}.id,#{v}.call_direction,#{v}.duration,#{c}.ngword_count,#{c}.mustword_count "
-          sql << " FROM #{sql_frm} "
+          sql << " FROM #{sql_from} "
           sql << " WHERE #{sc[:conditions].join(' and ')} "
           sql << " GROUP BY #{v}.id "
           
           sql = "SELECT #{select_sql} FROM (#{sql}) v "
           
       when :extension
-         sql_where = nil
+        sql_where = nil
         case Aohs::VLOG_SUMMARY_BY
         when :normal_or_main
           select_sql << " COUNT(distinct v.id) AS call_count,SUM(v.duration) AS duration,SUM(v.ngword_count) AS ng_word, sum(v.mustword_count) as mu_word, "
@@ -414,40 +414,39 @@ module AmiCallSearch
           select_sql << " SUM(IF(v.call_direction = 'o',1,0)) as call_out, "
           select_sql << " SUM(IF((v.call_direction in ('e','u')),1,0)) AS call_oth " 
           sql << " SELECT #{v}.id,#{v}.call_direction,(#{v}.duration + IFNULL(#{c}.transfer_duration,0)) as duration,(#{c}.ngword_count + IFNULL(#{c}.transfer_ng_count,0)) as ngword_count,(#{c}.mustword_count + IFNULL(#{c}.transfer_must_count,0)) as mustword_count "
-		  if sc[:ctrl][:find_transfer] == true
-			sql_frm = "#{v} JOIN (#{voice_logs_transfer_query_builder(includes,[],sc)}) transfer_log ON #{v}.call_id = transfer_log.xcall_id LEFT JOIN #{c} ON #{v}.id = #{c}.voice_log_id "
-		  else
-		    includes << :voice_log_counter
-			sql_frm = "#{voice_logs_joins_query_builder(includes,joins,sc)}" 
-			sql_where = "#{sc[:conditions].join(' and ')}"
-		  end
-		when :inc_trf
+					if sc[:ctrl][:find_transfer] == true
+						sql_frm = "#{v} JOIN (#{voice_logs_transfer_query_builder(includes,[],sc)}) transfer_log ON #{v}.call_id = transfer_log.xcall_id LEFT JOIN #{c} ON #{v}.id = #{c}.voice_log_id "
+					else
+						includes << :voice_log_counter
+						sql_frm = "#{voice_logs_joins_query_builder(includes,joins,sc)}" 
+						sql_where = "#{sc[:conditions].join(' and ')}"
+					end
+				when :inc_trf
           select_sql << " COUNT(distinct v.id) AS call_count,SUM(v.duration) AS duration,SUM(v.ngword_count) AS ng_word, sum(v.mustword_count) as mu_word, "
           select_sql << " SUM(IF(v.call_direction = 'i',1,0) + IFNULL(v.transfer_in_count,0)) AS call_in, "
           select_sql << " SUM(IF(v.call_direction = 'o',1,0) + IFNULL(v.transfer_out_count,0)) AS call_out, "
           select_sql << " SUM(IF((v.call_direction in ('e','u')),1,0)) AS call_oth " 
           sql << " SELECT #{v}.id,#{v}.call_direction,(#{v}.duration + IFNULL(#{c}.transfer_duration,0)) as duration,(#{c}.ngword_count + IFNULL(#{c}.transfer_ng_count,0)) as ngword_count,(#{c}.mustword_count + IFNULL(#{c}.transfer_must_count,0)) as mustword_count, #{c}.transfer_in_count, #{c}.transfer_out_count "
           sql_frm = "#{v} JOIN (#{voice_logs_transfer_query_builder(includes,[],sc)}) transfer_log ON #{v}.call_id = transfer_log.xcall_id LEFT JOIN #{c} ON #{v}.id = #{c}.voice_log_id "
-
-		  if sc[:ctrl][:find_transfer] == true
-			sql_frm = "#{v} JOIN (#{voice_logs_transfer_query_builder(includes,[],sc)}) transfer_log ON #{v}.call_id = transfer_log.xcall_id LEFT JOIN #{c} ON #{v}.id = #{c}.voice_log_id "
-		  else
-		    includes << :voice_log_counter
-			sql_frm = "#{voice_logs_joins_query_builder(includes,joins,sc)}" 
-			sql_where = "#{sc[:conditions].join(' and ')}"
-		  end  
-		when :search_only
+					if sc[:ctrl][:find_transfer] == true
+						sql_frm = "#{v} JOIN (#{voice_logs_transfer_query_builder(includes,[],sc)}) transfer_log ON #{v}.call_id = transfer_log.xcall_id LEFT JOIN #{c} ON #{v}.id = #{c}.voice_log_id "
+					else
+						includes << :voice_log_counter
+						sql_frm = "#{voice_logs_joins_query_builder(includes,joins,sc)}" 
+						sql_where = "#{sc[:conditions].join(' and ')}"
+					end  
+				when :search_only
           # not define
         end      
       
         sql << " FROM #{sql_frm} "
-		sql << " WHERE #{sql_where} " unless sql_where.nil?
-		sql << " GROUP BY #{v}.id "
+				sql << " WHERE #{sql_where} " unless sql_where.nil?
+				sql << " GROUP BY #{v}.id "
         sql = "SELECT #{select_sql} FROM (#{sql}) v"  
     
-    else
-      # error
-    end
+			else
+				# error
+		end
 
     return sql      
     
@@ -568,7 +567,6 @@ module AmiCallSearch
       
       sql = voice_logs_summary_query_builder(includes2,joins2,sc)
       result = VoiceLogTemp.find_by_sql(sql).first
-      
       unless result.blank?
         summary[:sum_dura] = format_sec(result.duration.to_i)
         summary[:sum_ng] = number_with_delimiter(result.ng_word.to_i)
@@ -775,6 +773,7 @@ module AmiCallSearch
 
     tl_data = {}
     
+
     sc[:summary] = false
     sc[:page] = true
     sc[:order] = ["#{vl_tbl_name}.agent_id,#{vl_tbl_name}.start_date asc,#{vl_tbl_name}.start_time asc"]
@@ -903,11 +902,7 @@ module AmiCallSearch
         is_found_transfer = false 
         
         #vc_c = vc.voice_log_counter
-        if Aohs::MOD_CALL_TRANSFER 
-	  vc_c = VoiceLogCounter.select("ngword_count,mustword_count,bookmark_count,transfer_call_count").where(:voice_log_id => vc.id).first
-        else
-	  vc_c = VoiceLogCounter.select("ngword_count,mustword_count,bookmark_count").where(:voice_log_id => vc.id).first
-	end
+        vc_c = VoiceLogCounter.select("ngword_count,mustword_count,bookmark_count,transfer_call_count").where(:voice_log_id => vc.id).first
         unless vc_c.nil?
           vc_ng_count = vc_c.ngword_count.to_i
           vc_must_count = vc_c.mustword_count.to_i

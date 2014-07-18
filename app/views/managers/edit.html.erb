@@ -93,10 +93,10 @@
     }
 
     $(document).ready(function(){
-    	 $("#use_default_p").click(function(){
-	    $("#manager_password").val("#USEDEFAULTPASSWORD#");
-	    $("#manager_password_confirmation").val("#USEDEFAULTPASSWORD#");
-	 });
+	$("#use_default_p").click(function(){
+	   $("#manager_password").val("#USEDEFAULTPASSWORD#");
+	   $("#manager_password_confirmation").val("#USEDEFAULTPASSWORD#");
+	});
 	$("#manager_id_card").mask("9999999999999");
        expandSelectedTeam();
        <%sts = 1%>
@@ -126,7 +126,8 @@
     }
     function check_member(){
       $("#box2View option:selected").each(function(){
-        var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");  
+        //var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");
+	var ct = $(this).text().toString().replace(/\s\[.*\]/,"");	
         var select_for_expand = tree.getNodeByProperty("label",ct);
         if(select_for_expand != null)
         {
@@ -162,7 +163,8 @@
 
     function del_member(){
       $("#box1View option:selected").each(function(){
-        var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");
+        //var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");
+	var ct = $(this).text().toString().replace(/\s\[.*\]/,"");	
         var select_for_expand = tree.getNodeByProperty("label",ct);
         if(select_for_expand != null)
         {
@@ -251,7 +253,8 @@
       }
         
       $("#box1View option").each(function(){
-        var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");
+        //var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");
+	var ct = $(this).text().toString().replace(/\s\[.*\]/,"");
         var select_for_expand = tree.getNodesByProperty("label",ct);
 		for (var j = 0; j < select_for_expand.length; j++) {
 			if ((select_for_expand[j] != null) && (select_for_expand[j].data.NodeType == "group")) {
@@ -289,7 +292,7 @@
       <tr>
         <td align="left">
           <ul>
-            <li><%= link_image_tag('Back','back.png',managers_path,{:title => 'Back to manager list'}) %></li>
+            <li><%= link_image_tag('Back','back.png',{:controller => "managers",:action => 'index',:page=>(session[:mng_page]||"1"),:status=>session[:mng_state]},{:title => 'Back to manager list'}) %></li>
             <li><%= link_image_tag('Manager details','detail.png',{:controller => "managers",:action=>"show", :id => @manager.id},{:title => 'Show details'}) %></li>
             <li><%= link_image_tag('Delete manager','delete.png','#',{:onclick => "del_manager(#{@manager.id},\"#{@manager.display_name}\")",:title => 'Delete'}) %></li>          
             <li><%= link_image_tag('Change user type','urole.png','#',{:onclick => "onChangeUserType(#{@manager.id})",:title => 'Change from manager to user'}) %></li>
@@ -399,7 +402,7 @@
               <td>
                 <%= f.password_field :password, :size => 25, :maxsize => 20,:class =>'input-text' %><span class="span-require">*</span>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" id="use_default_p" name="use_default_p" value="Use Default Password"/>
-		<br/><span class="span-field-note">Password must have a minimum of 6 characters</span>
+		<br/><span class="span-field-note">Password must have a minimum of 8 characters and contains special characters</span>
               </td>
             </tr>
             <tr>

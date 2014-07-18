@@ -1,3 +1,7 @@
+
+<%= javascript_src_path('/jquery/jquery.autocomplete/jquery.autocomplete.js') %>
+<%= stylesheet_src_path('/jquery/jquery.autocomplete/jquery.autocomplete.css') %>
+
 <% content_for :header do %>
     
     <style type="text/css">
@@ -191,6 +195,14 @@
               searchKey.ext = "";
           }
 
+          var agent_id = jQuery.trim($("input[name=agent_id]").val());  // nkm
+          var agent_name = jQuery.trim($("input[name=agent_name]").val());  // nkm
+          if(!isBlank(agent_id)&&!isBlank(agent_name)){
+              searchKey.agent_id = agent_id;
+          } else {
+              searchKey.agent_id = "";
+          }
+
           var callerNo = jQuery.trim($("input[name=vcCaller]").val());
           if(!isBlank(callerNo)){
 		  	  if(callerNo.length >= 4){
@@ -287,28 +299,29 @@
 	          data:
 	          {
 	              keys: searchKey.keys,
-                  agents: searchKey.agents,
-                  groups: searchKey.groups,
+                agents: searchKey.agents,
+                groups: searchKey.groups,
 	              periods: searchKey.periods,
 	              stdate: searchKey.stdate,
 	              sttime: searchKey.sttime,
 	              eddate: searchKey.eddate,
 	              edtime: searchKey.edtime,
 	              ext: searchKey.ext,
+	              agent_id: searchKey.agent_id,
 	              calld: searchKey.calld,
 	              caller: searchKey.caller,
 	              dialed: searchKey.dialed,
-				  trfc: searchKey.trfc,
+								trfc: searchKey.trfc,
 	              stdur: searchKey.stdu,
 	              eddur: searchKey.eddu,
-				  trfcfr: searchKey.trfcfr,
-				  trfcto: searchKey.trfcto,
-				  keyword: searchKey.keyword,
+								trfcfr: searchKey.trfcfr,
+								trfcto: searchKey.trfcto,
+								keyword: searchKey.keyword,
 	              page: ctrlPage.selectPage,
-				  perpage: ctrlPage.perPage,
+								perpage: ctrlPage.perPage,
 	              sortby: ctrlSort.colName,
 	              od: ctrlSort.order,
-				  withtrnf: searchKey.with_trnf
+								withtrnf: searchKey.with_trnf
 	          },
 	          dataType: "json",
 	          success: function(data){
@@ -348,6 +361,8 @@
 	          $("input[name=vcToDate]").val("");
 	          $("input[name=vcToTime]").val("");
 	          $("input[name=vcExt]").val("");
+	          $("input[name=agent_name]").val(""); // nkm 
+	          $("input[name=agent_id]").val(""); // nkm 
 	          $("input[name=vcLengthFrom]").val("");
 	          $("input[name=vcLengthTo]").val("");
 	          $("input[name=vcCaller]").val("");
@@ -434,7 +449,7 @@
   <div align="right" id="div-button" width="100%">
     <input type="button" value="Search" class="btnConditions" onclick="onbtnSearch()" name="btnSearch" id="btnSearch">
     <input type="button" value="Clear" class="btnConditions" onclick="onbtnReset()" name="btnSearch" id="btnClear"> 
-	&nbsp;<a href="#" onclick="ShowOrHidePanel()" title="Hide"><%=image_tag('hide_panel2.png',{:border => 0}) %></a>
+	  &nbsp;<a href="#" onclick="ShowOrHidePanel()" title="Hide"><%=image_tag('hide_panel2.png',{:border => 0}) %></a>
   </div> 
   <div class="condStyle1"> 
     <span class="condName1">Period:</span>
@@ -478,9 +493,45 @@
           <td><input type="text" name="vcCaller" id="vcCaller" class="phone input-int-only" maxlength="10" title="Caller number"></td>
           <td><input type="text" name="vcDialed" id="vcDialed" class="phone input-int-only" maxlength="10" title="Dialed number"></td>
           <td><input type="text" name="vcExt" class="input-int-only" id="vcExt" title="Extension number"></td>
-        </tr>
+        </tr>       
     </table>
   </div>
+
+
+
+  <div class="condStyle1" >
+  	<span class="condName1">Agent Name:</span>	 
+	<input type="text" name="agent_name" maxlength="100" id="agent_name" >
+	<input type="hidden" name="agent_id" maxlength="100" id="agent_id" >
+  </div>
+<script type="text/javascript">
+<% @agent_pattern = User.select('display_name, id').where('flag = 0').order('display_name asc') %>
+var agent_pattern = [ <%= (@agent_pattern.to_a.map { |k| "{id: '#{k.id}', display_name: '#{k.display_name.strip}'}"}).join(',') %> ];
+
+  function buildAgentPattern(){
+    $('#agent_name').autocomplete(agent_pattern ,{
+      minChars: 0,
+      autoFill: true,
+      mustMatch: true,
+      matchContains: false,
+      scroll: true,
+      scrollHeight: 100,
+      formatItem: function(item) {
+        return item.display_name;
+      }
+    }).result(function(event, data, formatted) {
+      if (data) {
+	$('#agent_id').val(data.id)
+      }
+    }).blur(function(){
+
+    });
+  }
+buildAgentPattern();
+</script>
+
+
+
   <div class="condStyle1">
     <span class="condName1">Call Duration (mmm:ss):</span>
     <input type="text" name="vcLengthFrom" id="vcLengthStart" class="input-int-only callDur" value="" maxlength="5" title="mmm:ss"><label class="label-frm"> <span class="condName1" style="display:inline;">To</span> </label><input type="text" class="callDur input-int-only" name="vcLengthTo" id="vcLengthEnd" maxlength="5" title="mm:ss" value="">
@@ -501,7 +552,7 @@
   <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_CALL_TRANSFER %>">
     <span class="condName1">Number of transfer calls:</span>
 	<input type="text" class="input-int-only" name="vcTrannfCountFr" id="vcTransfCountFr" maxlength="2" value="">&nbsp;<span class="condName1" style="display:inline;">To</span>&nbsp;<input type="text" class="input-int-only" name="vcTrannfCountTo" id="vcTransfCountTo" maxlength="2" value=""></span>
-    <br/><span class="condName1" style="display:none;"><input type="checkbox" name="vcFindWithTrf" id="vcFindWithTrf" value="yes">Include search transfer calls</span>
+    <br/><span class="condName1"><input type="checkbox" name="vcFindWithTrf" id="vcFindWithTrf" value="yes">Include search transfer calls</span>
   </div>
   <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_KEYWORDS %>">
   	<span class="condName1">Keyword:</span>	 

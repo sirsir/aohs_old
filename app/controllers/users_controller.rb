@@ -133,31 +133,31 @@ class UsersController < ApplicationController
 
     username = nil
     if params.has_key?(:username) and not params[:username].empty?
-      username = params[:username]
+      username = params[:username].to_s.strip
     end
     
     ctilogin = nil
     if params.has_key?(:ctilogin) and not params[:ctilogin].empty?
-      ctilogin = params[:ctilogin]
+      ctilogin = params[:ctilogin].to_s.strip
     end
-	if not Aohs::CTI_LOGOUT_ENABLE
-		ctilogin = "login"
-	end
-	
+    if not Aohs::CTI_LOGOUT_ENABLE
+      ctilogin = "login"
+    end
+    
     remote_ip = nil
     if params.has_key?(:remote_ip) and not params[:remote_ip].empty?
-      remote_ip = params[:remote_ip]
+      remote_ip = params[:remote_ip].to_s.strip
     else
       remote_ip = request.remote_ip
     end
 	
-	ctistatus = nil
+    ctistatus = nil
 	
     if params.has_key?(:ctistatus) and not params[:ctistatus].empty?
-	  # val = login,logout
-      ctistatus = params[:ctistatus]
+      # val = login,logout
+      ctistatus = params[:ctistatus].to_s.strip
     end
-    
+
     ext_numbers = []
     if params.has_key?(:extension) and not params[:extension].empty?
       ext_numbers = params[:extension].to_s.split(',')
@@ -229,34 +229,38 @@ class UsersController < ApplicationController
               
               unless ext_numbers.empty?
                 ext_numbers.each do |ext|
-                  
-				  # add extension
-				  if true
-					if ext =~ /^1/
-						old_ext = Extension.where({:number => ext}).first
-						if old_ext.nil?
-							new_ext = Extension.new({:number => ext})
-							new_ext.save
-						end
-					end
-				  end
-				  
-                  # mapping extension
-                  eams = ExtensionToAgentMap.where({ :extension => ext })
                   begin
-					if ctistatus == CTI_STATUS_LOGOUT
-						unless eams.empty?
-							ExtensionToAgentMap.delete(eams)
-							messages << "remove mapping extension"
-						end
-					else
-						unless eams.empty?
-						  eam = ExtensionToAgentMap.update_all({:agent_id => agent_id, :extension => ext },{:extension => ext})
-						else
-						  eam = ExtensionToAgentMap.new({ :agent_id => agent_id, :extension => ext })
-						  eam.save!
-						end					
-					end
+                    ext = ext.to_s.gsub(/^57/,"7")
+                  rescue => e
+		      ext = ext
+                  end
+                  # add extension
+                  if true
+                    if ext =~ /^1/
+                      old_ext = Extension.where({:number => ext}).first
+                      if old_ext.nil?
+                        new_ext = Extension.new({:number => ext})
+                        new_ext.save
+                      end
+                    end
+                  end
+
+                  # mapping extension
+                  eams = ExtensionToAgentMap.where({ :extension => ext }).all
+                  begin
+                    if ctistatus == CTI_STATUS_LOGOUT
+                      unless eams.empty?
+                        ExtensionToAgentMap.delete(eams)
+                        messages << "remove mapping extension"
+                      end
+                    else
+                      unless eams.empty?
+                        eam = ExtensionToAgentMap.update_all({:agent_id => agent_id, :extension => ext },{:extension => ext})
+                      else
+                        eam = ExtensionToAgentMap.new({ :agent_id => agent_id, :extension => ext })
+                        eam.save!
+                      end					
+                    end
                   rescue => e
                     messages << "update mapping extension error cause #{e.message}"
                   end
@@ -272,9 +276,9 @@ class UsersController < ApplicationController
                         else
                           dam = DidAgentMap.update_all({:agent_id => agent_id},{:number => did})
                         end  
-						if ctistatus == CTI_STATUS_LOGOUT
-							DidAgentMap.delete(dam)
-						end
+                        if ctistatus == CTI_STATUS_LOGOUT
+                          DidAgentMap.delete(dam)
+                        end
                       end
                     else
                       messages << "did of '#{ext}' not found in master."
@@ -297,7 +301,7 @@ class UsersController < ApplicationController
                   :extension2 => ext_numbers.last,
                   :login_name => username,
                   :remote_ip => remote_ip,
-				  :ctistatus => ctistatus
+		  :ctistatus => ctistatus
               }
   
               wl = WatcherLog.new(cws_data)

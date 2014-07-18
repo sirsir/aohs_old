@@ -4,7 +4,7 @@ class CallTagsController < ApplicationController
 
   before_filter :login_required
   before_filter :permission_require, :except => [:tags,:load_tags]
-  
+   
   def index
 
     order_by = "asc"
@@ -142,6 +142,23 @@ class CallTagsController < ApplicationController
     
   end
 
+  def delete_all_by_group_id
+    
+    begin
+      tag_objects = Tags.find(:all, :conditions => ["tag_group_id = ?", params[:gid] ])
+      Tags.delete_all "tag_group_id ="+params[:gid]
+      log("Delete_All_By_Group_ID","CallTag",true,"id:"+params[:gid]+"tag_objects#{tag_objects.blank?}")
+      tags_id = tag_objects.map{ |tag| tag.id}
+      tags_id.each { |tag_id| Taggings.delete_all "tag_id =#{tag_id}"}
+      
+      redirect_to :action => 'index'
+    rescue => e
+      log("Delete_All_By_Group_ID","CallTag",false,"id:"+params[:gid]+ "#{e.message}")
+      flash[:error] = "Delete tag has failed.[#{e.message}]"  
+    end
+
+  end
+	
   def tags
 
     tag_groups = []

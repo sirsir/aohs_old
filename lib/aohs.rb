@@ -14,32 +14,32 @@ module Aohs
   ## Application Setting ##
   
   # start or stop service
-  STOP_SERVICE                	= false
+  STOP_SERVICE                = false
   
-  APP_PATH                    		= Rails.root
+  APP_PATH                    = Rails.root
   
   # run application customer site?
-  CUSTOMER_SITE               	= "aeon"	
-  							# [false,"acss","acsib","aeon"] 
+  CUSTOMER_SITE               = "aeon"                       
+                              # [false,"acss","acsib","aeon"] 
   
   # web title and content's name
-  WEB_TITLE_NAME              	= "AmiVoice Operator's Help System"
-  WEB_VERSION                 	= "1.1.0"
-  WEB_AUTHOR                  	= "AmiVoice (Thailand)"
-  WEB_CLOGO                   	= CUSTOMER_SITE
-                              			# <name>_<report|login>.png             
+  WEB_TITLE_NAME              = "AmiVoice Operator's Help System"
+  WEB_VERSION                 = "1.10"
+  WEB_AUTHOR                  = "AmiVoice (Thailand)"
+  WEB_CLOGO                   = CUSTOMER_SITE
+                              # <name>_<report|login>.png             
   
   # web authentication #
-  LOGIN_BY_AGENT              = false	# true  = allow agent login to application
+  LOGIN_BY_AGENT              = false
   
-  DEFAULT_PASSWORD            		= "aohsweb!QAZ@WSX" # default password for change password at login
-  DEFAULT_PASSWORD_NEW        	= "aohs*1234"       # default password for new account
-  ADMIN_PASSWORD              		= "AohsAdmin"       # default admin account
+  DEFAULT_PASSWORD            = "aohsweb!QAZ@WSX" # change password
+  DEFAULT_PASSWORD_NEW        = "aohs*1234"       # all new account
+  ADMIN_PASSWORD              = "AohsAdmin"       # admin account
   
-  ALLOW_CHANGE_PASS_FRMSCR    = false	# ture = allow to change password from login page
+  ALLOW_CHANGE_PASS_FRMSCR    = false
   
   # protected system accounts #
-  PRIVATE_ACCOUNTS            = ['AohsAdmin']	# username which is hidden
+  PRIVATE_ACCOUNTS            = ['AohsAdmin']
   
   # Roles
   
@@ -49,9 +49,9 @@ module Aohs
   # Logger env and voice_log table must be set before startup the application server 
   
   # current logger type 
-  CURRENT_LOGGER_TYPE         = :extension         
+  CURRENT_LOGGER_TYPE         = :extension        
                               # choose :extension or :eone
-  EXTENSION_LOGGER_TRF        = true           
+  EXTENSION_LOGGER_TRF        = true              
                               # extension logger and transfer call --> MOD_CALL_TRANSFER 
    
   # file checker and current running logger id
@@ -60,8 +60,8 @@ module Aohs
   LOGGERS_ID                  = []
                               # [1,2], [] 
   LOGGERS_LIST                = [
-                                  {:id => 1, :name => "Main Logger", :url => "http://172.21.95.4/AohsWeb1"},
-                                  {:id => 2, :name => "Sub Logger", :url => "http://172.21.95.4/AohsWeb2"}
+                                  {:id => 2, :name => "Sub", :url => "http://172.22.101.51:8081/AohsWeb"},
+                                  {:id => 1, :name => "Main", :url => "http://172.22.101.40:8081/AohsWeb"}
                                 ]
   VLTBL_PREFIX                = "voice_logs_"
   
@@ -121,6 +121,13 @@ module Aohs
   RUNSTAKEYW_DAILY            = true
   RUNSTAKEYW_WEEKLY           = false
   RUNSTAKEYW_MONTHLY          = false
+#### nkm 
+  RUNSTACALL_DAILY            = true   
+  RUNSTACALL_WEEKLY           = false
+  RUNSTACALL_MONTHLY          = true   
+  RUNSTAKEYW_DAILY            = true
+  RUNSTAKEYW_WEEKLY           = false
+  RUNSTAKEYW_MONTHLY          = true   
   
   RUNST_PROCESS_TO_XDAY       = 0  			
                               # 0=today,1=yesterday
@@ -139,12 +146,11 @@ module Aohs
   
   ## Report ##
   
-  REPORT_USERTYPE_FILTER      = :none 
+  REPORT_USERTYPE_FILTER      = :none
                               # :agent , :manager, :none
   REPORT_ROLE_FILTER          = []
-  REPORT_ROLE_HIDDED          = ['Administrator']
                               # ['Agent'] -> role name list
- 
+
   ## Table Flags ##
 
   # for all table which use delete flag / or boolean
@@ -164,12 +170,13 @@ module Aohs
   CHR_TH                      = "กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮ๑๒๓๔๕๖๗๘๙๐"
   CHR_SARA_TH                 = "โไใเแ"
   CHR_EN                      = "abcdefghijklmnopqrstuvwxyz0123456789"
-  
+ 
+
   DAYS_OF_THE_WEEK            = %w[mo tu we th fr sa su]
   WEEKS_PER_MONTH             = 4
   DAYS_PER_MONTH              = 30
   
-  SITE_ROOT                   = "http://192.168.1.15:3000"
+  SITE_ROOT                   = "http://172.22.101.51:8081/AohsWeb"
   APP_NAME                    = "AOHS"
   
   DEFAULT_DATETIME_FORMAT     = "%Y-%m-%d %H:%M:%S"
@@ -205,7 +212,7 @@ module Aohs
   
   USE_PHONE_PATTERN           = false
   
-  SHOW_LOGGER_SWITCH          = false
+  SHOW_LOGGER_SWITCH          = true
   
   SHOW_TOTAL_ROW_AT_LAST_PAGE = true
   
@@ -225,11 +232,12 @@ module Aohs
   MOD_EDIT_CUST_ON_SEARCH     = true
   MOD_CUSTOMER_LOOKUP         = false
   
-  MOD_CALL_TRANSFER           = EXTENSION_LOGGER_TRF
+  MOD_CALL_TRANSFER           = true #EXTENSION_LOGGER_TRF
   
   ## Web Admin tool ##
   
   INSTALL_ADMIN_PATH          = "/opt/AohsWebTool"
-  GLASSFISH_HOME              = "/opt/glassfish/glassfish"
+  GLASSFISH_HOME              = "/opt/glassfishv3_cms/glassfish"
   
 end
+

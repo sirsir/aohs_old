@@ -76,7 +76,7 @@ module Format
      
      #Thailand
      
-     if phone.nil? or phone.empty? or phone =~ /^#/
+     if phone.nil? or phone.empty?
        return phone
      else
        ndigits = phone.to_s.length

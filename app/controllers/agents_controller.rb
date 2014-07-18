@@ -9,16 +9,18 @@ class AgentsController < ApplicationController
 
      sort_key = agent_order
      order = "#{sort_key} #{check_order_name(params[:sort])}" 
-          
+     
      conditions = agents_conditions
      
      @page = default_page(params[:page])
+     session[:agent_page] = @page #nkm go back to last page
+     session[:agent_state] = params[:status]
      
      @agents = Agent.alive.includes([:group]).where(conditions.join(" and ")).order(order)
      @agents = @agents.paginate(:page => params[:page], :per_page => $PER_PAGE)    
 
      @groups = ((Group.select("name").order("name asc")).map { |g| g.name })
-
+     
    end
 
    def list
@@ -275,8 +277,20 @@ class AgentsController < ApplicationController
     end
     if params.has_key?(:id_card) and not params[:id_card].empty?
        conditions << "id_card like '%#{params[:id_card].strip}%'"
-    end     
+    end
+    if params.has_key?(:status) and not params[:status].empty? 
+      case params[:status]
+      when "inactive", "Inactive"
+         conditions << "state != 'active'"
+      when "active", "Active"
+         conditions << "state = 'active'"
+      when "all", "All"
+         # all
+      else
+         conditions << "state = '#{params[:status].strip}'"
+      end
+    end
     return conditions
-  end
+   end
         
 end

@@ -63,6 +63,9 @@ class ComputerLogController < ApplicationController
 	  
     order = "#{order} #{check_order_name(params[:sort])}" 
     
+	#edit 2013-11-21 add condition filter
+	conditions << "users.flag=0"
+
     @page = (params[:page].to_i <= 1 ? 1 : params[:page].to_i)
      
     @comp_logs = CurrentComputerStatus.select("#{CurrentComputerStatus.table_name}.*,users.cti_agent_id").joins("left join users on users.login = #{CurrentComputerStatus.table_name}.login_name").where(conditions.join(' and ')).order(order)  
@@ -85,7 +88,7 @@ class ComputerLogController < ApplicationController
     if params.has_key?(:computer_name) and not params[:computer_name].empty?
       computer_name = params[:computer_name]
     end
-       
+      
     login_name = nil
     if params.has_key?(:login_name) and not params[:login_name].empty?
       login_name = params[:login_name]
@@ -162,9 +165,9 @@ class ComputerLogController < ApplicationController
     
     if Aohs::COMPUTER_EXTENSION_LOOKUP
       r = update_computer_extension
-	  Aohs::COMP_RETRY_UPDATE.to_i.times do 
-		r = update_computer_extension
-	  end
+      Aohs::COMP_RETRY_UPDATE.to_i.times do 
+	r = update_computer_extension
+      end
       html << "- computer extension --<br>"
       html << r.join("<br/>")
     end
@@ -174,7 +177,7 @@ class ComputerLogController < ApplicationController
   end
   
   def update_computer_extension
-
+    
     result = []
     
     computer_name = nil
@@ -191,12 +194,12 @@ class ComputerLogController < ApplicationController
     
     remote_ip = nil
     if params.has_key?(:remote_ip) and not params[:remote_ip].empty?
-      remote_ip = params[:remote_ip]
+      login_name = params[:login_name].to_s.strip.gsub(" ","")
     else
       remote_ip = request.remote_ip
     end
     result << "IP=#{remote_ip}"
-	
+
     if not computer_name.nil? and not remote_ip.nil?
         
         # get computer extension
@@ -215,7 +218,7 @@ class ComputerLogController < ApplicationController
         unless ext.nil?
            user = User.alive.where(:login => login_name).first
            unless user.nil?
-             
+
              # update extension agent map
              eam = ExtensionToAgentMap.where({:extension => ext.number}).first
              if eam.nil?
@@ -224,14 +227,24 @@ class ComputerLogController < ApplicationController
              else
                 eam.update_attributes!({:extension => ext.number, :agent_id => user.id})  
              end
-                     
+            
+             # retry check
+             eam = ExtensionToAgentMap.where({:extension => ext.number}).first
+             if eam.nil?
+                eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user.id})  
+                eam.save!
+             else
+                eam.update_attributes!({:extension => ext.number, :agent_id => user.id})  
+             end
+
              # update did agent map
              dids = Did.where({ :extension_id => ext.id })
              unless dids.empty?
                 dids.each do |did|
                   dams = DidAgentMap.where({:number => did.number }).all
                   if dams.empty?
-                     dam = DidAgentMap.new({:number => did.number , :agent_id => user.id}).save
+                     dam = DidAgentMap.new({:number => did.number , :agent_id => user.id})
+                     dam.save
                   else
                      dams.update_all({:agent_id => user.id},{:number => did.number })
                   end
@@ -242,7 +255,7 @@ class ComputerLogController < ApplicationController
            else
              
              result << "User not found, deleted extension map for #{ext.number}"
-             
+
              # clean up extension map if user not found
              ExtensionToAgentMap.delete_all({:extension => ext.number})
              dids = Did.where({ :extension_id => ext.id })
@@ -250,16 +263,16 @@ class ComputerLogController < ApplicationController
                 DidAgentMap.delete_all({:number => dids.map { |d| d.number }})
              end
 
-          end
+           end
         else
-          result << "Extension not found by #{Aohs::COMP_LOOKUP_BY_KEYS}"
+	  result << "Extension not found by #{Aohs::COMP_LOOKUP_BY_KEYS}"
         end
     else
       result << "Computer or IP not defined"
     end
     
     return result
-    
+
   end
   
 end

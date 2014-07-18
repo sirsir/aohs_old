@@ -44,9 +44,9 @@ module AmiLog
 
       str_status = nil
       case result
-      when true,/0/:
+      when true,/0/
         str_status = "Success"
-      when false,/1/:
+      when false,/1/
         str_status = "Failed"
       end
 
@@ -73,9 +73,9 @@ module AmiLog
 
       str_status = nil
       case result
-      when true,/0/:
+      when true,/0/
         str_status = "Success"
-      when false,/1/:
+      when false,/1/
         str_status = "Failed"
       end
 

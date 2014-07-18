@@ -21,7 +21,7 @@
       <tr>
         <td align="left">
           <ul>
-            <li><%= link_image_tag('Back','back.png',{:controller => "managers",:action => 'index'},{:title => 'Back to manager list'}) %></li>
+            <li><%= link_image_tag('Back','back.png',{:controller => "managers",:action => 'index',:page=>(session[:mng_page]||"1"),:status=>session[:mng_state]},{:title => 'Back to manager list'}) %></li>
          </ul>
         </td>
         <td align="right">&nbsp;</td>
@@ -87,7 +87,7 @@
                     <td>
                         <%= password_field 'manager', 'password', :size => 25, :maxsize => 20,:class =>'input-text' %><span class="span-require">*</span>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" id="use_default_p" name="use_default_p" value="Use Default Password"/>
-			<br><span class="note">Password must have a minimum of 6 characters</span>
+			<br><span class="note">Password must have a minimum of 8 characters and contains special characters</span>
                     </td>
                 </tr>
                 <tr>

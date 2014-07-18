@@ -4,7 +4,8 @@ class CustomersController < ApplicationController
 
   before_filter :login_required
   before_filter :permission_require, :except => [:customers_name_list,:phone_list,:phone_update,:customer_update,:get_customer_id,:find_voice_cust]
-
+  skip_before_filter :verify_authenticity_token
+  
   include AmiTimeline
   include AmiCallSearch
   
@@ -274,10 +275,11 @@ class CustomersController < ApplicationController
        end
      end
 
-     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}"
+     @report[:desc] = ""
+     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}" rescue ""
      if Aohs::MOD_KEYWORDS  
-       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}"
-       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}"
+       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}" rescue ""
+       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}" rescue ""
      end
      
      @voice_logs_ds = nil
@@ -349,11 +351,12 @@ class CustomersController < ApplicationController
          @report[:data] << p
        end
      end
-
-     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}"
-     if Aohs::MOD_KEYWORDS  
-       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}"
-       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}"
+    
+     @report[:desc] = ""
+     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}" rescue ""
+     if Aohs::MOD_KEYWORDS 
+       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}" rescue ""
+       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}" rescue ""
      end
      
     @voice_logs_ds = nil

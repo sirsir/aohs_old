@@ -224,7 +224,7 @@ class GroupsController < ApplicationController
    def show
 
       @group = Group.where(:id => params[:id]).first
-      @group_category_type_names = GroupCategoryType.all.map{|gct| gct.name}
+      @group_category_type_names = GroupCategoryType.all.map{ |gct| gct.name }
       @agents = Agent.alive.where(:group_id => @group.id).all
 
       respond_to do |format|

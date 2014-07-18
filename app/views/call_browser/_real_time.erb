@@ -9,7 +9,7 @@
   span.detail {display: inline-block; padding-left: 4px;}
   span.num {display: inline-block; width: 80px; border-bottom: 1px dashed #C3C3C3; text-align: center;}
   span.sli-lbl {display: inline-block; font-size: 9px; float: left; margin-bottom: 3px;}
-  span#a-status {display: inline-block; width: 70px; color: #C3C3C3; text-align: center;}
+  span#a-status {display: inline-block; width: 80px; color: #C3C3C3; text-align: center;}
 
   div.meter-border {width: 120px; height: 15px; border: 1px solid #C3C3C3; padding: 0;}
   div.meter-draw {background-color: #C3C3C3; height: 15px; width: 0%;}
@@ -99,6 +99,11 @@
 
   function update_currentcall_label(st_time, direction, from, to){
 
+    if(direction == "i"){
+        var tmp = to;
+        to = from;
+        from = tmp;
+    }
     direction = (direction == "i" ? "Inbound" : "Outbound");
 
     $('#call-start').text(st_time);
@@ -139,9 +144,9 @@
       </div>
       <div style="clear: both; float: left;">
         <span>Current Agent</span><br/>
-        <span class="topic">Name:</span><span id="agent-name" class="detail" style="width: 140px;">-</span>
-        <span class="topic">Group:</span><span id="agent-group" class="detail" style="width: 100px;">-</span>
-        <span class="topic">Extension:</span><span id="agent-ext" class="detail" style="width: 40px;">-</span>
+        <span class="topic">Name:</span><span id="agent-name" class="detail" style="width: 180px;">-</span>
+        <span class="topic">Group:</span><span id="agent-group" class="detail" style="width: 140px;">-</span>
+        <span class="topic">Extension:</span><span id="agent-ext" class="detail" style="width: 100px;">-</span>
       </div>
       <div style="float: right; padding: 3px 10px 0px 0px; font-style:italic; font-family:Verdana;">
         AmiVoice<sup>&reg;</sup> Call Browser
@@ -154,10 +159,6 @@
       <div class="current-call-label" style="clear: both; float: left; padding: 2px 0px 2px 2px;">
         <span class="topic">Start:</span><span id="call-start" class="detail" style="width: 150px;">-</span>
         <span class="topic">Direction:</span><span id="call-direction" class="detail" style="width: 80px;">-</span>
-        <% if Aohs::MOD_KEYWORDS %>
-          <span class="topic">NG Word:</span><span id="ng-count" class="detail" style="width: 40px;">-</span>
-          <span class="topic">Must Word:</span><span id="mst-count" class="detail" style="width: 40px;">-</span>
-        <% end %>
       </div>
     </td>
   </tr>
@@ -176,11 +177,11 @@
           <td rowspan="2"><span id="a-status">...</span></td>
           <td rowspan="2" style="padding-left: 10px;" valign="top">
             <span class="sli-lbl"><a href="#" onclick="reset_span();">balance:</a></span><br/>
-            <div id="span-sli" style="width: 70px;"></div>
+            <div id="span-sli" style="width: 80px;"></div>
           </td>
-          <td rowspan="2" style="padding-left: 30px;" valign="top">
+          <td rowspan="2" style="padding-left: 20px;" valign="top">
             <span class="sli-lbl"><a href="#" onclick="reset_volm();">volume:</a></span><br/>
-            <div id="volm-sli" style="width: 70px;"></div>
+            <div id="volm-sli" style="width: 80px;"></div>
           </td>
         </tr>
         <tr>

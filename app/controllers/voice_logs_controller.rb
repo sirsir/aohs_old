@@ -32,7 +32,7 @@ class VoiceLogsController < ApplicationController
       rescue => e
         skip_search = true
       end
-
+      
       keys = []
       keys = CGI::unescape(params[:keys]).split("__")
       agents = []
@@ -56,15 +56,12 @@ class VoiceLogsController < ApplicationController
             agents = find_agent_by_group([])
         end
       end
-      
-      if CGI::unescape(params[:keys]) == "agents=none__groups=none"
+      if params[:keys] == "agents=none__groups=none"
         # find all
         agents = find_owner_agents
-        agents << 0 # unknown agent
       else
         agents = nil if agents.empty?
       end  
-      
       if agents.nil?
         #if permission_by_name('tree_filter')
           #show_as_unk = ($CF.get('client.aohs_web.displayDeletedAgentAsUnk').to_i == 1)
@@ -97,7 +94,7 @@ class VoiceLogsController < ApplicationController
     end
     
     conditions << retrive_datetime_condition(params[:periods],params[:stdate],params[:sttime],params[:eddate],params[:edtime])
-
+	#p "skip_search2 #{skip_search}"
     # extension
     if params.has_key?(:ext) and not params[:ext].empty?
       conditions << "#{vl_tbl_name}.extension like '%#{params[:ext]}%'"
@@ -105,12 +102,19 @@ class VoiceLogsController < ApplicationController
 
     #ani
     if params.has_key?(:caller) and not params[:caller].empty?
-      conditions << "#{vl_tbl_name}.ani like '%#{params[:caller].strip}%'"
+      #conditions << "#{vl_tbl_name}.ani like '%#{params[:caller].strip}%'"
+      conditions << "#{vl_tbl_name}.ani like '%#{((params[:caller].strip).size > 8 and (params[:caller].strip)[0] == "0"[0]) ? (params[:caller].strip)[1..-1] : params[:caller].strip}%'" #nkm  2013-06-06
     end
 
     #dnis
     if params.has_key?(:dialed) and not params[:dialed].empty?
-      conditions << "#{vl_tbl_name}.dnis like '%#{params[:dialed].strip}%'"
+      #conditions << "#{vl_tbl_name}.dnis like '%#{params[:dialed].strip}%'"
+      conditions << "#{vl_tbl_name}.dnis like '%#{((params[:dialed].strip).size > 8 and (params[:dialed].strip)[0] == "0"[0]) ? (params[:dialed].strip)[1..-1] : params[:dialed].strip}%'" #nkm  2013-04-08
+    end
+
+    #Agent id
+    if params.has_key?(:agent_id) and not params[:agent_id].empty?
+      conditions << "#{vl_tbl_name}.agent_id like '%#{params[:agent_id].strip}%'"
     end
 
     # call direction
@@ -126,7 +130,7 @@ class VoiceLogsController < ApplicationController
     else
       skip_search = true
     end
-    
+    	#p "skip_search3 #{skip_search}"
     unless call_directions.empty?
       case call_directions.length
       when 1
@@ -156,7 +160,7 @@ class VoiceLogsController < ApplicationController
     elsif not trfc_from.nil?
       conditions << "#{vlc_tbl}.transfer_call_count >= #{trfc_from}"
     end
-
+	#p "skip_search3 #{skip_search}"
     # call duration
     if params.has_key?(:stdur) and not params[:stdur].empty?
       params[:stdur] = CGI::unescape(params[:stdur])
@@ -177,7 +181,7 @@ class VoiceLogsController < ApplicationController
         conditions << "#{ResultKeyword.table_name}.keyword_id in (#{keywords})"
       end
     end
-      
+      #	p "skip_search4 #{skip_search}"
     # ==========================================================================
 
     $PER_PAGE_VC = params[:perpage].to_i 
@@ -185,12 +189,12 @@ class VoiceLogsController < ApplicationController
       $PER_PAGE_VC = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i  
     end  
     
-	if params[:withtrnf] == "true"
-		ctrl[:find_transfer] = true
-	else
-		ctrl[:find_transfer] = false
-	end
-	
+    if params[:withtrnf] == "true" or params[:withtrnf] == true
+		  ctrl[:find_transfer] = true
+	  else
+		  ctrl[:find_transfer] = false
+	  end
+   
     page = 1
     page = params[:page].to_i if params.has_key?(:page) and not params[:page].empty? and params[:page].to_i > 0
 
@@ -217,7 +221,7 @@ class VoiceLogsController < ApplicationController
       offset = start_row
       limit = $PER_PAGE_VC
     end
-
+	#p "skip_search5 #{skip_search}"
     unless skip_search
         voice_logs, summary, page_info, agents = find_agent_calls({
                 :select => [],
@@ -233,8 +237,9 @@ class VoiceLogsController < ApplicationController
       voice_logs = []
     end
 
+	p @voice_logs_ds
+	p "voice"
     @voice_logs_ds = {:data => voice_logs, :page_info => page_info,:summary => summary }
-
   end
 
   # ======= end seach voice log ======== #

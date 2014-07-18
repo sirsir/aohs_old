@@ -1213,6 +1213,65 @@ class KeywordsController < ApplicationController
     end
     # End : Edit Keywords :: for update ::
 
+
+###NKM
+updatevoicelogcounters = <<-strupdatevoicelogcounters
+	
+
+	SELECT 
+	count(K.id) AS keyword_count,
+	COUNT(CASE WHEN  keywords.keyword_type = 'n' THEN 1 END) AS ngword_count,
+	COUNT(CASE WHEN  keywords.keyword_type = 'm' THEN 1 END) AS mustword_count
+	FROM 
+	keywords 
+	JOIN
+	(
+	SELECT 
+	id,voice_log_id,  keyword_id
+	FROM 
+	result_keywords
+	WHERE 
+	result_keywords.voice_log_id = #{voice_log_id}
+		AND
+		(
+		edit_status != 'd'
+		OR
+		edit_status is null
+		)
+
+	UNION
+
+	SELECT 
+	id,voice_log_id,  keyword_id
+	FROM 
+	edit_keywords
+	WHERE 
+	edit_keywords.voice_log_id = #{voice_log_id}
+		AND
+		(
+		edit_status != 'd'
+		OR
+		edit_status is null
+		)
+	)K
+	ON 
+	K.keyword_id = keywords.id
+
+strupdatevoicelogcounters
+
+
+    newVoiceLogCounter = VoiceLogCounter.find_by_sql(updatevoicelogcounters)
+    
+    oldVoiceLogCounter = VoiceLogCounter.find_by_voice_log_id(voice_log_id)
+
+    oldVoiceLogCounter.keyword_count = newVoiceLogCounter[0]['keyword_count']
+    oldVoiceLogCounter.ngword_count = newVoiceLogCounter[0]['ngword_count']
+    oldVoiceLogCounter.mustword_count = newVoiceLogCounter[0]['mustword_count']
+    oldVoiceLogCounter.save
+    
+###NKM
+
+
     render :text => "Update keyword complete."
   end
 

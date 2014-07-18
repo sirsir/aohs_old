@@ -71,14 +71,15 @@
     $("#StaisticsFrm").submit();
   }
 
-  function onClickCell(a,b,c,d){
+  function onClickCell(a,b,c,d,e){
   	
 	var d = d || "",st="",ed="";
 	if(d.length <= 0){
 		st = "<%=@st_date %>";
 		ed = "<%=@ed_date %>";
 	}
-    var url = "?" + "period=" + c + "&agent_id=" + b + "&date=" + d + "&st=" + st + "&ed=" + ed + "&type=" + a;
+    //var url = "?" + "period=" + c + "&agent_id=" + b + "&date=" + d + "&st=" + st + "&ed=" + ed + "&type=" + a;
+    var url = "?" + "period=" + c + "&agent_id=" + b + "&date=" + d + "&st=" + st + "&ed=" + ed + "&type=" + a+ "&total=" + e;
     window.open("<%=url_for(:controller => 'statistics',:action => 'agent') %>" + url,'agents','menubar=yes,location=no,scrollbars=yes,resizable=yes');
   }
 
@@ -140,7 +141,7 @@
 	 $(".cell_report").click(function(){
 	 	var o = $(this);
 		if(parseInt(o.text().replace(/,/g,"")) > 0){
-			onClickCell(o.attr("atype"),o.attr("agent_id"),o.attr("period"),(o.attr("date") || ''));		
+			onClickCell(o.attr("atype"),o.attr("agent_id"),o.attr("period"),(o.attr("date") || ''),(o.attr("total") || ''));
 		}
 	 });
 	 
@@ -215,6 +216,12 @@
    }
    function filterClear(){
    	  statisticsKey.page = 1;
+	  $('#div-FilterBox-keywords input').val('');
+          $('#div-FilterBox-keywords select').val('');
+	 
+	 var url = document.URL
+         url = url.slice(0,url.length-1);
+         window.location = url +"?";
    }
 </script>
 <style type="text/css">
@@ -264,7 +271,7 @@
 			<td align="right">
 			<% params.delete(:authenticity_token) %>
             <% params.delete(:utf8) %>
-			<div id="paging"><%= will_paginate(@agents2,{:params => params}).gsub("%2C1","").gsub("%2C","").gsub("agent=","XXXX=") %></div>	
+			<div id="paging"><%= (will_paginate(@agents2,{:params => params})||"").gsub("%2C","").gsub("agent=","XXXX=") %></div>	
 			</td>
 	      </tr>
 	    </table>		

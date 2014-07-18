@@ -11,8 +11,10 @@
       
 	  var currentVoice = null;
 	  var currentVoices = {};
-	  var cols_width_th = [40,50,108,55,70,70,70,40,150,55,35,35,60,350];
-	  var cols_width_td = [40,50,110,55,70,70,70,40,150,55,35,35,60,35];
+	  //var cols_width_th = [40,50,108,55,70,70,70,40,150,55,35,35,60,350];
+	  //var cols_width_td = [40,50,110,55,70,70,70,40,150,55,35,35,60,35];
+	  var cols_width_th = [40,100,108,55,70,70,70,40,150,55,35,35,60,350];
+	  var cols_width_td = [40,100,110,55,70,70,70,40,150,55,35,35,60,35];
 	  var cols_width = 0;
 	  var highLightRows = {
 	  	red_color : parseInt("<%= $CF.get('client.aohs_web.highLightRow.Red') %>")
@@ -207,15 +209,23 @@
                 } 
 		var menu;
                 if((vc['open'] == true) || (vc['open'] == "true")){
-		    menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='more' onclick=\"voiceButton("+ vc['id'] +",'more')\"><img src='<%= image_path('detail.png') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
-                } else {
+		    <% if permission_by_name('voice_logs-download') %>
+			if((vc['duration'] != "00:00")){
+				menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='more' onclick=\"voiceButton("+ vc['id'] +",'more')\"><img src='<%= image_path('detail.png') %>'/></li><li   title=\"Export\"  onclick=\"window.open('"+ vc['path'] +"')\"><img src='<%= image_path('export.png') %>'/></li> <li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+			}else{
+				menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='more' onclick=\"voiceButton("+ vc['id'] +",'more')\"><img src='<%= image_path('detail.png') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+			}
+		    <% else %>
+			menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='more' onclick=\"voiceButton("+ vc['id'] +",'more')\"><img src='<%= image_path('detail.png') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+		    <% end %>
+		} else {
 		    vc['path'] = "";
 		    menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li act='no-play'><img src='<%= image_path('speaker2.gif') %>'/></li><li act='no-more'><img src='<%= image_path('detail2.png') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"no-btntool myToolTip\"><img src='<%= image_path('more2.gif') %>'/></li></ul>";                  
                 }
 
 		row += "<tr class=\"" + rowCycle[rows_count % 2] + " " + redrow + " " + "myRow\" id=\"rowAt" + (id + 1) + "\" row_parent=\"0\" row_no=\"" + (id + 1) + "\" audiourl=\"" + vc['path'] + "\" play_offset_sec=\"" + vc['offset_sec'] + "\" onclick=\"highLightClickRow(this)\">";	
                 row += "<td width=\"40px\" class=\"no-item\"><div class=\"div-no\">" + number_with_delimiter(parseInt(vc['no'])) + "</div>" + expand_calls + "</td>";
-                row += "<td width=\"50px\" align=\"center\" class=\"item-ctrl\">";
+                row += "<td width=\"70px\" align=\"center\" class=\"item-ctrl\">";
                 if((vc['open'] == true) || (vc['open'] == "true")){
                     row += "<input type=\"hidden\" name=\"audioUrl-" + (id + 1) + "\" value=\"" + vc['path'] + "\">";
                 }
@@ -334,15 +344,23 @@
 				
 				var menu;
                 if((vc['open'] == true) || (vc['open'] == "true")){
-					menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
-                } else {
-					vc['path'] = "";
-					menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='no-play'><img src='<%= image_path('speaker2.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"no-btntool myToolTip\"><img src='<%= image_path('more2.gif') %>'/></li></ul>";                  
+		    <% if permission_by_name('voice_logs-download')%>
+		    if((vc['duration'] != "00:00")){
+			menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li   title=\"Export\"  onclick=\"window.open('"+ vc['path'] +"')\"><img src='<%= image_path('export.png') %>'/></li> <li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+		    }else{
+			menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+		    }    
+		    <% else %>
+			menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+		  <% end %>
+		} else {
+		    vc['path'] = "";
+		    menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='no-play'><img src='<%= image_path('speaker2.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"no-btntool myToolTip\"><img src='<%= image_path('more2.gif') %>'/></li></ul>";                  
                 }				
 				
-				row += "<tr class=\"transf_call sub-" + rowCycle[rows_count % 2] + " " + redrow + " " + "myRow rowof" + row_parent_no + "\" id=\"rowAt" + row_no + "\" row_parent=\"" + row_no_prefix + "\" row_no=\"" + row_no + "\"  audiourl=\"" + vc['path'] + "\"" + "\">";
+		row += "<tr class=\"transf_call sub-" + rowCycle[rows_count % 2] + " " + redrow + " " + "myRow rowof" + row_parent_no + "\" id=\"rowAt" + row_no + "\" row_parent=\"" + row_no_prefix + "\" row_no=\"" + row_no + "\"  audiourl=\"" + vc['path'] + "\"" + "\">";
                 row += "<td width=\"40px\" class=\"no-item\"><div class=\"div-no\">" + "&nbsp;" + "</div></td>";
-                row += "<td width=\"50px\" align=\"center\" class=\"item-ctrl\">";
+                row += "<td width=\"100px\" align=\"center\" class=\"item-ctrl\">";
                 if((vc['open'] == true) || (vc['open'] == "true")){
                 row += "<input type=\"hidden\" name=\"audioUrl-" + (row_no) + "\" value=\"" + vc['path'] + "\">";
                 }
@@ -601,8 +619,8 @@
              <a href="#" title="Next page"><%= image_tag(image_src_path('page_ctrl/next_page.gif'),{:border => 0,:align => 'absmiddle',:alt => 'Goto next page',:onclick => 'gotoNextPage();'})%></a>
              <a href="#" title="Last page"><%= image_tag(image_src_path('page_ctrl/last_page.gif'),{:border => 0,:align => 'absmiddle',:alt => 'Goto last page',:onclick => 'gotoLastPage();'})%></a>
              <%=image_tag("bg004.png",{:width => "1px", :height => '20px',:align => 'absmiddle' })%>
-			  Rows/page: <input type="text" name="perpage" id="perpage" value="<%=@numbers_of_display %>" title="number of row(s) per page, max[<%= AmiConfig.get('client.aohs_web.maxNumberOfCallPerPage')%>]">
-			 <% if permission_by_name('voice_logs-exp') %>
+	     Rows/page: <input type="text" name="perpage" id="perpage" value="<%=@numbers_of_display %>" title="number of row(s) per page, max[<%= AmiConfig.get('client.aohs_web.maxNumberOfCallPerPage')%>]">
+	     <% if permission_by_name('voice_logs-exp') %>
              <%=image_tag("topgrad.png",{:width => "1px", :height => '20px',:align => 'absmiddle' })%> 
              <a href="#" id="btnExport" title="Text CSV"><%= image_tag(image_src_path('mimetype/spreadsheet.png'),{:border => 0,:align => 'absmiddle',:alt => 'CSV'})%>&nbsp;CSV&nbsp;</a>
              <a href="#" id="btnPrint" title="PDF"><%= image_tag(image_src_path('mimetype/pdf.png'),{:border => 0,:align => 'absmiddle',:alt => 'PDF'})%>&nbsp;PDF&nbsp;</a>&nbsp;
@@ -616,7 +634,7 @@
       <table cellspacing="0" cellpadding="0" class="tbl-header">
         <tr>	
           <th width="40px">No</th>
-          <th width="50px">Action</th>
+          <th width="70px">Action</th>
           <th width="110px"><a href="#" onclick="onClickSortCols('start_time');">DateTime</a></th>
           <th width="56px"><a href="#" onclick="onClickSortCols('duration');">Duration</a></th>
           <th width="72px"><a href="#" onclick="onClickSortCols('ani');">Caller</a></th>
@@ -640,11 +658,11 @@
         </tr>
         <tr>
           <td><%=image_tag("padding.png",{:width => "40px", :height => '1px' })%></td>
-          <td><%=image_tag("padding.png",{:width => "50px", :height => '1px' })%></td>
+          <td><%=image_tag("padding.png",{:width => "70px", :height => '1px' })%></td>
           <td><%=image_tag("padding.png",{:width => "110px", :height => '1px' })%></td>
           <td><%=image_tag("padding.png",{:width => "55px", :height => '1px' })%></td>
-          <td><%=image_tag("padding.png",{:width => "72px", :height => '1px' })%></td>
-          <td><%=image_tag("padding.png",{:width => "72px", :height => '1px' })%></td>
+          <td><%=image_tag("padding.png",{:width => "100px", :height => '1px' })%></td>
+          <td><%=image_tag("padding.png",{:width => "100px", :height => '1px' })%></td>
           <td><%=image_tag("padding.png",{:width => "40px", :height => '1px' })%></td>
           <td><%=image_tag("padding.png",{:width => "150px", :height => '1px' })%></td>
 		  <% if Aohs::MOD_CUSTOMER_INFO %>
@@ -667,11 +685,11 @@
           <tbody></tbody>
 		  <tfoot> 
 	          <th><%=image_tag("padding.png",{:width => "40px", :height => '1px' })%></th>
-	          <th><%=image_tag("padding.png",{:width => "50px", :height => '1px' })%></th>
+	          <th><%=image_tag("padding.png",{:width => "70px", :height => '1px' })%></th>
 	          <th><%=image_tag("padding.png",{:width => "110px", :height => '1px' })%></th>
 	          <th><%=image_tag("padding.png",{:width => "55px", :height => '1px' })%></th>
-	          <th><%=image_tag("padding.png",{:width => "72px", :height => '1px' })%></th>
-	          <th><%=image_tag("padding.png",{:width => "72px", :height => '1px' })%></th>
+	          <th><%=image_tag("padding.png",{:width => "100px", :height => '1px' })%></th>
+	          <th><%=image_tag("padding.png",{:width => "100px", :height => '1px' })%></th>
 	          <th><%=image_tag("padding.png",{:width => "40px", :height => '1px' })%></th>
 	          <th><%=image_tag("padding.png",{:width => "150px", :height => '1px' })%></th>
 			  <% if Aohs::MOD_CUSTOMER_INFO %>

@@ -571,7 +571,8 @@
               } else {
                 customer_info.cust_name = "";
                 customer_info.cust_id = "";
-                InfoDialog(data);
+		InfoDialog("Add new customer was unsuccessfully")
+                //InfoDialog(data);
               }
             });
           } else {
@@ -766,8 +767,8 @@
         <option value="4">Last week</option>
         <option value="5">This month</option>
         <option value="6">Last month</option>
-        <option value="7">This year</option>
-        <option value="8">All</option>
+   <!-- <option value="7">This year</option>  -->
+   <!-- <option value="8" selected>All</option>  -->
         <option value="0">Custom ...</option>
     </select>
     <div id="ccs_custom_periods" style="display:none">

@@ -37,12 +37,11 @@ module AmiScheduler
       #    end  
         #end
       #end
-      
       AmiTool.switch_table_voice_logs
       
       # hourly check 
       scheduler3 = Rufus::Scheduler.start_new
-      scheduler3.cron "0 #{Aohs::WORKING_HR_PERIOD} * * *", :allow_overlapping => false do  
+      scheduler3.cron "0 #{Aohs::WORKING_HR_PERIOD} * * *" do  
     	  if Aohs::SCHEDULE_PERHOUR_RUN
     		  hourly_list
     	  end
@@ -50,7 +49,7 @@ module AmiScheduler
   	
       # daily check 
       scheduler1 = Rufus::Scheduler.start_new
-      scheduler1.cron "0 4 * * *", :allow_overlapping => false do  
+      scheduler1.cron "0 4 * * *" do  
     	  if Aohs::SCHEDULE_DAILY_RUN 
     		  daily_list
     	  end
@@ -59,7 +58,7 @@ module AmiScheduler
       # weekly check [sunday]
       # (1 = Sunday) or by using the strings SUN, MON, TUE, WED, THU, FRI and SAT
       scheduler2 = Rufus::Scheduler.start_new
-      scheduler2.cron "0 12 * * SUN", :allow_overlapping => false do  
+      scheduler2.cron "0 12 * * SUN" do  
     	  if Aohs::SCHEDULE_WEEKLY_RUN
     		  weekly_list
     	  end
@@ -207,6 +206,8 @@ module AmiScheduler
         STDERR.puts e.message
       end  
     end
+    
+    AmiTool.auto_remove_inactive_users
     
     STDOUT.puts "[Scheduler] daily finished at #{Time.new}"    
   end

@@ -55,19 +55,17 @@ class VoiceLog < ActiveRecord::Base
         @@start_time_full = nil
     end
   end
-  
+
   def call_response_time
-    xanswer_time = nil
-    if defined?(self.answer_time)
-      if self.answer_time.is_a?(String)
-	      xanswer_time = Time.parse(self.answer_time) rescue nil 
-      else
-	      xanswer_time = self.answer_time
-      end
-    end
-    @@call_response_time = xanswer_time
+	xanswer_time = nil
+	if self.answer_time.is_a?(String)
+		xanswer_time = Time.parse(self.answer_time) rescue nil 
+	else
+		xanswer_time = self.answer_time
+	end
+	@@call_response_time = xanswer_time
   end
-  
+   
   def start_position_sec
     unless self.call_response_time.nil?
       cr = self.call_response_time.to_time
@@ -76,8 +74,8 @@ class VoiceLog < ActiveRecord::Base
     else
       return 0
     end
-  end
-  
+  end  
+
   def tags_exist?
     tag = Taggings.select("id").where(:taggable_id => self.id).first
     return (not tag.nil?)

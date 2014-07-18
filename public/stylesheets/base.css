@@ -66,12 +66,13 @@ img {
 .div-page-header .div-menus li {
 	margin:0px;
 	padding:0px;	
-    float: left;
+	float: left;
 	padding-left:4px;
 	padding-right:4px;
-	padding-bottom:1px;
-	padding-top:1px;
+	padding-bottom:2px;
+	padding-top:2px;
 	margin-right:4px;
+	margin-bottom:0px;
 }
 .div-page-header .div-menus li.selected {
     background-image:url(../images/bg019.png);

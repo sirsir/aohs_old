@@ -174,8 +174,8 @@ module AmiStatisticsReport
       start_day = start_day.beginning_of_week
     when :monthly
       start_day = start_day.beginning_of_month
-    when :all
-      start_day = VoiceLogTemp.minimum(:start_time).to_date rescue Date.today 
+	when :all
+	  start_day = VoiceLogTemp.minimum(:start_time).to_date rescue Date.today 
     end
   
     return start_day, end_day
@@ -381,7 +381,7 @@ module AmiStatisticsReport
 
   def statistics_agents(calc_mode='all',op={})
     
-    wlog("[Statistics Call] all batch will starting now")
+    wlog("[Statistics Call] all batch will starting now -" + calc_mode)
     
     if op[:reset].nil?
       start_date, end_date = get_calc_date([VoiceLog])

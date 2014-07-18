@@ -71,20 +71,20 @@ class TagGroupsController < ApplicationController
     begin
       tag_group = TagGroup.find(params[:id])
 
-      if can_delete?(tag_group.id)
+      #if can_delete?(tag_group.id)
         log("Delete","GroupTag",true,"id:#{params[:id]}, name:#{tag_group.name}")
         tag_group.destroy
-        tags = Tag.find(:all,:conditions => {:tag_group_id => params[:id]})
-
-        unless tags.blank?
-          tags_id = tags.map { |t| t.id }
-          log("Delete","CallTags",true,"id:#{tags_id.join(',')}")
-          Tag.delete_all("tag_group_id in (#{params[:id]})")
-          Taggings.delete_all("tag_id in (#{tags_id.join(',')})")
-        end
-      else
-        log("Delete","GroupTag",false,"id:#{params[:id]}, delete was cancelled.")    
-      end
+        redirect_to :controller => 'call_tags', :action => 'delete_all_by_group_id', :gid => params[:id]
+        #tags = Tag.find(:all,:conditions => {:tag_group_id => params[:id]})
+        #unless tags.blank?
+        #  tags_id = tags.map { |t| t.id }
+        #  log("Delete","CallTags",true,"id:#{tags_id.join(',')}")
+        #  Tag.delete_all("tag_group_id in (#{params[:id]})")
+        #  Taggings.delete_all("tag_id in (#{tags_id.join(',')})")
+        #end
+      #else
+      #  log("Delete","GroupTag",false,"id:#{params[:id]}, delete was cancelled.")    
+      #end
     rescue => e
       log("Delete","GroupTag",false,"id:#{params[:id]}, #{e.message}")
       flash[:error] = "Delete group tag has been failed.[#{e.message}]"
@@ -97,18 +97,18 @@ class TagGroupsController < ApplicationController
   def can_delete?(gt_id)
 
     can_delete = false
-    #tags = Tag.find(:all,:conditions => {:tag_group_id => gt_id})
-    #unless tags.blank?
-    #  tags_id = tags.map { |t| t.id }
-    #  tags_list = Taggings.find(:all,:conditions => "tag_id in (#{tags_id.join(',')})")
-    #  if tags_list.empty?
-    #    can_delete = true  
-    #  end
-    #else
-    #  can_delete = true
-    #end
+    tags = Tag.find(:all,:conditions => {:tag_group_id => gt_id})
+    unless tags.blank?
+      tags_id = tags.map { |t| t.id }
+      tags_list = Taggings.find(:all,:conditions => "tag_id in (#{tags_id.join(',')})")
+      if tags_list.empty?
+        can_delete = true  
+      end
+    else
+      can_delete = true
+    end
 
-    return true #can_delete
+    return can_delete
 
   end
   

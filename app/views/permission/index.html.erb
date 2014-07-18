@@ -1,75 +1,76 @@
 <% content_for :header do %>
   <script type="text/javascript">
   	
-	function resizeWindow(e){
-		var h = $(window).height();
-		var w = $(window).width();
-		$("#div-perm").height(h-180);
-		$("#div-perm").width(w-1);
-	}
+    function resizeWindow(e){
+      var h = $(window).height();
+      var w = $(window).width();
+      $("#div-perm").height(h-215);
+      $("#div-perm").width(w-1);
+    } 
 	
     $(document).ready(function(){
-	  try{selectPermTab('aohs');}catch(e){}
-	  $(window).bind("resize", resizeWindow);
-	  resizeWindow();
+      try{selectPermTab('aohs');}catch(e){}
+      $(window).bind("resize", resizeWindow);
+      resizeWindow();
     });
-	
-	function selectPermTab(name){
-		var appList = new Array(<%= (@application_list.map { |x| "'#{x.downcase}'" }).join(',') %>);
-		for(var i=0; i<appList.length; i++){
-			if(appList[i]==name){
-				$("#tab-id-"+ appList[i]).addClass("defaultliselected");
-				$(".app-" + appList[i]).css("display","block");
-			} else {
-				$("#tab-id-"+ appList[i]).removeClass("defaultliselected");
-				$(".app-" + appList[i]).css("display","none");
-			}
-				
-		} 
-		
+  
+    function selectPermTab(name){
+      var appList = new Array(<%= (@application_list.map { |x| "'#{x.downcase}'" }).join(',') %>);
+      for(var i=0; i<appList.length; i++){
+	if(appList[i]==name){
+	  $("#tab-id-"+ appList[i]).addClass("defaultliselected");
+	  $(".app-" + appList[i]).css("display","block");
+	} else {
+	  $("#tab-id-"+ appList[i]).removeClass("defaultliselected");
+	  $(".app-" + appList[i]).css("display","none");
 	}
+      } 
+    }
 	
   </script>
   <style type="text/css">
     .col-role {
       width:45px;
     }
-	div.role-text {
-		display:block;  
-		writing-mode: tb-rl;
-	/*	filter: flipv fliph; */ 
-	/*	-webkit-transform: rotate(-90deg); */   
-	/*	-moz-transform: rotate(-90deg); */  
-		transform: rotate(-90deg);    
-		position:relative;  
-	/*	white-space:nowrap; */
-		width:20px;   
-		margin-bottom:1px;
-		font-weight:normal;
-		height:100px;
-	}
+    div.role-text {
+      display:block;  
+      writing-mode: tb-rl;
+    /*  filter: flipv fliph; */
+      -webkit-transform: rotate(-90deg);   
+      -moz-transform: rotate(-90deg); 
+      transform: rotate(-90deg);    
+      position:relative;  
+    /*  white-space:nowrap; */
+      width:20px;   
+    /*  margin-bottom:1px; */
+    /*  padding-top:5px; */
+      font-weight:normal;
+    }
     .row-btn td {
       background-image:url('../images/bg002.png');
       background-repeat:repeat-x;
     }
-	.btnSubmit {
-		font-weight:bold;
-		padding:3px;
-	}
+    .div-default-table tr.thead th{
+      background-size: 100px 150px;
+    }
+    .btnSubmit {
+      font-weight:bold;
+      padding:3px;
+    }
     .group_priv {
         font-weight:bold;
         background: #badcff;
     }
-	.checkbox input {
-		margin:0px;
-		padding:0px;
-	}
-	.div-default-table td {
-		padding:0px;
-	}
-	body, html { 
-	 overflow:hidden;
-	}
+    .checkbox input {
+      margin:0px;
+      padding:0px;
+    }
+    .div-default-table td {
+      padding:0px;
+    }
+    body, html { 
+     overflow:hidden;
+    }
   </style>
 <% end %>
 
@@ -104,15 +105,21 @@
 <div class="div-default-table">
 <% dp_grp = nil %>  
 <%= form_tag :controller => "permission", :action=>'addpermission', :method=>'post', :name=>'frmPermission' do %>
-  <table cellspacing="0" cellpadding="0" class="tbl-permission tbl-hover">
+  <table cellspacing="0" cellpadding="0" class="tbl-permission tbl-hover" height="20">
     <tr class="thead">
-      <th style="width:32px;">No</th>
-      <th>Privileges\Roles</th>
+      <th style="width:30px;">No</th>
+      <th>Privileges\Roles</td>
       <% @role_names.each do |role_name| %>
-      <th class="col-role"><div class="role-text"><%= role_name %></div></th>
-      <% end %>
-	  <th width="15px;">&nbsp;</th>
+	<th class="col-role" height="100"><div class="role-text"><%= role_name %></div></th>
+      <% end %>	
+      <th width="15px;">&nbsp;</th>
+      <th width="15px;">&nbsp;</th>
     </tr>
+  </table>  
+<table cellspacing="0" cellpadding="0" class="tbl-permission tbl-hover" height="30">
+  	<tr class="row-btn">
+      <td style="padding:2px;" colspan="<%=@role_names.length + 2 %>" align="center"><%=submit_tag("Save Permission", {:class => 'btnSubmit'}) %></td>
+    </tr> 
   </table>
   <div id="div-perm" style="overflow:hidden; overflow-y:scroll; height:400px;">
   <table cellspacing="0" cellpadding="0" class="tbl-permission tbl-hover">
@@ -133,11 +140,7 @@
     <% end %>
   </table>
   </div>
-  <table cellspacing="0" cellpadding="0" class="tbl-permission tbl-hover">
-  	<tr class="row-btn">
-      <td style="padding:2px;" colspan="<%=@role_names.length + 2 %>" align="center"><%=submit_tag("Save Permission", {:class => 'btnSubmit'}) %></td>
-    </tr> 
-  </table>
+
 <% end %>
 </div>
 </div>

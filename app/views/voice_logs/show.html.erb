@@ -7,21 +7,43 @@
 
 <style type="text/css">
 
-  .ui-slider {
-    height:4px;
-    background: #e9f4ff;
+  .span-slider {
+      display:inline-block;
+      width:85px;
+      height:5px;
+  }
+  .div-slider {
+      width:85px;
+      height:5px;
+      margin-top:2px;
   }
   .ui-dialog-titlebar-close { display: none; }
+  .ui-slider {
+      height:6px;
+      background: #e9f4ff;
+      border:1px;
+      margin-top:3px;
+  }
   .ui-slider .ui-slider-handle {
-    border: 1px;
-    border-color:#93B2CC;
+      height:9px;
+      border:2px solid;
+      background-color: #99CCFF;
+      border-color: #99CCFF; 
+  }
+  .ui-slider span.ui-slider-tic {
+      height:2px;
+      display:none;
+  }
+  .ui-slider-horizontal {
+      height: 6px; 
+      border: 0;
+      background-color: #66C2FF;
   }
   #transfer-call-radio .ui-button {
     width: 180px;
     margin-bottom: 4px;
     font-size: 10px;
   }
-  
   html {
     overflow: hidden;
   }
@@ -1276,6 +1298,7 @@
 
   <!-- Speaker's detail & ADVW -->
   <div class="speaker-detail block">
+    <table cellspacing="0" cellpadding="0" style="width:100%"><tr><td style="width:200px;">
     <div id="speaker-panel">
       <div class="speaker-info">
         <table cellspacing="5px">
@@ -1310,7 +1333,8 @@
       <% end %>
       <span id="tag-span" class="tag-span"></span>
     </div>
-    <div style="float: left; margin-left: 6px;">
+    </td><td>
+    <div style="float: left; margin-left: 6px; width:98%">
       <div style="margin-top: 3px; border: 1px solid #848B8F;">
         <object id="AmiAdvw" classid="clsid:E95BFCD4-723A-4580-B8A6-ACADCE6DE293" width="100%" height="100px" style=" z-index: -1;"codebase="http://journey/tools/amiadvw/AmiAdvwCtrl.exe#version=1,0,27,0">
           <param name="MeasureVisible" value="1" />
@@ -1333,8 +1357,8 @@
         <div style="float: left;">
           <table style="padding: 0; font: bold 84% sans-serif;" cellpadding="0" cellspacing="0">
             <tr style="line-height: 15px;">
-              <td><input type="checkbox" id="auto-play"/></td>
-              <td valign="center">AutoPlay</td>
+              <td>&nbsp;<input type="checkbox" id="auto-play"/></td>
+              <td valign="center">&nbsp;AutoPlay</td>
               <td align="right" class="ami-ctrl-pnl" title="reset volume" onclick="resetVolume();"> Volume </td>
               <td style="width: 70px;"><div id="advw-vol"></div></td>
               <td align="right" class="ami-ctrl-pnl" title="reset speed" onclick="resetSpeed();"> Speed </td>
@@ -1352,6 +1376,7 @@
         </div>
       </div>
     </div>
+    </td></tr></table>
   </div>
   <!-- Speaker's detail & ADVW -->
 

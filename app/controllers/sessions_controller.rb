@@ -40,41 +40,38 @@ class SessionsController < ApplicationController
           redirect_to login_path
         end
       else
-		
-      logout_keeping_session!
-      if Aohs::LOGIN_BY_AGENT
-        user = User.authenticate(params[:login], params[:password])  
-      else
-        user = Manager.authenticate(params[:login], params[:password])  
-      end
-			
-			if user and not user.is_expired_date?
-			  # Protects against session fixation attacks, causes request forgery
-			  # protection if user resubmits an earlier form using back
-			  # button. Uncomment if you understand the tradeoffs.
-			  # reset_session
-			  self.current_user = user
-			  new_cookie_flag = (params[:remember_me] == "1")
-			  handle_remember_cookie! new_cookie_flag
-			  redirect_to :controller => 'top_panel', :action => 'index'
-			  ##redirect_back_or_default('/')
-			else
-			  flash[:loginfailed] = "Login has been failed, please check your username and password."
-			  note_failed_signin
-			  @login       = params[:login]
-			  @remember_me = params[:remember_me]
-			  render :action => 'new'
-			end	
-			
-		end
-	
+	logout_keeping_session!
+	if Aohs::LOGIN_BY_AGENT
+	  user = User.authenticate(params[:login], params[:password])  
+	else
+	  user = Manager.authenticate(params[:login], params[:password])  
 	end
+			
+	if user and not user.is_expired_date?
+	  # Protects against session fixation attacks, causes request forgery
+	  # protection if user resubmits an earlier form using back
+	  # button. Uncomment if you understand the tradeoffs.
+	  # reset_session
+	  self.current_user = user
+	  new_cookie_flag = (params[:remember_me] == "1")
+	  handle_remember_cookie! new_cookie_flag
+	  #redirect_back_or_default('/')
+	  redirect_to :controller => "top_panel", :action => "index"
+	else
+	  flash[:loginfailed] = "Login has been failed, please check your username and password."
+	  note_failed_signin
+	  @login       = params[:login]
+	  @remember_me = params[:remember_me]
+	  render :action => 'new'
+	end	
+      end
+    end
 
   end
 
   def destroy
     logout_killing_session!
-    redirect_to :controller => 'top_panel', :action => 'index'
+	  redirect_to :controller => 'top_panel', :action => 'index'
     #redirect_back_or_default('/', :notice => "You have been logged out.")
   end
 

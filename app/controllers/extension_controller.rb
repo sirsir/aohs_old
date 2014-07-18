@@ -32,7 +32,7 @@ class ExtensionController < ApplicationController
         if usrs.empty?
           conditions = false
         else
-          exts = ExtensionToAgentMap.where(:agent_id => usrs.map {|u| u.id}).group(:group => :agent_id)
+          exts = ExtensionToAgentMap.where(:agent_id => usrs.map {|u| u.id}).group('agent_id').all
           if exts.empty?
             conditions = false
           else
@@ -59,7 +59,7 @@ class ExtensionController < ApplicationController
       
       @extension = Extension.includes([:dids]).where(conditions.join(' and ')).order(order).group('extensions.number')
       @extension = @extension.paginate(:page => params[:page], :per_page => $PER_PAGE)
-
+	  @page = params[:page] #nkm 27.02.2013
   end
 
   def edit
@@ -219,7 +219,8 @@ class ExtensionController < ApplicationController
       
     when 'unmatched_user'
       
-      sql_a = "(select u.login as username,u.display_name,g.name as group_name,r.name as role_name from users u left join groups g on u.group_id = g.id left join roles r on u.role_id = r.id where u.flag = false) a"
+      #sql_a = "(select u.login as username,u.display_name,g.name as group_name,r.name as role_name from users u left join groups g on u.group_id = g.id left join roles r on u.role_id = r.id where u.flag = false and u.login not in (#{ Aohs::PRIVATE_ACCOUNTS.map { |a| "'#{a}'" } })) a"
+      sql_a = "(select u.login as username,u.display_name,g.name as group_name,r.name as role_name from users u left join groups g on u.group_id = g.id left join roles r on u.role_id = r.id where u.flag = false ) a"
       sql_b = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where date(check_time) >= (date(now()) - #{day_ago}) group by computer_name,remote_ip) b"
       
       sql = "select * from #{sql_a} left join #{sql_b} on a.username = b.login_name "

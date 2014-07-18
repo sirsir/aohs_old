@@ -42,7 +42,7 @@
        <%end%>
          $("#agent_state<%=sts%>").attr("checked",true);
          $("#agent_expired_date").datepicker({ showAnim: 'fold' ,dateFormat: 'yy-mm-dd'});
-		$("#agent_id_card").mask("9999999999999");
+				 $("#agent_id_card").mask("9999999999999");
     });
 </script>
 <% end %>
@@ -69,7 +69,7 @@
       <tr>
         <td align="left">
           <ul>
-            <li><%= link_image_tag('Back','back.png',{:controller => 'agents',:action=>"index"},{:title => 'Back to agent list'}) %></li>
+            <li><%= link_image_tag('Back','back.png',{:controller => 'agents',:action=>"index",:page=>(session[:agent_page]||"1"),:status => session[:agent_state]},{:title => 'Back to agent list'}) %></li>
             <li><%= link_image_tag('Agent detail','detail.png',{:controller => 'agents',:action=>"show", :id => @agent.id},{:title => 'Agent details'}) %></li>
             <li><%= link_image_tag('Delete agent','delete.png','#',{:onclick => "del_agent(#{@agent.id},\"#{@agent.login}\")",:title => 'Delete agent'}) %></li>
             <li><%= link_image_tag('Change user type','urole.png','#',{:onclick => "onChangeUserType(#{@agent.id})",:title => 'Change from agent to manager'}) %></li>
@@ -131,8 +131,8 @@
              </tr>
                <tr>
              <td><label for="status">Status</label></td>
-              <td><input type="radio" id="agent_state1" name="agent[state]" value="passive" checked="true">Inctivate
-                  <input type="radio" id="agent_state2" name="agent[state]" value="active">Activate
+              <td><input type="radio" id="agent_state1" name="agent[state]" value="passive" checked="true">Inactive
+                  <input type="radio" id="agent_state2" name="agent[state]" value="active">Active
               </td>
             </tr>
             </table>

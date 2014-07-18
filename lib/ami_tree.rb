@@ -237,7 +237,7 @@ module AmiTree
     data = {:type => @node_type,:label => "UnknownAgents",:labelStyle => 'icon-usr',:checked => checked,:id => 0,:NodeType => NODE_TYP_USRN,:NodeId => 0}
     
     return data
-
+            
   end
   
   def build_manager_tree(op={})
@@ -246,7 +246,7 @@ module AmiTree
       
     data = []
     group_managers = []
-    if permission_by_name('tree_filter') and (op[:manager_filter] == true)
+    if op[:manager_filter] == true
       group_managers = GroupManager.where({:user_id => @userinfo.id })
       mg_id = group_managers.map {|m| m.manager_id}
       mg_id.delete_if { |m| m == @userinfo.id }
@@ -426,14 +426,14 @@ module AmiTree
     grp = []
 
     $GRP_INFO.each do |x|
-     # STDERR.puts ">>>>>>>>#{gc_ids.sort.join('|')} == #{x[:category].sort.join('|')}"
+      #STDERR.puts ">>>>>>>>#{gc_ids.sort.join('|')} == #{x[:category].sort.join('|')}"
       if (x[:category].sort).eql?(gc_ids.sort)
         grp << x[:id]
       end
     end
     
     grp = grp.uniq
-   # STDERR.puts "G->#{grp.join("|")}"
+    #STDERR.puts "G->#{grp.join("|")}"
     grp = Group.select('id,name').where("id in (#{grp.join(',')})") unless grp.empty?
     
     return grp
@@ -459,7 +459,7 @@ module AmiTree
     tmp = {}
     
     agents = [] if agents.blank?
-    
+      
     if agents.include?('0')
       tmp['0'] = [0]
     end

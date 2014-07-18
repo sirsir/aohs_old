@@ -138,7 +138,7 @@ class StatisticsController < ApplicationController
    end
 
    def find_statistics_agent
-  
+        
      @report = {}
      @report[:title_of] = Aohs::REPORT_HEADER_TITLE
      use_default_agent = true
@@ -178,7 +178,6 @@ class StatisticsController < ApplicationController
      if permission_by_name('tree_filter')
         myagents = find_owner_agent
         myagents = [] if myagents.blank?
-        #fix manager
         myagents = myagents.concat(find_watch_managers)
         unless myagents.blank?
           my_agents = myagents.map { |a| a.id }
@@ -188,7 +187,7 @@ class StatisticsController < ApplicationController
           my_agents = [0]
         end
      else
-       my_agents = User.alive.all.map { |a| a.id }
+        my_agents = User.alive.all.map { |a| a.id }
      end
 
      if params.has_key?(:agent_name) and not params[:agent_name].empty?
@@ -347,7 +346,7 @@ class StatisticsController < ApplicationController
         when 'asc'
           order = "#{order} asc"
         else
-          order = "#{order} asc"
+          order = "#{order} asc" 
       end
       
       select << "s.agent_id"
@@ -368,6 +367,10 @@ class StatisticsController < ApplicationController
         u_display_name = "login"
       end
      
+      #sql1 = ""
+      #sql1 << "select u.id as agent_id2, u.group_id, u.display_name as agent_name, g.name as group_name "
+      #sql1 << "from users u left join groups g on u.group_id = g.id "
+      
       sql1 = ""
       #sql1 << "select u.id as agent_id2, u.group_id, u.display_name as agent_name, g.name as group_name "
       #sql1 << "from users u left join groups g on u.group_id = g.id "
@@ -378,7 +381,7 @@ class StatisticsController < ApplicationController
       sql1 << "union all ( "
       sql1 << "select u.*,u.display_name as agent_name ,g.name as group_name "
       sql1 << "from users u left join groups g on u.group_id = g.id "
-      sql1 << "where type = \"Agent\")) u " 
+      sql1 << "where type = \"Agent\")) u "
       
       if Aohs::REPORT_USERTYPE_FILTER == :agent
         sql1 << "where u.type = 'Agent' "
@@ -387,14 +390,14 @@ class StatisticsController < ApplicationController
       else
         sql1 << "where u.role_id > 0 "
       end
-      
+
       unless Aohs::REPORT_ROLE_FILTER.empty?
         roles = Role.where(:id => Aohs::REPORT_ROLE_FILTER)
         sql1 << "and u.role_id in (#{ (roles.map { |r| r.id }).join(',') }) "
       end
-      
+
       sql1 << "and #{ag_conditions.join(' and ')} " unless ag_conditions.empty?
-      
+
       if @agents_id != false
         if @agents_id.empty? or @agents_id.include?(0) or @agents_id.include?("0")
           sql1_1 = ""

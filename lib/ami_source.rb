@@ -620,7 +620,8 @@ module AmiSource
           fname = "extensions.csv"
 
           cols = ['extension']
-          cols = ['extension','computer_name','ip'] if Aohs::COMPUTER_EXTENSION_LOOKUP
+          #cols = ['extension','computer_name','ip'] if Aohs::COMPUTER_EXTENSION_LOOKUP
+          cols = ['computer_name','ip'] if Aohs::COMPUTER_EXTENSION_LOOKUP
           data = []
           
           if Aohs::CTI_EXTENSION_LOOKUP

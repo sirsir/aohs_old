@@ -18,7 +18,9 @@
 			role: $("select[name=manager-role] option:selected").val(),
 			agent_id: $("input[name=manager-id]").val(),
 			id_card: $("input[name=manager-id_card]").val(),
-			status: $("select[name=manager-status] option:selected").val()
+			status: $("select[name=manager-status] option:selected").val(),
+			col: "<%=params[:col] %>",
+			sort: "<%=params[:sort] %>"	
 		}
 	}
     function sort_link(name){
@@ -35,8 +37,8 @@
          }
     }
     function filterClear(){
-		$("input[name=manager-id]").val("");
-		$("input[name=manager-id_card]").val("");
+	$("input[name=manager-id]").val("");
+	$("input[name=manager-id_card]").val("");
         $("input[name=manager-login]").val("");
         $("input[name=manager-name]").val("");
         var tmp = $("select[name=manager-role]").html();
@@ -92,7 +94,7 @@
 				  <label>Username:</label> <input class="input-text" type="text" maxlength="50" name="manager-login" value="<%=params[:login] %>">
 				  <label>Name:</label> <input class="input-text" type="text" maxlength="100" name="manager-name" value="<%=params[:name] %>">
 				  <label>Role:</label> <select name="manager-role"><option value=""></option><%= (@roles.map { |r| r == params[:role] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" }).join.html_safe %></select>		  		
-		  		  <label>Status:</label> <select name="manager-status"><%= (['','Active','Inactive'].map { |r| r == params[:status] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" }).join.html_safe %></select>	
+		  		  <label>Status:</label> <select name="manager-status"><%= (['All','Active','Inactive'].map { |r| r == params[:status] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" }).join.html_safe %></select>	
 				</td>
 				<td align="right">
 					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>

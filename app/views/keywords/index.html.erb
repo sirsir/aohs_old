@@ -5,7 +5,7 @@
       delete_cols = - 1
   else
       delete_cols = 0
-  end 
+  end
 %>
 <% content_for :header do %>
 <%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
@@ -206,7 +206,7 @@
    }
    function filterClear()
    {
-   	  statisticsKey.page = 1;
+      statisticsKey.page = 1;
       $("input[name=keywordName]").val("");
       $("input[name=keywordDateFrom]").val("");
       $("input[name=keywordDateTo]").val("");
@@ -217,7 +217,7 @@
       statisticsKey.eddate = "";
       statisticsKey.stdate = "";
       statisticsKey.keywg = "";
-      statisticsKey.keywn = ""; 
+      statisticsKey.keywn = "";
    }
     <% if permission_by_name('data-keywords') %>
     function showImport(){

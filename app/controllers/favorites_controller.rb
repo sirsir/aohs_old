@@ -119,8 +119,9 @@ class FavoritesController < ApplicationController
 
   def export
 
-    show_all = ( (params[:type] =~ /true/ or params[:type] =~ /all/) ? true : false )
-      
+    show_all = ( (params[:type] =~ /true/) ? true : false )
+    @report = {}
+    
     find_call_tag({:show_all => show_all, :timeline_enabled => false, :tag_enabled => false,:summary => true })
 
      @report[:cols] = {}
@@ -170,10 +171,10 @@ class FavoritesController < ApplicationController
        end
      end
 
-     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}"
+     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}" rescue ""
      if Aohs::MOD_KEYWORDS  
-       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}"
-       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}"
+       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}" rescue ""
+       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}" rescue ""
      end
      
     @voice_logs_ds = nil
@@ -246,10 +247,10 @@ class FavoritesController < ApplicationController
        end
      end
 
-     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}"
+     @report[:desc] = "Total Call: #{@voice_logs_ds[:summary][:c_in].to_i + @voice_logs_ds[:summary][:c_out].to_i}  In: #{@voice_logs_ds[:summary][:c_in]}  Out:#{@voice_logs_ds[:summary][:c_out]}  Other: #{@voice_logs_ds[:summary][:c_oth]}  Duration: #{@voice_logs_ds[:summary][:sum_dura]}" rescue ""
      if Aohs::MOD_KEYWORDS  
-       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}"
-       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}"
+       @report[:desc] << "  NG: #{@voice_logs_ds[:summary][:sum_ng]}" rescue ""
+       @report[:desc] << "  Must: #{@voice_logs_ds[:summary][:sum_mu]}" rescue ""
      end
      
     @voice_logs_ds = nil

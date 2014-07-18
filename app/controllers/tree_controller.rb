@@ -1,5 +1,5 @@
 class TreeController < ApplicationController
- 
+
   before_filter :login_required,:except => [:tree_source_xml]
 
   include AmiTree

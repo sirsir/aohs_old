@@ -73,6 +73,7 @@
    }
   tr.hover {background-color: #E8F4FF;}
   tr.selected {background-color: #FFFFDB;}
+  tr.selected {background-color: #FFFF99;}
 
   tr.login td {border-color: #778899;}
   tr.logout, span.logout {color: #A2A2A2;}
@@ -326,8 +327,8 @@
       
       update_agent_label(cti_id, name, grp, ext);
       draw_meter("L", 0);
-      draw_meter("R", 0)
-
+      draw_meter("R", 0);
+      
       $.getJSON("<%= url_for(:controller => 'call_browser', :action => 'get_current_channels_status') %>", {agent_id: agent_id}, function(data){
 
         if(data != null){
@@ -348,6 +349,9 @@
           /* in _real_time page */
           update_currentcall_label(st_time, dir, from, to);
           
+          if ($("#agent-rt-call-"+agent_id).css("display") == "none")
+            change_status_talking(agent_id, st_time, from, to, sys_id, dev_id, chn_id, dir);
+          
           if(document.speechmonitor != null)
             document.speechmonitor.startListenFromHtml(sys_id, dev_id, chn_id, conn);
 
@@ -355,13 +359,15 @@
           var from = (direction == 'o') ? format_phone(ani) : format_phone(dnis);
           var to = (direction == 'o') ? format_phone(dnis) : format_phone(ani);  */
 
-            /* current keyword amount */
-            $('span#n-'+agent_id).text(ng);
-            $('span#m-'+agent_id).text(mst);
+          /* current keyword amount */
+          $('span#n-'+agent_id).text(ng);
+          $('span#m-'+agent_id).text(mst);
 
         }else{
+          
           clear_current_call_label();
           change_status_idle(agent_id);
+
           monitor_status("idle.");
         }
         row.addClass("selected");
@@ -448,8 +454,10 @@
 
   function change_status_idle(agent_id) {
 
+    var monit_agent_id = document.speechmonitor.getAgentID();
+    
     /* in _real_time page */
-    clear_current_call_label();
+    if(monit_agent_id == agent_id) clear_current_call_label();
 
   //  var cur_dev = $("input#call-sys-"+agent_id).val()+"-"+$("input#call-dev-"+agent_id).val()+"-"+$("input#call-chn-"+agent_id).val();
   //  var new_dev = sys+"-"+dev+"-"+chn;

@@ -15,7 +15,9 @@ class ManagersController < ApplicationController
      conditions = manager_search_conditions
         
      @page = default_page(params[:page])
-
+     session[:mng_page] = @page #nkm go back to last page
+     session[:mng_state] = params[:status]
+   
      @managers = Manager.alive.includes([:group,:role]).where(conditions.join(" and ")).order(order)
      @managers = @managers.paginate(:page => params[:page],:per_page => $PER_PAGE)                                
      @roles = ((Role.select("name").order("name asc")).map { |r| r.name })
@@ -163,7 +165,7 @@ class ManagersController < ApplicationController
             log("Delete","Manager",true,"id:#{params[:id]}, name:#{manager.login}")
             flash[:notice] = 'Delete manager has been successfully.'
           else
-            log("Delete","Manager",false,"id:#{params[:id]}, name:#{manager.login}, #{manager.errors.full_messages}")
+            log("Delete","Manager",false,"id:#{params[:id]}, name:#{manager.login}, delete was cancelled")
             flash[:error] = 'Delete manager has been failed.'
           end
         else
@@ -276,8 +278,16 @@ class ManagersController < ApplicationController
         @group_details = GroupCategorization.find_by_sql(sql)
 
         handler = GroupMember.where({ :user_id => @manager.id })
-        @grp_managers = GroupManager.includes(:manager).where({ :user_id => @manager.id })
+        #@grp_managers = GroupManager.includes(:manager).where({ :user_id => @manager.id })
         
+        tmp_grp_managers = GroupManager.includes(:manager).where({ :user_id => @manager.id })
+        @grp_managers = []
+        tmp_grp_managers.each do |x|
+	    unless x.manager.nil?
+		@grp_managers << x
+	    end 
+        end
+
         groups = Group.select('id').where({ :leader_id => @manager.id })
         
         if not handler.empty? or not groups.empty?
@@ -347,16 +357,17 @@ class ManagersController < ApplicationController
      end
      if params.has_key?(:status) and not params[:status].empty?
         case params[:status]
-        when 'Active'
-          state = 'active'
-        when 'Inactive'
-          state = 'passive'
-        else
-          state = ''
+        when 'Active', "Active"
+          conditions << "state = 'active'"
+        when 'Inactive', "Inactive"
+          conditions << "state != 'active'"
+        when 'all', "All"
+          # 
+         else
+          conditions << "state = '#{params[:status]}'"
         end
-        conditions << "state = '#{state}'"
      end
-     
+   
 	 # hide priviate account 
 	 conditions << "login not in (#{(Aohs::PRIVATE_ACCOUNTS.map {|u| "'#{u}'"}).join(',')})"
      return conditions 

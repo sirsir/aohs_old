@@ -19,6 +19,7 @@
 			group: $("select[name=agent-group]:option:selected").val(),
 			agent_id: $("input[name=agent-id]").val(),
 			id_card: $("input[name=agent-idcard]").val(),
+			status: $("select[name=agent-status] option:selected").val() || "All",
 			col: "<%=params[:col] %>",
 			sort: "<%=params[:sort] %>"
 		}
@@ -38,8 +39,8 @@
          }
     }
     function filterClear(){
-		$("input[name=agent-id]").val("");
-		$("input[name=agent-idcard]").val("");
+	$("input[name=agent-id]").val("");
+	$("input[name=agent-idcard]").val("");
         $("input[name=agent-login]").val("");
         $("input[name=agent-name]").val("");
         var tmp = $("select[name=agent-group]").html();
@@ -96,6 +97,7 @@
 				  <label>Username:</label> <input type="text" name="agent-login" value="<%=params[:login] %>">
 				  <label>Name:</label> <input type="text" name="agent-name" value="<%=params[:name] %>">
 				  <label>Group:</label> <select name="agent-group"><option value=""></option><%= (@groups.map { |r| r == params[:group] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" }).join.html_safe %></select>  	  		
+		  		<label>Status:</label> <select name="agent-status"><%= (['All','Active','Inactive'].map { |r| r == params[:status] ? "<option selected=\"selected\" value=\"#{r}\">#{r}</option value=\"#{r}\">" : "<option>#{r}</option>" }).join.html_safe %></select>	
 		  		</td>
 				<td align="right">
 					<%= link_image_tag('Search','apply.png',"#",{:onclick => "filterApply()"}) %>

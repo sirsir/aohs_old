@@ -26,11 +26,13 @@ class CallBrowserController < ApplicationController
       v = VoiceLogTemp.table_name
       c = CurrentChannelStatus.table_name
 
+      #cs_select = "#{c}.id as call_id, #{c}.system_id, #{c}.voice_file_url,#{c}.device_id, #{c}.channel_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.start_time, #{c}.connected, timediff(now(), #{c}.start_time) as diff"
       cs_select = "#{c}.call_id as call_id, #{c}.system_id, #{c}.device_id, #{c}.channel_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.start_time, #{c}.connected, timediff(now(), #{c}.start_time) as diff"
       cs_join = ""
       if @@keyword_available
         vc = VoiceLogCounter.table_name
         cs_select += ", vc.mustword_count as mst, vc.ngword_count as ng"
+        #cs_join = "join #{v} v on v.call_id = #{c}.id and date(v.start_time) = date(now()) join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())"
         cs_join = "join #{v} v on v.call_id = #{c}.call_id and date(v.start_time) = date(now()) join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())"
       end
 
@@ -46,8 +48,21 @@ class CallBrowserController < ApplicationController
           mst = cs.mst.nil? ? 0 : cs.mst
         end
 
-        ccs_result = {:call_id => cs.call_id, :sys_id => cs.system_id, :dvc_id => cs.device_id, :chn_id => cs.channel_id, :ani => cs.ani, :dnis => cs.dnis, :diff => cs.diff,
-          :c_dir => cs.call_direction, :st_time => cs.start_time.strftime("%Y-%m-%d %H:%M:%S"), :conn => cs.connected, :ng_count => ng, :mst_count => mst}
+        ccs_result = {
+          :call_id => cs.call_id,
+          :sys_id => cs.system_id,
+          :dvc_id => cs.device_id,
+          :chn_id => cs.channel_id,
+          :ani => cs.ani,
+          :dnis => cs.dnis,
+          :diff => cs.diff,
+          :c_dir => cs.call_direction,
+          :st_time => cs.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+          :conn => cs.connected,
+          :ng_count => ng,
+          :mst_count => mst,
+          :voice_url => cs.voice_file_url
+        }
       end
     end
 
@@ -88,8 +103,8 @@ class CallBrowserController < ApplicationController
 
         ds = DailyStatistics.select("agent_id, #{daily_selects.join(",")}")
         ds = ds.where("statistics_type_id in (#{stat_types.join(",")}) and start_day = date(now()) and agent_id in (#{all_agent_id})").group(:agent_id).all
-
-        cs_select = "#{c}.agent_id, #{c}.call_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.connected,
+        
+        cs_select = "#{c}.agent_id, #{c}.id ,#{c}.call_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.connected,
                      timediff(now(), #{c}.start_time) as diff, time(#{c}.start_time) as st_time,
                      #{c}.system_id, #{c}.device_id, #{c}.channel_id"
         join_counter = ""
@@ -97,6 +112,7 @@ class CallBrowserController < ApplicationController
         if @@keyword_available
           vc = VoiceLogCounter.table_name
           cs_select += ", vc.mustword_count as mst, vc.ngword_count as ng"
+          #join_counter = "join #{v} v on v.call_id = #{c}.id and date(v.start_time) = date(now()) join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())"
           join_counter = "join #{v} v on v.call_id = #{c}.call_id and date(v.start_time) = date(now()) join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())"
         end
         
@@ -136,7 +152,8 @@ class CallBrowserController < ApplicationController
           unless cs.empty?
             cs.each do |cc|
               if cc.agent_id == u_id
-                current_user[:call_id] = cc.call_id
+                current_user[:call_id] = cc.id
+                #current_user[:call_id] = cc.call_id
                 current_user[:call_start_time] = cc.st_time
                 current_user[:call_ani] = cc.ani
                 current_user[:call_dnis] = cc.dnis

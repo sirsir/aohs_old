@@ -36,8 +36,8 @@ namespace :application do
 
       desc 'reset-daily'
       task :reset_daily => :setup do
-        #clean_statistics_data
-        statistics_all_repair
+        clean_statistics_data
+		statistics_all_repair
       end
       
       desc 'reset'

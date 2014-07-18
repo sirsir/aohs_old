@@ -177,7 +177,7 @@ module AmiTool
 
     if File.exist?(db_conf_file)
       
-      cf = YAML::load(IO.read(db_conf_file))
+	  cf = YAML::load(IO.read(db_conf_file))
 
       AmiLog.linfo("switching database connection to ..")
       AmiLog.lerror("-> host: #{cf[rails_env]["host"]}")
@@ -199,19 +199,18 @@ module AmiTool
 
   # check sub voice_logs tables
   def self.verify_voice_log_tables
-    
+        
     STDOUT.puts "[AmiTool - verify_voice_log_tables] batch started"
 
-    voice_logs_monthly  = []
-    limit_date          = (Date.today - 365).beginning_of_month
+    voice_logs_monthly = []
     
     STDOUT.puts "[AmiTool - verify_voice_log_tables] verifying all voice_logs tables"
     
     # check monthly voice_log from data
     
-    tbl_voice_logs_list = [VoiceLog.table_name,VoiceLogTemp.table_name,VoiceLogToday.table_name]
+    tbl_voice_logs_list = ["voice_logs","voice_logs"]
     tbl_voice_logs_list.each do |tb|
-      sql = "SELECT DATE_FORMAT(start_time,'%Y%m') as yearmonth FROM #{tb} WHERE date(start_time) >= '#{limit_date.strftime("%Y-%m-%d")}' GROUP BY DATE_FORMAT(start_time,'%Y%m')"
+      sql = "SELECT DATE_FORMAT(start_time,'%Y%m') as yearmonth FROM voice_logs GROUP BY DATE_FORMAT(start_time,'%Y%m')"
       result = ActiveRecord::Base.connection.select(sql)
       unless result.empty?
         voice_logs_monthly = voice_logs_monthly.concat(result.map { |r| Aohs::VLTBL_PREFIX + r['yearmonth'] })
@@ -394,53 +393,75 @@ module AmiTool
 	## Maakit Table syncer
 	#
 	
-  def self.database_syncer
-
-    STDOUT.puts "[SyncMasterData] - started"
-
-    exec_path = "mk-table-sync"
+	def self.database_syncer
     
-    cf = YAML::load(IO.read(File.join(Rails.root,'config','maakit.yml')))
+		STDOUT.puts "[SyncMasterData] - started"
     
-    masterdb_config = cf["master"]
-    slavedb_config = cf["slave"]
+		exec_path = "mk-table-sync"
+		
+		cf = YAML::load(IO.read(File.join(Rails.root,'config','maakit.yml')))
+		
+		masterdb_config = cf["master"]
+		slavedb_config = cf["slave"]
+		
+		run_option = :same_server
+		if Aohs::MAAKIT_SYNCER_OPTION == :auto
+			if masterdb_config["host"] == slavedb_config["host"]
+				run_option = :same_server
+			else
+				run_option = :cross_server
+			end
+		else
+			run_option = Aohs::MAAKIT_SYNCER_OPTION
+		end
+		
+		tables_list_fname = File.join(Rails.root,"config",Aohs::MAAKIT_TABLE_SRCLIST)
     
-    run_option = :same_server
-    if Aohs::MAAKIT_SYNCER_OPTION == :auto
-      if masterdb_config["host"] == slavedb_config["host"]
-        run_option = :same_server
-      else
-        run_option = :cross_server
-      end
-    else
-      run_option = Aohs::MAAKIT_SYNCER_OPTION
-    end
-    
-    tables_list_fname = File.join(Rails.root,"config",Aohs::MAAKIT_TABLE_SRCLIST)
-
-    if File.exist?(tables_list_fname)
-      File.open(tables_list_fname).each do |line|
-
-        next if line =~ /^#/
-        next if line.blank?
-
-        table_name = line.to_s.gsub(/ /,"").gsub("\r\n","").gsub("\n","")
-        STDOUT.puts "[SyncMasterData] - table name : #{table_name}"
+		if File.exist?(tables_list_fname)
+			File.open(tables_list_fname).each do |line|
         
-        cmd = "#{exec_path} --execute "
-        case run_option
-        when :cross_server
-                cmd << " u=#{masterdb_config['username']},p=#{masterdb_config['password']},D=#{masterdb_config['database']},t=#{table_name} u=#{slavedb_config['username']},p=#{slavedb_config['password']},D=#{slavedb_config['database']}"
-        else
-                cmd << " u=#{masterdb_config['username']},p=#{masterdb_config['password']},D=#{masterdb_config['database']},t=#{table_name} D=#{slavedb_config['database']}"
+				next if line =~ /^#/
+				next if line.blank?
+        
+				table_name = line.to_s.gsub(/ /,"").gsub("\r\n","").gsub("\n","")
+				STDOUT.puts "[SyncMasterData] - table name : #{table_name}"
+				
+				cmd = "#{exec_path} --execute "
+				case run_option
+				when :cross_server
+					cmd << " u=#{masterdb_config['username']},p=#{masterdb_config['password']},D=#{masterdb_config['database']},t=#{table_name} u=#{slavedb_config['username']},h=#{slavedb_config['host']},p=#{slavedb_config['password']},D=#{slavedb_config['database']}"
+				else
+					cmd << " u=#{masterdb_config['username']},p=#{masterdb_config['password']},D=#{masterdb_config['database']},t=#{table_name} D=#{slavedb_config['database']}"
+				end
+				
+				STDOUT.puts cmd
+				system cmd
+			end
+		end
+    
+		STDOUT.puts "[SyncMasterData] - finished"
+  end
+  
+  def self.auto_remove_inactive_users
+    
+    delete_before = 1.year.ago.strftime("%Y-%m-%d ")
+    inactive_users = User.where("state != 'active' AND flag = false AND DATE(updated_at) <= '#{delete_before}'").all
+    
+    unless inactive_users.empty?
+      inactive_users.each do |usr|
+        usr.login = usr.get_deleted_login_name
+        if usr.type == "Manager"
+          manager = Manager.where(usr.id).first
+          manager.deleted_releated_data unless manager.nil?
         end
-        
-        STDOUT.puts cmd
-        system cmd
+        usr.do_delete
+        usr.state = "deleted"
+        usr.save
       end
     end
-
-    STDOUT.puts "[SyncMasterData] - finished"
-    end
+    
+    STDOUT.puts "[MarkDeleteInactiveUsr] - To deleted #{inactive_users.count} records "
+    
+  end
   
 end

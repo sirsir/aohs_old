@@ -22,7 +22,7 @@
 				<tr class="tr-at<%=i %> <%= cycle("odd","even")%>" row_no="<%=i %>">
 					<% agent['labels'].each_with_index do |c,i| %>
 					<td class="int"><a href="#" class="cell_report" atype="<%=@sub_type %>" agent_id="<%=agent['id'] %>" period="<%=@period %>" date="<%=@display_columns[i] %>"><%= number_with_delimiter(c) %></a><%=image_tag('padding.png',{:width=> '1px',:height => '14px'})%></td>
-					<% end %>								
+					<% end %>
 				</tr>
 				<% end %>
 				<% x = @grand_total.shift%>

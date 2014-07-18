@@ -15,7 +15,7 @@
       <tr>
         <td align="left">
           <ul>
-            <li><%= link_image_tag('Back','back.png',{:controller => 'agents',:action => 'index'},{:title => 'Back to agent list'}) %></li>
+            <li><%= link_image_tag('Back','back.png',{:controller => 'agents',:action => 'index',:page=>(session[:agent_page]||"1"),:status => session[:agent_state]},{:title => 'Back to agent list'}) %></li>
           </ul>
         </td>
         <td align="right">

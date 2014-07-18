@@ -8,7 +8,7 @@
       <tr>
         <td align="left">
           <ul>
-            <li><%= link_image_tag('Back','back.png',{:controller => "managers",:action => 'index'},{:title => 'Back to manager list'}) %></li>
+            <li><%= link_image_tag('Back','back.png',{:controller => "managers",:action => 'index',:page=>(session[:mng_page]||"1"),:status=>session[:mng_state]},{:title => 'Back to manager list'}) %></li>
             <% if link_permission_require('managers','edit') %>
             <li><%= link_image_tag('Edit manager','edit.png',{:controller => "managers",:action=>"edit", :id => @manager.id},{:title => 'Edit'}) %></li>
             <% end %>
