@@ -12,7 +12,6 @@ class User < ActiveRecord::Base
   belongs_to :role,  :class_name => 'Role',   :foreign_key => 'role_id'  
   
   validates :login, :presence   => true,
-                    #:uniqueness => true,
                     :length     => { :within => 3..40 },
                     :format     => { :with => Authentication.login_regex, :message => Authentication.bad_login_message }
 
@@ -22,17 +21,15 @@ class User < ActiveRecord::Base
                             :format     => { :with => Authentication.name_regex, :message => Authentication.bad_name_message },
                             :length     => { :maximum => 100 }
 
-    validates :cti_agent_id,  :presence   => true,
-                            :format     => { :with => Authentication.name_regex, :message => Authentication.bad_name_message },
-                            :length     => { :maximum => 100 }
-
-
+  validates :cti_agent_id,  :presence    => true,
+														:allow_blank => true,
+														:allow_nil	 => true,
+                            :length      => { :maximum => 100 }
 
   validates_presence_of     :type
 	
   validates :email, :format     => { :with => Authentication.email_regex, :message => Authentication.bad_email_message },
                     :length     => { :within => 6..100 },
-                    #:allow_nil  => true,
                     :allow_blank => true
 
   validates_format_of :password, :allow_nil  => true, :allow_blank => true, :with => /(\!|\@|\#|\$|\%|\<|\>\&|\*|\=|\+|\-|\(|\)){1,}/, :message => "must be contains special characters"
@@ -98,12 +95,9 @@ class User < ActiveRecord::Base
   @@msg_template = "username are expired."
    
   def reset_password(password)
-    
     pass = password
     comf_pass = pass
-    
     self.update_attributes({:password => pass, :password_confirmation => comf_pass})
-    
     return true  
   end
    
@@ -117,9 +111,9 @@ class User < ActiveRecord::Base
     u && u.authenticated?(password) ? u : nil
   end
    
-   def self.error_msg
-       @@msg_template
-   end
+	def self.error_msg
+			@@msg_template
+	end
    
   def login=(value)
     write_attribute :login, (value ? value.downcase : nil)
@@ -129,50 +123,50 @@ class User < ActiveRecord::Base
     write_attribute :email, (value ? value.downcase : nil)
   end
 
-   def sex2
-      @@label_sex[self.sex]
-   end 
+	def sex2
+		 @@label_sex[self.sex]
+	end 
+	
+	def state_name
+		return (self.state == 'pending' or self.state == 'passive') ? 'Inactive' : 'Active' 
+	end
+	
+	def is_expired_date?
+		if self.expired_date.nil?
+			return false
+		else
+			if Time.new >= Time.parse(self.expired_date)
+				return true
+			else
+				return false
+			end
+		end
+	end
+	
+	def id_card2
+		return (self.id_card.to_s.gsub(/(\d)(\d{4})(\d{5})(\d{2})(\d)/,"\\1-\\2-\\3-\\4-\\5"))
+	end
    
-   def state_name
-     return (self.state == 'pending' or self.state == 'passive') ? 'Inactive' : 'Active' 
-   end
-   
-   def is_expired_date?
-     if self.expired_date.nil?
-       return false
-     else
-       if Time.new >= Time.parse(self.expired_date)
-         return true
-       else
-         return false
-       end
-     end
-   end
-   
-   def id_card2
-     return (self.id_card.to_s.gsub(/(\d)(\d{4})(\d{5})(\d{2})(\d)/,"\\1-\\2-\\3-\\4-\\5"))
-   end
-   
-   def role_name
-     
-     return (self.role.nil? ? nil : self.role.name)
-      
-   end
+	def role_name
+		
+		return (self.role.nil? ? nil : self.role.name)
+		 
+	end
 
-   def extensions_list
-     eams = ExtensionToAgentMap.where(:agent_id => self.id).group('extension').order('extension asc').all
-     @@extensions_list = eams.map { |m| m.extension }
-   end
-   
-   def phones_list
-     dams = DidAgentMap.where(:agent_id => self.id).group('number').order('number asc').all
-     @@phones_list = dams.map { |m| m.number } 
-   end
+	def extensions_list
+		eams = ExtensionToAgentMap.where(:agent_id => self.id).group('extension').order('extension asc').all
+		@@extensions_list = eams.map { |m| m.extension }
+	end
+	
+	def phones_list
+		dams = DidAgentMap.where(:agent_id => self.id).group('number').order('number asc').all
+		@@phones_list = dams.map { |m| m.number } 
+	end
 
-   def get_deleted_login_name
-     return self.login.to_s + "__" + self.id.to_s
-   end
+	def get_deleted_login_name
+		return self.login.to_s + "__" + self.id.to_s
+	end
 
-   protected
+  protected
    
 end

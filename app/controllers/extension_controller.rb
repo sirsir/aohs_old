@@ -7,120 +7,122 @@ class ExtensionController < ApplicationController
 
   def index
 
-      conditions = []
-  
-      sort_key = nil
-      # check sort key
-      case params[:col]
-      when /ext/:
-         sort_key = 'extensions.number'              
-      else
-         sort_key = 'extensions.number'
-      end
-      
-      order = "#{sort_key} #{check_order_name(params[:sort])}" 
-                  
-      if params.has_key?(:user) and not params[:user].empty?
-        conditions << "login like '%#{params[:user]}%'"
-      end
-      if params.has_key?(:agent_id) and not params[:agent_id].empty?
-        conditions << "cti_agent_id like '#{params[:agent_id]}%'"
-      end
-       
-      unless conditions.empty?
-        usrs = User.where(conditions.join(" and "))
-        if usrs.empty?
-          conditions = false
-        else
-          exts = ExtensionToAgentMap.where(:agent_id => usrs.map {|u| u.id}).group('agent_id').all
-          if exts.empty?
-            conditions = false
-          else
-            conditions = []
-            exts_tmp = exts.map { |t| "'#{t.extension}'"}
-            conditions << "extensions.number in (#{exts_tmp.join(',')})"
-          end
-        end
+		conditions = []
 
-      end
-          
-      if conditions == false
-        conditions = []
-        conditions << "extensions.number is null"
-      end
+		sort_key = nil
+		case params[:col]
+		when /ext/
+			 sort_key = 'extensions.number'              
+		else
+			 sort_key = 'extensions.number'
+		end
       
-      if params.has_key?(:ext) and not params[:ext].strip.empty?
-        conditions << "extensions.number like '%#{params[:ext].strip}%'"
-      end
+    order = "#{sort_key} #{check_order_name(params[:sort])}" 
+
+		if params.has_key?(:user) and not params[:user].empty?
+			conditions << "login like '%#{params[:user]}%'"
+		end
+		if params.has_key?(:agent_id) and not params[:agent_id].empty?
+			conditions << "cti_agent_id like '#{params[:agent_id]}%'"
+		end
+
+		unless conditions.empty?
+			usrs = User.where(conditions.join(" and "))
+			if usrs.empty?
+				conditions = false
+			else
+				exts = ExtensionToAgentMap.where(:agent_id => usrs.map {|u| u.id}).group('agent_id').all
+				if exts.empty?
+					conditions = false
+				else
+					conditions = []
+					exts_tmp = exts.map { |t| "'#{t.extension}'"}
+					conditions << "extensions.number in (#{exts_tmp.join(',')})"
+				end
+			end
+		end
+
+		if conditions == false
+			conditions = []
+			conditions << "extensions.number is null"
+		end
       
-      if params.has_key?(:dids) and not params[:dids].strip.empty?
-        conditions << "dids.number like '%#{params[:dids].strip}%'"
-      end
+		if params.has_key?(:ext) and not params[:ext].strip.empty?
+			conditions << "extensions.number like '%#{params[:ext].strip}%'"
+		end
       
-      @extension = Extension.includes([:dids]).where(conditions.join(' and ')).order(order).group('extensions.number')
-      @extension = @extension.paginate(:page => params[:page], :per_page => $PER_PAGE)
+		if params.has_key?(:dids) and not params[:dids].strip.empty?
+			conditions << "dids.number like '%#{params[:dids].strip}%'"
+		end
+      
+    @extension = Extension.includes([:dids]).where(conditions.join(' and ')).order(order).group('extensions.number')
+    @extension = @extension.paginate(:page => params[:page], :per_page => $PER_PAGE)
 	  @page = params[:page] #nkm 27.02.2013
+  
   end
 
   def edit
 
     begin
-        @extension = Extension.where(:id => params[:id]).first
+      @extension = Extension.where(:id => params[:id]).first
     rescue => e
-        log("Edit","PhoneExtension",false,"id:#{params[:id]},#{e.message}")
-        redirect_to :controller => 'extension',:action => 'index'
+      log("Edit","PhoneExtension",false,"id:#{params[:id]},#{e.message}")
+      redirect_to :controller => 'extension',:action => 'index'
     end
 
   end
 
   def update
-      begin
-        @extension = Extension.where(:id => params[:id]).first
-        if @extension.update_attributes(params[:extension]) and not @extension.number.blank?
-          
-            dids = params[:dids].to_s.strip
-            unless dids.empty?
-              Did.delete_all(:extension_id => @extension.id)
-              dids = dids.split(",")
-              dids.each do |did|
-                did = did.strip
-                next if did.empty?
-                if Did.where(:number => did).first.nil?
-                  Did.new(:extension_id => @extension.id, :number => did).save
-                end
-              end
-            else
-              Did.delete_all(:extension_id => @extension.id)
-            end
-            
-            ips = params[:ipadr].to_s.strip
-            comp = params[:comp].to_s.strip
-            cem = ComputerExtensionMap.where(:extension_id => @extension.id).first
-            if not cem.nil? and ips.empty?
-              ComputerExtensionMap.delete(cem)
-            else
-              if cem.nil?
-                ComputerExtensionMap.new(:extension_id => @extension.id, :ip_address => ips,:computer_name => comp).save 
-              else
-                cem.update_attributes({:extension_id => @extension.id, :ip_address => ips,:computer_name => comp})
-              end
-            end
-          
-           log("Update","PhoneExtension",true,"id:#{params[:id]},ext:#{@extension.number}")
-        else
-           flash[:message] = "Update extension fail."
-           log("Update","PhoneExtension",false,"id:#{params[:id]}")
-        end
-      rescue => e
-         flash[:message] = "Update extension fail."
-         log("Update","PhoneExtension",false,"id:#{params[:id]},#{e.message}")
-      end
-      
-      redirect_to :action => 'edit',:id => @extension.id
+		
+		begin
+			
+			@extension = Extension.where(:id => params[:id]).first
+			if @extension.update_attributes(params[:extension]) and not @extension.number.blank?
+				dids = params[:dids].to_s.strip
+					unless dids.empty?
+						Did.delete_all(:extension_id => @extension.id)
+						dids = dids.split(",")
+						dids.each do |did|
+							did = did.strip
+							next if did.empty?
+							if Did.where(:number => did).first.nil?
+								Did.new(:extension_id => @extension.id, :number => did).save
+							end
+						end
+					else
+						Did.delete_all(:extension_id => @extension.id)
+					end
+					
+					ips = params[:ipadr].to_s.strip
+					comp = params[:comp].to_s.strip
+					cem = ComputerExtensionMap.where(:extension_id => @extension.id).first
+					if not cem.nil? and ips.empty?
+						ComputerExtensionMap.delete(cem)
+					else
+						if cem.nil?
+							ComputerExtensionMap.new(:extension_id => @extension.id, :ip_address => ips,:computer_name => comp).save 
+						else
+							cem.update_attributes({:extension_id => @extension.id, :ip_address => ips,:computer_name => comp})
+						end
+					end
+				 log("Update","PhoneExtension",true,"id:#{params[:id]},ext:#{@extension.number}")
+			else
+				 flash[:message] = "Update extension fail."
+				 log("Update","PhoneExtension",false,"id:#{params[:id]}")
+			end
+		rescue => e
+			 flash[:message] = "Update extension fail."
+			 log("Update","PhoneExtension",false,"id:#{params[:id]},#{e.message}")
+		end
+		
+		redirect_to :action => 'edit',:id => @extension.id
+		
   end
 
   def new
-     @extension = Extension.new
+		
+    @extension = Extension.new
+  
   end
 
   def create
@@ -161,14 +163,15 @@ class ExtensionController < ApplicationController
     
     @extension = Extension.where(:id => params[:id]).first
     number = @extension.number
+    
     if @extension.destroy()
-       log("Delete","PhoneExtension",true,"ext:#{number}")
-      # flash[:notice] = 'Delete Extension successfully.'
+      log("Delete","PhoneExtension",true,"ext:#{number}")
     else
        log("Delete","PhoneExtension",false,"ext:#{number}")
        flash[:message] = 'Delete Extension failed.'
     end
-     redirect_to :action => 'index'
+    
+    redirect_to :action => 'index'
      
   end
   

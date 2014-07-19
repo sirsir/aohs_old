@@ -8,6 +8,7 @@ class CallTagsController < ApplicationController
   def index
 
     order_by = "asc"
+    
     case params[:by]
       when /(asc)/
         order_by = "desc"
@@ -17,10 +18,10 @@ class CallTagsController < ApplicationController
     params[:by] = order_by
         
     case params[:sort]
-      when "name"
-        sort_key = "name #{order_by}"
-      when "calls"
-        sort_key = "count(taggings.id) #{order_by}"
+    when "name"
+      sort_key = "name #{order_by}"
+    when "calls"
+      sort_key = "count(taggings.id) #{order_by}"
     end
 
     conditions = []
@@ -60,18 +61,22 @@ class CallTagsController < ApplicationController
     @tags = Tags.new(params[:tags])
 
     begin
+      
       if @tags.save
-          log("Add","CallTag",true,"id:#{@tags.id}, name:#{@tags.name}")
-          redirect_to :action => 'index',:group_id => @tags.tag_group_id
+        log("Add","CallTag",true,"id:#{@tags.id}, name:#{@tags.name}")
+        redirect_to :action => 'index',:group_id => @tags.tag_group_id
       else
-          log("Add","CallTag",false,@tags.errors.full_messages)
-          flash[:message] = @tags.errors.full_messages
-          render :action => 'new'
+        log("Add","CallTag",false,@tags.errors.full_messages)
+        flash[:message] = @tags.errors.full_messages
+        render :action => 'new'
       end
+      
     rescue => e
-        log("Add","CallTag",false,e.message)
-        flash[:error] = "Add tag has been failed.[#{e.message}]"
-        redirect_to :action => 'index'
+      
+      log("Add","CallTag",false,e.message)
+      flash[:error] = "Add tag has been failed.[#{e.message}]"
+      redirect_to :action => 'index'
+    
     end
     
   end
@@ -81,12 +86,12 @@ class CallTagsController < ApplicationController
     begin
       
       @tags = Tags.find(params[:id])
-        
+    
     rescue => e
-      
+    
       log("Edit","CallTag",false,"id:#{params[:id]},#{e.message}")
       redirect_to :action => 'index'
-      
+    
     end
 
   end
@@ -94,20 +99,24 @@ class CallTagsController < ApplicationController
   def update
 
     begin
+      
       @tags = Tags.find(params[:id])
-
+      
       if @tags.update_attributes(params[:tags])
-          log("Update","CallTag",true,"id:#{params[:id]}, tag:#{@tags.name}")
-          redirect_to :action => 'index' ,:group_id => @tags.tag_group_id
+        log("Update","CallTag",true,"id:#{params[:id]}, tag:#{@tags.name}")
+        redirect_to :action => 'index' ,:group_id => @tags.tag_group_id
       else
-          log("Update","CallTag",false,"id:#{params[:id]}, #{@tags.errors.full_messages}")
-          flash[:message] = @tags.errors.full_messages
-          render :action => 'edit'
+        log("Update","CallTag",false,"id:#{params[:id]}, #{@tags.errors.full_messages}")
+        flash[:message] = @tags.errors.full_messages
+        render :action => 'edit'
       end
+      
     rescue => e
+      
       log("Update","CallTag",false,"id:#{params[:id]}, #{e.message}")
       flash[:error] = "Update tag has been failed.[#{e.message}]"
       redirect_to :action => 'index'
+    
     end
     
   end
@@ -145,6 +154,7 @@ class CallTagsController < ApplicationController
   def delete_all_by_group_id
     
     begin
+      
       tag_objects = Tags.find(:all, :conditions => ["tag_group_id = ?", params[:gid] ])
       Tags.delete_all "tag_group_id ="+params[:gid]
       log("Delete_All_By_Group_ID","CallTag",true,"id:"+params[:gid]+"tag_objects#{tag_objects.blank?}")
@@ -152,9 +162,12 @@ class CallTagsController < ApplicationController
       tags_id.each { |tag_id| Taggings.delete_all "tag_id =#{tag_id}"}
       
       redirect_to :action => 'index'
+    
     rescue => e
+      
       log("Delete_All_By_Group_ID","CallTag",false,"id:"+params[:gid]+ "#{e.message}")
       flash[:error] = "Delete tag has failed.[#{e.message}]"  
+    
     end
 
   end
@@ -170,16 +183,16 @@ class CallTagsController < ApplicationController
       tags_id = tags.map { |t| t.tag_id }
       tag_groups = TagGroup.joins([:tags]).where({:tags => {:id => tags_id}}).order('tag_groups.name,tags.name').group('tag_groups.name').all unless tags_id.blank?
       unless tag_groups.blank?
-         tag_groups.each do |tg|
-           jtags << {:name => tg.name , :tags => (tg.tags.map { |t| tags_id.include?(t.id) ? "#{t.id},#{t.name}" : nil }).compact}
-         end
+        tag_groups.each do |tg|
+          jtags << {:name => tg.name , :tags => (tg.tags.map { |t| tags_id.include?(t.id) ? "#{t.id},#{t.name}" : nil }).compact}
+        end
       end      
     else
       tag_groups = TagGroup.find(:all,:include => :tags,:order => 'tag_groups.name,tags.name')
       unless tag_groups.blank?
-         tag_groups.each do |tg|
-           jtags << {:name => tg.name , :tags => tg.tags.map { |t| "#{t.id},#{t.name}" }}
-         end
+        tag_groups.each do |tg|
+          jtags << {:name => tg.name , :tags => tg.tags.map { |t| "#{t.id},#{t.name}" }}
+        end
       end
     end
 
@@ -187,7 +200,6 @@ class CallTagsController < ApplicationController
     
   end
 
-  # for 'voice_logs/shows/...' page
   def load_tags
 
     tag_info = []
@@ -206,6 +218,7 @@ class CallTagsController < ApplicationController
     end
 
     render :json => tag_info
+    
   end
 
 end

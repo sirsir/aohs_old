@@ -1,7 +1,12 @@
 class CallBrowserController < ApplicationController
 
-  before_filter :login_required, :except => [:get_info, :get_current_channels_status, :get_prvious_call, :call_stat, :search_voice_log, :get_destination_agent]
-  #before_filter :permission_required
+  before_filter :login_required, :except => [
+                                      :get_info,
+                                      :get_current_channels_status,
+                                      :get_prvious_call,
+                                      :call_stat,
+                                      :search_voice_log,
+                                      :get_destination_agent ]
 
   include AmiCallSearch
   
@@ -20,11 +25,12 @@ class CallBrowserController < ApplicationController
   def get_current_channels_status
     
     ccs_result = nil
+    
     if (params.has_key?(:agent_id) and not params[:agent_id].empty?)
       
       agent_id = params[:agent_id]
-      v = VoiceLogTemp.table_name
-      c = CurrentChannelStatus.table_name
+      v        = VoiceLogTemp.table_name
+      c        = CurrentChannelStatus.table_name
 
       #cs_select = "#{c}.id as call_id, #{c}.system_id, #{c}.voice_file_url,#{c}.device_id, #{c}.channel_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.start_time, #{c}.connected, timediff(now(), #{c}.start_time) as diff"
       cs_select = "#{c}.call_id as call_id, #{c}.system_id, #{c}.device_id, #{c}.channel_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.start_time, #{c}.connected, timediff(now(), #{c}.start_time) as diff"

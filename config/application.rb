@@ -16,8 +16,8 @@ module AohsWeb
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
 
-	config.autoload_paths += %W(#{config.root}/lib)
-	config.autoload_paths += Dir["#{config.root}/lib/**/"]
+		config.autoload_paths += %W(#{config.root}/lib)
+		config.autoload_paths += Dir["#{config.root}/lib/**/"]
 	
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
@@ -29,10 +29,10 @@ module AohsWeb
     # Set Time.zone default to the specified zone and make Active Record auto-convert to this zone.
     # Run "rake -D time" for a list of tasks for finding time zone names. Default is UTC.
     # config.time_zone = 'Central Time (US & Canada)'
-	config.time_zone = 'UTC'
+		config.time_zone = 'UTC'
 
-	config.session_store :cookie_store, :key => "_amivoice_operators_help_session"
-	config.secret_token = '9b230586fc3154d09653effb2d3376eb79a845d2370b2166dee57a5d7da561fa3f761631b9b990a99e19812c4403986b7f8eedd141827c071553df1d0d97fda4'
+		config.session_store :cookie_store, :key => "_amivoice_operators_help_session"
+		config.secret_token = '9b230586fc3154d09653effb2d3376eb79a845d2370b2166dee57a5d7da561fa3f761631b9b990a99e19812c4403986b7f8eedd141827c071553df1d0d97fda4'
     	
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
