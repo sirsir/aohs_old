@@ -260,40 +260,37 @@
             onVoiceReset(rows_count);  
             rows_count -= 1; 
           }
-		  vc_data = null;
-		  summary = null;
-		  data = null;
-                 
-          targetTable.html(rows);
+				vc_data = null;
+				summary = null;
+				data = null;
+        targetTable.html(rows);
+				rows = null;
+				targetTable = null;
+        $('#rec-start').html(number_with_delimiter(parseInt(first_row)));
+        $('#rec-end').html(number_with_delimiter(parseInt(first_row + rows_count)));
+        resetTableStyle();
+				addBtnTransferCall(found_tranfer);		  
+				progressEnabled(false); 
+    }
 
-		  rows = null;
-		  targetTable = null;
-		  
-          $('#rec-start').html(number_with_delimiter(parseInt(first_row)));
-          $('#rec-end').html(number_with_delimiter(parseInt(first_row + rows_count)));
-
-          resetTableStyle();
-		  addBtnTransferCall(found_tranfer);		  
-		  progressEnabled(false); 
-      }
-
-      function openCallDialog(id){
-          var rurl = "<%= url_for(:controller => 'voice_logs',:action => 'show') %>" + "/" + id;
-          var window1 = window.open(rurl,"",'menubar=no,scrollbars=no,location=yes,resizable=yes,width=950,height=500');
-          //window1.moveTo((screen.width - 950)/2, (screen.height - 500)/2);
-      }
+    function openCallDialog(id){
+        var rurl = "<%= url_for(:controller => 'voice_logs',:action => 'show') %>" + "/" + id;
+        var window1 = window.open(rurl,"",'menubar=no,scrollbars=no,location=yes,resizable=yes,width=950,height=500');
+    }
 	  function loadKeywordTooltip(ele){ }
 	  function applyKeywordTooltip(o){ }
 	  function applyToolButton(o){
-		$(".btntool",o).mouseover(function(){
-			if($(".btntool",$(this).parent()).attr("loaded") != "loaded"){
-				$(".btntool",$(this).parent()).attr("loaded","loaded").menu({
-				minWidth: 115, 
-				showDelay: 0,
-				hideDelay: 0
-				},'.tool-action');
-			}
-		});
+				$(".btntool",o).mouseover(function(){
+						var ox = $(".btntool",$(this).parent())
+						if(ox.attr("loaded") != "loaded"){
+								ox.attr("loaded","loaded");
+								ox.menu({
+										minWidth: 115, 
+										showDelay: 0,
+										hideDelay: 0
+								},'.tool-action');
+						}
+				});
 	  }
 	  function onClickMoreMenu(o){ }
 	  function applyCallTagToolTip(o){
@@ -304,12 +301,10 @@
 	  }
 	  function showTransferCall(v_id,row_no,o){
 				$(".rowof" + row_no).css("display","block");
-				alert($(".rowof" + row_no).html());
 				o.html("<img src='<%= image_path('tree_icon/collapse-icon2.gif') %>'/>"); 		 	  	
 	  }
 	  function hideTransferCall(v_id,row_no,o){
 				$(".rowof" + row_no).css("display","none");
-				alert($(".rowof" + row_no).html());
 				o.html("<img src='<%= image_path('tree_icon/expand_icon2.gif') %>'/>"); 
 	  }
 	  function loadTransferCall(v_id,row_no,o){
@@ -336,9 +331,14 @@
                 if((vc['open'] == true) || (vc['open'] == "true")){
 										<% if permission_by_name('voice_logs-download')%>
 										if((vc['duration'] != "00:00")){
-												menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li   title=\"Export\"  onclick=\"window.open('"+ vc['path'] +"')\"><img src='<%= image_path('export.png') %>'/></li> <li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+												menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li>"+
+												"<li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li>"+
+												"<li title=\"Export\"  onclick=\"window.open('"+ vc['path'] +"')\"><img src='<%= image_path('export.png') %>'/></li>"+
+												"<li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
 										}else{
-												menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+												menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li>"+
+												"<li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li>"+
+												"<li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
 										}    
 										<% else %>
 												menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
@@ -424,139 +424,131 @@
     		   var row_no = $('input[name=rowNo]',o.parent().parent()).val();
     		   var rowState = o.attr("btnstate");
     		   if(rowState=='load'){
-    		   	  o.attr("btnstate","show");
-    		   	  progressEnabled(true); 
-    		   	  loadTransferCall(v_id,row_no,o);
+								o.attr("btnstate","show");
+								progressEnabled(true); 
+								loadTransferCall(v_id,row_no,o);
     		   } else if(rowState=="show"){
-    		   	  o.attr("btnstate","hide");
-    			  hideTransferCall(v_id,row_no,o);	
+								o.attr("btnstate","hide");
+								hideTransferCall(v_id,row_no,o);	
     		   } else if(rowState=="hide"){
-    		   	  o.attr("btnstate","show");
-    			  showTransferCall(v_id,row_no,o);			   	
+								o.attr("btnstate","show");
+								showTransferCall(v_id,row_no,o);			   	
     		   }
     		});            
         }
 	  }
       
-      function voiceButton(id,act){
-		currentVoice = currentVoices[id];
-		callAction(act)          
-      }
+		function voiceButton(id,act){
+				currentVoice = currentVoices[id];
+				callAction(act);          
+		}
       
-      function highLightClickRow(ele){
+    function highLightClickRow(ele){
 		  	$("#mytable tr").removeClass('click');
-			$(ele).addClass('click');          
-      }
+				$(ele).addClass('click');          
+    }
       
-      function resetTableStyle(o){
-        var o = o || $("#mytable");
-	applyToolButton(o);
-	applyCallTagToolTip(o);
-      }
+    function resetTableStyle(o){
+        var ox = o || $("#mytable");
+				applyToolButton(ox);
+				applyCallTagToolTip(ox);
+    }
 
-      function checkNum(){
-        var carCode = event.keyCode;
-        if ((carCode < 48) || (carCode > 57)){
-	        event.cancelBubble = true
-	        event.returnValue = false;
-	    }
-      }
-
-	function breaklineCars(cars){
-		if(cars.length > 1){
-			var a = cars.split(",");
-			var b = new Array();
-			for(var i=0; i<a.length; i++){
-				c = a[i].split(/-| /);
-				b.push("<span class='carunderline'>" + c[0] + "</span>" + "-" + "<span class='carunderline'>" + c[1] + "</span>" + "&nbsp;" + "<span class='carunderline'>" + c[2] + "</span>");
-			}
-			return b.join("<BR/>");			
+		function checkNum(){
+				var carCode = event.keyCode;
+				if ((carCode < 48) || (carCode > 57)){
+						event.cancelBubble = true;
+						event.returnValue = false;
+				}
 		}
-		return "&nbsp;";
-	}
+
+		function breaklineCars(cars){
+				if(cars.length > 1){
+						var a = cars.split(",");
+						var b = new Array();
+						for(var i=0; i<a.length; i++){
+								c = a[i].split(/-| /);
+								b.push("<span class='carunderline'>" + c[0] + "</span>" + "-" + "<span class='carunderline'>" + c[1] + "</span>" + "&nbsp;" + "<span class='carunderline'>" + c[2] + "</span>");
+						}
+						return b.join("<BR/>");			
+				}
+				return "&nbsp;";
+		}
     
-	function unBreaklineCars(cars){ return cars; }
+		function unBreaklineCars(cars){ return cars; }
     
-	function pageChecker(){
-		$("input[name=perpage]").change(function(){
-			var t = $(this);
-			var p = parseInt(t.val()) || ctrlPage.defaultPerPage;
-			if((p > 0) && (p <= ctrlPage.maxPerPage)){
-				t.val(p);
-				ctrlPage.perPage = p;
-			} else {
-				ctrlPage.perPage = ctrlPage.defaultPerPage;
-				t.val(ctrlPage.defaultPerPage);
-			} 
-		});		
-	}
+		function pageChecker(){
+				$("input[name=perpage]").change(function(){
+						var t = $(this);
+						var p = parseInt(t.val()) || ctrlPage.defaultPerPage;
+						if((p > 0) && (p <= ctrlPage.maxPerPage)){
+								t.val(p);
+								ctrlPage.perPage = p;
+						} else {
+								ctrlPage.perPage = ctrlPage.defaultPerPage;
+								t.val(ctrlPage.defaultPerPage);
+						} 
+				});		
+		}
 	
-	function callAction(a){
-	  	switch (true){
-			case a == "play":
-				onVoiceLoad(parseInt(currentVoice.row));
-				break;
-		 	case a == "no-play":
-			    //alert("You not have permission for this voice");
-				break;				
-			case a=="more": 
-			    openCallDialog(currentVoice.id);
-				break;
-		 	case a == "no-more":
-			    //alert("You not have permission for this voice");
-				break;				
-			case a=="load":
-			    loadAudioFile(currentVoice.id); 
-				break;
-			case a=="addt": 
-				openAddTagDialog(currentVoice.id,currentVoice.row);
-				break;
-			case a=="remt":
-				removeTagDialog(currentVoice.id,currentVoice.row);
-				break;
-		    case a=="editcust":
+		function callAction(a){
+				switch (true){
+				case a=="play":
+					onVoiceLoad(parseInt(currentVoice.row));
+					break;
+				case a=="no-play":
+						//alert("You not have permission for this voice");
+					break;				
+				case a=="more": 
+						openCallDialog(currentVoice.id);
+					break;
+				case a=="no-more":
+						//alert("You not have permission for this voice");
+					break;				
+				case a=="load":
+						loadAudioFile(currentVoice.id); 
+					break;
+				case a=="addt": 
+					openAddTagDialog(currentVoice.id,currentVoice.row);
+					break;
+				case a=="remt":
+					removeTagDialog(currentVoice.id,currentVoice.row);
+					break;
+				case a=="editcust":
 				openCustomerDialog(currentVoice.id,currentVoice.row);	
-			    break;
-			default:
-				// not thing
+				  break;
+				default:
+					// not thing
+			}
 		}
-	}
 	
-	function calculateTableWidth(){
-		var total_width = 0;
-		$(".tbl-header tr:first th").each(function(){
-			total_width += $(this).width();
+		function calculateTableWidth(){
+			var total_width = 0;
+			$(".tbl-header tr:first th").each(function(){
+				total_width += $(this).width();
+			});
+			cols_width = total_width;
+		}
+		function bindBtnTool(){
+				$(".cbtn").click(function(){
+						callAction($(this).attr('act'));
+				});				
+		}
+		$(document).ready(function(){
+				calculateTableWidth();
+				$("#div-loading").css("display","none");
+				$("#div-exporting").css("display","none");
+				var options = {minWidth: 100};
+				$("#btnExport").menu(options,'#exportli');
+				var options = {minWidth: 100};
+				$("#btnPrint").menu(options,'#printli');
+				ctrlPage.perPage = ctrlPage.defaultPerPage;
+				try{ resizeWindow(); } catch(e){ }
+				pageChecker();
+				bindBtnTool(); 
 		});
-		cols_width = total_width;
-	}
-	
-	$(document).ready(function(){
-      
-		  calculateTableWidth();
-		  
-          $("#div-loading").css("display","none");
-          $("#div-exporting").css("display","none");
-
-          var options = {minWidth: 100};
-          $("#btnExport").menu(options,'#exportli');
-
-          var options = {minWidth: 100};
-          $("#btnPrint").menu(options,'#printli');
-         
-		  ctrlPage.perPage = ctrlPage.defaultPerPage;
-		  
-          try{ resizeWindow(); } catch(e){ }
-		  pageChecker();
-		  
-  		  $(".cbtn").click(function(){
-			callAction($(this).attr('act'));
-		  });
-	 });
-
-    </script>
-    
+</script>    
 <% end %>
-<!-- EXPORT -->
 <ul id="exportli" style="display:none">
 	<li><a href="#" onclick="vc_export(true)">All page</a></li>
 	<li><a href="#" onclick="vc_export(false)">Current page</a></li>
@@ -565,15 +557,12 @@
 	<li><a href="#" onclick="vc_print(true)">All page</a></li>
 	<li><a href="#" onclick="vc_print(false)">Current page</a></li>
 </ul>
-<!-- ACTION -->
 <ul class="tool-action" style="display:none;">
 	<% if permission_by_name('voice_logs-download') and Aohs::MOD_DOWNLOAD_CALL %>
 	<li act="Download"><span class="cbtn" act="load">Download File</span></li>
 	<% end %>
-    <% if true %>
 	<% if Aohs::MOD_CUSTOMER_INFO %>
 	<li act="EditCust" class="sub-call"><span class="cbtn" act="editcust">Add/Edit Call Detail</span></li>
-	<% end %>
 	<% end %>
 	<% if permission_by_name('favorites-upd') %>
 	<li act="AddT"><span class="cbtn" act="addt">Add Tag</span></li>
