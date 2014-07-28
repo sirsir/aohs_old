@@ -95,13 +95,13 @@ class VoiceLogsController < ApplicationController
 
 			#ani
 			if params.has_key?(:caller) and not params[:caller].empty?
-				 caller_no = params[:caller].strip
+				 caller_no = params[:caller].to_s.strip
 				 if caller_no.length > 8
 						# remove leading zero
-						if caller_no[0] == "0"
-							 caller_no = caller_no[1..-1]
+						if caller_no[0,1] == "0"
+ 							 caller_no = caller_no[1..-1]
 						end
-						conditions << "#{vl_tbl_name}.ani like '#{caller_no}%'"
+						conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
 				 elsif caller_no.length == 1
 						conditions << "#{vl_tbl_name}.ani like '#{caller_no}"
 				 else
@@ -111,13 +111,13 @@ class VoiceLogsController < ApplicationController
 			
 			#dnis
 			if params.has_key?(:dialed) and not params[:dialed].empty?
-				 dialed_no = params[:dialed].strip
+				 dialed_no = params[:dialed].to_s.strip
 				 if dialed_no.length > 8
 						# remove leading zero
-						if dialed_no[0] == "0"
+						if dialed_no[0,1] == "0"
 							 dialed_no = dialed_no[1..-1]
 						end
-						conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}%'"
+						conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
 				 elsif dialed_no.length == 1
 						conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}"
 				 else

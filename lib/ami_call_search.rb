@@ -464,7 +464,7 @@ module AmiCallSearch
 		end
 
 		# show only main call
-		conditions_all << "(v.ori_call_id = '1' OR v.ori_call_id IS NULL)"
+		conditions_all << "IFNULL(v.ori_call_id,'1') = '1'"
 		
 		# exists where for transfered calls
 		exists_where = ""
@@ -535,7 +535,7 @@ module AmiCallSearch
 		exists_where = "OR EXISTS (#{sqlb}) " unless sqlb.empty?
 		
 		# show only main call
-		conditions_all << "(v.ori_call_id = '1' OR v.ori_call_id IS NULL)"
+		conditions_all << "IFNULL(v.ori_call_id,'1') = '1'"
 		
 		# make
 		joins = joins.uniq
@@ -583,16 +583,15 @@ module AmiCallSearch
 			end
     end
     
-    joins << "JOIN transfered_logs tl ON vs.call_id = tl.call_id"
-    
     unless conditions.empty?
 			
 			conditions.concat(conditions_all)
 			
 			# select exists by call_id
-			conditions << "v.id = tl.voice_log_id"
+			conditions << "IFNULL(vs.ori_call_id,'1') <> '1'"
+			conditions << "v.call_id = vs.ori_call_id"
 		  
-		  # make sql
+ 		  # make sql
 			sql =  "SELECT vs.id "
 			sql << "FROM #{vl_tblname} vs "
 			unless joins.empty?
@@ -793,6 +792,7 @@ module AmiCallSearch
 		sc[:find_by_tag] = true
 		
 		v 			= VoiceLogTemp.table_name
+		# last six months ago
 		fr_date = (Date.today-180).strftime("%Y-%m-%d 00:00:00")
 		to_date = Time.new.strftime("%Y-%m-%d %H:%M:%S")
 		tags_id = [0]
