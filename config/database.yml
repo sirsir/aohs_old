@@ -1,7 +1,7 @@
 --- 
 development: 
   adapter: jdbcmysql
-  database: amivoice_operators_help_v3
+  database: amivoice_operators_help_aeoncms
   host: 192.168.1.15
   port: 3306
   username: mysqladmin
@@ -11,7 +11,7 @@ development:
   timeout: 5000
 production: 
   adapter: jdbcmysql
-  database: amivoice_operators_help_v3
+  database: amivoice_operators_help_aeoncms
   host: 192.168.1.15
   port: 3306
   username: mysqladmin
@@ -21,7 +21,7 @@ production:
   timeout: 5000
 test: 
   adapter: jdbcmysql
-  database: amivoice_operators_help_hy
+  database: amivoice_operators_help_aeoncms
   host: 192.168.1.15
   port: 3306
   username: mysqladmin

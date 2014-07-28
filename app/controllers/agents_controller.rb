@@ -7,12 +7,12 @@ class AgentsController < ApplicationController
 
    def index
 
-     sort_key = agent_order
-     order = "#{sort_key} #{check_order_name(params[:sort])}" 
-     
+     sort_key   = agent_order
+     order      = "#{sort_key} #{check_order_name(params[:sort])}" 
      conditions = agents_conditions
      
      @page = default_page(params[:page])
+     # keep current filter
      session[:agent_page] = @page #nkm go back to last page
      session[:agent_state] = params[:status]
      
@@ -20,7 +20,7 @@ class AgentsController < ApplicationController
      @agents = @agents.paginate(:page => params[:page], :per_page => $PER_PAGE)    
 
      @groups = ((Group.select("name").order("name asc")).map { |g| g.name })
-     
+   
    end
 
    def list
@@ -60,26 +60,27 @@ class AgentsController < ApplicationController
    def show
 
       begin
-        @agent = Agent.where({:id => params[:id]}).first
-        @group = Group.where({:id => @agent.group_id}).first
-        @group_details = []
-        @group_category_type_names = GroupCategoryType.all.map{|gct| gct.name}
-        unless @group.nil?
-        categories = {}
-        @group.categories.to_ary.map{|c| categories[c.category_type.name] = c.value }
-        @group_category_type_names.each{|category_type_name|
-          unless (categories[category_type_name]).nil?
-            @group_details << categories[category_type_name]
-          else
-            @group_details << "-"
-          end
-        }
-        end
+         
+         @agent = Agent.where({:id => params[:id]}).first
+         @group = Group.where({:id => @agent.group_id}).first
+         @group_details = []
+         @group_category_type_names = GroupCategoryType.all.map{|gct| gct.name}
+         unless @group.nil?
+            categories = {}
+            @group.categories.to_ary.map { |c| categories[c.category_type.name] = c.value }
+            @group_category_type_names.each do |category_type_name|
+               unless (categories[category_type_name]).nil?
+                  @group_details << categories[category_type_name]
+               else
+                  @group_details << "-"
+               end
+            end
+         end
+         
       rescue => e
 
         log("Show","Agent",false,"id:#{params[:id]},#{e.message}")
         flash[:error] = 'Sorry, Agent cannot be found. Please try again.'
-
         redirect_to :controller => 'agents',:action => 'index'
         
       end
@@ -89,11 +90,11 @@ class AgentsController < ApplicationController
    def new
 
       @agent = Agent.new
-                      
+      
       grp_count = Group.count(:id)
       if grp_count <= 0
-        flash[:error] = "Group list not found. Please add group before add new agent."
-        redirect_to :controller => 'agents', :action => 'index'
+         flash[:error] = "Group list not found. Please add group before add new agent."
+         redirect_to :controller => 'agents', :action => 'index'
       end
 
    end
@@ -102,13 +103,12 @@ class AgentsController < ApplicationController
 
       begin
 
-        @agent = Agent.find(params[:id])
+         @agent = Agent.find(params[:id])
 
       rescue => e
 
         log("Edit","Agent",false,"id:#{params[:id]}, #{e.message}")
-        flash[:error] = "Sorry, Agent cannot be found. Please try again."
-        
+        flash[:error] = "Sorry, Agent cannot be found. Please try again."  
         redirect_to :controller => 'agents',:action => 'index'
 
       end
@@ -118,27 +118,25 @@ class AgentsController < ApplicationController
    def create
       
       if not Aohs::LOGIN_BY_AGENT
-        params[:agent][:password] = Aohs::DEFAULT_PASSWORD_NEW
-        params[:agent][:password_confirmation] = Aohs::DEFAULT_PASSWORD_NEW
+         params[:agent][:password] = Aohs::DEFAULT_PASSWORD_NEW
+         params[:agent][:password_confirmation] = Aohs::DEFAULT_PASSWORD_NEW
       end
     
       @agent = Agent.new(params[:agent])
       
       if @agent.save
 
-        @agent = User.where({ :login => @agent.login }).first
-        @agent.update_attribute(:state,'active')
+         @agent = User.where({ :login => @agent.login }).first
+         @agent.update_attribute(:state,'active')
 
-        log("Add","Agent",true,"id:#{@agent.id}, name:#{@agent.login}")
-
-        redirect_to :controller => 'agents',:action => 'show', :id => @agent.id
+         log("Add","Agent",true,"id:#{@agent.id}, name:#{@agent.login}")
+         redirect_to :controller => 'agents',:action => 'show', :id => @agent.id
         
       else
 
-        log("Add","Agent",false,@agent.errors.full_messages.compact)
-        flash[:message] = @agent.errors.full_messages
-
-        render :controller => 'agents',:action => 'new'
+         log("Add","Agent",false,@agent.errors.full_messages.compact)
+         flash[:message] = @agent.errors.full_messages
+         render :controller => 'agents',:action => 'new'
         
       end
 
@@ -147,8 +145,8 @@ class AgentsController < ApplicationController
    def update
 
       if not Aohs::LOGIN_BY_AGENT
-        params[:agent][:password] = Aohs::DEFAULT_PASSWORD_NEW
-        params[:agent][:password_confirmation] = Aohs::DEFAULT_PASSWORD_NEW
+         params[:agent][:password] = Aohs::DEFAULT_PASSWORD_NEW
+         params[:agent][:password_confirmation] = Aohs::DEFAULT_PASSWORD_NEW
       end
       
       begin
@@ -167,8 +165,7 @@ class AgentsController < ApplicationController
       rescue => e
         
          log("Update","Agent",false,"id:#{params[:id]}, #{e.message}")
-         flash[:error] = "Update agent have some problem. Please try again."
-         
+         flash[:error] = "Update agent have some problem. Please try again." 
          redirect_to :controller => 'agents',:action => 'index'
       
       end
@@ -203,14 +200,14 @@ class AgentsController < ApplicationController
 
       group_id = nil
       if params.has_key?(:group_id) and not params[:group_id].empty?
-        group_id = params[:group_id]
+         group_id = params[:group_id]
       end
 
       groups = []
       if group_id.nil?
-        groups = Group.select('id').where({:leader_id => current_user.id })
+         groups = Group.select('id').where({:leader_id => current_user.id })
       else
-        groups = Group.select('id').where({:leader_id => current_user.id, :id => group_id })
+         groups = Group.select('id').where({:leader_id => current_user.id, :id => group_id })
       end
 
       users = []
@@ -218,10 +215,10 @@ class AgentsController < ApplicationController
          tmp_users = User.select('login').where("group_id in (#{ (groups.map { |g| g.id }).join(',')})",:order => 'login')
          unless tmp_users.empty?
            tmp_users.each_with_index do |u,i|
-             users << {
-                        :no => i + 1,
-                        :name => u.login
-                     }
+               users << {
+                  :no => i + 1,
+                  :name => u.login
+               }
            end
          end
       end
@@ -232,65 +229,76 @@ class AgentsController < ApplicationController
 
    protected
 
-  def agent_order
-    sort_key = nil
-    # check sort key
-    case params[:col]
-    when /login/:
-       sort_key = 'login'
-    when /name/:
-       sort_key = 'display_name'
-    when /sex/
-       sort_key = 'sex'
-    when /group/
-       sort_key = 'groups.name'
-    when /state/
-       sort_key = 'state'
-    when /expired_date/
-       sort_key = 'expired_date'
-    when /cti_agent_id/
-       sort_key = 'cti_agent_id'    
-    when /id_card/
-         sort_key = 'id_card'                  
-    else
-      sort_key = 'login'
-    end       
-      return sort_key
-  end
+   def agent_order
+     
+      sort_key = nil
 
-  def agents_conditions
-    conditions = []
-    if params.has_key?(:login) and not params[:login].empty?
-       conditions << "login like '%#{params[:login]}%'"
-    end
-    if params.has_key?(:name) and not params[:name].empty?
-       conditions << "display_name like '%#{params[:name]}%'"
-    end
-    if params.has_key?(:group) and not params[:group].empty?
-      grp = Group.find(:first,:conditions => {:name => params[:group]})
-      unless grp.nil?
-        conditions << "group_id = #{grp.id}"
-      end
-    end
-    if params.has_key?(:agent_id) and not params[:agent_id].empty?
-       conditions << "cti_agent_id like '%#{params[:agent_id].strip}%'"
-    end
-    if params.has_key?(:id_card) and not params[:id_card].empty?
-       conditions << "id_card like '%#{params[:id_card].strip}%'"
-    end
-    if params.has_key?(:status) and not params[:status].empty? 
-      case params[:status]
-      when "inactive", "Inactive"
-         conditions << "state != 'active'"
-      when "active", "Active"
-         conditions << "state = 'active'"
-      when "all", "All"
-         # all
+      case params[:col]
+      when /login/
+         sort_key = 'login'
+      when /name/
+         sort_key = 'display_name'
+      when /sex/
+         sort_key = 'sex'
+      when /group/
+         sort_key = 'groups.name'
+      when /state/
+         sort_key = 'state'
+      when /expired_date/
+         sort_key = 'expired_date'
+      when /cti_agent_id/
+         sort_key = 'cti_agent_id'    
+      when /id_card/
+         sort_key = 'id_card'                  
       else
-         conditions << "state = '#{params[:status].strip}'"
+         sort_key = 'login'
       end
-    end
-    return conditions
+      
+      return sort_key
+   
+   end
+
+   def agents_conditions
+
+      conditions = []
+      if params.has_key?(:login) and not params[:login].empty?
+         conditions << "login like '%#{params[:login]}%'"
+      end
+      
+      if params.has_key?(:name) and not params[:name].empty?
+         conditions << "display_name like '%#{params[:name]}%'"
+      end
+      
+      if params.has_key?(:group) and not params[:group].empty?
+         grp = Group.find(:first,:conditions => {:name => params[:group]})
+         unless grp.nil?
+            conditions << "group_id = #{grp.id}"
+         end
+      end
+      
+      if params.has_key?(:agent_id) and not params[:agent_id].empty?
+         conditions << "cti_agent_id like '%#{params[:agent_id].strip}%'"
+      end
+      
+      if params.has_key?(:id_card) and not params[:id_card].empty?
+         conditions << "id_card like '%#{params[:id_card].strip}%'"
+      end
+      
+      if params.has_key?(:status) and not params[:status].empty? 
+         case params[:status]
+         when "inactive", "Inactive"
+            conditions << "state != 'active'"
+         when "active", "Active"
+            conditions << "state = 'active'"
+         when "all", "All"
+            # all
+         else
+            conditions << "state = '#{params[:status].strip}'"
+         end
+      end
+      
+      return conditions
+   
    end
         
 end

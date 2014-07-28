@@ -4,7 +4,7 @@
 
     var ins_el;
     var ins_vc;
-    
+     
     function vcMessage(msg){
         $("#vc_dialog").text(msg);
         $("#vc_dialog").dialog("open");
@@ -31,6 +31,9 @@
       $.download("<%= url_for(:controller => 'voice_logs',:action => 'export') %>",{
         type: type,
         keys: searchKey.keys,
+				agents: searchKey.agents,
+				groups: searchKey.groups,
+	      agent_id: searchKey.agent_id,
         periods: searchKey.periods,
         stdate: searchKey.stdate,
         sttime: searchKey.sttime,
@@ -42,15 +45,15 @@
         dialed: searchKey.dialed,
         stdur: searchKey.stdu,
         eddur: searchKey.eddu,
-		keyword: searchKey.keyword,
-		trfcfr: searchKey.trfcfr,
-		trfcto: searchKey.trfcto,		
+				keyword: searchKey.keyword,
+				trfcfr: searchKey.trfcfr,
+				trfcto: searchKey.trfcto,		
         page: ctrlPage.selectPage,
-		perpage: ctrlPage.perPage,
+				perpage: ctrlPage.perPage,
         sortby: ctrlSort.colName,
         od: ctrlSort.order,
         usr: '<%= @username %>',
-		withtrnf: searchKey.with_trnf
+				withtrnf: searchKey.with_trnf
       },function(data){
           $("#div-exporting").css("display","none");
       });
@@ -69,6 +72,9 @@
       var params = {
         type: type,
         keys: searchKey.keys,
+				agents: searchKey.agents,
+				groups: searchKey.groups,
+	      agent_id: searchKey.agent_id,			
         periods: searchKey.periods,
         stdate: searchKey.stdate,
         sttime: searchKey.sttime,
@@ -80,15 +86,15 @@
         dialed: searchKey.dialed,
         stdur: searchKey.stdu,
         eddur: searchKey.eddu,
-		keyword: searchKey.keyword,
-	    trfcfr: searchKey.trfcfr,
-	    trfcto: searchKey.trfcto,		
+				keyword: searchKey.keyword,
+				trfcfr: searchKey.trfcfr,
+				trfcto: searchKey.trfcto,		
         page: ctrlPage.selectPage,
-		perpage: ctrlPage.perPage,
+				perpage: ctrlPage.perPage,
         sortby: ctrlSort.colName,
         od: ctrlSort.order,
         usr: '<%= @username %>',
-		withtrnf: searchKey.with_trnf
+				withtrnf: searchKey.with_trnf
       }
 
       var url = ""

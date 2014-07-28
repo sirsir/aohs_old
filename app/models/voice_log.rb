@@ -37,9 +37,9 @@ class VoiceLog < ActiveRecord::Base
   has_many    :call_informations , :foreign_key => "voice_log_id",:order => "start_msec"
   has_many    :bookmarks, :class_name => "CallBookmark",:order => "start_msec"
 
-  has_one	    :voice_log_transfer
-  has_many	  :transfer_logs, :class_name => "VoiceLogTemp", :foreign_key => "ori_id"
-    
+  #has_one	  :voice_log_transfer
+  #has_many	  :transfer_logs, :class_name => "VoiceLogTemp", :foreign_key => "ori_id"
+  
   def disposition
       @@disposition = self.voice_file_url
   end

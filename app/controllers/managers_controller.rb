@@ -9,45 +9,45 @@ class ManagersController < ApplicationController
    
    def index
 
-     order = manager_orders     
-     order = "#{order} #{check_order_name(params[:sort])}" 
-     
-     conditions = manager_search_conditions
-        
-     @page = default_page(params[:page])
-     session[:mng_page] = @page #nkm go back to last page
-     session[:mng_state] = params[:status]
-   
-     @managers = Manager.alive.includes([:group,:role]).where(conditions.join(" and ")).order(order)
-     @managers = @managers.paginate(:page => params[:page],:per_page => $PER_PAGE)                                
-     @roles = ((Role.select("name").order("name asc")).map { |r| r.name })
+      order = manager_orders     
+      order = "#{order} #{check_order_name(params[:sort])}" 
+      
+      conditions = manager_search_conditions
+         
+      @page = default_page(params[:page])
+      session[:mng_page] = @page #nkm go back to last page
+      session[:mng_state] = params[:status]
+    
+      @managers = Manager.alive.includes([:group,:role]).where(conditions.join(" and ")).order(order)
+      @managers = @managers.paginate(:page => params[:page],:per_page => $PER_PAGE)                                
+      @roles = ((Role.select("name").order("name asc")).map { |r| r.name })
      
    end
 
    def show
 
-     begin
-       
-        @manager = Manager.find(params[:id])
-
-        handler = GroupMember.where({ :user_id => @manager.id })
-        unless handler.blank?
-          hcg = []
-          handler.each { |x| hcg << x.group_id }
-          @group = Group.where("leader_id = #{@manager.id} or id in (#{hcg.join(",")})")
-        else
-          @group = Group.where({:leader_id => @manager.id})
-        end
-
-        @group_details = []
-        @group_category_type_names = GroupCategoryType.all.map{|gct| gct.name}
-
-     rescue => e
-
-        log("Show","Manager",false,"id:#{params[:id]},#{e.message}")
-        flash[:error] = "Manager cannot be found. Please try again. [#{e.message}]"
+      begin
         
-        redirect_to :controller => "managers",:action => "index"
+         @manager = Manager.find(params[:id])
+ 
+         handler = GroupMember.where({ :user_id => @manager.id })
+         unless handler.blank?
+            hcg = []
+            handler.each { |x| hcg << x.group_id }
+            @group = Group.where("leader_id = #{@manager.id} or id in (#{hcg.join(",")})")
+         else
+            @group = Group.where({:leader_id => @manager.id})
+         end
+ 
+         @group_details = []
+         @group_category_type_names = GroupCategoryType.all.map{|gct| gct.name}
+
+      rescue => e
+
+         log("Show","Manager",false,"id:#{params[:id]},#{e.message}")
+         flash[:error] = "Manager cannot be found. Please try again. [#{e.message}]"
+        
+         redirect_to :controller => "managers",:action => "index"
 
       end
 
@@ -63,35 +63,34 @@ class ManagersController < ApplicationController
 
       begin
            
-        @manager = Manager.new(params[:manager])
+         @manager = Manager.new(params[:manager])
         
-        # check default password
-        if @manager.password == "#USEDEFAULTPASSWORD#" and @manager.password_confirmation == "#USEDEFAULTPASSWORD#"
-           @manager.password = Aohs::DEFAULT_PASSWORD_NEW
-           @manager.password_confirmation = Aohs::DEFAULT_PASSWORD_NEW
-        end
+         # check default password
+         if @manager.password == "#USEDEFAULTPASSWORD#" and @manager.password_confirmation == "#USEDEFAULTPASSWORD#"
+            @manager.password = Aohs::DEFAULT_PASSWORD_NEW
+            @manager.password_confirmation = Aohs::DEFAULT_PASSWORD_NEW
+         end
         
-        if @manager.save
-          @manager = Manager.where({ :login => @manager.login }).first
-          @manager.update_attribute(:state,'active')
-
-          log("Add","Manager",true,"id:#{@manager.id}, name:#{@manager.login}")
-          redirect_to :action => 'show', :id => @manager.id
-          
-        else
-
-          log("Add","Manager",false,"#{@manager.errors.full_messages}")
-          flash[:message] = @manager.errors.full_messages
-          
-          render :action => 'new'
-        end
+         if @manager.save
+            @manager = Manager.where({ :login => @manager.login }).first
+            @manager.update_attribute(:state,'active')
+  
+            log("Add","Manager",true,"id:#{@manager.id}, name:#{@manager.login}")
+            redirect_to :action => 'show', :id => @manager.id
+           
+         else
+            log("Add","Manager",false,"#{@manager.errors.full_messages}")
+            flash[:message] = @manager.errors.full_messages
+            
+            render :action => 'new'
+         end
         
       rescue => e
         
-        log("Add","Manager",false,"#{e.message}")
-        flash[:error] = "Add new manager has been failed. [#{e.message}]"
-
-        redirect_to :controller => "managers",:action => "index"
+         log("Add","Manager",false,"#{e.message}")
+         flash[:error] = "Add new manager has been failed. [#{e.message}]"
+ 
+         redirect_to :controller => "managers",:action => "index"
         
       end
 
@@ -104,14 +103,14 @@ class ManagersController < ApplicationController
         @manager = Manager.find(params[:id])
         get_access_tree
 
-    rescue => e
-
-      log("Edit","Manager",false,"id:#{params[:id]},#{e.message}")
-      flash[:error] = 'Sorry, This manager id cannot be found.'
-
-      redirect_to :controller => "managers",:action => "index"
-
-    end
+      rescue => e
+  
+        log("Edit","Manager",false,"id:#{params[:id]},#{e.message}")
+        flash[:error] = 'Sorry, This manager id cannot be found.'
+  
+        redirect_to :controller => "managers",:action => "index"
+  
+      end
 
    end
 
@@ -119,31 +118,31 @@ class ManagersController < ApplicationController
 
       begin
 
-        @manager = Manager.find(params[:id])
-        
-        # check default password
-        if params[:manager][:password] == "#USEDEFAULTPASSWORD#" and params[:manager][:password_confirmation] == "#USEDEFAULTPASSWORD#"
-           params[:manager][:password] = Aohs::DEFAULT_PASSWORD_NEW
-           params[:manager][:password_confirmation] = Aohs::DEFAULT_PASSWORD_NEW
-        end
-        
-        get_access_tree
-        if @manager.update_attributes(params[:manager])
+         @manager = Manager.find(params[:id])
+         
+         # check default password
+         if params[:manager][:password] == "#USEDEFAULTPASSWORD#" and params[:manager][:password_confirmation] == "#USEDEFAULTPASSWORD#"
+            params[:manager][:password] = Aohs::DEFAULT_PASSWORD_NEW
+            params[:manager][:password_confirmation] = Aohs::DEFAULT_PASSWORD_NEW
+         end
+         
+         get_access_tree
+         if @manager.update_attributes(params[:manager])
             log("Update","Manager",true,"id:#{params[:id]}, name:#{@manager.login}")
             redirect_to(@manager)
-        else
+         else
             log("Update","Manager",false,"id:#{params[:id]}, name:#{@manager.login}, #{@manager.errors.full_messages}")
             flash[:message] = @manager.errors.full_messages
             render :action => "edit"
-        end
+         end
 
       rescue => e
 
-        log("Update","Manager",false,"id:#{params[:id]}, #{e.message}")
-        flash[:error] = "Update manager have some problem. #{e.message}"
-		flash[:message] = ""
+         log("Update","Manager",false,"id:#{params[:id]}, #{e.message}")
+         flash[:error] = "Update manager have some problem. #{e.message}"
+         flash[:message] = ""
 		
-        redirect_to :controller => "managers",:action => "index"
+         redirect_to :controller => "managers",:action => "index"
 
       end
 
@@ -232,7 +231,7 @@ class ManagersController < ApplicationController
               mgs.each do |mg|
                   next if mg.blank?
                   next if mg.to_i <= 0
-                  x = GroupManager.new({:user_id => mag_id,:manager_id => mg}).save
+                  GroupManager.new({:user_id => mag_id,:manager_id => mg}).save
               end
             end
          end
@@ -310,9 +309,9 @@ class ManagersController < ApplicationController
      
      order = nil     
      case params[:col]
-     when /^login/:
+     when /^login/
        order = 'login'
-     when /^name/:
+     when /^name/
        order = 'display_name'
      when /^sex/
        order = 'sex'

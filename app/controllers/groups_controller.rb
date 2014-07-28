@@ -11,10 +11,6 @@ class GroupsController < ApplicationController
     sort_key = "#{sort_key} #{params[:sort]}"
 
     @group_category_type_names = GroupCategoryType.order('order_id asc').all.map{|gct| gct.name}
-
-    #######################################################
-    # =>                    Filter                     <= #
-    #######################################################
     @filter_enable = false
     @type = GroupCategoryType.all
 
@@ -28,7 +24,6 @@ class GroupsController < ApplicationController
       @added_fltr[typ.name.downcase.to_s.to_sym] = false
     end
 
-    # Begin : Search
     group = Group.select(:id).all
     group_id = group.map {|g| g.id}
 
@@ -56,8 +51,6 @@ class GroupsController < ApplicationController
         end
       end
     end
-    # End : Search
-
 
     if group_id.empty?
       @filter_enable = false
@@ -158,105 +151,104 @@ class GroupsController < ApplicationController
 
     end
 
-   end
+  end
 
-   def update
+  def update
 
-     @group = Group.where(:id => params[:id]).first
-     @group_category_types = GroupCategoryType.all
-     @group_categorize = GroupCategorization.where(:group_id => params[:id])
+    @group = Group.where(:id => params[:id]).first
+    @group_category_types = GroupCategoryType.all
+    @group_categorize = GroupCategorization.where(:group_id => params[:id])
 
-     if @group.update_attributes(params[:group])
-        old_gct = GroupCategorization.select(:id).where(:group_id => @group.id)
+    if @group.update_attributes(params[:group])
+      old_gct = GroupCategorization.select(:id).where(:group_id => @group.id)
 
-        # delete all and create new
-        old_gct.each { |x| GroupCategorization.destroy(x.id) }
-        cate_ids = params[:cate]
-        cate_ids.each do |c_id|
-          if not c_id.empty?
-            gct = GroupCategorization.new(:group_id => @group.id,:group_category_id => c_id)
-            gct.save
-          end
+      # delete all and create new
+      old_gct.each { |x| GroupCategorization.destroy(x.id) }
+      cate_ids = params[:cate]
+      cate_ids.each do |c_id|
+        if not c_id.empty?
+          gct = GroupCategorization.new(:group_id => @group.id,:group_category_id => c_id)
+          gct.save
         end
-        log("Update","Group",true,"id:#{params[:id]}, group:#{@group.name}")
-        flash[:message] = @group.errors.full_messages
-        redirect_to :controller => "groups",:action => 'show', :id => params[:id]
-     else
-        log("Update","Group",false,"id:#{params[:id]}, group:#{@group.name}, #{@group.errors.full_messages}")
-        flash[:message] = @group.errors.full_messages
-        render :controller => "groups",:action => "edit", :id => params[:id]
-     end
+      end
+      log("Update","Group",true,"id:#{params[:id]}, group:#{@group.name}")
+      flash[:message] = @group.errors.full_messages
+      redirect_to :controller => "groups",:action => 'show', :id => params[:id]
+    else
+      log("Update","Group",false,"id:#{params[:id]}, group:#{@group.name}, #{@group.errors.full_messages}")
+      flash[:message] = @group.errors.full_messages
+      render :controller => "groups",:action => "edit", :id => params[:id]
+    end
 
-   end
+  end
 
-   def delete
+  def delete
 
-      group = Group.where(:id => params[:id]).first
+    group = Group.where(:id => params[:id]).first
 
-      if can_delete(group.id)
-        if Group.destroy(group.id)
-          log("Delete","Group",true,"id:#{params[:id]}, group:#{group.name}")
-          flash[:notice] = "Delete group was successfully."
-        else
-          log("Delete","Group",false,"id:#{params[:id]}, group:#{group.name}")
-          flash[:notice] = "Delete group was failed."
-        end
+    if can_delete(group.id)
+      if Group.destroy(group.id)
+        log("Delete","Group",true,"id:#{params[:id]}, group:#{group.name}")
+        flash[:notice] = "Delete group was successfully."
       else
-        log("Delete","Group",false,"id:#{params[:id]}, group:#{group.name}, delete was cancelled")
-        flash[:error] = "Cannot remove this group because is already using."
+        log("Delete","Group",false,"id:#{params[:id]}, group:#{group.name}")
+        flash[:notice] = "Delete group was failed."
       end
+    else
+      log("Delete","Group",false,"id:#{params[:id]}, group:#{group.name}, delete was cancelled")
+      flash[:error] = "Cannot remove this group because is already using."
+    end
 
-      redirect_to :controller => "groups",:action => 'index'
+    redirect_to :controller => "groups",:action => 'index'
 
-   end
+  end
 
-   def can_delete(id)
+  def can_delete(id)
 
-     users = Agent.alive.where(:group_id => id).all
-     if users.empty?
-        return true
-     else
-        return false
-     end
+    users = Agent.alive.where(:group_id => id).all
+    if users.empty?
+      return true
+    else
+      return false
+    end
 
-   end
+  end
 
-   def show
+  def show
 
-      @group = Group.where(:id => params[:id]).first
-      @group_category_type_names = GroupCategoryType.all.map{ |gct| gct.name }
-      @agents = Agent.alive.where(:group_id => @group.id).all
+    @group = Group.where(:id => params[:id]).first
+    @group_category_type_names = GroupCategoryType.all.map{ |gct| gct.name }
+    @agents = Agent.alive.where(:group_id => @group.id).all
 
-      respond_to do |format|
-        format.html # show.html.erb
-        format.xml  { render :xml => @group }
+    respond_to do |format|
+      format.html # show.html.erb
+      format.xml  { render :xml => @group }
+    end
+
+  end
+
+  def get_members
+
+    group_id = params[:id]
+
+    g = Group.where(:id => group_id).first
+    unless g.nil?
+      usrs = User.alive.where(:group_id => g.id).order
+      unless usrs.empty?
       end
+    end
 
-   end
+  end
 
-   def get_members
-
-     group_id = params[:id]
-
-     g = Group.where(:id => group_id).first
-     unless g.nil?
-       usrs = User.alive.where(:group_id => g.id).order
-       unless usrs.empty?
-         
-       end
-     end
-
-   end
-
-   protected
+  protected
 
   def groups_order
     sort_key = nil
     if params.has_key?("col")
       case params[:col]
-      when /name/:
+      when /name/
          sort_key = 'name'
-      when /desc/:
+      when /desc/
          sort_key = 'description'
       when /leader/
          sort_key = 'users.display_name'

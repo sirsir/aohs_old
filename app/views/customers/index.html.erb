@@ -194,8 +194,8 @@
       <div id="div-voice_log_tabs">
         <div class="div-tabmenu-style1" id="vlrs-tabs">
             <ul class="tabmenu-ul">
+							<% if @tl_enabled %>
               <li id="tabli-1" class="tabmenu-li tabmenu-li-selected"><a href="#" onclick="tabVCSelect(1)">Calls Result</a></li>
-              <% if @tl_enabled %>
               <li id="tabli-2" class="tabmenu-li"><a href="#" onclick="tabVCSelect(2)">Calls Timeline</a></li>
               <% end %>    
             </ul>

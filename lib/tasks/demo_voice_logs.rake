@@ -21,7 +21,7 @@ namespace :demo do
         #create_voice_logs(0)
         
         #create_voice_logs2(0)
-        #create_voice_logs(1)
+        create_voice_logs(1)
       end
     
       desc 'Compare'
@@ -48,7 +48,7 @@ end
 def create_voice_logs(num_of_months)
 
   $NUMBER_OF_MONTHS = num_of_months             # 0 is TODAY, x < 0 is PAST and TODAY, x > 0 is TOMORROW and FUTURE
-  $NUMBER_OF_CALLS_PER_AGENT_PER_DAY = 5
+  $NUMBER_OF_CALLS_PER_AGENT_PER_DAY = 8
   $NUMBER_OF_AGENT_HOLIDAY = 10
   $MAX_CALL_DURATION = 650
   $MIN_CALL_DURATION = 30

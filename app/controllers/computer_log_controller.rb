@@ -63,8 +63,7 @@ class ComputerLogController < ApplicationController
 	  
     order = "#{order} #{check_order_name(params[:sort])}" 
     
-	#edit 2013-11-21 add condition filter
-	conditions << "users.flag=0"
+		conditions << "users.flag = 0"
 
     @page = (params[:page].to_i <= 1 ? 1 : params[:page].to_i)
      
@@ -166,7 +165,7 @@ class ComputerLogController < ApplicationController
     if Aohs::COMPUTER_EXTENSION_LOOKUP
       r = update_computer_extension
       Aohs::COMP_RETRY_UPDATE.to_i.times do 
-	r = update_computer_extension
+				r = update_computer_extension
       end
       html << "- computer extension --<br>"
       html << r.join("<br/>")
@@ -202,71 +201,72 @@ class ComputerLogController < ApplicationController
 
     if not computer_name.nil? and not remote_ip.nil?
         
-        # get computer extension
-        cond = []
-        case Aohs::COMP_LOOKUP_BY_KEYS
-        when :comp
-          cond = {:computer_extension_maps => {:computer_name => computer_name}}
-        when :ip
-          cond = {:computer_extension_maps => {:ip_address => remote_ip}}
-        when :comp_and_ip
-          cond = ["computer_extension_maps.computer_name = ? and computer_extension_maps.ip_address = ?",computer_name,remote_ip]
-        when :comp_or_ip
-          cond = ["computer_extension_maps.computer_name = ? or computer_extension_maps.ip_address = ?",computer_name,remote_ip]
-        end
-        ext = Extension.includes(:computer_extension_map).where(cond).first
-        unless ext.nil?
-           user = User.alive.where(:login => login_name).first
-           unless user.nil?
+			# get computer extension
+			cond = []
+			case Aohs::COMP_LOOKUP_BY_KEYS
+			when :comp
+				cond = {:computer_extension_maps => {:computer_name => computer_name}}
+			when :ip
+				cond = {:computer_extension_maps => {:ip_address => remote_ip}}
+			when :comp_and_ip
+				cond = ["computer_extension_maps.computer_name = ? and computer_extension_maps.ip_address = ?",computer_name,remote_ip]
+			when :comp_or_ip
+				cond = ["computer_extension_maps.computer_name = ? or computer_extension_maps.ip_address = ?",computer_name,remote_ip]
+			end
+			
+			ext = Extension.includes(:computer_extension_map).where(cond).first
+			unless ext.nil?
+				user = User.alive.where(:login => login_name).first
+				unless user.nil?
 
-             # update extension agent map
-             eam = ExtensionToAgentMap.where({:extension => ext.number}).first
-             if eam.nil?
-                eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user.id})  
-                eam.save!
-             else
-                eam.update_attributes!({:extension => ext.number, :agent_id => user.id})  
-             end
-            
-             # retry check
-             eam = ExtensionToAgentMap.where({:extension => ext.number}).first
-             if eam.nil?
-                eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user.id})  
-                eam.save!
-             else
-                eam.update_attributes!({:extension => ext.number, :agent_id => user.id})  
-             end
+					# update extension agent map
+					eam = ExtensionToAgentMap.where({:extension => ext.number}).first
+					if eam.nil?
+						eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user.id})  
+						eam.save!
+					else
+						eam.update_attributes!({:extension => ext.number, :agent_id => user.id})  
+					end
 
-             # update did agent map
-             dids = Did.where({ :extension_id => ext.id })
-             unless dids.empty?
-                dids.each do |did|
-                  dams = DidAgentMap.where({:number => did.number }).all
-                  if dams.empty?
-                     dam = DidAgentMap.new({:number => did.number , :agent_id => user.id})
-                     dam.save
-                  else
-                     dams.update_all({:agent_id => user.id},{:number => did.number })
-                  end
-                end
-             end
+					# retry check
+					eam = ExtensionToAgentMap.where({:extension => ext.number}).first
+					if eam.nil?
+						eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user.id})  
+						eam.save!
+					else
+						eam.update_attributes!({:extension => ext.number, :agent_id => user.id})  
+					end
+
+					# update did agent map
+					dids = Did.where({ :extension_id => ext.id })
+					unless dids.empty?
+						dids.each do |did|
+							dams = DidAgentMap.where({:number => did.number }).all
+							if dams.empty?
+								dam = DidAgentMap.new({:number => did.number , :agent_id => user.id})
+								dam.save
+							else
+								dams.update_all({:agent_id => user.id},{:number => did.number })
+							end
+						end
+					end
              
-             result << "Update extension successfully #{user.login}(#{ext.number})"
-           else
-             
-             result << "User not found, deleted extension map for #{ext.number}"
-
-             # clean up extension map if user not found
-             ExtensionToAgentMap.delete_all({:extension => ext.number})
-             dids = Did.where({ :extension_id => ext.id })
-             unless dids.empty?
-                DidAgentMap.delete_all({:number => dids.map { |d| d.number }})
-             end
-
-           end
+          result << "Update extension successfully #{user.login}(#{ext.number})"
         else
-	  result << "Extension not found by #{Aohs::COMP_LOOKUP_BY_KEYS}"
-        end
+             
+          result << "User not found, deleted extension map for #{ext.number}"
+
+					# clean up extension map if user not found
+					ExtensionToAgentMap.delete_all({:extension => ext.number})
+					dids = Did.where({ :extension_id => ext.id })
+					unless dids.empty?
+						 DidAgentMap.delete_all({:number => dids.map { |d| d.number }})
+					end
+
+				end
+			else
+				result << "Extension not found by #{Aohs::COMP_LOOKUP_BY_KEYS}"
+			end
     else
       result << "Computer or IP not defined"
     end
