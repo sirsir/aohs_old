@@ -13,46 +13,46 @@
   
   <style type="text/css">
 
-    .div-cond-ctrl {
-        background-color: #f0efef;
-        border-right:1px solid #cccccc;
-        padding-left:4px;
-        padding-right:4px;
-    }
-    #voice-timeline {
-        margin-top:3px;
-    }
-    #ami-viewer {
-        margin-top:2px;
-        border:1px solid #cccccc;
-        background:url('<%= image_path('gradient-mod.png') %>');
-        width:100%;
-    }
-    #voicelog-tbl {
-        margin-top:2px;
-        border:1px solid #b4e1ff;
-    }
-    body,html {
-      overflow:hidden;
-    }
-    #btnExport ul li {
-      float: left;
-    }
-    #div-voice_log_tabs {
-    	margin:0px;
+	.div-cond-ctrl {
+			background-color: #f0efef;
+			border-right:1px solid #cccccc;
+			padding-left:4px;
+			padding-right:4px;
+	}
+	#voice-timeline {
+			margin-top:3px;
+	}
+	#ami-viewer {
+			margin-top:2px;
+			border:1px solid #cccccc;
+			background:url('<%= image_path('gradient-mod.png') %>');
+			width:100%;
+	}
+	#voicelog-tbl {
+			margin-top:2px;
+			border:1px solid #b4e1ff;
+	}
+	body,html {
+		overflow:hidden;
+	}
+	#btnExport ul li {
+		float: left;
+	}
+	#div-voice_log_tabs {
+		margin:0px;
 		padding:0px;
-        margin-top:3px;
-        width:100%
-    }
-    #vc-block1,#vc-block2 {
-       margin-left:2px; 
-    }
-	#btnResizable {
-		height:200px;
+			margin-top:3px;
+			width:100%
 	}
-	.tabmenu-li {
-		font-weight:bold;
+	#vc-block1,#vc-block2 {
+		 margin-left:2px; 
 	}
+#btnResizable {
+	height:200px;
+}
+.tabmenu-li {
+	font-weight:bold;
+}
 
   </style>
  
@@ -66,30 +66,30 @@
     function resizeWindow(e){
 		
 		try {
-	        var intBrowserHeight = $(window).height();
-	        var intBrowserWidth = $(window).width();
+			var intBrowserHeight = $(window).height();
+			var intBrowserWidth = $(window).width();
 			var headerHeight = $("#header").height();
 			var searchPanelWidth = $("#div-search-panel").width();
-	        var tabCondsHeight = $("#tab-conds").height();
+			var tabCondsHeight = $("#tab-conds").height();
 			var pageCtrlWidth = intBrowserWidth-searchPanelWidth-8;
 			
 			var eAmiViewer = $("#ami-viewer");
 			var etblCtrl = $("#div-tblCtrl");
 			      
-	        $("#agent_tree").css("height",intBrowserHeight-tabCondsHeight-headerHeight-29);
-	        $("#voice-timeline").css("width",intBrowserWidth-searchPanelWidth-8);		
-	        eAmiViewer.css("width",intBrowserWidth-searchPanelWidth-15);
-	        etblCtrl.css("width",pageCtrlWidth);
+			$("#agent_tree").css("height",intBrowserHeight-tabCondsHeight-headerHeight-29);
+			$("#voice-timeline").css("width",intBrowserWidth-searchPanelWidth-8);		
+			eAmiViewer.css("width",intBrowserWidth-searchPanelWidth-15);
+			etblCtrl.css("width",pageCtrlWidth);
 			
 			$(".expand-cell").css("width",pageCtrlWidth+10);
 			 
-	        var divTblOuter = $("#div-tbl-outer");
-	        divTblOuter.css("width",pageCtrlWidth);
-	        divTblOuter.css("height",intBrowserHeight-eAmiViewer.height()-headerHeight-$("#div-voice_log_tabs").height()-56);
-	
-	        var divTblInner = $("#div-tbl-inner");
-	        divTblInner.css("height",divTblOuter.height()-etblCtrl.height()-14);
-	        divTblInner.css("width",pageCtrlWidth-3);			
+			var divTblOuter = $("#div-tbl-outer");
+			divTblOuter.css("width",pageCtrlWidth);
+			divTblOuter.css("height",intBrowserHeight-eAmiViewer.height()-headerHeight-$("#div-voice_log_tabs").height()-56);
+
+			var divTblInner = $("#div-tbl-inner");
+			divTblInner.css("height",divTblOuter.height()-etblCtrl.height()-14);
+			divTblInner.css("width",pageCtrlWidth-3);			
 		} catch (e) {}
     }
     
@@ -101,7 +101,7 @@
     }
 
     function SearchWithStartUp(){
-		<% if (@conds != false) %>
+		 <% if (@conds != false) %>
             $("input[name=vcFromDate]").val("<%=@conds[:st] %>");
             $("input[name=vcToDate]").val("<%=@conds[:ed] %>");
 			$("input[name=keyword_name]").val("<%=@conds[:keywords] %>");
@@ -155,18 +155,18 @@
         }
     }
 
-    function ShowOrHidePanel(){
-		if($('#divSearchPanel').css('display')=="none")
+  function ShowOrHidePanel(){
+		
+		if($('#divSearchPanel').css('display')=="none"){
 			$('#divSearchPanel').css('display','block');
-		else
+			$('#divBtnShowPanel').css('display','none');
+		}
+		else{
 			$('#divSearchPanel').css('display','none');
-		if($('#divBtnShowPanel').css('display')=="none")
 			$('#divBtnShowPanel').css('display','block');
-		else
-			$('#divBtnShowPanel').css('display','none');  
-		resizeWindow();			
+		}
+		resizeWindow();
 	}
-	        
 </script>
 <% end %>
 
@@ -175,14 +175,16 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
     <td class="div-cond-ctrl" valign="top" id="div-search-panel">
-    	<div style="padding-left:0px; width:190px;" style="overflow:hidden; <%= 'display:none;' if params[:layout] == 'report' %>" id="divSearchPanel"><%= render :partial => 'voice_logs/voicelog_conds' %></div>
-		<div style="padding-left:0px; width:9px;" style="overflow:none;" id="divBtnShowPanel" style="<%= 'display:none;' if params[:layout] != 'report' %> padding-top:3px;"><a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a></div>
+    	<div style="padding-left:0px; width:190px;" style="overflow:hidden; <%= 'display:none;' if params[:layout] == 'report' %>" id="divSearchPanel"><%= render :partial => 'voice_logs/voicelog_conds' %></div> 
+			<div style="padding-left:0px; width:10px;margin-top:3px;" id="divBtnShowPanel" style="<%= 'display:none;' if params[:layout] != 'report' %>">
+				<a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0, :width => '14px', :height => '16px'}) %></a>
+			</div>
     </td>
     <td valign="top">
       <div id="vc-block0">
 	      <div id="div-voice_log_tabs">
 	        <div class="div-tabmenu-style1" id="vlrs-tabs">
-	            <ul class="tabmenu-ul">
+	            <ul class="tabmenu-ul" style="display:none;">
 	              <li id="tabli-1" class="tabmenu-li tabmenu-li-selected"><a href="#" onclick="tabVCSelect(1)">Calls Result</a></li>
 	              <% if @tl_enabled %>
 	              <li id="tabli-2" class="tabmenu-li"><a href="#" onclick="tabVCSelect(2)">Calls Timeline</a></li>

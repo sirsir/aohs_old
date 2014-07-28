@@ -99,7 +99,8 @@ module AmiSource
                     kact = "SKIP"
                     case u[:role_type]
                       when :agent
-                        x = Agent.where({:login => u[:login]}).first
+												x = User.where({:login => u[:login]}).first
+                        #x = Agent.where({:login => u[:login]}).first
                         if x.nil?
                           xn = {:login => u[:login],:display_name => u[:display_name],:email => u[:email],:sex => u[:gender], :role_id => u[:role_id], :group_id => u[:group_id],:password => u[:password],:password_confirmation => u[:password],:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
                           xn = Agent.new(xn)
@@ -110,7 +111,8 @@ module AmiSource
                         else
                           if op[:update] == true
                             xu = {:display_name => u[:display_name],:email => u[:email],:sex => u[:gender], :role_id => u[:role_id], :group_id => u[:group_id],:state => 'active',:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
-                            rs = Agent.update(x.id,xu)
+                            rs = User.update(x.id,xu)
+                            #rs = Agent.update(x.id,xu)
                             if(rs)
                               kact = "UPDATE"
                               result[:update] += 1
@@ -124,9 +126,10 @@ module AmiSource
                         end
                       when :manager
                         u[:group_id] = 0
-                        x = Manager.where({:login => u[:login]}).first
+                        x = User.where({:login => u[:login]}).first
+                        #x = Manager.where({:login => u[:login]}).first
                         if x.nil?
-                          xn = {:login => u[:login],:display_name => u[:display_name],:email => u[:email],:sex => u[:gender], :role_id => u[:role_id], :group_id => u[:group_id],:password => u[:password],:password_confirmation => u[:password],:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
+                          xn = {:login => u[:login],:display_name => u[:display_name], :type => 'Agent', :email => u[:email],:sex => u[:gender], :role_id => u[:role_id], :group_id => u[:group_id],:password => u[:password],:password_confirmation => u[:password],:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
                           xn = Manager.new(xn)
                           xn.save!
                           xn.update_attribute(:state,'active')
@@ -135,8 +138,9 @@ module AmiSource
                         else
                           if op[:update] == true
                             # skip upd ,:password => u[:password],:password_confirmation => u[:password]
-                            xu = {:display_name => u[:display_name],:sex => u[:gender],:email => u[:email], :role_id => u[:role_id], :group_id => u[:group_id],:state => 'active',:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
-                            rs = Manager.update(x.id,xu)
+                            xu = {:display_name => u[:display_name],:sex => u[:gender],:type => 'Manager', :email => u[:email], :role_id => u[:role_id], :group_id => u[:group_id],:state => 'active',:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
+                            rs = User.update(x.id,xu)
+                            #rs = Manager.update(x.id,xu)
                             if(rs)
                               kact = "UPDATE"
                               result[:update] += 1

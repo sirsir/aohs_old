@@ -5,7 +5,7 @@
 <% content_for :header do %>
     
     <style type="text/css">
-
+		  #btnSearch, #btnClear { padding:4px; padding-left:6px; padding-right:6px; }
       legend,#vcPeriods,#vcFromDate,#vcFromTime,#vcToDate,#vcToTime,#vcExt,.vcCD,#vcDuraCond,#vcLengthStart,#vcLengthEnd,.label-frm,#vcCaller,#vcDialed {
           font-size:11px;
       }
@@ -35,19 +35,27 @@
           margin-top:2px;
       }
       #vcLengthStart,#vcLengthEnd {
-          width:40px;
-		  text-align:center;
+          width:45px;
+				  text-align:center;
+					padding:1px;
       }
       #vcDuraCond {
-          width:40px;
+          width:45px;
+					padding:1px;
       }
 	  #keyword_name {
-	  	  width:190px;
+	  	  width:188px;
+				padding:1px;
 	  }
 	  #vcTransfCountTo,#vcTransfCountFr {
-	  	  width:30px;
+	    width:45px;
 		  text-align:center;
+			padding:1px;
 	  }
+		#agent_name {
+				width: 188px;
+				padding:1px;
+		}
       .div-line {
         padding-top:0px;
         padding-bottom:0px;
@@ -118,11 +126,11 @@
         dur: "",
         caller:"",
         dialed:"",
-		keyword: "",
-		trfc: "no",
+				keyword: "",
+				trfc: "no",
         agents: "none",
         groups: "none",
-		with_trnf: false
+				with_trnf: false
       }
 
       function isBlank(variable){
@@ -367,15 +375,15 @@
 	          $("input[name=vcLengthTo]").val("");
 	          $("input[name=vcCaller]").val("");
 	          $("input[name=vcDialed]").val("");
-			  $("input[name=vcTransfCountFr]").val("");
-			  $("input[name=vcTransfCountTo]").val("");		  	
+						$("input[name=vcTransfCountFr]").val("");
+						$("input[name=vcTransfCountTo]").val("");		  	
 		  } catch(e) {}
       }
       $(document).ready(function(){
 
         //onLoadCond();
         $(".chk-direction").buttonset();
-		$(".chk-call-transfered").buttonset(); 
+				$(".chk-call-transfered").buttonset(); 
         $("#vcPeriods").change(function(){
           var period_selt = $("#vcPeriods option:selected").val();
           if(period_selt == 0){
@@ -463,9 +471,9 @@
       <option value="5">This month</option>
       <option value="6">Last month</option>
 	    <option value="9">1 month ago</option>
-      <option value="10">6 month ago</option>		  
-    <!-- <option value="7">This year</option> -->
-    <!-- <option value="8">All</option> -->
+      <option value="10">6 months ago</option>		  
+    <!--  <option value="7">This year</option> -->
+    <!--  <option value="8">All</option> -->
       <option value="0" <%= ((@conds != false) ? "selected" : "") %>>Custom ...</option>
     </select>
     <div id="custom-periods">
@@ -490,19 +498,16 @@
           <td><span class="condName1">Ext:</span></td>
         </tr>
         <tr>
-          <td><input type="text" name="vcCaller" id="vcCaller" class="phone input-int-only" maxlength="10" title="Caller number"></td>
-          <td><input type="text" name="vcDialed" id="vcDialed" class="phone input-int-only" maxlength="10" title="Dialed number"></td>
+          <td><input type="text" name="vcCaller" id="vcCaller" class="phone input-int-only" maxlength="14" title="Caller number"></td>
+          <td><input type="text" name="vcDialed" id="vcDialed" class="phone input-int-only" maxlength="14" title="Dialed number"></td>
           <td><input type="text" name="vcExt" class="input-int-only" id="vcExt" title="Extension number"></td>
-        </tr>       
+        </tr>
     </table>
   </div>
-
-
-
   <div class="condStyle1" >
   	<span class="condName1">Agent Name:</span>	 
-	<input type="text" name="agent_name" maxlength="100" id="agent_name" >
-	<input type="hidden" name="agent_id" maxlength="100" id="agent_id" >
+		<input type="text" name="agent_name" maxlength="100" id="agent_name" >
+		<input type="hidden" name="agent_id" maxlength="100" id="agent_id" >
   </div>
 <script type="text/javascript">
 <% @agent_pattern = User.select('display_name, id').where('flag = 0').order('display_name asc') %>
@@ -550,9 +555,9 @@ buildAgentPattern();
     </div>
   </div>
   <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_CALL_TRANSFER %>">
-    <span class="condName1">Number of transfer calls:</span>
+    <span class="condName1">Number of transfered calls:</span>
 	<input type="text" class="input-int-only" name="vcTrannfCountFr" id="vcTransfCountFr" maxlength="2" value="">&nbsp;<span class="condName1" style="display:inline;">To</span>&nbsp;<input type="text" class="input-int-only" name="vcTrannfCountTo" id="vcTransfCountTo" maxlength="2" value=""></span>
-    <br/><span class="condName1"><input type="checkbox" name="vcFindWithTrf" id="vcFindWithTrf" value="yes">Include search transfer calls</span>
+  <br/><span class="condName1" style="display:none;"><input type="checkbox" name="vcFindWithTrf" id="vcFindWithTrf" value="yes">Include search transfer calls</span>
   </div>
   <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_KEYWORDS %>">
   	<span class="condName1">Keyword:</span>	 

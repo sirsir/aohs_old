@@ -1,7 +1,7 @@
 <% content_for :header do %>
     <%= stylesheet_src_path '/jquery/jquery.contextMenu/jquery.contextMenu.css' %>
     <%= stylesheet_src_path '/jquery/jquery-tooltip/jquery.tooltip.css' %>
-	<%= stylesheet_src_path '/jquery/jquery.menu/menu.css' %>
+		<%= stylesheet_src_path '/jquery/jquery.menu/menu.css' %>
     <%= stylesheet_src_path 'voice_logs_table.css' %>
     <%= javascript_src_path '/jquery/jquery.menu/jquery.menu.js' %>
     <%= javascript_src_path '/jquery/jquery.contextMenu/jquery.contextMenu.js' %>
@@ -165,38 +165,34 @@
 	  
 	  function applyClickRow(){ }
 	  
-      function loadDataTable(data){
-          
-		  var targetTable = $("#mytable tbody");
-		  var rows = "";
-          var rows_count = 0;
-          var first_row = 0;
-          var vc_data = data['data'];
-          var page_info = data['page_info'];
-          var summary = data['summary'];		  
-		  var found_tranfer = false;
-          targetTable.html("");
-          try { tl_stdate = page_info['tl_stdate']; } catch(e){ }
-
-          try {
-   			pageSetting(page_info['total_page'],page_info['current_page'],page_info['rec_count']);  
-          } catch(e) {
-            pageSetting(0,0,0);
-          }
-		  
-          loadSummaryData(summary);
-		  currentVoices = {};
-		  
-          var vc_length = vc_data.length;
-          var id = 0;
-          while(id < vc_length){
-                var vc = vc_data[id];            	
-		var row = "";
-		currentVoices[vc['id'].toString()] = {id: vc['id'], url: vc['path'], row: (id + 1) };
-                if(first_row <= 0)
-                    first_row = parseInt(vc['no']);
-                rows_count += 1;
-
+		function loadDataTable(data){
+				
+		var targetTable = $("#mytable tbody");
+		var rows = "";
+		var rows_count = 0;
+		var first_row = 0;
+		var vc_data = data['data'];
+		var page_info = data['page_info'];
+		var summary = data['summary'];		  
+		var found_tranfer = false;
+		targetTable.html("");
+		try { tl_stdate = page_info['tl_stdate']; } catch(e){ }
+		try {
+				pageSetting(page_info['total_page'],page_info['current_page'],page_info['rec_count']);  
+		} catch(e) {
+				pageSetting(0,0,0);
+		}
+		loadSummaryData(summary);
+		currentVoices = {}; 
+		var vc_length = vc_data.length;
+		var id = 0;
+		while(id < vc_length){
+				var vc = vc_data[id];            	
+				var row = "";
+				currentVoices[vc['id'].toString()] = {id: vc['id'], url: vc['path'], row: (id + 1) };
+				if(first_row <= 0)
+						first_row = parseInt(vc['no']);
+				rows_count += 1;
 		var redrow = "";
 		if((highLightRows.red_color > 0) && (parseInt(vc['dmin']) >= highLightRows.red_color)){
 		    redrow = "specify-red";
@@ -204,11 +200,11 @@
 
 		var expand_calls = "";
 		if (vc['trfc'] == true) {
-                    expand_calls = "<div class='btntrf' btnstate=\"load\" onclick=\"TransferButton(this);\"><img src='<%= image_path('tree_icon/expand_icon2.gif') %>' alt='show transfer calls.'/></div>";
-                    found_tranfer = true;
-                } 
+				expand_calls = "<div class='btntrf' btnstate=\"load\" onclick=\"TransferButton(this);\"><img src='<%= image_path('tree_icon/expand_icon2.gif') %>' alt='show transfer calls.'/></div>";
+				found_tranfer = true;
+		}
 		var menu;
-                if((vc['open'] == true) || (vc['open'] == "true")){
+    if((vc['open'] == true) || (vc['open'] == "true")){
 		    <% if permission_by_name('voice_logs-download') %>
 			if((vc['duration'] != "00:00")){
 				menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='more' onclick=\"voiceButton("+ vc['id'] +",'more')\"><img src='<%= image_path('detail.png') %>'/></li><li   title=\"Export\"  onclick=\"window.open('"+ vc['path'] +"')\"><img src='<%= image_path('export.png') %>'/></li> <li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
@@ -301,71 +297,65 @@
 	  }
 	  function onClickMoreMenu(o){ }
 	  function applyCallTagToolTip(o){
-          $(".myToolTip",o).tooltip({
-              showBody: " - ",
-              positionLeft: true
-          });	  	
+				$(".myToolTip",o).tooltip({
+						showBody: " - ",
+						positionLeft: true
+				});	  	
 	  }
 	  function showTransferCall(v_id,row_no,o){
-	  	 $(".rowof" + row_no).css("display","block");
-		 o.html("<img src='<%= image_path('tree_icon/collapse-icon2.gif') %>'/>"); 		 	  	
+				$(".rowof" + row_no).css("display","block");
+				alert($(".rowof" + row_no).html());
+				o.html("<img src='<%= image_path('tree_icon/collapse-icon2.gif') %>'/>"); 		 	  	
 	  }
 	  function hideTransferCall(v_id,row_no,o){
-	  	 $(".rowof" + row_no).css("display","none");
-		 o.html("<img src='<%= image_path('tree_icon/expand_icon2.gif') %>'/>"); 
+				$(".rowof" + row_no).css("display","none");
+				alert($(".rowof" + row_no).html());
+				o.html("<img src='<%= image_path('tree_icon/expand_icon2.gif') %>'/>"); 
 	  }
 	  function loadTransferCall(v_id,row_no,o){
-	  	
-		var row_no_prefix = parseInt(zeroPadAfter(row_no,3));
-		var row_parent_no = row_no;
-		
-		$.getJSON("<%=url_for(:controller => 'voice_logs', :action => 'get_transfer_calls') %>",{
-			voice_log_id: v_id
-		},function(data){
-          
-		  var rows = "";
-		  var vc_data = data;
-		  var first_row = 1;
-		  var rows_count = 0;
-          $.each(vc_data,function(id,vc){
-            	
-				var row = "";
-				var row_no = (row_no_prefix + id + 1);
-			    currentVoices[vc['id'].toString()] = {id: vc['id'], url: vc['path'], row: row_no };
-
-                if(first_row <= 0)
-                    first_row = parseInt(vc['no']);
-                rows_count++;
-                			
-				var redrow = "";
-				if((highLightRows.red_color > 0) && (parseInt(vc['dmin']) >= highLightRows.red_color)){
-					redrow = "specify-red";
-				}
-				
-				var menu;
+				var row_no_prefix = parseInt(zeroPadAfter(row_no,3));
+				var row_parent_no = row_no;
+				$.getJSON("<%=url_for(:controller => 'voice_logs', :action => 'get_transfer_calls') %>",{ voice_log_id: v_id},
+				function(data){
+						var rows = "";
+						var vc_data = data;
+						var first_row = 1;
+						var rows_count = 0;
+						$.each(vc_data,function(id,vc){
+								var row = "";
+								var row_no = (row_no_prefix + id + 1);
+								currentVoices[vc['id'].toString()] = {id: vc['id'], url: vc['path'], row: row_no };
+								if(first_row <= 0)
+										first_row = parseInt(vc['no']);
+								rows_count++;
+								var redrow = "";
+								if((highLightRows.red_color > 0) && (parseInt(vc['dmin']) >= highLightRows.red_color)){
+									redrow = "specify-red";
+								}
+								var menu;
                 if((vc['open'] == true) || (vc['open'] == "true")){
-		    <% if permission_by_name('voice_logs-download')%>
-		    if((vc['duration'] != "00:00")){
-			menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li   title=\"Export\"  onclick=\"window.open('"+ vc['path'] +"')\"><img src='<%= image_path('export.png') %>'/></li> <li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
-		    }else{
-			menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
-		    }    
-		    <% else %>
-			menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
-		  <% end %>
-		} else {
-		    vc['path'] = "";
-		    menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='no-play'><img src='<%= image_path('speaker2.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"no-btntool myToolTip\"><img src='<%= image_path('more2.gif') %>'/></li></ul>";                  
-                }				
+										<% if permission_by_name('voice_logs-download')%>
+										if((vc['duration'] != "00:00")){
+												menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li   title=\"Export\"  onclick=\"window.open('"+ vc['path'] +"')\"><img src='<%= image_path('export.png') %>'/></li> <li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+										}else{
+												menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+										}    
+										<% else %>
+												menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+										<% end %>
+								} else {
+										vc['path'] = "";
+										menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li><img src='<%= image_path('padding2.png') %>'/></li><li act='no-play'><img src='<%= image_path('speaker2.gif') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"no-btntool myToolTip\"><img src='<%= image_path('more2.gif') %>'/></li></ul>";                  
+								}				
 				
-		row += "<tr class=\"transf_call sub-" + rowCycle[rows_count % 2] + " " + redrow + " " + "myRow rowof" + row_parent_no + "\" id=\"rowAt" + row_no + "\" row_parent=\"" + row_no_prefix + "\" row_no=\"" + row_no + "\"  audiourl=\"" + vc['path'] + "\"" + "\">";
-                row += "<td width=\"40px\" class=\"no-item\"><div class=\"div-no\">" + "&nbsp;" + "</div></td>";
+								row += "<tr class=\"transf_call sub-" + rowCycle[rows_count % 2] + " " + redrow + " " + "myRow rowof" + row_parent_no + "\" id=\"rowAt" + row_no + "\" row_parent=\"" + row_no_prefix + "\" row_no=\"" + row_no + "\"  audiourl=\"" + vc['path'] + "\"" + "\">";
+                row += "<td width=\"40px\" class=\"no-item\"><div class=\"div-no\">&nbsp;</div></td>";
                 row += "<td width=\"100px\" align=\"center\" class=\"item-ctrl\">";
                 if((vc['open'] == true) || (vc['open'] == "true")){
-                row += "<input type=\"hidden\" name=\"audioUrl-" + (row_no) + "\" value=\"" + vc['path'] + "\">";
+										row += "<input type=\"hidden\" name=\"audioUrl-" + (row_no) + "\" value=\"" + vc['path'] + "\">";
                 }
-				else {
-                row += "<input type=\"hidden\" name=\"audioUrl-" + (row_no) + "\" value=\"\">";
+								else {
+										row += "<input type=\"hidden\" name=\"audioUrl-" + (row_no) + "\" value=\"\">";
                 }
                 row += "<input type=\"hidden\" name=\"audioId-" + (row_no) + "\" value=\"" + vc['id'] + "\">";
                 row += "<input type=\"hidden\" name=\"vc_id\" value=\"" + vc['id'] + "\">";
@@ -377,51 +367,51 @@
                 row += "<td width=\"72px\" class=\"vc-dnis\">" + vc['dnis'] + "&nbsp;</td>";
                 row += "<td width=\"40px\" class=\"vc-ext\">" + vc['ext'] + "&nbsp;</td>";
                 row += "<td width=\"150px\" class=\"vc-user\">" + vc['agent'] + "</td>";
-				if(vlTbl.col_cust_show){
-					row += "<td width=\"150px\" class=\"vc-cust\" custid=\"" + vc['cust_id'] + "\">" + App.call_blank(vc['cust']) + "</td>";
-					if(vlTbl.col_car_show){
-						row += "<td width=\"120px\" class=\"vc-cust-regis\">" + breaklineCars(vc['car_no']) + "</td>";		
-					}
-				}
+								if(vlTbl.col_cust_show){
+										row += "<td width=\"150px\" class=\"vc-cust\" custid=\"" + vc['cust_id'] + "\">" + App.call_blank(vc['cust']) + "</td>";
+										if(vlTbl.col_car_show){
+												row += "<td width=\"120px\" class=\"vc-cust-regis\">" + breaklineCars(vc['car_no']) + "</td>";		
+										}
+								}
                 row += "<td width=\"55px\" align=\"center\" class=\"vc-cdirect\" calldirec=\"" + vc['cd_c'] + "\"><span class=\"cd-color-" + vc['cd_c'] + "\">" + vc['cd'] + "</span></td>";
-				if (vlTbl.col_keywords_show) {
-					row += "<td width=\"35px\" align=\"right\" class=\"ngword\"><span class=\"keyword-tip\" words=\"NG\">" + vc['ngc'] + "</span></td>";
-					row += "<td width=\"35px\" align=\"right\" class=\"mustword\"><span class=\"keyword-tip\" words=\"Must\">" + vc['mustc'] + "</span></td>";
-				}				
-				row += "<td width=\"60px\" align=\"right\">" + vc['bookc'] + "</td>";
-                row += "<td width=\"35px\">&nbsp;</td>";
-                row += "<td width=\"3px\">&nbsp;</td>" + "</tr>";
-                rows += row;
-          });
-		  
-		  var objRow = o.parent().parent();
-		  $(rows).insertAfter(objRow);
-		  var objTranRow = $(".transf_call");
-		  resetTableStyle(objTranRow);	
-		  progressEnabled(false);
-		  o.html("<img src='<%= image_path('tree_icon/collapse-icon2.gif') %>'/>"); 	
-		  
-		  objrow = null;
-		  objTranRow = null;
-		});
-		
+								if (vlTbl.col_keywords_show) {
+										row += "<td width=\"35px\" align=\"right\" class=\"ngword\"><span class=\"keyword-tip\" words=\"NG\">" + vc['ngc'] + "</span></td>";
+										row += "<td width=\"35px\" align=\"right\" class=\"mustword\"><span class=\"keyword-tip\" words=\"Must\">" + vc['mustc'] + "</span></td>";
+								}				
+								row += "<td width=\"60px\" align=\"right\">" + vc['bookc'] + "</td>";
+								row += "<td width=\"35px\">&nbsp;</td>";
+								row += "<td width=\"3px\">&nbsp;</td></tr>";
+								rows += row;
+						});
+					
+						var objRow = o.parent().parent();
+						$(rows).insertAfter(objRow);
+						var objTranRow = $(".transf_call");
+						resetTableStyle(objTranRow);	
+						progressEnabled(false);
+						o.html("<img src='<%= image_path('tree_icon/collapse-icon2.gif') %>'/>"); 	
+					
+						objrow = null;
+						objTranRow = null;
+				});
 	  }
+		
 	  function TransferButton(ele){
-	   var o = $(ele);
-	   var v_id = $('input[name=vc_id]',o.parent().parent()).val();
-	   var row_no = $('input[name=rowNo]',o.parent().parent()).val();
-	   var rowState = o.attr("btnstate");
-	   if(rowState=='load'){
-		  o.attr("btnstate","show");
-		  progressEnabled(true); 
-		  loadTransferCall(v_id,row_no,o);
-	   } else if(rowState=="show"){
-		  o.attr("btnstate","hide");
-		  hideTransferCall(v_id,row_no,o);	
-	   } else if(rowState=="hide"){
-		  o.attr("btnstate","show");
-		  showTransferCall(v_id,row_no,o);			   	
-	   }  
+				var o = $(ele);
+				var v_id = $('input[name=vc_id]',o.parent().parent()).val();
+				var row_no = $('input[name=rowNo]',o.parent().parent()).val();
+				var rowState = o.attr("btnstate");
+				if(rowState=='load'){
+						o.attr("btnstate","show");
+						progressEnabled(true); 
+						loadTransferCall(v_id,row_no,o);
+				} else if(rowState=="show"){
+						//o.attr("btnstate","hide");
+						//hideTransferCall(v_id,row_no,o);	
+				} else if(rowState=="hide"){
+						o.attr("btnstate","show");
+						showTransferCall(v_id,row_no,o);			   	
+				}
 	  }
 	  
 	  function addBtnTransferCall(hasTransfer){

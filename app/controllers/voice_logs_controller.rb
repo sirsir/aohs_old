@@ -10,248 +10,244 @@ class VoiceLogsController < ApplicationController
 
    def search_voice_logs(ctrl={})
      
-    vl_tbl_name = VoiceLogTemp.table_name
-    vltrf_tbl = "transfer_logs_#{vl_tbl_name}"
-    vlc_tbl = VoiceLogCounter.table_name
-    
-    conditions = []
-    skip_search = false
-
-    # === search conditions ===
-
-    # agents conditions
-    if params.has_key?(:keys) and not params[:keys].empty?
-      params[:keys] = CGI::unescape(params[:keys])
-      
-      begin
-        if not ctrl[:user_id].nil?
-          set_current_user_for_call_search(ctrl[:user_id].to_i)
-        else
-          set_current_user_for_call_search(current_user.id)
-        end
-      rescue => e
-        skip_search = true
-      end
-      
-      keys = []
-      keys = CGI::unescape(params[:keys]).split("__")
-      agents = []
-      keys.each do |key|
-        k = key.split("=")
-        case k[0]
-          when /^(cate)/
-            agents = find_agent_by_cate(k[1])
-          when /^(groups)/
-            if k[1] != "none"
-              groups_id = k[1].split(',')
-              agents.concat(find_agent_by_group(groups_id))
-            end
-          when /^(agents)/
-            if k[1] != "none"
-              agents.concat(find_agent_by_agents(k[1]))
-            end
-          when /^(agent)/
-            agents = find_agent_by_agent(k[1])
-          when /^(all)/
-            agents = find_agent_by_group([])
-        end
-      end
-      if params[:keys] == "agents=none__groups=none"
-        # find all
-        agents = find_owner_agents
-      else
-        agents = nil if agents.empty?
-      end  
-      if agents.nil?
-        #if permission_by_name('tree_filter')
-          #show_as_unk = ($CF.get('client.aohs_web.displayDeletedAgentAsUnk').to_i == 1)
-          #if show_as_unk
-          #  agents = User.deleted.map { |a| a.id }
-          #else 
-          #  agents = []
-          #end
-          #agents << 0
-          #conditions << "(#{vl_tbl_name}.agent_id is null or #{vl_tbl_name}.agent_id in (#{agents.join(',')}))"
-        #end
-      else
-        if agents.empty?
-          skip_search = true
-        else
-          conditions << "#{vl_tbl_name}.agent_id in (#{agents.join(',')})"
-        end
-      end
-
-    else
-      skip_search = true
-    end
-
-    # call date / time
-    if params.has_key?(:sttime) and not params[:sttime].empty?
-      params[:sttime] = CGI::unescape(params[:sttime])
-    end
-    if params.has_key?(:edtime) and not params[:edtime].empty?
-      params[:edtime] = CGI::unescape(params[:edtime])
-    end
-    
-    conditions << retrive_datetime_condition(params[:periods],params[:stdate],params[:sttime],params[:eddate],params[:edtime])
-	#p "skip_search2 #{skip_search}"
-    # extension
-    if params.has_key?(:ext) and not params[:ext].empty?
-      conditions << "#{vl_tbl_name}.extension like '%#{params[:ext]}%'"
-    end
-
-    #ani
-    if params.has_key?(:caller) and not params[:caller].empty?
-      #conditions << "#{vl_tbl_name}.ani like '%#{params[:caller].strip}%'"
-      conditions << "#{vl_tbl_name}.ani like '%#{((params[:caller].strip).size > 8 and (params[:caller].strip)[0] == "0"[0]) ? (params[:caller].strip)[1..-1] : params[:caller].strip}%'" #nkm  2013-06-06
-    end
-
-    #dnis
-    if params.has_key?(:dialed) and not params[:dialed].empty?
-      #conditions << "#{vl_tbl_name}.dnis like '%#{params[:dialed].strip}%'"
-      conditions << "#{vl_tbl_name}.dnis like '%#{((params[:dialed].strip).size > 8 and (params[:dialed].strip)[0] == "0"[0]) ? (params[:dialed].strip)[1..-1] : params[:dialed].strip}%'" #nkm  2013-04-08
-    end
-
-    #Agent id
-    if params.has_key?(:agent_id) and not params[:agent_id].empty?
-      conditions << "#{vl_tbl_name}.agent_id like '%#{params[:agent_id].strip}%'"
-    end
-
-    # call direction
-    call_directions = []
-    if params.has_key?(:calld) and not params[:calld].empty?
-      cd_ary = CGI::unescape(params[:calld]).split('')
-      cd_ary.to_s.each_char do |c|
-        call_directions << c
-        call_directions.concat(['u','e']) if c == 'e'     
-      end
-      call_directions = [] if call_directions.uniq.sort == ['i','o','u','e'].sort 
-      call_directions = call_directions.uniq.map { |c| "'#{c}'"}
-    else
-      skip_search = true
-    end
-    	#p "skip_search3 #{skip_search}"
-    unless call_directions.empty?
-      case call_directions.length
-      when 1
-        conditions << "#{vl_tbl_name}.call_direction = '#{call_directions.first.gsub('\'','')}'"
-      else
-        conditions << "#{vl_tbl_name}.call_direction in (#{call_directions.join(',')})"
-      end    
-    end
-  
-    trfc_from = nil  
-    trfc_to = nil
-    if params.has_key?(:trfcfr) and not params[:trfcfr].empty?
-      trfc_from = params[:trfcfr].to_i 
-    end
-    if params.has_key?(:trfcto) and not params[:trfcto].empty?
-      trfc_to = params[:trfcto].to_i
-    end
-
-    if not trfc_from.nil? and not trfc_to.nil?
-      if trfc_from == trfc_to
-        conditions << "#{vlc_tbl}.transfer_call_count = #{trfc_from}"
-      else
-        conditions << "#{vlc_tbl}.transfer_call_count between #{trfc_from} and #{trfc_to}"
-      end
-    elsif not trfc_to.nil?
-       conditions << "#{vlc_tbl}.transfer_call_count <= #{trfc_to}"
-    elsif not trfc_from.nil?
-      conditions << "#{vlc_tbl}.transfer_call_count >= #{trfc_from}"
-    end
-	#p "skip_search3 #{skip_search}"
-    # call duration
-    if params.has_key?(:stdur) and not params[:stdur].empty?
-      params[:stdur] = CGI::unescape(params[:stdur])
-    end
-    if params.has_key?(:eddur) and not params[:eddur].empty?
-      params[:eddur] = CGI::unescape(params[:eddur])
-    end
-    
-    conditions << retrive_duration_conditions(params[:stdur],params[:eddur])
-
-    if params.has_key?(:keyword) and not params[:keyword].empty?
-      knames = CGI::unescape(params[:keyword]).split(" ")
-      keywords = Keyword.select('id').where((knames.map { |k| "name like '%#{k}%'" }).join(" or ")).all
-      if keywords.empty?
-        skip_search = true
-      else
-        keywords = (keywords.map { |k| k.id }).join(',')
-        conditions << "#{ResultKeyword.table_name}.keyword_id in (#{keywords})"
-      end
-    end
-      #	p "skip_search4 #{skip_search}"
-    # ==========================================================================
-
-    $PER_PAGE_VC = params[:perpage].to_i 
-    if $PER_PAGE_VC <= 0
-      $PER_PAGE_VC = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i  
-    end  
-    
-    if params[:withtrnf] == "true" or params[:withtrnf] == true
-		  ctrl[:find_transfer] = true
-	  else
-		  ctrl[:find_transfer] = false
-	  end
+			vl_tbl_name = VoiceLogTemp.table_name
+			vlc_tbl 		= VoiceLogCounter.table_name
+			conditions 	= []
+			skip_search = false
    
-    page = 1
-    page = params[:page].to_i if params.has_key?(:page) and not params[:page].empty? and params[:page].to_i > 0
+			# agents conditions
+			if params.has_key?(:keys) and not params[:keys].empty?
+				 params[:keys] = CGI::unescape(params[:keys])
+				 begin
+						 if not ctrl[:user_id].nil?
+							 set_current_user_for_call_search(ctrl[:user_id].to_i)
+						 else
+							 set_current_user_for_call_search(current_user.id)
+						 end
+				 rescue
+						skip_search = true
+				 end
+      
+				 keys 		= []
+				 keys 		= CGI::unescape(params[:keys]).split("__")
+				 agents 	= []
+				 keys.each do |key|
+				 k = key.split("=")
+				 case k[0]
+				 when /^(cate)/
+					 agents = find_agent_by_cate(k[1])
+				 when /^(groups)/
+						if k[1] != "none"
+							groups_id = k[1].split(',')
+							agents.concat(find_agent_by_group(groups_id))
+						end
+				 when /^(agents)/
+						if k[1] != "none"
+							agents.concat(find_agent_by_agents(k[1]))
+						end
+				 when /^(agent)/
+						agents = find_agent_by_agent(k[1])
+				 when /^(all)/
+						agents = find_agent_by_group([])
+				 end
+				 end
+				 if params[:keys] == "agents=none__groups=none"
+					 # find all
+					 agents = find_owner_agents
+				 else
+					 agents = nil if agents.empty?
+				 end  
+				 if agents.nil?
+					 #if permission_by_name('tree_filter')
+						 #show_as_unk = ($CF.get('client.aohs_web.displayDeletedAgentAsUnk').to_i == 1)
+						 #if show_as_unk
+						 #  agents = User.deleted.map { |a| a.id }
+						 #else 
+						 #  agents = []
+						 #end
+						 #agents << 0
+						 #conditions << "(#{vl_tbl_name}.agent_id is null or #{vl_tbl_name}.agent_id in (#{agents.join(',')}))"
+					 #end
+				 else
+						if agents.empty?
+							 skip_search = true
+						else
+							 conditions << "#{vl_tbl_name}.agent_id in (#{agents.join(',')})"
+						end
+				 end
+			else
+				 skip_search = true
+			end
 
-    orders = []
-    if ctrl[:timeline_enabled]
-      orders = ['users.login asc',"#{vl_tbl_name}.start_time asc"]
-    else
-      orders = retrive_sort_columns(params[:sortby],params[:od])
-    end
+			# call date / time
+			if params.has_key?(:sttime) and not params[:sttime].empty?
+				 params[:sttime] = CGI::unescape(params[:sttime])
+			end
+			if params.has_key?(:edtime) and not params[:edtime].empty?
+				 params[:edtime] = CGI::unescape(params[:edtime])
+			end
+			conditions << retrive_datetime_condition(params[:periods],params[:stdate],params[:sttime],params[:eddate],params[:edtime])
+			
+			# extension
+			if params.has_key?(:ext) and not params[:ext].empty?
+				 conditions << "#{vl_tbl_name}.extension like '%#{params[:ext]}%'"
+			end
 
-    start_row = $PER_PAGE_VC*(page.to_i-1)
+			#ani
+			if params.has_key?(:caller) and not params[:caller].empty?
+				 caller_no = params[:caller].strip
+				 if caller_no.length > 8
+						# remove leading zero
+						if caller_no[0] == "0"
+							 caller_no = caller_no[1..-1]
+						end
+						conditions << "#{vl_tbl_name}.ani like '#{caller_no}%'"
+				 elsif caller_no.length == 1
+						conditions << "#{vl_tbl_name}.ani like '#{caller_no}"
+				 else
+						conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
+				 end
+			end
+			
+			#dnis
+			if params.has_key?(:dialed) and not params[:dialed].empty?
+				 dialed_no = params[:dialed].strip
+				 if dialed_no.length > 8
+						# remove leading zero
+						if dialed_no[0] == "0"
+							 dialed_no = dialed_no[1..-1]
+						end
+						conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}%'"
+				 elsif dialed_no.length == 1
+						conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}"
+				 else
+						conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
+				 end
+			end
 
-    if ctrl[:show_all] == true
-      offset = 0
-      limit = false
-      page = false
-      max_show = $CF.get("client.aohs_web.number_of_max_calls_export").to_i
-      if max_show > 0
-        offset = 0
-        limit = max_show
-        page = 1
-      end
-    else
-      offset = start_row
-      limit = $PER_PAGE_VC
-    end
-	#p "skip_search5 #{skip_search}"
-    unless skip_search
-        voice_logs, summary, page_info, agents = find_agent_calls({
-                :select => [],
-                :conditions => conditions,
-                :order => orders,
-                :offset => offset,
-                :limit => limit,
-                :page => page,
-                :perpage => $PER_PAGE_VC,
-                :summary => true,
-                :ctrl => ctrl })
-    else
-      voice_logs = []
-    end
+			#agent id
+			if params.has_key?(:agent_id) and not params[:agent_id].empty?
+				 agent_id = params[:agent_id].strip.to_i
+				 conditions << "#{vl_tbl_name}.agent_id = '#{agent_id}'"
+			end
 
-	p @voice_logs_ds
-	p "voice"
-    @voice_logs_ds = {:data => voice_logs, :page_info => page_info,:summary => summary }
-  end
+			# call direction
+			call_directions = []
+			if params.has_key?(:calld) and not params[:calld].empty?
+				 cd_ary = CGI::unescape(params[:calld]).split('')
+				 cd_ary.to_s.each_char do |c|
+						call_directions << c
+						call_directions.concat(['u','e']) if c == 'e'     
+				 end
+				 call_directions = [] if call_directions.uniq.sort == ['i','o','u','e'].sort 
+				 call_directions = call_directions.uniq.map { |c| "'#{c}'"}
+				 case call_directions.length
+				 when 0
+				 when 1
+						conditions << "#{vl_tbl_name}.call_direction = '#{call_directions.first.gsub('\'','')}'"
+				 else
+						conditions << "#{vl_tbl_name}.call_direction in (#{call_directions.join(',')})"
+				 end	 
+			else
+				 skip_search = true
+			end
+  
+			trfc_from = nil  
+			trfc_to = nil
+			if params.has_key?(:trfcfr) and not params[:trfcfr].empty?
+				 trfc_from = params[:trfcfr].to_i
+				 conditions << "#{vlc_tbl}.transfer_call_count >= #{trfc_from}"
+			end
+			if params.has_key?(:trfcto) and not params[:trfcto].empty?
+				 trfc_to = params[:trfcto].to_i
+				 conditions << "#{vlc_tbl}.transfer_call_count <= #{trfc_to}"
+			end
 
-  # ======= end seach voice log ======== #
+			# call duration
+			if params.has_key?(:stdur) and not params[:stdur].empty?
+				 params[:stdur] = CGI::unescape(params[:stdur])
+			end
+			if params.has_key?(:eddur) and not params[:eddur].empty?
+				 params[:eddur] = CGI::unescape(params[:eddur])
+			end
+			conditions << retrive_duration_conditions(params[:stdur],params[:eddur])
 
-  def index
+			if params.has_key?(:keyword) and not params[:keyword].empty?
+				 knames = CGI::unescape(params[:keyword]).split(" ")
+				 keywords = Keyword.select('id').where((knames.map { |k| "name like '%#{k}%'" }).join(" or ")).all
+				 if keywords.empty?
+						skip_search = true
+				 else
+						keywords = (keywords.map { |k| k.id }).join(',')
+						conditions << "#{ResultKeyword.table_name}.keyword_id in (#{keywords})"
+				 end
+			end
     
-    @cd_color = Aohs::CALL_DIRECTION_COLORS
-    @username = current_user.login
+			$PER_PAGE_VC = params[:perpage].to_i 
+			if $PER_PAGE_VC <= 0
+				 $PER_PAGE_VC = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i  
+			end  
+    
+			if params[:withtrnf] == "true" or params[:withtrnf] == true
+				 ctrl[:find_transfer] = true
+			else
+				 ctrl[:find_transfer] = false
+			end
+   
+			page = 1
+			page = params[:page].to_i if params.has_key?(:page) and not params[:page].empty? and params[:page].to_i > 0
 
-    @numbers_of_display = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i
+			orders = []
+			if ctrl[:timeline_enabled]
+				 orders = ['users.login asc',"#{vl_tbl_name}.start_time asc"]
+			else
+				 orders = retrive_sort_columns(params[:sortby],params[:od])
+			end
 
-    @conds = {}
+			start_row = $PER_PAGE_VC*(page.to_i-1)
+
+			if ctrl[:show_all] == true
+				 offset = 0
+				 limit = false
+				 page = false
+				 max_show = $CF.get("client.aohs_web.number_of_max_calls_export").to_i
+				 if max_show > 0
+						offset = 0
+						limit = max_show
+						page = 1
+				 end
+			else
+				 offset = start_row
+				 limit = $PER_PAGE_VC
+			end
+
+			unless skip_search
+				 voice_logs, summary, page_info, agents = find_agent_calls({
+							 :select => [],
+							 :conditions => conditions,
+							 :order => orders,
+							 :offset => offset,
+							 :limit => limit,
+							 :page => page,
+							 :perpage => $PER_PAGE_VC,
+							 :summary => true,
+							 :ctrl => ctrl })
+			else
+				 voice_logs = []
+			end
+
+			@voice_logs_ds = {:data => voice_logs, :page_info => page_info,:summary => summary }
+			
+	 end
+
+	 def index
+    
+			@cd_color = Aohs::CALL_DIRECTION_COLORS
+			@username = current_user.login
+
+			@numbers_of_display = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i
+
+			@conds = {}
     case params[:period]
     when /^(today)/
       tmp_date = Time.new.strftime("%Y-%m-%d")
