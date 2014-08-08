@@ -19,11 +19,10 @@ namespace :demo do
       task :create => :setup do
         create_voice_logs(-1)
         #create_voice_logs(0)
-        
         #create_voice_logs2(0)
         create_voice_logs(1)
       end
-    
+   
       desc 'Compare'
       task :compare => :setup do
         compare_voice_logs
