@@ -90,19 +90,22 @@ class VoiceLogsController < ApplicationController
 			
 			# extension
 			if params.has_key?(:ext) and not params[:ext].empty?
-				 conditions << "#{vl_tbl_name}.extension like '%#{params[:ext]}%'"
+				 ext_no = params[:ext].strip
+				 conditions << "#{vl_tbl_name}.extension like '%#{ext_no}%'"
 			end
 
 			#ani
 			if params.has_key?(:caller) and not params[:caller].empty?
 				 caller_no = params[:caller].to_s.strip
-				 if caller_no.length > 8
+				 if caller_no.length >= 7
 						# remove leading zero
 						if caller_no[0,1] == "0"
  							 caller_no = caller_no[1..-1]
-						end
-						conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
-				 elsif caller_no.length == 1
+ 							 conditions << "(#{vl_tbl_name}.ani like '#{caller_no}%' or #{vl_tbl_name}.ani like '0#{caller_no}%')"
+ 						else
+							 conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
+ 						end
+				 elsif caller_no.length <= 2
 						conditions << "#{vl_tbl_name}.ani like '#{caller_no}"
 				 else
 						conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
@@ -112,13 +115,16 @@ class VoiceLogsController < ApplicationController
 			#dnis
 			if params.has_key?(:dialed) and not params[:dialed].empty?
 				 dialed_no = params[:dialed].to_s.strip
-				 if dialed_no.length > 8
+				 if dialed_no.length >= 7
 						# remove leading zero
 						if dialed_no[0,1] == "0"
 							 dialed_no = dialed_no[1..-1]
+							 conditions << "(#{vl_tbl_name}.dnis like '#{dialed_no}%' or #{vl_tbl_name}.dnis like '0#{dialed_no}%')"
+						else
+							 conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
 						end
-						conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
-				 elsif dialed_no.length == 1
+						
+				 elsif dialed_no.length <= 2
 						conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}"
 				 else
 						conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
@@ -187,8 +193,8 @@ class VoiceLogsController < ApplicationController
 			if $PER_PAGE_VC <= 0
 				 $PER_PAGE_VC = $CF.get('client.aohs_web.number_of_display_voice_logs').to_i  
 			end  
-    
-			if params[:withtrnf] == "true" or params[:withtrnf] == true
+			
+			if params[:withtrnf] == "true" or params[:withtrnf].eql?("true")
 				 ctrl[:find_transfer] = true
 			else
 				 ctrl[:find_transfer] = false

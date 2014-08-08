@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<jnlp codebase="http://192.168.1.157:3009/applets/speechmonitor/" href="launch.jnlp" spec="1.0+">
+<jnlp codebase="http://192.168.1.88:3002/applets/speechmonitor/" href="launch.jnlp" spec="1.0+">
     <information>
-        <title>Speech Monitor GUI V.1.0</title>
+        <title>Speech Monitor</title>
         <vendor>AmiVoice Thai Co., Ltd.</vendor>
         <homepage href=""/>
-        <description>Speech Monitor GUI V.1.0</description>
-        <description kind="short">Speech Monitor GUI V.1.0</description>
+        <description>Speech Monitor</description>
+        <description kind="short">Speech Monitor</description>
     </information>
-<update check="background"/>
+<update check="always"/>
 <security>
 <all-permissions/>
 </security>
     <resources>
 <j2se java-vm-args="-Djava.security.policy=applet.policy" version="1.5+"/>
-<jar href="MossSpeech.jar" main="true"/>
+<jar href="speech_monitor.jar" main="true"/>
     <jar href="imq.jar"/>
 <jar href="jain-sip-api-1.2.jar"/>
 <jar href="jain-sip-ri-1.2.122.jar"/>

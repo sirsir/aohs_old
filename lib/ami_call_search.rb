@@ -313,18 +313,18 @@ module AmiCallSearch
 		sc[:conditions].each do |cond|
 			condx = cond.clone
 			case 0
-			when condx =~ /(voice_logs)/
-					conditions << condx.gsub!(vl_tblname,"v")
+			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
+					conditions << condx.gsub(vl_tblname,"v")
 			when condx =~ /(voice_log_counters)/
 				joins << "LEFT JOIN voice_log_counters c ON v.id = c.voice_log_id"
-				conditions << condx.gsub!("voice_log_counters","c")
+				conditions << condx.gsub("voice_log_counters","c")
 			when condx =~ /(result_keywords)/
 				conditions << find_sql_result_keywords(condx,"v")
 			when condx =~ /(taggings)/
 				conditions << find_sql_taggings(condx,"v")
 			when condx =~ /(voice_log_customers)/
 				joins << "LEFT JOIN voice_log_customers cu ON v.id = cu.voice_log_id"
-				conditions << condx.gsub!("voice_log_customers","cu")
+				conditions << condx.gsub("voice_log_customers","cu")
 			end
 		end
 		
@@ -334,15 +334,15 @@ module AmiCallSearch
 			case 0
 			when orderx =~ /(voice_log_counters)/
 				joins << "LEFT JOIN voice_log_counters c ON v.id = c.voice_log_id"
-				orders << orderx.gsub!("voice_log_counters","c")
+				orders << orderx.gsub("voice_log_counters","c")
 			when orderx =~ /(users)/
 				joins << "LEFT JOIN users u ON v.agent_id = u.id"
-				orders << orderx.gsub!("users","u")
+				orders << orderx.gsub("users","u")
 			when orderx =~ /(voice_logs)/
-				orders << orderx.gsub!(vl_tblname,"v")
+				orders << orderx.gsub(vl_tblname,"v")
 			end
 		end
-				
+		
 		# make
 		joins = joins.uniq
 		
@@ -380,18 +380,18 @@ module AmiCallSearch
 		sc[:conditions].each do |cond|
 			condx = cond.clone
 			case 0
-			when condx =~ /(voice_logs)/
-					conditions << condx.gsub!(vl_tblname,"v")
+			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
+					conditions << condx.gsub(vl_tblname,"v")
 			when condx =~ /(voice_log_counters)/
 				joins << "LEFT JOIN voice_log_counters c ON v.id = c.voice_log_id"
-				conditions << condx.gsub!("voice_log_counters","c")
+				conditions << condx.gsub("voice_log_counters","c")
 			when condx =~ /(result_keywords)/
 				conditions << find_sql_result_keywords(condx,"v")
 			when condx =~ /(taggings)/
 				conditions << find_sql_taggings(condx,"v")
 			when condx =~ /(voice_log_customers)/
 				joins << "LEFT JOIN voice_log_customers cu ON v.id = cu.voice_log_id"
-				conditions << condx.gsub!("voice_log_customers","cu")
+				conditions << condx.gsub("voice_log_customers","cu")
 			end
 		end
 		
@@ -420,31 +420,33 @@ module AmiCallSearch
 		sqla  					= ""
 		
 		select = column_select_list
+		vindex = get_index_key(sc)
+		
 		joins << "LEFT JOIN voice_log_counters c ON v.id = c.voice_log_id"
 
 		# joins/wheres
 		sc[:conditions].each do |cond|
 			condx = cond.clone
 			case 0
-			when condx =~ /(voice_logs)/
+			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
 				if (condx =~ /start_time/) or (condx =~ /call_direction/)
 					conditions_all << condx.gsub!(vl_tblname,"v")
 				else
-					conditions << condx.gsub!(vl_tblname,"v")
+					conditions << condx.gsub(vl_tblname,"v")
 				end
 			when condx =~ /(voice_log_counters)/
 				joins << "LEFT JOIN voice_log_counters c ON v.id = c.voice_log_id"
-				conditions << condx.gsub!("voice_log_counters","c")
+				conditions << condx.gsub("voice_log_counters","c")
 			when condx =~ /(result_keywords)/
 				conditions << find_sql_result_keywords(condx,"v")
 			when condx =~ /(taggings)/
 				conditions << find_sql_taggings(condx,"v")
 			when condx =~ /(voice_log_customers)/
 				joins << "LEFT JOIN voice_log_customers cu ON v.id = cu.voice_log_id"
-				conditions << condx.gsub!("voice_log_customers","cu")
+				conditions << condx.gsub("voice_log_customers","cu")
 			when condx =~ /(voice_log_cars)/
 				joins << "LEFT JOIN voice_log_cars cr ON v.id = cr.voice_log_id"
-				conditions << condx.gsub!("voice_log_cars","cr")				
+				conditions << condx.gsub("voice_log_cars","cr")				
 			end
 		end
 
@@ -454,29 +456,31 @@ module AmiCallSearch
 			case 0
 			when orderx =~ /(voice_log_counters)/
 				joins << "LEFT JOIN voice_log_counters c ON v.id = c.voice_log_id"
-				orders << orderx.gsub!("voice_log_counters","c")
+				orders << orderx.gsub("voice_log_counters","c")
 			when orderx =~ /(users)/
 				joins << "LEFT JOIN users u ON v.agent_id = u.id"
-				orders << orderx.gsub!("users","u")
+				orders << orderx.gsub("users","u")
 			when orderx =~ /(voice_logs)/
-				orders << orderx.gsub!(vl_tblname,"v")
+				orders << orderx.gsub(vl_tblname,"v")
 			end
 		end
 
 		# show only main call
-		conditions_all << "IFNULL(v.ori_call_id,'1') = '1'"
-		
+		conditions_all << "(v.ori_call_id IS NULL OR v.ori_call_id = '1')"
+		 
 		# exists where for transfered calls
 		exists_where = ""
-		sqlb 				 = make_exists_sql_for_ext(sc)
-		exists_where = "OR EXISTS (#{sqlb}) " unless sqlb.empty?
-				
+		if sc[:ctrl][:find_transfer]
+			sqlb 				 = make_exists_sql_for_ext(sc)
+			exists_where = "OR EXISTS (#{sqlb}) " unless sqlb.empty?
+		end
+		
 		# make
 		joins = joins.uniq
 		
 		sqla = ""
 		sqla << "SELECT #{select.join(",")} "
-		sqla << "FROM #{vl_tblname} v #{joins.join(" ")} "
+		sqla << "FROM #{vl_tblname} v #{vindex} #{joins.join(" ")} "
 		sqla << "WHERE #{conditions_all.join(" AND ")} "
 		if not conditions.empty?
 			sqlaa = "(#{conditions.join(" AND ")}) #{exists_where}"
@@ -506,6 +510,7 @@ module AmiCallSearch
 		sqla  					= ""
 		
 	  select = column_select_sum
+		vindex = get_index_key(sc)
 		
 		joins << "LEFT JOIN voice_log_counters c ON v.id = c.voice_log_id"
 		
@@ -513,36 +518,38 @@ module AmiCallSearch
 		sc[:conditions].each do |cond|
 			condx = cond.clone
 			case 0
-			when condx =~ /(voice_logs)/
+			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
 				if (condx =~ /start_time/) or (condx =~ /call_direction/)
-					conditions_all << condx.gsub!(vl_tblname,"v")
+					conditions_all << condx.gsub(vl_tblname,"v")
 				else
-					conditions << condx.gsub!(vl_tblname,"v")
+					conditions << condx.gsub(vl_tblname,"v")
 				end
 			when condx =~ /(voice_log_counters)/
 				joins << "LEFT JOIN voice_log_counters c ON v.id = c.voice_log_id"
-				conditions << condx.gsub!("voice_log_counters","c")
+				conditions << condx.gsub("voice_log_counters","c")
 			when condx =~ /(result_keywords)/
 				conditions << find_sql_result_keywords(condx,"v")
 			when condx =~ /(voice_log_customers)/
-				conditions << condx.gsub!("voice_log_customers","u")
+				conditions << condx.gsub("voice_log_customers","u")
 			end
 		end
 		
 		# exists where for transfered calls
 		exists_where = ""
-		sqlb = make_exists_sql_for_ext(sc)
-		exists_where = "OR EXISTS (#{sqlb}) " unless sqlb.empty?
+		if sc[:ctrl][:find_transfer]
+			sqlb = make_exists_sql_for_ext(sc)
+			exists_where = "OR EXISTS (#{sqlb}) " unless sqlb.empty?			
+		end
 		
 		# show only main call
-		conditions_all << "IFNULL(v.ori_call_id,'1') = '1'"
+		conditions_all << "(v.ori_call_id IS NULL OR v.ori_call_id = '1')"
 		
 		# make
 		joins = joins.uniq
 		
 		sqla = ""
 		sqla << "SELECT #{select.join(",")} "
-		sqla << "FROM #{vl_tblname} v #{joins.join(" ")} "
+		sqla << "FROM #{vl_tblname} v #{vindex} #{joins.join(" ")} "
 		sqla << "WHERE #{conditions_all.join(" AND ")} "
 		if not conditions.empty?
 			sqlaa = "(#{conditions.join(" AND ")}) #{exists_where}"
@@ -566,19 +573,19 @@ module AmiCallSearch
 			case 0
 			when condx =~ /(result_keywords)/
 				joins << "JOIN result_keywords ks ON vs.id = ks.voice_log_id "
-				conditions << condx.gsub!("result_keywords","ks")
+				conditions << condx.gsub("result_keywords","ks")
       when condx =~ /(voice_log_customers)/
 				joins << "JOIN voice_log_customers cu ON vs.id = cu.voice_log_id "
-				conditions << condx.gsub!("voice_log_customers","cu")
+				conditions << condx.gsub("voice_log_customers","cu")
       when condx =~ /(voice_log_cars)/
 				joins << "JOIN voice_log_cars cr ON vs.id = cr.voice_log_id "
-				conditions << condx.gsub!("voice_log_cars","cr")
-			when condx =~ /(voice_logs)/
+				conditions << condx.gsub("voice_log_cars","cr")
+			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
 				if (condx =~ /(call_direction)/)
 				elsif (condx =~ /(start_time)/) or (condx =~ /(duration)/)
-					conditions_all << condx.gsub!(vl_tblname,"vs")
+					conditions_all << condx.gsub(vl_tblname,"vs")
 				else
-					conditions << condx.gsub!(vl_tblname,"vs")
+					conditions << condx.gsub(vl_tblname,"vs")
 				end
 			end
     end
@@ -588,7 +595,7 @@ module AmiCallSearch
 			conditions.concat(conditions_all)
 			
 			# select exists by call_id
-			conditions << "IFNULL(vs.ori_call_id,'1') <> '1'"
+			# conditions << "IFNULL(vs.ori_call_id,'1') <> '1'"
 			conditions << "v.call_id = vs.ori_call_id"
 		  
  		  # make sql
@@ -610,7 +617,7 @@ module AmiCallSearch
 		condx 			= cond.clone
 		conditions 	= []
 		
-		conditions << "#{condx.gsub!("result_keywords","rs")}"
+		conditions << "#{condx.gsub("result_keywords","rs")}"
 		conditions << "#{vl_prefix}.id = rs.voice_log_id)"
 		sql = "EXISTS (SELECT rs.voice_log_id FROM result_keywords rs WHERE #{conditions.join(" AND ")}"		
 		
@@ -623,7 +630,7 @@ module AmiCallSearch
 		condx 			= cond.clone
 		conditions 	= []
 		
-		conditions << condx.gsub!("taggings","tg")
+		conditions << condx.gsub("taggings","tg")
 		conditions << "tg.taggable_type = 'VoiceLog'"
 		conditions << "tg.context = 'tags'"
 		conditions << "#{vl_prefix}.id = tg.taggable_id"
@@ -1096,12 +1103,28 @@ module AmiCallSearch
 		# default call selection
     case Aohs::CURRENT_LOGGER_TYPE
 		when :eone
+			#
 		when :extension
-			conditions << "(#{v}.ori_call_id = '1' OR #{v}.ori_call_id = '')"
+		  #
 		end
     
 		return conditions
   
 	end
-
+	
+	def get_index_key(sc)
+		
+		# default
+		indexs = [
+						"index_voice_logs_on_start_time",
+						"index_voice_logs_on_ani",
+						"index_voice_logs_on_dnis",
+						"vc_index1"
+		]
+		sql_index = "USE INDEX (#{indexs.join(",")})"
+		
+		return sql_index
+	
+	end
+	
 end

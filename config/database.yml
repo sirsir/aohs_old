@@ -5,7 +5,7 @@ development:
   host: 192.168.1.15
   port: 3306
   username: mysqladmin
-  password: password
+  password: mysqladmin
   encoding: utf8
   pool: 5
   timeout: 5000
@@ -15,7 +15,7 @@ production:
   host: 192.168.1.15
   port: 3306
   username: mysqladmin
-  password: password
+  password: mysqladmin
   encoding: utf8
   pool: 5
   timeout: 5000
