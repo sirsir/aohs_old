@@ -260,4 +260,47 @@ class ExtensionController < ApplicationController
   
   end
   
+  def match_extension
+		
+		sql1 = ""
+		sql1 << "select c.check_time,c.login_name,c.remote_ip,u.id as user_id "
+		sql1 << "from current_computer_status c "
+		sql1 << "join (select max(check_time) as lastest_check_time,login_name from current_computer_status group by login_name) c1 "
+		sql1 << "on c.check_time = c1.lastest_check_time and c.login_name = c1.login_name "
+		sql1 << "join users u on c.login_name = u.login "
+		sql1 << "where (u.flag is null or u.flag = 0) "
+		
+		sql2 = ""
+		sql2 << "select e.id,e.number,m.ip_address,m.computer_name from extensions e join computer_extension_maps m "
+		sql2 << "on m.extension_id = e.id "
+		
+		sql = ""
+		sql << "select a.*,b.number,e.agent_id from "
+		sql << "(#{sql1}) a join (#{sql2}) b on a.remote_ip = b.ip_address "
+		sql << "left join extension_to_agent_maps e "
+		sql << "on b.number = e.extension "
+		sql << "where (a.user_id <> e.agent_id or e.agent_id is null) "
+    sql << "order by b.number "
+    
+		@result = Extension.find_by_sql(sql)
+		
+		if params[:perform_update] == "true"
+			unless @result.empty?
+				@result.each do |r|
+					next if r.user_id.to_i <= 0
+					eam = ExtensionToAgentMap.where(:extension => r.number).first
+					if eam.nil?
+						eam = ExtensionToAgentMap.new(:extension => r.number, :agent_id => r.user_id)
+						eam.save!
+					elsif eam.agent_id.to_i != r.user_id.to_i
+						eam.agent_id = r.user_id
+						eam.save!
+					end
+				end
+			end
+			redirect_to :action => 'match_extension'
+		end
+		
+	end
+  
 end

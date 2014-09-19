@@ -1,0 +1,47 @@
+<% content_for :header do %>
+<style>
+  p.selected-content { background-color:#CCCCCC; }
+</style>
+<% end %>
+<div class="div-menu-block">
+  <div class="menu-block">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="border-bottom:1px solid #b4e1ff;"><%= render :partial => 'extension/extension_menu' %></td>
+        </tr>
+      </table>		
+  </div>
+</div>
+<div class="div-menu-block">
+	<div class="menu-block">
+	<% if @result.length > 0 %>
+	<a href="<%=url_for(:controller => 'extension', :action => 'match_extension', :id => 1, :perform_update => "true")%>">Fix extension data</a>
+	<% end %>
+	</div>
+</div>
+<div id="tbl-wlogs" class="div-default-table">
+  <table cellpadding="0" cellspacing="0" class="tbl-hover"> 
+    <tr class="tname">
+      	<td colspan="11">List of phone need to update</td>
+    </tr>
+    <tr class="thead">
+      <th>No.</th>
+      <th>Remote IP</th>
+      <th>Username</th>
+      <th>Extension</th>
+			<th>Check Time</th>
+      <th>Result</th>
+    </tr>
+    <% @result.each_with_index do |l,i| %>
+      <tr>
+        <td><%=i+1 %></td>
+        <td><%=l.remote_ip %>&nbsp;</td>
+        <td><%=l.login_name %>&nbsp;</td>
+				<td><%=l.number.to_s %>&nbsp;</td>
+				<td><%=Time.parse(l.check_time).strftime("%Y-%m-%d %H:%M") %></td>
+				<td style="text-align: center;"><%= (l.user_id.to_i == l.agent_id.to_i).to_s %></td>
+      </tr>
+    <% end %>
+  </table>
+</div>
+</div>
