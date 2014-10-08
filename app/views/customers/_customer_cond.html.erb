@@ -726,7 +726,10 @@
 <% end %>
 
 <div id="div-custCtrl">
-  <table cellpadding="0" cellspacing="0" width="100%"><tr><td><div class="condName1">Customers list</div></td><td align="right">&nbsp;<a href="#" onclick="ShowOrHidePanel()" title="Hide"><%=image_tag('hide_panel2.png',{:border => 0}) %></a></td></tr></table>
+  <table cellpadding="0" cellspacing="0" width="100%"><tr>
+    <td><div class="condName1">Customers list</div></td>
+    <td align="right">&nbsp;<a href="#" onclick="ShowOrHidePanel()" title="Hide"><%=image_tag('hide_panel2.png',{:border => 0}) %></a></td>
+  </tr></table>
     <input type="text" value="" id="txtCustName" onclick="clearCustOnFocus();" onkeyup="findCustomerDelay();" onkeydown="findCustomerDelay()"/>
     <% if edit_cust and Aohs::MOD_EDIT_CUST_ON_SEARCH %>
     <input type="button" value="New" id="btnSaveCust" class="btnStyle2" onclick="SaveCustomer()"/>

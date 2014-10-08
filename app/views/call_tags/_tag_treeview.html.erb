@@ -3,14 +3,14 @@
   <%= javascript_src_path('/jquery/jquery.treeview/jquery.treeview.js') %>
 <% end %>
 
-<div id="div-tree-group-tag" width="200px">
-	<ul id="group-tag-tree">
-		<li><a href="<%=url_for(:controller=>'call_tags',:action=>'index')%>" onclick="">Tag Groups</a>
-			<ul>
-			<% @tag_groups.each do |tg| %>
-				<li><a href="#" title="<%=tg.description %>" onclick="gotoTagGroup(parseInt('<%=tg.id %>'))"><%=tg.name %></a></li>
-			<% end %>
-			</ul>
-		</li>
-	</ul>
+<div id="div-tree-group-tag" width="200px" class="treeview">
+  <ul id="group-tag-tree">
+    <li><a href="<%=url_for(:controller=>'call_tags',:action=>'index')%>" onclick="">Tag Groups</a>
+      <ul>
+	<% @tag_groups.each do |tg| %>
+	  <li><a href="#" title="<%=tg.description %>" onclick="gotoTagGroup(parseInt('<%=tg.id %>'))"><%=tg.name %></a></li>
+	<% end %>
+      </ul>
+    </li>
+  </ul>
 </div>

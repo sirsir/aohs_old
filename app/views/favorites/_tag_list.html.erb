@@ -1,0 +1,132 @@
+<% content_for :header do %>
+<%= stylesheet_src_path('/jquery/jquery.treeview/jquery.treeview.css')%>
+<%= javascript_src_path('/jquery/jquery.treeview/jquery.treeview.js') %>
+<%#= javascript_src_path('/jquery/jquery.treeview/lib/jquery.cookie.js') %>
+<style type="text/css">
+
+  #ultree ul {
+    margin:0px;
+    padding-top:0px;
+    padding-bottom:0px;
+  }
+
+  #ultree li {
+    margin:0px 0px 0px 0px;
+    padding-top:2px;
+    padding-bottom:0px;
+  }
+  .conftree {
+    width:200px;
+    border-top:1px solid #cccccc;
+    overflow:scroll;
+    background-color: #ffffff;
+    margin-top:2px;
+  }
+  .div-search {
+      padding-top:1px;
+      padding-left:1px;
+      border:1px solid #cccccc;
+      width:200px;
+      background-color: #f0efef;
+  }
+  #btnSearch {
+  }
+  #tagName {
+      width:150px;
+      height:20px;
+  }
+    .btnStyle1 {
+          border:1px solid #ffffff;
+          background-color: transparent;
+          background-repeat:repeat;
+		  font-weight:bold;
+		  color:#ffffff;
+		  padding:2px;
+          background-image:url('<%=image_src_path('/images/greenbtn.png') %>');
+    }
+   .a-first { color:black; :font-weight:bold; }  
+    .condName1 {
+        font-weight:bold;
+        font-size:12px;
+        text-decoration: underline;
+        display:block;
+    }      
+</style>
+    
+<script type="text/javascript">
+
+  function onClickTagTree(){
+  	  findCallsTags(null,null,null);
+  }
+  function onClickTagTreeWithId(tags_id){
+      findCallsTags(null,null,tags_id);
+  }
+  function onClickTagTreeWithName(tag_name){
+      findCallsTags(tag_name,null,null);
+  }  
+  function onClickGroupTag(g_id){
+      findCallsTags(null,g_id,null);
+  }
+  function onClickSearch(){
+      var tagName = jQuery.trim($("input[name=tagName]").val());
+      findCallsTags(tagName,null,null);
+  }
+  function ShowOrHidePanel(){
+    if($('#divSearchPanel').css('display')=="none"){
+	$('#divSearchPanel').css('display','');
+    }
+    else {
+	$('#divSearchPanel').css('display','none');
+    }
+    if($('#divBtnShowPanel').css('display')=="none") {
+	$('#divBtnShowPanel').css('display','');
+    }
+    else {
+	$('#divBtnShowPanel').css('display','none');
+    }
+    resizeWindow();
+  }  
+</script>
+
+<% end %>
+<div class="div-search">
+    <table width="100%" cellpadding="0" cellspacing="1">
+	<tr><td><div class="condName1">Call Tags</div></td><td align="right"><a href="#" onclick="ShowOrHidePanel()" title="Hide"><%=image_tag('hide_panel2.png',{:border => 0}) %></a></td></tr>
+	<tr><td colspan="2">
+	    <input type="text" name="tagName" id="tagName" value="" align="absmiddle" title="Tag name for search">
+	    <input type="button" class="btnStyle1" id="btnSearch" name="btnSearch" value="Find" align="absmiddle" onclick="onClickSearch()">			
+	<td></tr>
+    </table>
+<div id="conftree" class="conftree treeview">
+  <ul id="ultree">
+    <li><a href="#" class="a-first" onclick="onClickTagTree()">Tag</a>
+	<ul>
+	  <% @tag_groups.each do |tg| %>
+	    <li><a href="#" onclick="onClickGroupTag('<%=tg.id %>')"><%= tg.name %></a>
+	      <% unless tg.tags.blank? %>
+	      <ul>
+		<% tg.tags.each do |t| %>
+		    <li><a href="#" onclick="onClickTagTreeWithId('<%=t.id %>')"><%= t.name %></a></li>
+		<% end %>
+	      </ul>
+	    <% end %>
+	    </li>
+	  <% end %>
+	</ul>
+    </li>
+    <li><a href="#" class="a-first" onclick="onClickTagTree()">Index</a>
+	<ul>
+	  <% @arr_charactor.each_with_index do |data_index,i| %>
+	      <li><a href="javascript:onClickTagTreeWithName('<%= data_index[0] %>');"><%= data_index[0] %></a>
+		<ul>
+		  <%data_index[1].each do |items|   %>
+		    <li><a href="javascript:onClickTagTreeWithName('<%=items %>');"><%=items %></a></li>
+		  <% end %>
+		</ul>
+	      </li>
+	  <% end %>
+	</ul>
+   </li>
+  </ul>
+ </div>
+</div>

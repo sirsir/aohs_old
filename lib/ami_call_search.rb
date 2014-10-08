@@ -1114,14 +1114,16 @@ module AmiCallSearch
 	
 	def get_index_key(sc)
 		
+		sql_index = ""
+		
 		# default
-		indexs = [
-						"index_voice_logs_on_start_time",
-						"index_voice_logs_on_ani",
-						"index_voice_logs_on_dnis",
-						"vc_index1"
-		]
-		sql_index = "USE INDEX (#{indexs.join(",")})"
+		#indexs = [
+		#				"index_voice_logs_on_start_time",
+		#				"index_voice_logs_on_ani",
+		#				"index_voice_logs_on_dnis",
+		#				"vc_index1"
+		#]
+		#sql_index = "USE INDEX (#{indexs.join(",")})"
 		
 		return sql_index
 	

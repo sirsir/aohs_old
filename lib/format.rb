@@ -74,38 +74,39 @@ module Format
 
   def format_phone(phone)
      
-     #Thailand
-     
-     if phone.nil? or phone.empty?
-       return phone
-     else
-       ndigits = phone.to_s.length
-       phone = phone.to_s
-       if ndigits <= 6
-          # Ext XXXXX
-          return (phone[-4..-1]).to_s 
-       else
-         phone = remove_first_is_nine(phone)
-         if Aohs::USE_PHONE_PATTERN
-           ndigits = phone.to_s.length
-           case true
-             when ((ndigits == 9) and not (phone =~ /^02\d+/).nil?):
-               # BKK 02-999-9999
-               return phone.to_s.gsub(/^(\d\d)(\d\d\d)(\d+)/,"\\1-\\2\\3")
-             when (ndigits == 9):
-               # OTH 099-9999-999
-               return phone.to_s.gsub(/^(\d\d\d)(\d\d\d)(\d+)/,"\\1-\\2\\3")
-             when (ndigits == 10)
-               # Mobile 08-9999-9999
-               return phone.to_s.gsub(/^(\d\d\d)(\d\d\d)(\d+)/,"\\1-\\2\-\\3")
-             else
-               return phone
-           end
-         else
-           return phone
-         end
-       end
-     end
+    #Thailand
+    if phone.nil? or phone.empty?
+      return phone
+    else
+      ndigits = phone.to_s.length
+      phone = phone.to_s
+      if ndigits <= 3
+        return phone.to_s 
+      elsif ndigits <= 6
+        # Ext XXXXX
+        return (phone[-4..-1]).to_s 
+      else
+        phone = remove_first_is_nine(phone)
+        if Aohs::USE_PHONE_PATTERN
+          ndigits = phone.to_s.length
+          case true
+            when ((ndigits == 9) and not (phone =~ /^02\d+/).nil?):
+              # BKK 02-999-9999
+              return phone.to_s.gsub(/^(\d\d)(\d\d\d)(\d+)/,"\\1-\\2\\3")
+            when (ndigits == 9):
+              # OTH 099-9999-999
+              return phone.to_s.gsub(/^(\d\d\d)(\d\d\d)(\d+)/,"\\1-\\2\\3")
+            when (ndigits == 10)
+              # Mobile 08-9999-9999
+              return phone.to_s.gsub(/^(\d\d\d)(\d\d\d)(\d+)/,"\\1-\\2\-\\3")
+            else
+              return phone
+          end
+        else
+          return phone
+        end
+      end
+    end
   end
   
   def audio_src_path(src)

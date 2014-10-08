@@ -143,16 +143,20 @@
      searchVoice();
     }
     function ShowOrHidePanel(){
-		if($('#divSearchPanel').css('display')=="none")
-			$('#divSearchPanel').css('display','block');
-		else
-			$('#divSearchPanel').css('display','none');
-		if($('#divBtnShowPanel').css('display')=="none")
-			$('#divBtnShowPanel').css('display','block');
-		else
-			$('#divBtnShowPanel').css('display','none');  	
-		resizeWindow();		
-	}
+      if($('#divSearchPanel').css('display')=="none"){
+	$('#divSearchPanel').css('display','');
+      }
+      else {
+	$('#divSearchPanel').css('display','none');
+      }
+      if($('#divBtnShowPanel').css('display')=="none") {
+	$('#divBtnShowPanel').css('display','');
+      }
+      else {
+	$('#divBtnShowPanel').css('display','none');  	
+      }
+      resizeWindow();		
+    }
     function tabVCSelect(tabNo){
         switch(tabNo){
           case 1: {
@@ -187,14 +191,14 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
     <td class="div-cond-ctrl" id="div-cond-ctrl" valign="top">
-        <div style="padding-left:0px; overflow:hidden; width:205px;" id="divSearchPanel"><%= render :partial => 'customers/customer_cond' %></div>
-		<div style="overflow:hidden; width:16px;" id="divBtnShowPanel" style="display:none; padding-top:3px; padding-left:2px; padding-right:2px"><a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a></div>
+      <div style="padding-left:0px; overflow:hidden; width:205px;" id="divSearchPanel"><%= render :partial => 'customers/customer_cond' %></div>
+      <div id="divBtnShowPanel" style="overflow:hidden; width:16px; display:none; padding-top:3px; padding-left:2px; padding-right:2px"><a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a></div>
     </td>
     <td valign="top">
       <div id="div-voice_log_tabs">
         <div class="div-tabmenu-style1" id="vlrs-tabs">
             <ul class="tabmenu-ul">
-							<% if @tl_enabled %>
+	      <% if @tl_enabled %>
               <li id="tabli-1" class="tabmenu-li tabmenu-li-selected"><a href="#" onclick="tabVCSelect(1)">Calls Result</a></li>
               <li id="tabli-2" class="tabmenu-li"><a href="#" onclick="tabVCSelect(2)">Calls Timeline</a></li>
               <% end %>    
