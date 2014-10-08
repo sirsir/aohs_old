@@ -350,7 +350,17 @@
           });
           initial_vl_timeline(srcUrl);
       }
-
+			function phoneNumberValid(){
+				$(".phonefmt").keydown(function(){
+					var o = $(this);
+					var p = o.val().toString().replace(/[^0-9\#\*]/g,'');
+					o.val(p);
+				}).keyup(function(){
+					var o = $(this);
+					var p = o.val().toString().replace(/[^0-9\#\*]/g,'');
+					o.val(p);
+				});
+			}
       function onLoadCond(){
           $("input[name=vcCD1]").attr("checked","checked");
           $("input[name=vcCD2]").attr("checked","checked");
@@ -379,51 +389,51 @@
 						$("input[name=vcTransfCountTo]").val("");		  	
 		  } catch(e) {}
       }
-      $(document).ready(function(){
-
-        //onLoadCond();
-        $(".chk-direction").buttonset();
-				$(".chk-call-transfered").buttonset(); 
-        $("#vcPeriods").change(function(){
-          var period_selt = $("#vcPeriods option:selected").val();
-          if(period_selt == 0){
-		  	 if(($("input[name=vcFromTime]").val()).length == 0)
-			 	$("input[name=vcFromTime]").val("00:00");
-		  	 if(($("input[name=vcToTime]").val()).length == 0)
-			 	$("input[name=vcToTime]").val("23:59");
-		  	 if(($("input[name=vcFromDate]").val()).length == 0)
-			 	$("input[name=vcFromDate]").val("<%=Date.today %>");
-		  	 if(($("input[name=vcToDate]").val()).length == 0)
-			 	$("input[name=vcToDate]").val("<%=Date.today %>");
-															 
-             $("#custom-periods").css("display","block");
-          } else {
-             $("#custom-periods").css("display","none");
-          }
-          resizeWindow();  
-        });
-        
+	
+	$(document).ready(function(){
+		//onLoadCond();
+		$(".chk-direction").buttonset();
+		$(".chk-call-transfered").buttonset();
+		
+		$("#vcPeriods").change(function(){
+			var period_selt = $("#vcPeriods option:selected").val();
+			if(period_selt == 0){
+				if(($("input[name=vcFromTime]").val()).length == 0)
+					$("input[name=vcFromTime]").val("00:00");
+				if(($("input[name=vcToTime]").val()).length == 0)
+					$("input[name=vcToTime]").val("23:59");
+				if(($("input[name=vcFromDate]").val()).length == 0)
+					$("input[name=vcFromDate]").val("<%=Date.today %>");
+				if(($("input[name=vcToDate]").val()).length == 0)
+					$("input[name=vcToDate]").val("<%=Date.today %>");
+				$("#custom-periods").css("display","block");
+			} else {
+				$("#custom-periods").css("display","none");
+			}
+			resizeWindow();  
+		});
+		
 		$(".callDur").click(function(){
 			var o = $(this);
 			o.val(o.val().replace(/:/g,""));
 			o.select();
 		});
+		
 		$(".callTime").click(function(){
 			$(this).select();
 		});
 		
-      });
-
-      $(function(){
-          $("#vcFromDate").datepicker({ showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
-          $("#vcToDate").datepicker({  showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
-		  $(".callTime").mask("99:99");
-		  $("input[name=vcFromDate]").mask("9999-99-99");
-		  $("input[name=vcToDate]").mask("9999-99-99");
-		  $("input[name=vcExt]").mask("9999");
-		  $(".input-int-only").numeric();
-		  $(".callDur").blur(function(){
-		  	var t = $(this);
+		$("#vcFromDate").datepicker({ showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
+		$("#vcToDate").datepicker({  showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
+		$(".callTime").mask("99:99");
+		$("input[name=vcFromDate]").mask("9999-99-99");
+		$("input[name=vcToDate]").mask("9999-99-99");
+		$("input[name=vcExt]").mask("9999");
+		$(".input-int-only").numeric();
+		phoneNumberValid();
+		
+		$(".callDur").blur(function(){
+			var t = $(this);
 			var a = jQuery.trim(t.val());
 			a = a.replace(":","");
 			if(a.length==1){
@@ -440,17 +450,17 @@
 				}
 				t.val(b + ":" + c);
 			}
-		  });
-		  
+		});
+		
 		$("#keyword_name").autocomplete("<%=url_for(:controller => 'keywords',:action => 'autocomplete_list') %>", {
 			width: 190,
 			multiple: true,
 			matchContains: true,
 			multipleSeparator: " "
 		});
-				  
-      });
-    </script>
+		
+  });
+</script>
     
 <% end %>
 <div id="tab-conds">
@@ -498,8 +508,8 @@
           <td><span class="condName1">Ext:</span></td>
         </tr>
         <tr>
-          <td><input type="text" name="vcCaller" id="vcCaller" class="phone input-int-only" maxlength="14" title="Caller number"></td>
-          <td><input type="text" name="vcDialed" id="vcDialed" class="phone input-int-only" maxlength="14" title="Dialed number"></td>
+          <td><input type="text" name="vcCaller" id="vcCaller" class="phone phonefmt" maxlength="20" title="Caller number"></td>
+          <td><input type="text" name="vcDialed" id="vcDialed" class="phone phonefmt" maxlength="20" title="Dialed number"></td>
           <td><input type="text" name="vcExt" class="input-int-only" id="vcExt" title="Extension number"></td>
         </tr>
     </table>
@@ -510,7 +520,7 @@
 		<input type="hidden" name="agent_id" maxlength="100" id="agent_id" >
   </div>
 <script type="text/javascript">
-<% @agent_pattern = User.select('display_name, id').where('flag = 0').order('display_name asc') %>
+<% @agent_pattern = User.alive.select('display_name, id').where('flag = 0').order('display_name asc') %>
 var agent_pattern = [ <%= (@agent_pattern.to_a.map { |k| "{id: '#{k.id}', display_name: '#{k.display_name.strip}'}"}).join(',') %> ];
 
   function buildAgentPattern(){
@@ -534,9 +544,6 @@ var agent_pattern = [ <%= (@agent_pattern.to_a.map { |k| "{id: '#{k.id}', displa
   }
 buildAgentPattern();
 </script>
-
-
-
   <div class="condStyle1">
     <span class="condName1">Call Duration (mmm:ss):</span>
     <input type="text" name="vcLengthFrom" id="vcLengthStart" class="input-int-only callDur" value="" maxlength="5" title="mmm:ss"><label class="label-frm"> <span class="condName1" style="display:inline;">To</span> </label><input type="text" class="callDur input-int-only" name="vcLengthTo" id="vcLengthEnd" maxlength="5" title="mm:ss" value="">
