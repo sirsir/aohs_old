@@ -3,6 +3,7 @@
     <ul>
       <li class="<%= ((params[:action] == 'index') ? "defaultliselected" : "")%>"><a href="<%=url_for(:controller => 'extension', :action => 'index')%>">Extension List</a></li>
       <li class="<%= ((params[:action] == 'watcher_result') ? "defaultliselected" : "")%>"><a href="<%=url_for(:controller => 'extension', :action => 'watcher_result')%>">Watcher Report</a></li>
+      <li class="<%= ((params[:action] == 'match_extension') ? "defaultliselected" : "")%>"><a href="<%=url_for(:controller => 'extension', :action => 'match_extension')%>">Update Extension</a></li>
     </ul>
   </div>
 </div>
