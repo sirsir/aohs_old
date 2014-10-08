@@ -113,29 +113,29 @@
     </tr>
     <tr class="thead">
       <th>No</th>
-	  <th><a href="#" class="linksort" onclick="sort_link('cti_agent_id')">Agent ID</a></th>
-	  <th><a href="#" class="linksort" onclick="sort_link('id_card')">Citizen ID</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('cti_agent_id')">Agent ID</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('id_card')">Citizen ID</a></th>
       <th><a href="#" class="linksort" onclick="sort_link('login')">Username</a></th>
       <th><a href="#" class="linksort" onclick="sort_link('name')">Display name</a></th>
-	  <th><a href="#" class="linksort" onclick="sort_link('sex')">Sex</a></th>
+      <th><a href="#" class="linksort" onclick="sort_link('sex')">Sex</a></th>
       <th><a href="#" class="linksort" onclick="sort_link('email')">E-mail</a></th>
       <th><a href="#" class="linksort" onclick="sort_link('role')">Role</a></th>
       <th><a href="#" class="linksort" onclick="sort_link('state')">Status</a></th>      
       <th><a href="#" class="linksort" onclick="sort_link('expired_date')">Expired date</a></th>
-	  <th class="tool">Action</th>
+      <th class="tool">Action</th>
     </tr>
     <% unless @managers.empty? %>
     <% @managers.each_with_index do |manager,i| %>
     <tr class="<%= cycle('odd','even') %>">
       <td class="no"><%= row_no(i,@page,$PER_PAGE) %></td>
-	  <td class="string" width="60px"><%= manager.cti_agent_id.blank? ? "-" : display_cti_id(manager.cti_agent_id) %></td>
-	  <td class="string" width="100px"><%= blk(manager.id_card2) %></td>
-      <td class="string" width="100px"><%= blk(manager.login) %></td>
-      <td class="string" width="170px"><%= blk(manager.display_name) %></td>
-	  <td class="string" width="70px"><%= blk(manager.sex2)  %></td>
-	  <td class="string" width="170px"><%= blk(manager.email) %></td>	  
-      <td class="string" width="100px"><%= blk(manager.role_name) %></td>
-      <td class="string <%= manager.state_name.downcase %>" width="55px"><%= manager.state_name %></td>
+      <td class="string" width="60px"><%= manager.cti_agent_id.blank? ? "-" : display_cti_id(manager.cti_agent_id) %></td>
+      <td class="string" width="120px"><%= blk(manager.id_card2) %></td>
+      <td class="string" width="120px"><%= blk(manager.login) %></td>
+      <td class="string"><%= blk(manager.display_name) %></td>
+      <td class="string" width="70px"><%= blk(manager.sex2)  %></td>
+      <td class="string"><%= blk(manager.email) %></td>	  
+      <td class="string"><%= blk(manager.role_name) %></td>
+      <td class="string <%= manager.state_name.downcase %>" width="70px"><%= manager.state_name %></td>
       <td class="string"><%= blkd(manager.expired_date) %></td>
       <td class="tool">
       	<%= link_image_tag('','detail.png',{:controller => "managers",:action=>"show", :id => manager.id},{:title => 'More detail'}) %>

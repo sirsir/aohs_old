@@ -11,29 +11,27 @@
   <%= javascript_src_path '/jquery/js/jquery.download.js' %>
   <%= javascript_src_path '/jquery/js/jquery.numeric.js' %>  
   <%#= javascript_src_path '/jquery/jquery-tooltip/jquery.tooltip.js' %>
-  <%#= javascript_src_path '/jquery/jquery-tooltip/lib/jquery.bgiframe.js'%>
+  <%= javascript_src_path '/jquery/jquery-tooltip/lib/jquery.bgiframe.js'%>
   <%#= javascript_src_path '/jquery/jquery-tooltip/lib/jquery.dimensions.js'%>
   <%= javascript_src_path 'webtoolkit.url.js' %>
 
-  
 <style type="text/css">
 
   html,body {
-      overflow:hidden;
+    overflow:hidden;
   }
-
   #ami-viewer {
-        margin-top:2px;
-        margin-left:2px;
-        border:1px solid #cccccc;
-        background-color: #ffffff;
+    margin-top:2px;
+    margin-left:2px;
+    border:1px solid #cccccc;
+    background-color: #ffffff;
   }
   #voicelog-tbl {
-        margin-top:2px;
-        margin-left:2px;
-        border:1px solid #b4e1ff;
+    margin-top:2px;
+    margin-left:2px;
+    margin-right:5px;
+    border:1px solid #b4e1ff;
   }
-        
 </style>
   
 <script type="text/javascript">
@@ -61,40 +59,34 @@
         }
       });
   }
+  function resizeWindow(e) {
+     var intBrowserHeight = $(window).height();
+     var intBrowserWidth = $(window).width()-3;
+     var confTreeWidth = $("#conftree").width();
+     var pageCtrlWidth = intBrowserWidth-confTreeWidth;
 
+     $("#conftree").css("height",intBrowserHeight-60);
+     $("#ami-viewer").css("width",intBrowserWidth-confTreeWidth-8);
+     $("#div-tblCtrl").css("width",intBrowserWidth-confTreeWidth);
 
-     function resizeWindow(e) {
-        var intBrowserHeight = $(window).height();
-        var intBrowserWidth = $(window).width();
-        var confTreeWidth = $("#conftree").width();
-		var pageCtrlWidth = intBrowserWidth-confTreeWidth-6;
-		
-        $("#conftree").css("height",intBrowserHeight-$("#header").height()-15);
-        $("#ami-viewer").css("width",intBrowserWidth-confTreeWidth-8);
-        $("#div-tblCtrl").css("width",intBrowserWidth-confTreeWidth);
-		
-		$(".expand-cell").css("width",pageCtrlWidth+10);
-		
-        var divTblOuter = $("#div-tbl-outer");
-        divTblOuter.css("width",intBrowserWidth-confTreeWidth+11);
-        divTblOuter.css("height",intBrowserHeight-$("#ami-viewer").height()-$("#header").height()-35);
-		
-		var divTblInner = $("#div-tbl-inner");
-        divTblInner.css("height",divTblOuter.height()-$("#div-tblCtrl").height());
-        divTblInner.css("width",$(".tbl-header").width()+14);
-      }
+     $(".expand-cell").css("width",pageCtrlWidth+10);
+    
+     var divTblOuter = $("#div-tbl-outer");
+     divTblOuter.css("width",intBrowserWidth-confTreeWidth-2);
+     divTblOuter.css("height",intBrowserHeight-$("#ami-viewer").height()-70);
+
+     var divTblInner = $("#div-tbl-inner");
+     divTblInner.css("height",divTblOuter.height()-$("#div-tblCtrl").height());
+     divTblInner.css("width",$(".tbl-header").width()+14);
+   }
   
-    $(document).ready(function(){
-
-        $(window).bind("resize", resizeWindow);
-        resizeWindow();
-
-        $("#loading").css("display","none");
-        $("#now_tag").css("display","none");
-
-        $("#ultree").treeview({collapsed: true });
-
-     });
+  $(document).ready(function(){
+    $(window).bind("resize", resizeWindow);
+    resizeWindow();
+    $("#loading").css("display","none");
+    $("#now_tag").css("display","none");
+    $("#ultree").treeview({collapsed: true });
+  });
 
      function gettaged(textTag)
      {
@@ -141,8 +133,12 @@
 <table cellspacing="0" cellpadding="0" width="100%">
   <tr>
     <td valign="top" style="padding:0px" style="background-color: #f0efef;">
-      <div style="padding-left:0px;" style="overflow:hidden; width:207" id="divSearchPanel"><div id="treelist"><%= render :partial => 'favorites/tag_list' %></div></div>
-	  <div style="overflow:hidden; width:16px;" id="divBtnShowPanel" style="display:none; padding-top:3px; padding-left:2px; padding-right:2px; "><a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a></div>
+      <div style="padding-left:0px;" style="overflow:hidden; width:207" id="divSearchPanel">
+	<div id="treelist"><%= render :partial => 'favorites/tag_list' %></div>
+      </div>
+      <div id="divBtnShowPanel" style="overflow:hidden; display: none; width:16px; padding-top:3px; padding-left:2px; padding-right:2px; ">
+	<a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a>
+      </div>
     </td>
     <td valign="top" style="padding:0px;">
       <div id="ami-viewer"><%= render :partial => 'shared/amiviewer' %></div>

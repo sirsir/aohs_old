@@ -131,14 +131,14 @@
 	  <% @agents.each_with_index do |agent,i| %>
 	  <tr class="<%= cycle('odd','even') %>">
 	    <td class="no"><%= row_no(i,@page,$PER_PAGE) %></td>
-		<td class="string" width="60px"><%= agent.cti_agent_id.blank? ? "-" : display_cti_id(agent.cti_agent_id) %></td>
-		<td class="string" width="100px"><%= blk(agent.id_card2) %></td>
-	    <td class="string" width="80px"><%= blk(agent.login) %></td>
-	    <td class="string" width="160px"><%= blk(agent.display_name) %></td>
-		<td class="string" width="50px"><%= blk(agent.sex2) %></td>
-		<td class="string" width="150px"><%= blk(agent.email) %></td>
-	    <td class="string" width="90px"><%= agent.group.nil? ? "-" : agent.group.name %></td>
-		<td class="string" width="60px">Agent</td>
+	    <td class="string" width="120px"><%= agent.cti_agent_id.blank? ? "-" : display_cti_id(agent.cti_agent_id) %></td>
+	    <td class="string" width="120px"><%= blk(agent.id_card2) %></td>
+	    <td class="string" width="100px"><%= blk(agent.login) %></td>
+	    <td class="string"><%= blk(agent.display_name) %></td>
+	    <td class="string" width="50px"><%= blk(agent.sex2) %></td>
+	    <td class="string"><%= blk(agent.email) %></td>
+	    <td class="string"><%= agent.group.nil? ? "-" : agent.group.name %></td>
+	    <td class="string" width="80px">Agent</td>
 	    <td class="symb <%= agent.state_name.downcase %>" width="60px"><%= agent.state_name %></td>
 	    <td class="string"><%= blkd(agent.expired_date) %></td>
 	    <td class="tool">

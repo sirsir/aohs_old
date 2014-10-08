@@ -1,7 +1,8 @@
 .treeview, .treeview ul { 
 	padding: 0;
 	margin: 0;
-	list-style: none;
+	list-style:none;
+	list-style-type: none;
 }
 
 .treeview ul {

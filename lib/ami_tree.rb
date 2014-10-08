@@ -243,16 +243,16 @@ module AmiTree
   def build_manager_tree(op={})
 
     select_manager = @selected_agents['0'] || []
-      
+    
     data = []
     group_managers = []
     if op[:manager_filter] == true
       group_managers = GroupManager.where({:user_id => @userinfo.id })
       mg_id = group_managers.map {|m| m.manager_id}
       mg_id.delete_if { |m| m == @userinfo.id }
-      group_managers = Manager.where({:id => mg_id }).order("users.login")
+      group_managers = Manager.alive.where({:id => mg_id }).order("users.login")
     else
-      group_managers = Manager.order("users.login")
+      group_managers = Manager.alive.order("users.login")
     end
 
     unless group_managers.empty?
