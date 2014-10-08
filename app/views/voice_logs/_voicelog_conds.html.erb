@@ -564,7 +564,7 @@ buildAgentPattern();
   <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_CALL_TRANSFER %>">
     <span class="condName1">Number of transfered calls:</span>
 	<input type="text" class="input-int-only" name="vcTrannfCountFr" id="vcTransfCountFr" maxlength="2" value="">&nbsp;<span class="condName1" style="display:inline;">To</span>&nbsp;<input type="text" class="input-int-only" name="vcTrannfCountTo" id="vcTransfCountTo" maxlength="2" value=""></span>
-  <br/><span class="condName1"><input type="checkbox" name="vcFindWithTrf" id="vcFindWithTrf" value="yes">&nbsp;Find Transferred calls.</span>
+  <span class="condName1" style="display:none;"><input type="checkbox" name="vcFindWithTrf" id="vcFindWithTrf" value="yes">&nbsp;Find Transferred calls.</span>
   </div>
   <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_KEYWORDS %>">
   	<span class="condName1">Keyword:</span>	 
