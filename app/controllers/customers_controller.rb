@@ -81,7 +81,7 @@ class CustomersController < ApplicationController
       pnumbers = pnumbers.concat(phone_numbers.map { |p| "#{vl_tbl_name}.dnis like '#{p}'"})
       
       # add search key for voice_log_customers
-      pnumbers << "#{VoiceLogCustomer.table_name}.customer_id in (#{customer_id})" if customer_id > 0
+      ## pnumbers << "#{VoiceLogCustomer.table_name}.customer_id in (#{customer_id})" if customer_id > 0
       
       conditions << "(#{pnumbers.join(' or ')})"
     else

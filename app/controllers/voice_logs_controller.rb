@@ -91,7 +91,11 @@ class VoiceLogsController < ApplicationController
 			# extension
 			if params.has_key?(:ext) and not params[:ext].empty?
 				 ext_no = params[:ext].strip
-				 conditions << "#{vl_tbl_name}.extension like '%#{ext_no}%'"
+				 exts_no = [ext_no]
+				 ["5","7"].each do |ext_prefix| 
+						exts_no << "#{ext_prefix}#{ext_no}"
+				 end
+				 conditions << "#{vl_tbl_name}.extension IN (#{(exts_no.map { |ex| "'#{ex}'"}).join(",")})"
 			end
 
 			#ani
