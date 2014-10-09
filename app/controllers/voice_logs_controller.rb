@@ -101,36 +101,40 @@ class VoiceLogsController < ApplicationController
 			#ani
 			if params.has_key?(:caller) and not params[:caller].empty?
 				caller_no = params[:caller].to_s.strip
-				if caller_no.length >= 7 and not (caller_no =~ /\*|\#/)
-					# remove leading zero
+				case true
+				when caller_no.length <= 2
+					conditions << "#{vl_tbl_name}.ani like '#{caller_no}"
+				when (not (caller_no =~ /^(8\*.+)/).nil?)
+					conditions << "#{vl_tbl_name}.ani like '#{caller_no}%'"
+				when caller_no.length <= 6
+					conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
+				else
 					if caller_no[0,1] == "0"
 						caller_no = caller_no[1..-1]
 						conditions << "(#{vl_tbl_name}.ani like '#{caller_no}%' or #{vl_tbl_name}.ani like '0#{caller_no}%')"
 					else
 						conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
 					end
-				elsif caller_no.length <= 2
-					conditions << "#{vl_tbl_name}.ani like '#{caller_no}"
-				else
-					conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
 				end
 			end
 			
 			#dnis
 			if params.has_key?(:dialed) and not params[:dialed].empty?
 				dialed_no = params[:dialed].to_s.strip
-				if dialed_no.length >= 7 and not (dialed_no =~ /\*|\#/)
-					# remove leading zero
+				case true
+				when dialed_no.length <= 2
+					conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}"
+				when (not (dialed_no =~ /^(8\*.+)/).nil?)
+					conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}%'"
+				when dialed_no.length <= 6
+					conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
+				else
 					if dialed_no[0,1] == "0"
 						dialed_no = dialed_no[1..-1]
 						conditions << "(#{vl_tbl_name}.dnis like '#{dialed_no}%' or #{vl_tbl_name}.dnis like '0#{dialed_no}%')"
 					else
 						conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
 					end
-				elsif dialed_no.length <= 2
-					conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}"
-				else
-					conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
 				end
 			end
 
