@@ -73,7 +73,7 @@ module Format
   end
 
   def format_phone(phone)
-    
+
     phone_r = ""
     phone   = phone.to_s.strip
     
@@ -84,14 +84,14 @@ module Format
       case true
       when l <= 4 
         phone_r = phone
-      when l <= 5
+      when l <= 6
         phone_r = (phone[-4..-1]).to_s
-      when l <= 11
-        if phone[0] != "0"
-          phone_r = "0" + phone
-        else
-          phone_r = phone
-        end       
+      when l <= 8
+        phone_r = phone
+      when l <= 12
+        # remove nine call out
+        phone = remove_first_is_nine(phone)
+        phone_r = phone      
       else
         phone_r = phone
       end
