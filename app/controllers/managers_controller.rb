@@ -282,9 +282,9 @@ class ManagersController < ApplicationController
         tmp_grp_managers = GroupManager.includes(:manager).where({ :user_id => @manager.id })
         @grp_managers = []
         tmp_grp_managers.each do |x|
-	    unless x.manager.nil?
-		@grp_managers << x
-	    end 
+          unless x.manager.nil?
+            @grp_managers << x
+          end 
         end
 
         groups = Group.select('id').where({ :leader_id => @manager.id })

@@ -93,11 +93,11 @@
     }
 
     $(document).ready(function(){
-	$("#use_default_p").click(function(){
-	   $("#manager_password").val("#USEDEFAULTPASSWORD#");
-	   $("#manager_password_confirmation").val("#USEDEFAULTPASSWORD#");
-	});
-	$("#manager_id_card").mask("9999999999999");
+			$("#use_default_p").click(function(){
+				 $("#manager_password").val("#USEDEFAULTPASSWORD#");
+				 $("#manager_password_confirmation").val("#USEDEFAULTPASSWORD#");
+			});
+			$("#manager_id_card").mask("9999999999999");
        expandSelectedTeam();
        <%sts = 1%>
        <%if @manager.state.to_s == 'active'%>
@@ -127,7 +127,7 @@
     function check_member(){
       $("#box2View option:selected").each(function(){
         //var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");
-	var ct = $(this).text().toString().replace(/\s\[.*\]/,"");	
+				var ct = $(this).text().toString().replace(/\s\[.*\]/,"");	
         var select_for_expand = tree.getNodeByProperty("label",ct);
         if(select_for_expand != null)
         {
@@ -164,7 +164,7 @@
     function del_member(){
       $("#box1View option:selected").each(function(){
         //var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");
-	var ct = $(this).text().toString().replace(/\s\[.*\]/,"");	
+				var ct = $(this).text().toString().replace(/\s\[.*\]/,"");	
         var select_for_expand = tree.getNodeByProperty("label",ct);
         if(select_for_expand != null)
         {
@@ -181,8 +181,8 @@
     function uncheckAll()
     {
       var topNodes = tree.getRoot().children;
-                for(var i=0; i<topNodes.length; ++i) {
-                    topNodes[i].uncheck();
+      for(var i=0; i<topNodes.length; ++i) {
+        topNodes[i].uncheck();
       }
     }
     function clear_all(){
@@ -196,8 +196,8 @@
     function checkval()
     {
       $("#box1View option").each(function(){
-        alert($(this).val());
-        alert($(this).text());
+        //alert($(this).val());
+        //alert($(this).text());
       });
     }
     function sortoptions(chele)
@@ -219,53 +219,52 @@
       
       $.post("<%= url_for(:controller=>'managers', :action=>'manage_group_member',:id=>params[:id])%>",
       {
-          group_mem: group_mem_parse,
-          mglist: mglist
-      },function(result){
-         
-          if(result == 'ok')
-            {
-              sysMessage("Save change of access level was successfully!");
-            }else
-            {
-              sysMessage("Save change of access level was fail!");
-            }
+        group_mem: group_mem_parse, mglist: mglist
+      },function(result){  
+				if(result == 'ok'){
+						sysMessage("Save change of access level was successfully!");
+					} else {
+						sysMessage("Save change of access level was fail!");
+					}
        });
     }
 
     function expandSelectedTeam()
     {
-
       var managers = [<%= ((@grp_managers.map { |m| "'#{m.manager.login}'" }).join(',')).html_safe %>];
       for(var i=0; i < managers.length; i++ ){
         var ct = managers[i];
         var select_for_expand = tree.getNodesByProperty("label",ct);
-		for (var j= 0; j < select_for_expand.length; j++) {
-			if ((select_for_expand[j] != null) && (select_for_expand[j].data.NodeType == "agent")) {
-				select_for_expand[j].check();
-				var expanded = select_for_expand[j].parent;
-				while (expanded != null) {
-					expanded.showChildren();
-					expanded = expanded.parent;
-				}
-			}
-		}  
+				if(select_for_expand != null) {
+					for (var j= 0; j < select_for_expand.length; j++) {
+						if ((select_for_expand[j] != null) && (select_for_expand[j].data.NodeType == "agent")) {
+							select_for_expand[j].check();
+							var expanded = select_for_expand[j].parent;
+							while (expanded != null) {
+								expanded.showChildren();
+								expanded = expanded.parent;
+							}
+						}
+					}
+				}  
       }
-        
+			
       $("#box1View option").each(function(){
         //var ct = $(this).text().toString().replace(/\s[[].*[]]/,"");
-	var ct = $(this).text().toString().replace(/\s\[.*\]/,"");
+				var ct = $(this).text().toString().replace(/\s\[.*\]/,"");
         var select_for_expand = tree.getNodesByProperty("label",ct);
-		for (var j = 0; j < select_for_expand.length; j++) {
-			if ((select_for_expand[j] != null) && (select_for_expand[j].data.NodeType == "group")) {
-				select_for_expand[j].check();
-				var expanded = select_for_expand[j].parent;
-				while (expanded != null) {
-					expanded.showChildren();
-					expanded = expanded.parent;
+				if (select_for_expand != null) {
+					for (var j = 0; j < select_for_expand.length; j++) {
+						if ((select_for_expand[j] != null) && (select_for_expand[j].data.NodeType == "group")) {
+							select_for_expand[j].check();
+							var expanded = select_for_expand[j].parent;
+							while (expanded != null) {
+								expanded.showChildren();
+								expanded = expanded.parent;
+							}
+						}
+					}					
 				}
-			}
-		}
       });
     }
 	
