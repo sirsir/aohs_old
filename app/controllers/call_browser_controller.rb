@@ -103,7 +103,7 @@ class CallBrowserController < ApplicationController
       v = VoiceLogTemp.table_name
       c = CurrentChannelStatus.table_name
 
-      usr = User.alive.select("id, display_name, sex, cti_agent_id, group_id").where(["(group_id = ? or id = ?) and flag != 1", grp_id, leader_id]).order("type desc, display_name").all
+      usr = User.alive.select("id, display_name, sex, cti_agent_id, group_id").where(["(group_id = ? or id = ?) and flag != 1 and state = 'active'", grp_id, leader_id]).order("type desc, display_name").all
       unless usr.empty?
         all_agent_id = usr.map{ |u| u.id}.join(', ')
 
