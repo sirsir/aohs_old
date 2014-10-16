@@ -1,0 +1,173 @@
+<script type="text/javascript">
+
+  var currentTags = "";
+  var tag_group_id = "";
+  
+  var tagsInfo = { tagName: "", tagId: "", tagGroupId: ""}
+
+  function searchVoice(){
+  	progressEnabled(true);
+		setDateTimeCond();
+    $.getJSON("<%=url_for(:controller=>'favorites', :action=>'get_voice_log_list')%>",{
+      periods: tagsInfo.periods,
+      stdate: tagsInfo.stdate,
+      sttime: tagsInfo.sttime,
+      eddate: tagsInfo.eddate,
+      edtime: tagsInfo.edtime,
+			tag: Url.encode(tagsInfo.tagName),
+			group_id: tagsInfo.tagGroupId,
+			tag_id: tagsInfo.tagId,
+			page: ctrlPage.selectPage,
+			perpage: ctrlPage.perPage,		
+			sortby: ctrlSort.colName,
+			od: ctrlSort.order
+    },function(data){
+      loadDataTable(data);
+    });
+  }
+	
+	function isBlank(variable){
+		if(variable == null){
+			return true;
+		} else if(variable.length <= 0){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	function setDateTimeCond(){
+		
+		var periods = $("#vcPeriods option:selected").val();
+		if(periods != null){
+				tagsInfo.periods = periods;
+		} else {
+				tagsInfo.periods = ""
+		}
+		
+		var stdate = jQuery.trim($("input[name=vcFromDate]").val());
+		if(!isBlank(stdate)){
+				tagsInfo.stdate = stdate;
+		} else {
+				tagsInfo.stdate = "";
+		}
+
+		var sttime = jQuery.trim($("input[name=vcFromTime]").val());
+		if(!isBlank(sttime)){
+				tagsInfo.sttime = sttime;
+		} else {
+				tagsInfo.sttime = "";
+		}
+
+		var eddate = jQuery.trim($("input[name=vcToDate]").val());
+		if(!isBlank(eddate)){
+				tagsInfo.eddate = eddate;
+		} else {
+				tagsInfo.eddate = "";
+		}
+
+		var edtime = jQuery.trim($("input[name=vcToTime]").val());
+		if(!isBlank(edtime)){
+				tagsInfo.edtime = edtime;
+		} else {
+				tagsInfo.edtime = "";
+		}
+		
+	}
+  function findCallsTags(tags,group_id,tag_id){
+		
+		var key_tag = tags || "";
+		var key_group_id = group_id || "";
+		var key_tag_id = tag_id || "";
+		
+		progressEnabled(true);
+		if(tags == null){currentTags = ""} else {currentTags = tags;}
+	
+		tagsInfo.tagName = key_tag;
+		tagsInfo.tagId = key_tag_id;
+		tagsInfo.tagGroupId = key_group_id;
+		
+		setDateTimeCond();
+		
+		$.getJSON("<%=url_for(:controller=>'favorites', :action=>'get_voice_log_list')%>",{
+      periods: tagsInfo.periods,
+      stdate: tagsInfo.stdate,
+      sttime: tagsInfo.sttime,
+      eddate: tagsInfo.eddate,
+      edtime: tagsInfo.edtime,
+			tag: Url.encode(tagsInfo.tagName),
+			group_id: tagsInfo.tagGroupId,
+			tag_id: tagsInfo.tagId,
+			page: ctrlPage.selectPage,
+			perpage: ctrlPage.perPage,
+			sortby: ctrlSort.colName,
+			od: ctrlSort.order
+		},function(data){
+			loadDataTable(data);
+		});
+  }
+
+  function vc_export(type){
+    var str_type;
+
+    if(type)
+      str_type = "all";
+    else
+      str_type = "some";
+
+    var cond = {
+			periods: tagsInfo.periods,
+			stdate: tagsInfo.stdate,
+			sttime: tagsInfo.sttime,
+			eddate: tagsInfo.eddate,
+			edtime: tagsInfo.edtime,
+			tag: Url.encode(tagsInfo.tagName),
+			group_id: tagsInfo.tagGroupId,
+			tag_id: tagsInfo.tagId,
+			page: ctrlPage.selectPage,
+			perpage: ctrlPage.perPage,
+			sortby: ctrlSort.colName,
+			od: ctrlSort.order,
+			type: str_type
+    };
+
+    var url = ""
+    $.each(cond,function(key){
+        url += key + "=" + cond[key] + "&";
+    });
+
+    $.download("<%= url_for(:controller => 'favorites',:action => 'export') %>",cond,function(){});
+
+  }
+
+  function vc_print(type){
+		var str_type;
+		if(type)
+			str_type = "all";
+		else
+			str_type = "some";
+
+		var cond = {
+			 periods: tagsInfo.periods,
+			 stdate: tagsInfo.stdate,
+			 sttime: tagsInfo.sttime,
+			 eddate: tagsInfo.eddate,
+			 edtime: tagsInfo.edtime,
+			 tag: Url.encode(tagsInfo.tagName),
+			 group_id: tagsInfo.tagGroupId,
+			 tag_id: tagsInfo.tagId,
+			 page: ctrlPage.selectPage,
+			 perpage: ctrlPage.perPage,
+			 sortby: ctrlSort.colName,
+			 od: ctrlSort.order,
+			 type: str_type
+		};
+
+		var url = ""
+		$.each(cond,function(key){
+				url += key + "=" + cond[key] + "&";
+		});
+
+    window.open("<%= url_for(:controller => 'favorites',:action => 'print') %>?" + url,"Print","menubar=yes,scrollbars=yes,location=no");
+  }
+
+</script>

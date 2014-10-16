@@ -23,104 +23,204 @@
     margin-top:2px;
   }
   .div-search {
-      padding-top:1px;
-      padding-left:1px;
-      border:1px solid #cccccc;
-      width:200px;
-      background-color: #f0efef;
+		padding-top:1px;
+		padding-left:1px;
+		border:1px solid #cccccc;
+		width:200px;
+		background-color: #f0efef;
   }
   #btnSearch {
   }
   #tagName {
-      width:150px;
-      height:20px;
+		width:180px;
+		padding:2px;
   }
-    .btnStyle1 {
-          border:1px solid #ffffff;
-          background-color: transparent;
-          background-repeat:repeat;
-		  font-weight:bold;
-		  color:#ffffff;
-		  padding:2px;
-          background-image:url('<%=image_src_path('/images/greenbtn.png') %>');
-    }
-   .a-first { color:black; :font-weight:bold; }  
-    .condName1 {
-        font-weight:bold;
-        font-size:12px;
-        text-decoration: underline;
-        display:block;
-    }      
+	.btnStyle1 {
+		border:1px solid #ffffff;
+		background-color: transparent;
+		background-repeat:repeat;
+		font-weight:bold;
+		color:#ffffff;
+		padding:4px;
+		background-image:url('<%=image_src_path('/images/greenbtn.png') %>');
+	}
+	.a-first { color:black; :font-weight:bold; }  
+	.condName1 {
+		font-weight:bold;
+		font-size:10px;
+		display:block;
+	}
+	#vcPeriods {
+			width:190px;
+			padding:2px;
+	}
+	#vcFromDate,#vcToDate {
+			width:101px;
+			padding:2px;
+	}
+	#vcFromTime,#vcToTime {
+			width:65px;
+			padding:2px;
+	}
+	.conftree a.selected {
+		font-weight: bold;
+		color: red;
+	}
 </style>
-    
+
 <script type="text/javascript">
 
-  function onClickTagTree(){
-  	  findCallsTags(null,null,null);
+  function onClickTagTree(t){
+		//removeAllSelected();
+  	//findCallsTags(null,null,null);
   }
-  function onClickTagTreeWithId(tags_id){
-      findCallsTags(null,null,tags_id);
+  function onClickTagTreeWithId(tags_id,t){
+		removeAllSelected();
+		$(t).addClass("selected");
+    findCallsTags(null,null,tags_id);
+		$("input[name=tagName]").val("");
   }
-  function onClickTagTreeWithName(tag_name){
-      findCallsTags(tag_name,null,null);
+  function onClickTagTreeWithName(tag_name,t){
+		removeAllSelected();
+		$(t).addClass("selected");
+    findCallsTags(tag_name,null,null);
+		$("input[name=tagName]").val("");
   }  
-  function onClickGroupTag(g_id){
-      findCallsTags(null,g_id,null);
+  function onClickGroupTag(g_id,t){
+		removeAllSelected();
+		$(t).addClass("selected");
+    findCallsTags(null,g_id,null);
+		$("input[name=tagName]").val("");
   }
   function onClickSearch(){
-      var tagName = jQuery.trim($("input[name=tagName]").val());
-      findCallsTags(tagName,null,null);
+    var tagName = jQuery.trim($("input[name=tagName]").val());
+		if (tagName != "") {
+			removeAllSelected();
+			findCallsTags(tagName,null,null);
+		} else {
+			searchVoice();
+		}
   }
+	function removeAllSelected(){
+		$(".conftree a").removeClass("selected");
+	}
   function ShowOrHidePanel(){
     if($('#divSearchPanel').css('display')=="none"){
-	$('#divSearchPanel').css('display','');
+			$('#divSearchPanel').css('display','');
     }
     else {
-	$('#divSearchPanel').css('display','none');
+			$('#divSearchPanel').css('display','none');
     }
     if($('#divBtnShowPanel').css('display')=="none") {
-	$('#divBtnShowPanel').css('display','');
+			$('#divBtnShowPanel').css('display','');
     }
     else {
-	$('#divBtnShowPanel').css('display','none');
+			$('#divBtnShowPanel').css('display','none');
     }
     resizeWindow();
-  }  
+  }
+	
+	$(document).ready(function(){
+		$("#vcPeriods").change(function(){
+			var period_selt = $("#vcPeriods option:selected").val();
+			if(period_selt == 0){
+				if(($("input[name=vcFromTime]").val()).length == 0)
+					$("input[name=vcFromTime]").val("00:00");
+				if(($("input[name=vcToTime]").val()).length == 0)
+					$("input[name=vcToTime]").val("23:59");
+				if(($("input[name=vcFromDate]").val()).length == 0)
+					$("input[name=vcFromDate]").val("<%=Date.today %>");
+				if(($("input[name=vcToDate]").val()).length == 0)
+					$("input[name=vcToDate]").val("<%=Date.today %>");
+				$("#custom-periods").css("display","block");
+			} else {
+				$("#custom-periods").css("display","none");
+			}
+			resizeWindow();  
+		});
+		
+		$("#vcFromDate").datepicker({ showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
+		$("#vcToDate").datepicker({  showAnim: null,duration: 0, dateFormat: 'yy-mm-dd' });
+		$(".callTime").mask("99:99");
+		$("input[name=vcFromDate]").mask("9999-99-99");
+		$("input[name=vcToDate]").mask("9999-99-99");
+		
+	});
+
 </script>
 
 <% end %>
 <div class="div-search">
-    <table width="100%" cellpadding="0" cellspacing="1">
-	<tr><td><div class="condName1">Call Tags</div></td><td align="right"><a href="#" onclick="ShowOrHidePanel()" title="Hide"><%=image_tag('hide_panel2.png',{:border => 0}) %></a></td></tr>
-	<tr><td colspan="2">
-	    <input type="text" name="tagName" id="tagName" value="" align="absmiddle" title="Tag name for search">
-	    <input type="button" class="btnStyle1" id="btnSearch" name="btnSearch" value="Find" align="absmiddle" onclick="onClickSearch()">			
-	<td></tr>
+	<table width="100%" cellpadding="0" cellspacing="1">
+		<tr>
+			<td style="text-align: right;"><input type="button" class="btnStyle1" id="btnSearch" name="btnSearch" value="Search" align="absmiddle" onclick="onClickSearch()"></td>
+			<td style="text-align: right; width: 25px;"><a href="#" onclick="ShowOrHidePanel()" title="Hide"><%=image_tag('hide_panel2.png',{:border => 0}) %></a></td>
+		</tr>
+		<tr>
+			<td colspan="2"><div class="condName1">Period:</div></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<select name="vcPeriods" id="vcPeriods">
+					<option value="1" <%= ((@conds == false) ? "selected" : "") %>>Today</option>
+					<option value="2">Yesterday</option>
+					<option value="11">7 days ago</option>
+					<option value="9">30 days ago</option>
+					<option value="3">This week</option>
+					<option value="4">Last week</option>
+					<option value="5">This month</option>
+					<option value="6">Last month</option>
+					<option value="9">1 month ago</option>
+					<option value="10">6 months ago</option>		  
+					<option value="0">Custom ...</option>
+				</select>
+				<div id="custom-periods" style="display: none;">
+				<div class="condStyle1">
+					<span class="condName1">Date/Time from:</span>
+					<input type="text" name="vcFromDate" id="vcFromDate" title="yyyy-mm-dd">
+					<input type="text" alt="time" value="00:00" name="vcFromTime" id="vcFromTime" maxlength="5" class="callTime" title="hh:mm">
+				</div>
+				<div class="condStyle1">
+					<span class="condName1">Date/Time to:</span>
+					<input type="text" name="vcToDate" id="vcToDate" title="yyyy-mm-dd">
+					<input type="text" name="vcToTime" value="23:59" maxlength="5" id="vcToTime" class="callTime" title="hh:mm">
+				</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2"><div class="condName1">Call Tag</div></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<input type="text" name="tagName" id="tagName" value="" align="absmiddle" title="Tag name for search">	
+			<td>
+		</tr>
     </table>
-<div id="conftree" class="conftree treeview">
-  <ul id="ultree">
-    <li><a href="#" class="a-first" onclick="onClickTagTree()">Tag</a>
-	<ul>
-	  <% @tag_groups.each do |tg| %>
-	    <li><a href="#" onclick="onClickGroupTag('<%=tg.id %>')"><%= tg.name %></a>
-	      <% unless tg.tags.blank? %>
-	      <ul>
-		<% tg.tags.each do |t| %>
-		    <li><a href="#" onclick="onClickTagTreeWithId('<%=t.id %>')"><%= t.name %></a></li>
-		<% end %>
+		<div id="conftree" class="conftree treeview">
+			<ul id="ultree">
+				<li><a href="#" class="a-first" onclick="onClickTagTree(this)">Tag</a>
+			<ul>
+			<% @tag_groups.each do |tg| %>
+				<li><a href="#" onclick="onClickGroupTag('<%=tg.id %>',this)"><%= tg.name %></a>
+					<% unless tg.tags.blank? %>
+					<ul>
+					<% tg.tags.each do |t| %>
+						<li><a href="#" onclick="onClickTagTreeWithId('<%=t.id %>',this)"><%= t.name %></a></li>
+					<% end %>
 	      </ul>
 	    <% end %>
 	    </li>
-	  <% end %>
-	</ul>
+			<% end %>
+			</ul>
     </li>
-    <li><a href="#" class="a-first" onclick="onClickTagTree()">Index</a>
-	<ul>
+    <li><a href="#" class="a-first" onclick="onClickTagTree(this)">Index</a>
+		<ul>
 	  <% @arr_charactor.each_with_index do |data_index,i| %>
-	      <li><a href="javascript:onClickTagTreeWithName('<%= data_index[0] %>');"><%= data_index[0] %></a>
+	    <li><a href= "#" onclik="onClickTagTreeWithName('<%= data_index[0] %>',this);"><%= data_index[0] %></a>
 		<ul>
 		  <%data_index[1].each do |items|   %>
-		    <li><a href="javascript:onClickTagTreeWithName('<%=items %>');"><%=items %></a></li>
+		    <li><a href="#" onclick="onClickTagTreeWithName('<%=items %>',this);"><%=items %></a></li>
 		  <% end %>
 		</ul>
 	      </li>

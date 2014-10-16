@@ -347,7 +347,7 @@ module AmiCallSearch
 		joins = joins.uniq
 		
 		sqla = ""
-		sqla << "SELECT #{select.join(",")} "
+		sqla << "SELECT SQL_NO_CACHE #{select.join(",")} "
 		sqla << "FROM #{vl_tblname} v #{joins.join(" ")} "
 		sqla << "WHERE #{conditions.join(" AND ")} "
 		if not orders.empty?
@@ -648,7 +648,7 @@ module AmiCallSearch
 		
 		conditions << "#{condx.gsub("result_keywords","rs")}"
 		conditions << "#{vl_prefix}.id = rs.voice_log_id)"
-		sql = "EXISTS (SELECT rs.voice_log_id FROM result_keywords rs WHERE #{conditions.join(" AND ")}"		
+		sql = "EXISTS (SELECT SQL_NO_CACHE 1 FROM result_keywords rs WHERE #{conditions.join(" AND ")}"		
 		
 		return sql
   
@@ -660,10 +660,10 @@ module AmiCallSearch
 		conditions 	= []
 		
 		conditions << condx.gsub("taggings","tg")
-		conditions << "tg.taggable_type = 'VoiceLog'"
-		conditions << "tg.context = 'tags'"
+		#conditions << "tg.taggable_type = 'VoiceLog'"
+		#conditions << "tg.context = 'tags'"
 		conditions << "#{vl_prefix}.id = tg.taggable_id"
-		sql = "EXISTS (SELECT tg.taggable_id FROM taggings tg WHERE #{conditions.join(" AND ")})"
+		sql = "EXISTS (SELECT SQL_NO_CACHE 1 FROM taggings tg WHERE #{conditions.join(" AND ")})"
 		
 		return sql
   
@@ -831,10 +831,10 @@ module AmiCallSearch
 		# last six months ago
 		fr_date = (Date.today-180).strftime("%Y-%m-%d 00:00:00")
 		to_date = Time.new.strftime("%Y-%m-%d %H:%M:%S")
-		tags_id = [0]
+		tags_id = []
 		
 		# only six months ago
-		sc[:conditions] << "#{v}.start_time BETWEEN '#{fr_date}' AND '#{to_date}'"
+		# sc[:conditions] << "#{v}.start_time BETWEEN '#{fr_date}' AND '#{to_date}'"
 		
 		# by tag group
     if not sc[:group_tag_id].empty? and sc[:group_tag_id].to_i > 0
@@ -865,6 +865,11 @@ module AmiCallSearch
       end
     end
     
+    # remove zero
+    if tags_id.empty?
+			tags_id << 0
+		end
+		
     # add tag conditions
     tags_id = tags_id.join(",")
     sc[:conditions] << "taggings.tag_id IN (#{tags_id})"

@@ -60,15 +60,24 @@ class FavoritesController < ApplicationController
 
   def find_call_tag(ctrl={})
 
-    vl_tbl_name = VoiceLogTemp.table_name
-    
-    page = 1
-    page = params[:page].to_i if params.has_key?(:page) and not params[:page].empty? and params[:page].to_i > 0
+    vl_tbl_name   = VoiceLogTemp.table_name
+    conditions    = []
+    page          = 1
+    page          = params[:page].to_i if params.has_key?(:page) and not params[:page].empty? and params[:page].to_i > 0
 
-    tags_key = CGI::unescape(params[:tag])
-    group_id_key = params[:group_id]
-    tag_id_key = params[:tag_id]
-    
+    tags_key      = CGI::unescape(params[:tag])
+    group_id_key  = params[:group_id]
+    tag_id_key    = params[:tag_id]
+ 
+    # call date / time
+    if params.has_key?(:sttime) and not params[:sttime].empty?
+      params[:sttime] = CGI::unescape(params[:sttime])
+    end
+    if params.has_key?(:edtime) and not params[:edtime].empty?
+      params[:edtime] = CGI::unescape(params[:edtime])
+    end
+    conditions << retrive_datetime_condition(params[:periods],params[:stdate],params[:sttime],params[:eddate],params[:edtime])
+			
     orders = []
     orders = retrive_sort_columns(params[:sortby],params[:od])      
 
@@ -89,8 +98,6 @@ class FavoritesController < ApplicationController
       offset = start_row
       limit = $PER_PAGE
     end
-
-    conditions = []
     
     voice_logs, summary, page_info, agents = find_call_with_tags({
             :tags => tags_key,
