@@ -76,7 +76,7 @@ module Format
 
     phone_r = ""
     phone   = phone.to_s.strip
-    
+
     if phone.empty?
       phone_r = phone
     else
@@ -86,12 +86,17 @@ module Format
         phone_r = phone
       when l <= 6
         phone_r = (phone[-4..-1]).to_s
-      when l <= 8
+      when l <= 7
         phone_r = phone
-      when l <= 12
-        # remove nine call out
-        phone = remove_first_is_nine(phone)
-        phone_r = phone      
+      when l <= 11
+        if (phone[0..1].to_i == 90) and (l == 11 or l == 10)
+          phone_r = /(90)(.+)/.match(phone)[2] rescue phone
+          phone_r = "0#{phone_r}"
+        elsif (l == 8 or l == 9)
+          phone_r = "0#{phone}"
+        else
+          phone_r = phone
+        end
       else
         phone_r = phone
       end
@@ -222,14 +227,15 @@ module Format
   protected 
   
   def remove_first_is_nine(p)
-    a = p[0..0].to_i
-    if a == 9
-      return /(9)(.+)/.match(p)[2] rescue p
-    elsif a != 0
-      return "0" + p
-    else
-      return p
-    end
+    #a = p[0..1].to_i
+    #if a == 9
+    #  return /(9)(.+)/.match(p)[2] rescue p
+    #elsif a != 0
+    #  return "0" + p
+    #else
+    #  return p
+    #end
+    return p
   end
   
 end
