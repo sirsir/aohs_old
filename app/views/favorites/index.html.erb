@@ -11,10 +11,11 @@
   <%= javascript_src_path '/jquery/js/jquery.download.js' %>
   <%= javascript_src_path '/jquery/js/jquery.numeric.js' %>  
   <%#= javascript_src_path '/jquery/jquery-tooltip/jquery.tooltip.js' %>
-  <%= javascript_src_path '/jquery/jquery-tooltip/lib/jquery.bgiframe.js'%>
+  <%#= javascript_src_path '/jquery/jquery-tooltip/lib/jquery.bgiframe.js'%>
   <%#= javascript_src_path '/jquery/jquery-tooltip/lib/jquery.dimensions.js'%>
   <%= javascript_src_path 'webtoolkit.url.js' %>
-
+  <%= javascript_src_path '/jquery/jquery.masked-input/jquery.maskedinput-1.2.2.min.js' %>
+	
 <style type="text/css">
 
   html,body {
@@ -134,10 +135,10 @@
   <tr>
     <td valign="top" style="padding:0px" style="background-color: #f0efef;">
       <div style="padding-left:0px;" style="overflow:hidden; width:207" id="divSearchPanel">
-	<div id="treelist"><%= render :partial => 'favorites/tag_list' %></div>
+				<div id="treelist"><%= render :partial => 'favorites/tag_list' %></div>
       </div>
       <div id="divBtnShowPanel" style="overflow:hidden; display: none; width:16px; padding-top:3px; padding-left:2px; padding-right:2px; ">
-	<a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a>
+				<a href="#" onclick="ShowOrHidePanel()" title="Show"><%=image_tag('show_panel2.png',{:border => 0}) %></a>
       </div>
     </td>
     <td valign="top" style="padding:0px;">
