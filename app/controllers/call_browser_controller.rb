@@ -32,14 +32,15 @@ class CallBrowserController < ApplicationController
       v        = VoiceLogTemp.table_name
       c        = CurrentChannelStatus.table_name
 
-      #cs_select = "#{c}.id as call_id, #{c}.system_id, #{c}.voice_file_url,#{c}.device_id, #{c}.channel_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.start_time, #{c}.connected, timediff(now(), #{c}.start_time) as diff"
-      cs_select = "#{c}.call_id as call_id, #{c}.system_id, #{c}.device_id, #{c}.channel_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.start_time, #{c}.connected, timediff(now(), #{c}.start_time) as diff"
+      cs_select = "#{c}.id as call_id, #{c}.system_id, #{c}.voice_file_url,#{c}.device_id, #{c}.channel_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.start_time, #{c}.connected, timediff(now(), #{c}.start_time) as diff"
+      ## cs_select = "#{c}.call_id as call_id, #{c}.system_id, #{c}.device_id, #{c}.channel_id, #{c}.ani, #{c}.dnis, #{c}.call_direction, #{c}.start_time, #{c}.connected, timediff(now(), #{c}.start_time) as diff"
+      
       cs_join = ""
       if @@keyword_available
         vc = VoiceLogCounter.table_name
         cs_select += ", vc.mustword_count as mst, vc.ngword_count as ng"
-        #cs_join = "join #{v} v on v.call_id = #{c}.id and date(v.start_time) = date(now()) join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())"
-        cs_join = "join #{v} v on v.call_id = #{c}.call_id and date(v.start_time) = date(now()) join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())"
+        cs_join = "join #{v} v on v.call_id = #{c}.id and date(v.start_time) = date(now()) join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())"
+        ## cs_join = "join #{v} v on v.call_id = #{c}.call_id and date(v.start_time) = date(now()) join #{vc} vc on vc.voice_log_id = v.id and date(vc.created_at) = date(now())"
       end
 
       cs = CurrentChannelStatus.select(cs_select)
@@ -98,12 +99,21 @@ class CallBrowserController < ApplicationController
     if (params.has_key?(:grp_id) and not params[:grp_id].empty?)
 
       grp_id = params[:grp_id]
-      leader_id = Group.find(grp_id).leader_id
+      leader_id = Group.find(grp_id).leader_id rescue 0
 
       v = VoiceLogTemp.table_name
       c = CurrentChannelStatus.table_name
-
-      usr = User.alive.select("id, display_name, sex, cti_agent_id, group_id").where(["(group_id = ? or id = ?) and flag != 1 and state = 'active'", grp_id, leader_id]).order("type desc, display_name").all
+      
+      usr = []
+      if grp_id.to_i >= 0
+        usr = User.alive.select("id, display_name, sex, cti_agent_id, group_id").where(["(group_id = ? or id = ?) and flag != 1 and state = 'active'", grp_id, leader_id]).order("type desc, display_name").all
+      else
+        group_managers = GroupManager.where({:user_id => current_user.id })
+        group_managers = group_managers.map { |m| m.manager_id }
+        group_managers << 0 if group_managers.empty?
+        usr = User.alive.select("id, display_name, sex, cti_agent_id, 0 as group_id").where(["state = 'active' and id in (?)",group_managers]).order("login")
+      end
+  
       unless usr.empty?
         all_agent_id = usr.map{ |u| u.id}.join(', ')
 

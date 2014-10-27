@@ -107,7 +107,11 @@
       c_img['trf-o'] = "<%=image_path('cb-trf-out.png')%>";
 
   var my_agent = <%=  @usrs.to_json %>;
-
+  
+  function append_managers() {
+    append_agent("-1");
+  }
+  
   function append_agent(group_id) {
     
     loading = true;
@@ -258,8 +262,11 @@
   }
 
   function checkMonitoringAgent() {
-    if(document.speechmonitor != null){
-      var agent_id = document.speechmonitor.getAgentID();
+    if(document.speechmonitor != null){    
+      var agent_id = 0;
+      try {
+        agent_id = document.speechmonitor.getAgentID();
+      } catch(e) { }
       if(have_agent(agent_id)){
         $("tr#agent-"+agent_id).addClass("selected");
       }
@@ -309,8 +316,9 @@
   function monitor(row, agent_id, cti_id, name, grp, ext){
 
     var monit_agent_id = null;
-    if(document.speechmonitor != null)
+    if(document.speechmonitor != null){
       monit_agent_id = document.speechmonitor.getAgentID();
+    }
     
     if((agent_id != monit_agent_id)){
       usr_sts_load = true;
