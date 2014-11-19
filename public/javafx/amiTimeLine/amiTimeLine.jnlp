@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase="http://192.168.1.88:3002/javafx/amiTimeLine/" href="amiTimeLine.jnlp">
+<jnlp spec="1.0+" codebase="http://192.168.1.88:3003/javafx/amiTimeLine/" href="amiTimeLine.jnlp">
     <information>
         <title>amiTimeLine</title>
         <vendor>AmiVoiceThai</vendor>
-        <homepage href="http://192.168.1.88:3002/"/>
+        <homepage href="http://192.168.1.88:3003/"/>
         <description>amiTimeLine</description>
-        <icon kind="splash" href="http://192.168.1.88:3002/javafx/splash.png"/>
+        <icon kind="splash" href="http://192.168.1.88:3003/javafx/splash.png"/>
         <offline-allowed/>
     </information>
     <resources>
         <j2se version="1.5+"/>
-        <extension name="JavaFX Runtime" href="http://192.168.1.88:3002/javafx/javafx-rt.jnlp"/>
+        <extension name="JavaFX Runtime" href="http://192.168.1.88:3003/javafx/javafx-rt.jnlp"/>
         <jar href="amiTimeLine.jar" main="true" size="18866"/>
         <jar href="lib/jcommon-1.0.16.jar" size="309293"/>
         <jar href="lib/jfreechart-1.0.13-swt.jar" size="72659"/>

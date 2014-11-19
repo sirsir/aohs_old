@@ -176,7 +176,7 @@ module Aohs
   WEEKS_PER_MONTH             = 4
   DAYS_PER_MONTH              = 30
   
-  SITE_ROOT                   = "http://192.168.1.88:3002"
+  SITE_ROOT                   = "http://192.168.1.88:3003"
   APP_NAME                    = "AOHS"
   
   DEFAULT_DATETIME_FORMAT     = "%Y-%m-%d %H:%M:%S"
