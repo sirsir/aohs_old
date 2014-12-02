@@ -347,7 +347,7 @@ module AmiCallSearch
 		joins = joins.uniq
 		
 		sqla = ""
-		sqla << "SELECT SQL_NO_CACHE #{select.join(",")} "
+		sqla << "SELECT #{select.join(",")} "
 		sqla << "FROM #{vl_tblname} v #{joins.join(" ")} "
 		sqla << "WHERE #{conditions.join(" AND ")} "
 		if not orders.empty?
@@ -469,7 +469,7 @@ module AmiCallSearch
 		joins = joins.uniq
 		
 		sqla = ""
-		sqla << "SELECT SQL_NO_CACHE #{select.join(",")} "
+		sqla << "SELECT #{select.join(",")} "
 		sqla << "FROM #{vl_tblname} v #{vindex} #{joins.join(" ")} "
 		if not conditions.empty?
 			sqla << "WHERE #{conditions.join(" AND ")} "
@@ -572,7 +572,7 @@ module AmiCallSearch
 		
 		sql = ""
 		unless conditions.empty?
-			sql =  "SELECT SQL_NO_CACHE DISTINCT IF(vs.ori_call_id='1' OR vs.ori_call_id IS NULL,vs.call_id,vs.ori_call_id) AS xcall_id "
+			sql =  "SELECT DISTINCT IF(vs.ori_call_id='1' OR vs.ori_call_id IS NULL,vs.call_id,vs.ori_call_id) AS xcall_id "
 			sql << "FROM #{vl_tblname} vs "
 			unless joins.empty?
 				sql << "#{joins.join("")} "
@@ -648,7 +648,7 @@ module AmiCallSearch
 		
 		conditions << "#{condx.gsub("result_keywords","rs")}"
 		conditions << "#{vl_prefix}.id = rs.voice_log_id)"
-		sql = "EXISTS (SELECT SQL_NO_CACHE 1 FROM result_keywords rs WHERE #{conditions.join(" AND ")}"		
+		sql = "EXISTS (SELECT 1 FROM result_keywords rs WHERE #{conditions.join(" AND ")}"		
 		
 		return sql
   
@@ -663,7 +663,7 @@ module AmiCallSearch
 		#conditions << "tg.taggable_type = 'VoiceLog'"
 		#conditions << "tg.context = 'tags'"
 		conditions << "#{vl_prefix}.id = tg.taggable_id"
-		sql = "EXISTS (SELECT SQL_NO_CACHE 1 FROM taggings tg WHERE #{conditions.join(" AND ")})"
+		sql = "EXISTS (SELECT 1 FROM taggings tg WHERE #{conditions.join(" AND ")})"
 		
 		return sql
   
