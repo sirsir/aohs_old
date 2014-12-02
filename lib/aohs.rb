@@ -115,13 +115,13 @@ module Aohs
   SCHEDULE_WEEKLY_RUN         = SCHEDULE_ALL and true
   
   # schedule statistics data
-  RUNSTACALL_DAILY            = true   
-  RUNSTACALL_WEEKLY           = false
-  RUNSTACALL_MONTHLY          = false
-  RUNSTAKEYW_DAILY            = true
-  RUNSTAKEYW_WEEKLY           = false
-  RUNSTAKEYW_MONTHLY          = false
-#### nkm 
+  # RUNSTACALL_DAILY            = true   
+  # RUNSTACALL_WEEKLY           = false
+  # RUNSTACALL_MONTHLY          = false
+  # RUNSTAKEYW_DAILY            = true
+  # RUNSTAKEYW_WEEKLY           = false
+  # RUNSTAKEYW_MONTHLY          = false
+
   RUNSTACALL_DAILY            = true   
   RUNSTACALL_WEEKLY           = false
   RUNSTACALL_MONTHLY          = true   
