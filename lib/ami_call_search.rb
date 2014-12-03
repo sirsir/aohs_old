@@ -428,7 +428,7 @@ module AmiCallSearch
 			condx = cond.clone
 			case 0
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
-				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/)
+				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/)
 					conditions << condx.gsub(vl_tblname,"v")
 				end
 			when condx =~ /(voice_log_counters)/
@@ -506,7 +506,7 @@ module AmiCallSearch
 			condx = cond.clone
 			case 0
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
-				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/)
+				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/)
 					conditions << condx.gsub(vl_tblname,"v")
 				end
 			when condx =~ /(voice_log_counters)/
@@ -561,7 +561,7 @@ module AmiCallSearch
 				conditions << "tg.taggable_type = 'VoiceLog'"
 				conditions << "tg.context = 'tags'"			
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
-				if (condx =~ /(call_direction)/)
+				if (condx =~ /(call_direction)/) or (condx =~ /(extension)/)
 				elsif (condx =~ /(start_time)/) or (condx =~ /(duration)/)
 					conditions_all << condx.gsub(vl_tblname,"vs")
 				else
