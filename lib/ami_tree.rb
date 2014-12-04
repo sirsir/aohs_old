@@ -55,6 +55,9 @@ module AmiTree
     if op[:enabled_manager] == true
       manager_node = build_manager_tree({:manager_filter => op[:manager_filter]})
       tree = tree.insert(0,manager_node) unless manager_node.nil?
+    else
+      # add group manager
+      tree = tree.insert(0,manager_group_node)
     end
     
     if op[:enabled_mycall] == true
@@ -274,7 +277,13 @@ module AmiTree
     return data
     
   end
-
+  
+  def manager_group_node
+    
+      return { :type => @node_type, :label => "Managers", :labelStyle => 'icon-grp',:expanded => true,:id => 0,:NodeType => NODE_TYP_GRPN, :NodeId => 0 ,:children => [] }
+      
+  end
+  
   #=========================================================#
   # Function
 

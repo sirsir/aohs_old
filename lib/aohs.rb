@@ -115,13 +115,13 @@ module Aohs
   SCHEDULE_WEEKLY_RUN         = SCHEDULE_ALL and true
   
   # schedule statistics data
-  RUNSTACALL_DAILY            = true   
-  RUNSTACALL_WEEKLY           = false
-  RUNSTACALL_MONTHLY          = false
-  RUNSTAKEYW_DAILY            = true
-  RUNSTAKEYW_WEEKLY           = false
-  RUNSTAKEYW_MONTHLY          = false
-#### nkm 
+  # RUNSTACALL_DAILY            = true   
+  # RUNSTACALL_WEEKLY           = false
+  # RUNSTACALL_MONTHLY          = false
+  # RUNSTAKEYW_DAILY            = true
+  # RUNSTAKEYW_WEEKLY           = false
+  # RUNSTAKEYW_MONTHLY          = false
+
   RUNSTACALL_DAILY            = true   
   RUNSTACALL_WEEKLY           = false
   RUNSTACALL_MONTHLY          = true   
@@ -176,7 +176,7 @@ module Aohs
   WEEKS_PER_MONTH             = 4
   DAYS_PER_MONTH              = 30
   
-  SITE_ROOT                   = "http://192.168.1.88:3002"
+  SITE_ROOT                   = "http://192.168.1.88:3003"
   APP_NAME                    = "AOHS"
   
   DEFAULT_DATETIME_FORMAT     = "%Y-%m-%d %H:%M:%S"

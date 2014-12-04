@@ -1,8 +1,3 @@
-<%#
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-%>
-
 <style type="text/css">
   
   span.topic {display: inline-block; font-weight: bold;}
@@ -21,7 +16,28 @@
 
   table#monit-anim { margin-bottom: 2px; }
   table#monit-anim td {padding: 0px 3px 3px 3px;}
+
+  #appletloading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height:100%;
+    width:100%;
+    background-color: #E8E8E8;
+    opacity: 0.5;
+    filter: alpha(opacity=50); /* ie */
+    -moz-opacity: 0.5; /* mozilla */    
+  }
   
+  #loadingdialog {
+    background-color: #fff;
+    border: 2px solid #CCCCCC;
+    text-align: center;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    padding: 40px;
+  }
 </style>
 
 <script type="text/javascript">
@@ -33,25 +49,22 @@
   var volm_min = 0;
   var volm_max = 100;
   var volm_dft = 40;
-
+  var callmonitorx = document.AmiVoiceCallMonitor;
+  
   var setRtp = {
-
     span_set: function(s){ $("#span-sli").slider("value", s); },
     span_val: function(s){ return $("#span-sli").slider("value"); },
     span: function(s){
-      document.speechmonitor.setSpan(s);
+      callmonitorx.setSpan(s);
     },
-
     volm_set: function(v){ $("#volm-sli").slider("value", v); },
     volm_val: function( ){ return $("#volm-sli").slider("value"); },
     volm: function(v){
-      document.speechmonitor.setVol(v);
+      callmonitorx.setVolume(v);
     }
-
   }
 
   function initiate_slider() {
-
     $('#span-sli').slider({
       min: span_min,
       max: span_max,
@@ -60,7 +73,6 @@
         setRtp.span(ui.value/span_max);
       }
     });
-
     $('#volm-sli').slider({
       min: volm_min,
       max: volm_max,
@@ -74,10 +86,8 @@
 
   /* call by speech_monitor */
   function initiate_volmspan(){
-
     var s = setRtp.span_val();
     var v = setRtp.volm_val();
-
     setRtp.span(s/span_max);
     setRtp.volm(v/volm_max);
   }
@@ -98,7 +108,6 @@
   }
 
   function update_currentcall_label(st_time, direction, from, to){
-
     if(direction == "i"){
         var tmp = to;
         to = from;
@@ -121,19 +130,45 @@
     $('span#a-status').text(sts);
   }
 
+  function doDrawAudioMeter(chn,val){
+    draw_meter(chn,val);
+  }
   function draw_meter(chn, val){
     var hi = val +"%";
     $('div#meter-'+chn).css("width", hi);
   }
-
+  
+  function appletLoadFinished(){
+    if (callmonitorx.isAppletStarted) {
+      $("#appletloading").css("display","none");
+    } else {
+      $("#appletloading").css("display","block");
+      setTimeout("appletLoadFinished()",200);
+    }
+  }
+  
+  $(document).ready(function(){
+    try {
+      callmonitorx = document.AmiVoiceCallMonitor;
+      appletLoadFinished();
+    } catch(e) {
+      alert("Cannot set object for callmonitor."); 
+    }
+  });
   
 </script>
-
+<div id="appletloading">
+  <div id="loadingdialog">
+    <%= image_tag('loading5.gif') %></br>
+    <h4>Please wait a moment.</h4>
+  </div>
+</div>
 <table id="monit" cellpadding="0" cellspacing="0" width="100%">
 
   <tr>
     <td class="header">
       <div style="display: none;">
+        <!--
         <applet name="speechmonitor" id="sp-monit" codebase="<%= Aohs::SITE_ROOT %>/applets/speechmonitor/" width="0px" height="0px">
           <param name="jnlp_href" value="launch.jnlp"/>
           <param name="currentUser" value="1" />
@@ -141,6 +176,14 @@
           <param name="configURL" value="<%= Aohs::SITE_ROOT %>/applets/speechmonitor/speechmonitor.conf" />
           <param name="keyword_available" value="<%= Aohs::MOD_KEYWORDS %>" />
         </applet>
+        -->
+				<applet width="5" height="5" Codebase="<%=Aohs::SITE_ROOT %>/applets/callmonitor/" name="AmiVoiceCallMonitor">
+					<param name="jnlp_href" value="launch.jnlp"/>
+					<param name="rooturl" value="<%=Aohs::SITE_ROOT %>" />
+					<param name="configurl" value="<%=Aohs::SITE_ROOT %>/applets/callmonitor/callmonitor.conf" />
+					<param name="current_user" value="<%= current_user.id %>"/>
+					<param name="operator_id" value="0"/>
+				</applet>
       </div>
       <div style="clear: both; float: left;">
         <span>Current Agent</span><br/>
@@ -167,20 +210,20 @@
     <td>
       <table id="monit-anim" cellpadding="0" cellspacing="0">
         <tr>
-          <td><span class="topic" style="width: 90px;">agent side:</span></td>
+          <td><span class="topic" style="width: 100px;">agent side:</span></td>
           <td><span class="detail num" id="num-L"></span></td>
           <td>
             <div class="meter-border">
               <div id="meter-L" class="meter-draw"></div>
             </div>
           </td>
-          <td rowspan="2"><span id="a-status">...</span></td>
+          <td rowspan="2"><span id="a-status"></span></td>
           <td rowspan="2" style="padding-left: 10px;" valign="top">
-            <span class="sli-lbl"><a href="#" onclick="reset_span();">balance:</a></span><br/>
+            <span class="sli-lbl"><a href="#" onclick="reset_span();">Balance:</a></span><br/>
             <div id="span-sli" style="width: 80px;"></div>
           </td>
           <td rowspan="2" style="padding-left: 20px;" valign="top">
-            <span class="sli-lbl"><a href="#" onclick="reset_volm();">volume:</a></span><br/>
+            <span class="sli-lbl"><a href="#" onclick="reset_volm();">Volume:</a></span><br/>
             <div id="volm-sli" style="width: 80px;"></div>
           </td>
         </tr>

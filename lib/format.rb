@@ -97,6 +97,13 @@ module Format
         else
           phone_r = phone
         end
+      when l <= 12
+        if (phone[0..2].to_i == 801)
+          phone_r = /(801)(.+)/.match(phone)[2] rescue phone
+          phone_r = "0#{phone_r}"
+        else
+          phone_r = phone
+        end
       else
         phone_r = phone
       end

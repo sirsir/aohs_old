@@ -46,11 +46,15 @@
                  }
                  node.toggleHighlight();
                  previous_node = node;
-
                  if(prvs_node_id != node_id){
-                   append_agent(node_id);
+									 append_agent(node_id);
                    prvs_node_id = node_id;
-                 }
+                 } else {
+									 if (node.label == "Managers" && node_id == "0") {
+											append_managers();
+											prvs_node_id = node_id;
+									 } 									
+								 }
               }
             }
         });
@@ -136,7 +140,7 @@
 		
 	function initTreeView(){
 		var agents = $("#firstLoadAgent").val() || "";
-        $.getJSON("<%= url_for(:controller => 'tree',:action => 'tree_source')%>?with_agent=false&node_type=text&unknown=false&mycall=false",
+        $.getJSON("<%= url_for(:controller => 'tree',:action => 'tree_source')%>?with_agent=false&node_type=text&unknown=false&manager=false&mycall=false&manager_group=true",
 		{agents: agents },
 		function(data){
              rebuildTree(data); 
