@@ -17,6 +17,7 @@ class VoiceLogsController < ApplicationController
 		
 		# agents conditions
 		if params.has_key?(:keys) and not params[:keys].empty?
+			
 			params[:keys] = CGI::unescape(params[:keys])
 			begin
 				if not ctrl[:user_id].nil?
@@ -25,59 +26,47 @@ class VoiceLogsController < ApplicationController
 					set_current_user_for_call_search(current_user.id)
 				end
 			rescue
-				 skip_search = true
+				skip_search = true
 			end
       
-			keys 		= []
 			keys 		= CGI::unescape(params[:keys]).split("__")
 			agents 	= []
+			
 			keys.each do |key|
-			k = key.split("=")
-			case k[0]
-			when /^(cate)/
-				agents = find_agent_by_cate(k[1])
-			when /^(groups)/
-				if k[1] != "none"
-					groups_id = k[1].split(',')
-					agents.concat(find_agent_by_group(groups_id))
+				k = key.split("=")
+				case k[0]
+				when /^(cate)/
+					agents = find_agent_by_cate(k[1])
+				when /^(groups)/
+					if k[1] != "none"
+						groups_id = k[1].split(',')
+						agents.concat(find_agent_by_group(groups_id))
+					end
+				when /^(agents)/
+					if k[1] != "none"
+						agents.concat(find_agent_by_agents(k[1]))
+					end
+				when /^(agent)/
+					agents = find_agent_by_agent(k[1])
+				when /^(all)/
+					agents = find_agent_by_group([])
 				end
-			when /^(agents)/
-				if k[1] != "none"
-					agents.concat(find_agent_by_agents(k[1]))
-				end
-			when /^(agent)/
-				agents = find_agent_by_agent(k[1])
-			when /^(all)/
-				agents = find_agent_by_group([])
 			end
-			end
+			
 			if params[:keys] == "agents=none__groups=none"
 				# find all
 				agents = find_owner_agents
 			else
 				agents = nil if agents.empty?
-			end  
-				if agents.nil?
-					#if permission_by_name('tree_filter')
-						#show_as_unk = ($CF.get('client.aohs_web.displayDeletedAgentAsUnk').to_i == 1)
-						#if show_as_unk
-						#  agents = User.deleted.map { |a| a.id }
-						#else 
-						#  agents = []
-						#end
-						#agents << 0
-						#conditions << "(#{vl_tbl_name}.agent_id is null or #{vl_tbl_name}.agent_id in (#{agents.join(',')}))"
-					#end
-				else
-					if agents.empty?
-						skip_search = true
-					else
-						conditions << "#{vl_tbl_name}.agent_id in (#{agents.join(',')})"
-					end
-				end
-			else
-				skip_search = true
 			end
+
+			if not agents.nil? and not agents.empty?
+				conditions << "#{vl_tbl_name}.agent_id in (#{agents.join(',')})"
+			end
+			
+		else
+			skip_search = true
+		end
 
 			# call date / time
 			if params.has_key?(:sttime) and not params[:sttime].empty?
@@ -92,7 +81,7 @@ class VoiceLogsController < ApplicationController
 			if params.has_key?(:ext) and not params[:ext].empty?
 				 ext_no = params[:ext].strip
 				 exts_no = [ext_no]
-				 ["5","7"].each do |ext_prefix| 
+				 ["5","6","7"].each do |ext_prefix| 
 						exts_no << "#{ext_prefix}#{ext_no}"
 				 end
 				 conditions << "#{vl_tbl_name}.extension IN (#{(exts_no.map { |ex| "'#{ex}'"}).join(",")})"
@@ -102,8 +91,8 @@ class VoiceLogsController < ApplicationController
 			if params.has_key?(:caller) and not params[:caller].empty?
 				caller_no = params[:caller].to_s.strip
 				case true
-				when caller_no.length <= 2
-					conditions << "#{vl_tbl_name}.ani like '#{caller_no}"
+				when caller_no.length <= 3
+					conditions << "#{vl_tbl_name}.ani like '#{caller_no}%"
 				when (not (caller_no =~ /^(8\*.+)/).nil?)
 					conditions << "#{vl_tbl_name}.ani like '#{caller_no}%'"
 				when caller_no.length <= 6
@@ -122,8 +111,8 @@ class VoiceLogsController < ApplicationController
 			if params.has_key?(:dialed) and not params[:dialed].empty?
 				dialed_no = params[:dialed].to_s.strip
 				case true
-				when dialed_no.length <= 2
-					conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}"
+				when dialed_no.length <= 3
+					conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}%"
 				when (not (dialed_no =~ /^(8\*.+)/).nil?)
 					conditions << "#{vl_tbl_name}.dnis like '#{dialed_no}%'"
 				when dialed_no.length <= 6

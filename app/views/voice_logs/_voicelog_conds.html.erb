@@ -339,8 +339,8 @@
 	          }});		  	
 		  } else {
 		  	vc_start = false;
-			alert(skipMsg);
-		  }
+			  alert(skipMsg);
+		    }
       }
 
       function VLloadTimeLine(){
@@ -354,11 +354,15 @@
 				$(".phonefmt").keydown(function(){
 					var o = $(this);
 					var p = o.val().toString().replace(/[^0-9\#\*]/g,'');
-					o.val(p);
+					if (o.val() != p) {
+						o.val(p);
+					}
 				}).keyup(function(){
 					var o = $(this);
 					var p = o.val().toString().replace(/[^0-9\#\*]/g,'');
-					o.val(p);
+					if (o.val() != p) {
+						o.val(p);
+					}
 				});
 			}
       function onLoadCond(){
@@ -390,6 +394,14 @@
 		  } catch(e) {}
       }
 	
+	function doEnter(){
+		$("input.doenter").keydown(function(e){
+			if (e.keyCode == 13) {
+				onbtnSearch();
+			}
+		});
+	}
+	
 	$(document).ready(function(){
 		//onLoadCond();
 		$(".chk-direction").buttonset();
@@ -410,7 +422,7 @@
 			} else {
 				$("#custom-periods").css("display","none");
 			}
-			resizeWindow();  
+			resizeWindow();
 		});
 		
 		$(".callDur").click(function(){
@@ -458,7 +470,7 @@
 			matchContains: true,
 			multipleSeparator: " "
 		});
-		
+		doEnter();
   });
 </script>
     
@@ -489,13 +501,13 @@
     <div id="custom-periods">
     <div class="condStyle1">
         <span class="condName1">Date/Time from:</span>
-        <input type="text" name="vcFromDate" id="vcFromDate" title="yyyy-mm-dd">
-        <input type="text" alt="time" value="00:00" name="vcFromTime" id="vcFromTime" maxlength="5" class="callTime" title="hh:mm">
+        <input type="text" class="doenter" name="vcFromDate" id="vcFromDate" title="yyyy-mm-dd">
+        <input type="text" class="doenter" alt="time" value="00:00" name="vcFromTime" id="vcFromTime" maxlength="5" class="callTime" title="hh:mm">
     </div>
     <div class="condStyle1">
         <span class="condName1">Date/Time to:</span>
-        <input type="text" name="vcToDate" id="vcToDate" title="yyyy-mm-dd">
-        <input type="text" name="vcToTime" value="23:59" maxlength="5" id="vcToTime" class="callTime" title="hh:mm">
+        <input type="text" name="vcToDate" class="doenter" id="vcToDate" title="yyyy-mm-dd">
+        <input type="text" name="vcToTime" class="doenter" value="23:59" maxlength="5" id="vcToTime" class="callTime" title="hh:mm">
     </div>
     <span class="frm-note"><i>Format date: yyyy-mm-dd, Time: hh:mm</i></span>
     </div>
@@ -508,16 +520,16 @@
           <td><span class="condName1">Ext:</span></td>
         </tr>
         <tr>
-          <td><input type="text" name="vcCaller" id="vcCaller" class="phone phonefmt" maxlength="20" title="Caller number"></td>
-          <td><input type="text" name="vcDialed" id="vcDialed" class="phone phonefmt" maxlength="20" title="Dialed number"></td>
-          <td><input type="text" name="vcExt" class="input-int-only" id="vcExt" title="Extension number"></td>
+          <td><input type="text" name="vcCaller" id="vcCaller" class="phone phonefmt doenter" maxlength="20" title="Caller number"></td>
+          <td><input type="text" name="vcDialed" id="vcDialed" class="phone phonefmt doenter" maxlength="20" title="Dialed number"></td>
+          <td><input type="text" name="vcExt" class="input-int-only doenter" id="vcExt" title="Extension number"></td>
         </tr>
     </table>
   </div>
   <div class="condStyle1" >
   	<span class="condName1">Agent Name:</span>	 
-		<input type="text" name="agent_name" maxlength="100" id="agent_name" >
-		<input type="hidden" name="agent_id" maxlength="100" id="agent_id" >
+		<input type="text" name="agent_name" maxlength="100" id="agent_name" class="doenter">
+		<input type="hidden" name="agent_id" maxlength="100" id="agent_id">
   </div>
 <script type="text/javascript">
 <% @agent_pattern = User.alive.select('display_name, id').where('flag = 0').order('display_name asc') %>
@@ -546,7 +558,7 @@ buildAgentPattern();
 </script>
   <div class="condStyle1">
     <span class="condName1">Call Duration (mmm:ss):</span>
-    <input type="text" name="vcLengthFrom" id="vcLengthStart" class="input-int-only callDur" value="" maxlength="5" title="mmm:ss"><label class="label-frm"> <span class="condName1" style="display:inline;">To</span> </label><input type="text" class="callDur input-int-only" name="vcLengthTo" id="vcLengthEnd" maxlength="5" title="mm:ss" value="">
+    <input type="text" name="vcLengthFrom" id="vcLengthStart" class="input-int-only callDur doenter" value="" maxlength="5" title="mmm:ss"><label class="label-frm"> <span class="condName1" style="display:inline;">To</span> </label><input type="text" class="callDur input-int-only doenter" name="vcLengthTo" id="vcLengthEnd" maxlength="5" title="mm:ss" value="">
   </div>
   <div class="condStyle1">
     <span class="condName1">Call Direction:</span>
@@ -563,12 +575,12 @@ buildAgentPattern();
   </div>
   <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_CALL_TRANSFER %>">
     <span class="condName1">Number of transfered calls:</span>
-	<input type="text" class="input-int-only" name="vcTrannfCountFr" id="vcTransfCountFr" maxlength="2" value="">&nbsp;<span class="condName1" style="display:inline;">To</span>&nbsp;<input type="text" class="input-int-only" name="vcTrannfCountTo" id="vcTransfCountTo" maxlength="2" value=""></span>
+	<input type="text" class="input-int-only doenter" name="vcTrannfCountFr" id="vcTransfCountFr" maxlength="2" value="">&nbsp;<span class="condName1" style="display:inline;">To</span>&nbsp;<input type="text" class="input-int-only doenter" name="vcTrannfCountTo" id="vcTransfCountTo" maxlength="2" value=""></span>
   <span class="condName1" style="display:none;"><input type="checkbox" name="vcFindWithTrf" id="vcFindWithTrf" value="yes">&nbsp;Find Transferred calls.</span>
   </div>
   <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_KEYWORDS %>">
   	<span class="condName1">Keyword:</span>	 
-	<input type="text" name="keyword_name" maxlength="100" id="keyword_name" title="For each words separated by space">
+	<input type="text" name="keyword_name" maxlength="100" id="keyword_name" class="doenter" title="For each words separated by space">
   </div>
 </div>
 <div id="tab-tree">
