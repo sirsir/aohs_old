@@ -428,7 +428,7 @@ module AmiCallSearch
 			condx = cond.clone
 			case 0
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
-				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/)
+				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/) or (condx =~ /flag/)
 					conditions << condx.gsub(vl_tblname,"v")
 				end
 			when condx =~ /(voice_log_counters)/
@@ -506,7 +506,7 @@ module AmiCallSearch
 			condx = cond.clone
 			case 0
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
-				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/)
+				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/) or (condx =~ /flag/)
 					conditions << condx.gsub(vl_tblname,"v")
 				end
 			when condx =~ /(voice_log_counters)/
@@ -561,7 +561,7 @@ module AmiCallSearch
 				conditions << "tg.taggable_type = 'VoiceLog'"
 				conditions << "tg.context = 'tags'"			
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
-				if (condx =~ /(call_direction)/) or (condx =~ /(extension)/)
+				if (condx =~ /(call_direction)/) or (condx =~ /(extension)/) or (condx =~ /(flag)/)
 				elsif (condx =~ /(start_time)/) or (condx =~ /(duration)/)
 					conditions_all << condx.gsub(vl_tblname,"vs")
 				else
@@ -917,7 +917,8 @@ module AmiCallSearch
 
     new_voice_logs 	= []
     ctrl 						= sc[:ctrl]
-
+		users						= {}
+		
     unless voice_logs.blank?
       
       sc[:page] = valid_page_no(sc[:page])
@@ -939,7 +940,10 @@ module AmiCallSearch
         end
 
         if vc.agent_id.to_i > 0
-          u = User.where(:id => vc.agent_id).first rescue nil
+					if users[vc.agent_id.to_s].nil?
+						users[vc.agent_id.to_s] = User.where(:id => vc.agent_id).first rescue nil
+					end
+          u = users[vc.agent_id.to_s]
           unless u.nil?
             agent_name = u.display_name  
             #if not agents == false
@@ -1133,6 +1137,7 @@ module AmiCallSearch
 		if Aohs::VFILTER_DURATION_MIN.to_i > 0
 			conditions << "#{v}.duration >= #{Aohs::VFILTER_DURATION_MIN.to_i}"
 		end
+		conditions << "#{v}.flag <> 'm'"
 		
 		# default call selection
     case Aohs::CURRENT_LOGGER_TYPE

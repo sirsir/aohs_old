@@ -56,6 +56,7 @@ class VoiceLogsController < ApplicationController
 			if params[:keys] == "agents=none__groups=none"
 				# find all
 				agents = find_owner_agents
+				skip_search = true if not agents.nil? and agents.empty? 				
 			else
 				agents = nil if agents.empty?
 			end
