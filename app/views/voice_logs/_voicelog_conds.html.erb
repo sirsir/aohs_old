@@ -392,14 +392,39 @@
 						$("input[name=vcTransfCountFr]").val("");
 						$("input[name=vcTransfCountTo]").val("");		  	
 		  } catch(e) {}
-      }
+    }
 	
 	function doEnter(){
 		$("input.doenter").keydown(function(e){
+			setDuration(e);
 			if (e.keyCode == 13) {
 				onbtnSearch();
 			}
 		});
+	}
+	
+	function setDuration(o){
+		try {
+			var t = $(o);
+			if (t.attr("name") == "vcLengthFrom" || t.attr("name") == "vcLengthTo") {
+				var a = jQuery.trim(t.val());
+				a = a.replace(":","");
+				if(a.length==1){
+					t.val("00" + a + ":00");
+				} else if(a.length == 2){
+					t.val("0" + a + ":00");
+				} else if(a.length == 3){
+					t.val(a + ":00");
+				} else if(a.length >= 4){
+					var b = a.substring(0,3);
+					var c = a.substring(3);
+					if(c.length==1){
+						c = c + "0";
+					}
+					t.val(b + ":" + c);
+				}
+			}			
+		} catch(e){}
 	}
 	
 	$(document).ready(function(){
@@ -449,11 +474,11 @@
 			var a = jQuery.trim(t.val());
 			a = a.replace(":","");
 			if(a.length==1){
-				t.val("0" + a + ":00");
+				t.val("00" + a + ":00");
 			} else if(a.length == 2){
-				t.val(a + ":00");
+				t.val("0" + a + ":00");
 			} else if(a.length == 3){
-				t.val(a + ":00");				
+				t.val(a + ":00");
 			} else if(a.length >= 4){
 				var b = a.substring(0,3);
 				var c = a.substring(3);
@@ -502,12 +527,12 @@
     <div class="condStyle1">
         <span class="condName1">Date/Time from:</span>
         <input type="text" class="doenter" name="vcFromDate" id="vcFromDate" title="yyyy-mm-dd">
-        <input type="text" class="doenter" alt="time" value="00:00" name="vcFromTime" id="vcFromTime" maxlength="5" class="callTime" title="hh:mm">
+        <input type="text" alt="time" value="00:00" name="vcFromTime" id="vcFromTime" maxlength="5" class="callTime doenter" title="hh:mm">
     </div>
     <div class="condStyle1">
         <span class="condName1">Date/Time to:</span>
         <input type="text" name="vcToDate" class="doenter" id="vcToDate" title="yyyy-mm-dd">
-        <input type="text" name="vcToTime" class="doenter" value="23:59" maxlength="5" id="vcToTime" class="callTime" title="hh:mm">
+        <input type="text" name="vcToTime" value="23:59" maxlength="5" id="vcToTime" class="callTime doenter" title="hh:mm">
     </div>
     <span class="frm-note"><i>Format date: yyyy-mm-dd, Time: hh:mm</i></span>
     </div>
