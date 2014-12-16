@@ -1137,7 +1137,7 @@ module AmiCallSearch
 		if Aohs::VFILTER_DURATION_MIN.to_i > 0
 			conditions << "#{v}.duration >= #{Aohs::VFILTER_DURATION_MIN.to_i}"
 		end
-		conditions << "#{v}.flag <> 'm'"
+		## conditions << "#{v}.flag <> 'm'"
 		
 		# default call selection
     case Aohs::CURRENT_LOGGER_TYPE
