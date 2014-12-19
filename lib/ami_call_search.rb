@@ -1137,7 +1137,10 @@ module AmiCallSearch
 		if Aohs::VFILTER_DURATION_MIN.to_i > 0
 			conditions << "#{v}.duration >= #{Aohs::VFILTER_DURATION_MIN.to_i}"
 		end
-		## conditions << "#{v}.flag <> 'm'"
+		
+		if ActiveRecord::Base.connection.column_exists?('voice_logs','flag')
+		  conditions << "#{v}.flag <> 'm'"
+	  end
 		
 		# default call selection
     case Aohs::CURRENT_LOGGER_TYPE
