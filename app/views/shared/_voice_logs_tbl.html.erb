@@ -300,7 +300,7 @@
 				});	  	
 	  }
 	  function showTransferCall(v_id,row_no,o){
-				$(".rowof" + row_no).css("display","block");
+				$(".rowof" + row_no).css("display","");
 				o.html("<img src='<%= image_path('tree_icon/collapse-icon2.gif') %>'/>"); 		 	  	
 	  }
 	  function hideTransferCall(v_id,row_no,o){
@@ -406,8 +406,8 @@
 						progressEnabled(true); 
 						loadTransferCall(v_id,row_no,o);
 				} else if(rowState=="show"){
-						//o.attr("btnstate","hide");
-						//hideTransferCall(v_id,row_no,o);	
+						o.attr("btnstate","hide");
+						hideTransferCall(v_id,row_no,o);	
 				} else if(rowState=="hide"){
 						o.attr("btnstate","show");
 						showTransferCall(v_id,row_no,o);			   	
