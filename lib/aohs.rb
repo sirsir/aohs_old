@@ -82,11 +82,10 @@ module Aohs
   COMPUTER_EXTENSION_LOOKUP   = true
   COMP_LOOKUP_BY_KEYS         = [:comp_or_ip,:comp_and_ip,:comp,:ip][0]
   COMP_LOGOUT_ENABLE          = false
-  COMP_RETRY_UPDATE	      = 0
+  COMP_RETRY_UPDATE	          = 0
   
   AUTO_CRTNEW_USR             = false
   DEFAULF_USERN_PATTERN       = "newAgent"
-  
   
   ## voice log methods ##
   
