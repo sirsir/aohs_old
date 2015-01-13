@@ -288,13 +288,18 @@ class ExtensionController < ApplicationController
 			unless @result.empty?
 				@result.each do |r|
 					next if r.user_id.to_i <= 0
+					next if c.check_time < Time.now
 					eam = ExtensionToAgentMap.where(:extension => r.number).first
 					if eam.nil?
+						# no update found
 						eam = ExtensionToAgentMap.new(:extension => r.number, :agent_id => r.user_id)
 						eam.save!
 					elsif eam.agent_id.to_i != r.user_id.to_i
-						eam.agent_id = r.user_id
-						eam.save!
+						# force to update
+						if params[:force] == "yes"
+							eam.agent_id = r.user_id
+							eam.save!							
+						end
 					end
 				end
 			end
