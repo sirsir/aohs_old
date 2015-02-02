@@ -101,11 +101,8 @@ class VoiceLogsController < ApplicationController
 				else
 					if caller_no[0,1] == "0"
 						caller_no = caller_no[1..-1]
-						conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
-						#conditions << "(#{vl_tbl_name}.ani like '%#{caller_no}%' or #{vl_tbl_name}.ani like '0#{caller_no}%')"
-					else
-						conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
 					end
+					conditions << "#{vl_tbl_name}.ani like '%#{caller_no}%'"
 				end
 			end
 			
@@ -122,11 +119,8 @@ class VoiceLogsController < ApplicationController
 				else
 					if dialed_no[0,1] == "0"
 						dialed_no = dialed_no[1..-1]
-						conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
-						#conditions << "(#{vl_tbl_name}.dnis like '#{dialed_no}%' or #{vl_tbl_name}.dnis like '0#{dialed_no}%')"
-					else
-						conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
 					end
+					conditions << "#{vl_tbl_name}.dnis like '%#{dialed_no}%'"
 				end
 			end
 

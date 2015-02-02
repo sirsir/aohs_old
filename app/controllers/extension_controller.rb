@@ -287,19 +287,31 @@ class ExtensionController < ApplicationController
 		if params[:perform_update] == "true"
 			unless @result.empty?
 				@result.each do |r|
-					next if r.user_id.to_i <= 0
-					next if c.check_time < Time.now
+					if r.user_id.to_i <= 0
+						STDOUT.puts "Skip update ExtensionToAgentMap for #{r.number}, no user_id"
+						next
+					end
+					if Time.parse(r.check_time) < Time.now
+						STDOUT.puts "Skip update ExtensionToAgentMap for #{r.number}, no today's computer_log. logdate is #{Time.parse(r.check_time)}"
+						next
+					end
 					eam = ExtensionToAgentMap.where(:extension => r.number).first
 					if eam.nil?
 						# no update found
 						eam = ExtensionToAgentMap.new(:extension => r.number, :agent_id => r.user_id)
 						eam.save!
+						STDOUT.puts "Updated ExtensionToAgentMap for #{r.number}"
 					elsif eam.agent_id.to_i != r.user_id.to_i
 						# force to update
 						if params[:force] == "yes"
 							eam.agent_id = r.user_id
-							eam.save!							
+							eam.save!
+							STDOUT.puts "Updated ExtensionToAgentMap for #{r.number}"
+						else
+							STDOUT.puts "Skip update ExtensionToAgentMap for #{r.number}, user_id <> agent_id"
 						end
+					else
+						STDOUT.puts "Nothing to update ExtensionToAgentMap for #{r.number}"
 					end
 				end
 			end
