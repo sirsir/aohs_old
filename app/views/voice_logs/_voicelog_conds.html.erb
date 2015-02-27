@@ -365,33 +365,27 @@
 					}
 				});
 			}
-      function onLoadCond(){
-          $("input[name=vcCD1]").attr("checked","checked");
-          $("input[name=vcCD2]").attr("checked","checked");
-          $("input[name=vcCD3]").attr("checked","checked");
-      }
-
       function onbtnSearch(){
           onSearchVoice('all');
       }
 
       function onbtnReset(){
-          onLoadCond();
-		  try {
-	          $("input[name=vcFromDate]").val("");
-	          $("input[name=vcFromTime]").val("");
-	          $("input[name=vcToDate]").val("");
-	          $("input[name=vcToTime]").val("");
-	          $("input[name=vcExt]").val("");
-	          $("input[name=agent_name]").val(""); // nkm 
-	          $("input[name=agent_id]").val(""); // nkm 
-	          $("input[name=vcLengthFrom]").val("");
-	          $("input[name=vcLengthTo]").val("");
-	          $("input[name=vcCaller]").val("");
-	          $("input[name=vcDialed]").val("");
-						$("input[name=vcTransfCountFr]").val("");
-						$("input[name=vcTransfCountTo]").val("");		  	
-		  } catch(e) {}
+	try {
+		$("#vcPeriods").val("1").triggerHandler('change');
+		$("input[name=vcExt]").val("");
+		$("input[name=agent_name]").val(""); // nkm 
+		$("input[name=agent_id]").val(""); // nkm 
+		$("input[name=vcLengthFrom]").val("");
+		$("input[name=vcLengthTo]").val("");
+		$("input[name=vcCaller]").val("");
+		$("input[name=vcDialed]").val("");
+		$("input[name=vcTransfCountFr]").val("");
+		$("input[name=vcTransfCountTo]").val("");		
+		$("input[name=vcCD1]").attr("checked","checked");
+          	$("input[name=vcCD2]").attr("checked","checked");
+          	$("input[name=vcCD3]").attr("checked","checked");
+  		$(".chk-direction").buttonset("refresh");
+	} catch(e) { }
     }
 	
 	function doEnter(){
@@ -428,7 +422,6 @@
 	}
 	
 	$(document).ready(function(){
-		//onLoadCond();
 		$(".chk-direction").buttonset();
 		$(".chk-call-transfered").buttonset();
 		
