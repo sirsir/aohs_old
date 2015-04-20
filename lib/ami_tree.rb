@@ -424,7 +424,7 @@ module AmiTree
     end
     gcs = gcs.uniq
     #STDERR.puts "----->#{gct_id} => #{gcs.join("|")}"
-    gcs = GroupCategory.select('id,value as name').where("id in (#{gcs.join(',')})") unless gcs.empty?
+    gcs = GroupCategory.select('id,value as name').where("id in (#{gcs.join(',')})").order("value") unless gcs.empty?
 
     return gcs
     
@@ -443,7 +443,7 @@ module AmiTree
     
     grp = grp.uniq
     #STDERR.puts "G->#{grp.join("|")}"
-    grp = Group.select('id,name').where("id in (#{grp.join(',')})") unless grp.empty?
+    grp = Group.select('id,name').where("id in (#{grp.join(',')})").order("name") unless grp.empty?
     
     return grp
     

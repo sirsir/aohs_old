@@ -208,7 +208,7 @@ class CallTagsController < ApplicationController
 
     tags.each do |tag|
       tagging = Taggings.where({:taggable_id => voice_log_id, :tag_id => tag.id}).first
-      STDOUT.puts voice_log_id.to_s+" "+tag.id.to_s
+      #STDOUT.puts voice_log_id.to_s+" "+tag.id.to_s
       if not tagging.nil?
         tag_info << {:tag_id => tag.id, :tag_name => tag.name, :tag_group => tag.tag_group.name, :status => "checked"}
       else

@@ -87,7 +87,7 @@ class ComputerLogController < ApplicationController
     if params.has_key?(:computer_name) and not params[:computer_name].empty?
       computer_name = params[:computer_name]
     end
-      
+  
     login_name = nil
     if params.has_key?(:login_name) and not params[:login_name].empty?
       login_name = params[:login_name]
@@ -99,52 +99,55 @@ class ComputerLogController < ApplicationController
     else
       remote_ip = request.remote_ip
     end
-    
+
+		event_name = ""
+		if params.has_key?(:event) and not params[:event].empty?
+			event_name = params[:event]
+		end
+		
     if not computer_name.nil? and not login_name.nil?
-      if params
-        data = {}
-        data_versions = []
-        params.each_pair do |key,val|
-          key_name = key.to_s
-          next if ['controller','action','id'].include?(key_name)
-          
-          case key_name
-          when /^computer_name$/
-            data[:computer_name] = val
-          when /^login_name$/
-            data[:login_name] = val          
-          when /^watcher/
-            data[:watcher_version] = val
-          when /^advw/,/^audioviewer/
-            data[:audioviewer_version] = val
-          when /^cti/
-            data[:cti_version] = val
-          when /^os/
-            data[:os_version] = val
-          when /^java/
-            data[:java_version] = val
-          when /(.+)_version$/
-            data_versions << "#{key_name}=#{val}"
-          else
-            messages << "#{key_name} not match"
-          end
-          
-          tmp << "#{key_name}=#{val}"
-        end
-        
-        data[:versions] = data_versions.join(',')
-        data[:remote_ip] = remote_ip
-        data[:check_time] = Time.new.strftime("%Y-%m-%d %H:%M:%H")
-      end
+			
+			data = {}
+			data_versions = []
+			params.each_pair do |key,val|
+				key_name = key.to_s				
+				case key_name
+				when /^computer_name$/
+					data[:computer_name] = val
+				when /^login_name$/
+					data[:login_name] = val          
+				when /^watcher/
+					data[:watcher_version] = val
+				when /^advw/,/^audioviewer/
+					data[:audioviewer_version] = val
+				when /^cti/
+					data[:cti_version] = val
+				when /^os/
+					data[:os_version] = val
+				when /^java/
+					data[:java_version] = val
+				when /(.+)_version$/
+					data_versions << "#{key_name}=#{val}"
+				else
+					# messages << "#{key_name} not match"
+				end
+				tmp << "#{key_name}=#{val}"
+			end
+			
+			data[:versions]   = data_versions.join(',')
+			data[:remote_ip]  = remote_ip
+			data[:check_time] = Time.new.strftime("%Y-%m-%d %H:%M:%H")
       
-      ccs = CurrentComputerStatus.where({:computer_name => computer_name, :remote_ip => remote_ip}).first
+      data[:computer_event] = event_name
+      
+      ccs = CurrentComputerStatus.where({ :remote_ip => remote_ip }).first
       if ccs.nil?
         ccs = CurrentComputerStatus.new(data)
         ccs.save!
       else
         ccs = CurrentComputerStatus.update_all(data,{:computer_name => computer_name, :remote_ip => remote_ip})  
       end
-        
+
       cpl = ComputerLog.new(data)
       cpl.save!
            
@@ -156,19 +159,16 @@ class ComputerLogController < ApplicationController
     end
 
     html = ""
-    html << "- computer log -<br/>"
-    html << "computer_name=#{computer_name}<br/>"
-    html << "windows_logon=#{login_name}<br/>"
-    html << "parameters=#{tmp.join('|')}<br/>"
-    html << "message=#{messages.join(',')}"
+    html << "computer_log_result="
+    html << "computer_name=#{computer_name};"
+    html << "windows_logon=#{login_name};"
+    html << "parameters=#{tmp.join('|')};"
+    html << "message=#{messages.join(',')};"
     
     if Aohs::COMPUTER_EXTENSION_LOOKUP
       r = update_computer_extension
-      Aohs::COMP_RETRY_UPDATE.to_i.times do 
-				r = update_computer_extension
-      end
-      html << "- computer extension --<br>"
-      html << r.join("<br/>")
+      html << "computer_ext_result="
+      html << r.join(";")
     end
     
     render :text => html, :layout => false
@@ -182,13 +182,13 @@ class ComputerLogController < ApplicationController
     computer_name = nil
     if params.has_key?(:computer_name) and not params[:computer_name].empty?
       computer_name = params[:computer_name].to_s.strip.gsub(" ","")
-      result << "CompName=#{computer_name}"
+      result << "computer_name=#{computer_name}"
     end
       
     login_name = nil
     if params.has_key?(:login_name) and not params[:login_name].empty?
       login_name = params[:login_name].to_s.strip.gsub(" ","")
-      result << "Login=#{login_name}"
+      result << "login=#{login_name}"
     end
     
     remote_ip = nil
@@ -197,78 +197,71 @@ class ComputerLogController < ApplicationController
     else
       remote_ip = request.remote_ip
     end
-    result << "IP=#{remote_ip}"
+    result << "ip=#{remote_ip}"
 
-    if not computer_name.nil? and not remote_ip.nil?
-        
-			# get computer extension
-			cond = []
-			case Aohs::COMP_LOOKUP_BY_KEYS
-			when :comp
-				cond = {:computer_extension_maps => {:computer_name => computer_name}}
-			when :ip
-				cond = {:computer_extension_maps => {:ip_address => remote_ip}}
-			when :comp_and_ip
-				cond = ["computer_extension_maps.computer_name = ? and computer_extension_maps.ip_address = ?",computer_name,remote_ip]
-			when :comp_or_ip
-				cond = ["computer_extension_maps.computer_name = ? or computer_extension_maps.ip_address = ?",computer_name,remote_ip]
+		event_name = ""
+		if params.has_key?(:event) and not params[:event].empty?
+			event_name = params[:event]
+		end
+		
+    if not computer_name.nil? and not remote_ip.nil? and not event_name == "logoff"
+      
+			user   = nil
+			ext    = nil      
+      xconds = [
+				{:computer_extension_maps => {:ip_address => remote_ip}},
+				{:computer_extension_maps => {:computer_name => computer_name}}
+			]
+      
+      while ext.nil? and not xconds.empty?
+				cond = xconds.shift
+				ext  = Extension.includes(:computer_extension_map).where(cond).first
 			end
-			
-			ext = Extension.includes(:computer_extension_map).where(cond).first
+      
 			unless ext.nil?
-				user = User.alive.where(:login => login_name).first
-				unless user.nil?
+				
+				user    = User.alive.where(:login => login_name).first
+				user_id = (user.nil? ? 0 : user.id) 
 
-					# update extension agent map
-					eam = ExtensionToAgentMap.where({:extension => ext.number}).first
-					if eam.nil?
-						eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user.id})  
-						eam.save!
-					else
-						eam.update_attributes!({:extension => ext.number, :agent_id => user.id})  
-					end
-
-					# retry check
-					eam = ExtensionToAgentMap.where({:extension => ext.number}).first
-					if eam.nil?
-						eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user.id})  
-						eam.save!
-					else
-						eam.update_attributes!({:extension => ext.number, :agent_id => user.id})  
-					end
-
-					# update did agent map
-					dids = Did.where({ :extension_id => ext.id })
+				# update extension agent map
+				eam = ExtensionToAgentMap.where({:extension => ext.number}).first
+				if eam.nil?
+					eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user_id})
+				else
+					eam.agent_id = user_id
+				end
+				eam.save!
+				
+				unless eam.nil?
+					dids = Did.where({ :extension_id => ext.id }).all
 					unless dids.empty?
 						dids.each do |did|
-							dams = DidAgentMap.where({:number => did.number }).all
-							if dams.empty?
-								dam = DidAgentMap.new({:number => did.number , :agent_id => user.id})
-								dam.save
+							dam = DidAgentMap.where({ :number => did.number }).first
+							if dam.nil?
+								dam = DidAgentMap.new({ :number => did.number, :agent_id => user_id })
 							else
-								dams.update_all({:agent_id => user.id},{:number => did.number })
+								dam.agent_id = user_id
 							end
-						end
+							dam.save!
+						end						
 					end
-             
-          result << "Update extension successfully #{user.login}(#{ext.number})"
-        else
-             
-          result << "User not found, deleted extension map for #{ext.number}"
-
-					# clean up extension map if user not found
-					ExtensionToAgentMap.delete_all({:extension => ext.number})
-					dids = Did.where({ :extension_id => ext.id })
-					unless dids.empty?
-						 DidAgentMap.delete_all({:number => dids.map { |d| d.number }})
-					end
-
 				end
-			else
-				result << "Extension not found by #{Aohs::COMP_LOOKUP_BY_KEYS}"
+
+        result << "extension updated successfully to #{user_id}#(#{ext.number})"
+      
+      else
+        
+        result << "extension not found."
+				# clean up extension map if user not found
+				# ExtensionToAgentMap.delete_all({:extension => ext.number})
+				# dids = Did.where({ :extension_id => ext.id })
+				# unless dids.empty?
+				#	DidAgentMap.delete_all({:number => dids.map { |d| d.number }})
+				# end
 			end
-    else
-      result << "Computer or IP not defined"
+			
+    else			
+      result << "no computer name or remote ip"
     end
     
     return result
