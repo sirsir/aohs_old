@@ -3,7 +3,7 @@ source 'http://rubygems.org'
 gem 'rails', '3.0.3' 
 
 # if you need start server with mongrel please uncomment it.
-gem "mongrel"
+# gem "mongrel"
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
