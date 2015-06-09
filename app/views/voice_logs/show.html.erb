@@ -203,7 +203,6 @@
 
   var current_pane = 1;
   var current_index = 0;
-
   /* current view call (main call, transfer[1], ... , transfer[n]) */
   var current_call = 0;
 
@@ -214,7 +213,9 @@
 
     AmiAdvw.SetSegmentGuideRange(-20,-80);
     AmiAdvw.setProperty("DisableContextMenu",1);
-
+    //AmiAdvw.setProperty("ZoomFullOnLoaded",1);
+    AmiAdvw.setProperty("SelectedRangeOnLoaded",1);
+    
     $('#AmiAdvw').css("height", $('#speaker-panel').height());
     $('#advw-vol').slider({min:0 ,max:100, step:1, value:10,
                            slide: function(event, ui){
@@ -253,6 +254,7 @@
             v_st: "<%= (tc.start_time - tc.start_position_sec).strftime("%H:%M:%S") %>",
             v_en: "<%= (tc.start_time + tc.duration.to_i).strftime("%H:%M:%S") %>",
             dur: "<%= format_sec(tc.duration.to_i) %>",
+            dur_sec: "<%= tc.duration.to_i %>",
             dir_c: "<%= tc.call_direction %>",
             dir_n: "<%= tc.call_direction_name %>",
             sid: "<%= tc.system_id %>",
@@ -367,7 +369,6 @@
 
     AmiAdvw.Reset();
     AmiAdvw.LoadFromFile(call_information[current_call].url);
-    setPlayOffset(call_information[current_call].strsec);
 
     setCallerInfo();
     refreshTag();
@@ -385,18 +386,29 @@
     resetSpeed();
 
     resize_edit_content();
+    
+    setPlayOffset(call_information[current_call].strsec,call_information[current_call].dur_sec);
+
   }
 
-  function setPlayOffset(st_sec){
-    // cut audio file
+  function setPlayOffset(st_sec,ed_sec){
     var st_sec = parseInt(st_sec) || 0;
     if(st_sec > 0){
-      try { 
-        AmiAdvw.SetSelectedRange(0, st_sec * AmiAdvw.SamplesPerSec);
-        AmiAdvw.cut();
+      try {
+        //AmiAdvw.SetViewingRange(st_sec*AmiAdvw.SamplesPerSec,ed_sec*AmiAdvw.SamplesPerSec);
+        AmiAdvw.SetSelectedRange(0,st_sec * AmiAdvw.SamplesPerSec);
+        doCutSelectedRange();
       }catch(e){
         alert(e.message);
-      }		
+      }
+    }
+  }
+  
+  function doCutSelectedRange(){
+    if (AmiAdvw.LoadedSamples > AmiAdvw.Samples) {
+      setTimeout("AmiAdvw.Cut()",500);
+    } else {
+      setTimeout("doCutSelectedRange()",1000);
     }
   }
   
@@ -435,6 +447,7 @@
       v_st: "<%= (@voice_log.start_time + @voice_log.start_position_sec).strftime("%H:%M:%S") %>",
       v_en: "<%= (@voice_log.start_time + @voice_log.duration.to_i).strftime("%H:%M:%S") %>",
       dur: "<%= format_sec(@voice_log.duration.to_i) %>",
+      dur_sec: <%= @voice_log.duration.to_i %>,
       dir_c: "<%= @voice_log.call_direction %>",
       dir_n: "<%= @voice_log.call_direction_name %>",
       sid: "<%= @voice_log.system_id %>",

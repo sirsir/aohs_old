@@ -21,8 +21,7 @@ class User < ActiveRecord::Base
                             :format     => { :with => Authentication.name_regex, :message => Authentication.bad_name_message },
                             :length     => { :maximum => 100 }
 
-  validates :cti_agent_id,  :presence    => true,
-														:allow_blank => true,
+  validates :cti_agent_id,  :allow_blank => true,
 														:allow_nil	 => true,
                             :length      => { :maximum => 100 }
 

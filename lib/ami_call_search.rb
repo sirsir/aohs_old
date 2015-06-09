@@ -189,7 +189,8 @@ module AmiCallSearch
 
       managers = find_manager_watch()
       agents = agents.concat(managers)
-
+			agents = agents.sort.uniq
+			
     else
       agents = nil
     end
@@ -274,6 +275,8 @@ module AmiCallSearch
 			end
     end
 
+		agents = agents.sort.uniq
+		
     return agents
 
   end
@@ -1008,6 +1011,7 @@ module AmiCallSearch
             :v_st => "#{default_time_format(datetime)}",
             :v_en => "#{default_time_format(datetime + xduration)}",
             :duration => "#{format_sec(xduration)}",
+            :duration_sec => xduration,
             :dmin => (xduration/60),
             :ani => format_phone(vc.ani),
             :dnis => format_phone(vc.dnis),
@@ -1072,7 +1076,8 @@ module AmiCallSearch
 					:voice_file_url,
 					:call_direction,
 					:start_time,
-					:call_id
+					:call_id,
+					:response_time
 		]
 	  cols_counter = [
 					:ngword_count,

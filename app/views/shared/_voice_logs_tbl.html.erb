@@ -21,25 +21,25 @@
 	  }
 	  var vlTbl = { 
 	  	col_keywords_show: App.to_boolean("<%= Aohs::MOD_KEYWORDS %>"),
-		col_cust_show: App.to_boolean("<%= Aohs::MOD_CUSTOMER_INFO %>"),
-		col_car_show: App.to_boolean("<%= Aohs::MOD_CUSTOMER_INFO %>"),
-		showKeywTip: App.to_boolean("<%= $CF.get('client.aohs_web.showKeywordTooltip') %>"),
-		showTagTip: App.to_boolean("<%= $CF.get('client.aohs_web.showTagTooltip') %>"),
-		enaRowHover: App.to_boolean("<%= $CF.get('client.aohs_web.enableVoiceRowHover') %>")
+		  col_cust_show: App.to_boolean("<%= Aohs::MOD_CUSTOMER_INFO %>"),
+		  col_car_show: App.to_boolean("<%= Aohs::MOD_CUSTOMER_INFO %>"),
+		  showKeywTip: App.to_boolean("<%= $CF.get('client.aohs_web.showKeywordTooltip') %>"),
+		  showTagTip: App.to_boolean("<%= $CF.get('client.aohs_web.showTagTooltip') %>"),
+		  enaRowHover: App.to_boolean("<%= $CF.get('client.aohs_web.enableVoiceRowHover') %>")
 	  };
 	  
-      var ctrlPage = {
-          currentPage: 0,
-          selectPage: 0,
-          totalPage: 0,
+    var ctrlPage = {
+      currentPage: 0,
+      selectPage: 0,
+      totalPage: 0,
 		  perPage: 0,
 		  defaultPerPage: parseInt("<%=@numbers_of_display %>"),
 		  maxPerPage: parseInt("<%= $CF.get('client.aohs_web.maxNumberOfCallPerPage').to_i %>")
       }
 	 
       var ctrlSort = {
-          colName: "",
-          order: ""
+        colName: "",
+        order: ""
       }
       
       var rowCycle = ['odd','even'];
@@ -219,7 +219,7 @@
 		    menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li act='no-play'><img src='<%= image_path('speaker2.gif') %>'/></li><li act='no-more'><img src='<%= image_path('detail2.png') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"no-btntool myToolTip\"><img src='<%= image_path('more2.gif') %>'/></li></ul>";                  
                 }
 
-		row += "<tr class=\"" + rowCycle[rows_count % 2] + " " + redrow + " " + "myRow\" id=\"rowAt" + (id + 1) + "\" row_parent=\"0\" row_no=\"" + (id + 1) + "\" audiourl=\"" + vc['path'] + "\" play_offset_sec=\"" + vc['offset_sec'] + "\" onclick=\"highLightClickRow(this)\">";	
+		row += "<tr class=\"" + rowCycle[rows_count % 2] + " " + redrow + " " + "myRow\" id=\"rowAt" + (id + 1) + "\" row_parent=\"0\" row_no=\"" + (id + 1) + "\" audiourl=\"" + vc['path'] + "\" duration_sec=\"" + vc['duration_sec'] + "\" play_offset_sec=\"" + vc['offset_sec'] + "\" onclick=\"highLightClickRow(this)\">";	
                 row += "<td width=\"40px\" class=\"no-item\"><div class=\"div-no\">" + number_with_delimiter(parseInt(vc['no'])) + "</div>" + expand_calls + "</td>";
                 row += "<td width=\"70px\" align=\"center\" class=\"item-ctrl\">";
                 if((vc['open'] == true) || (vc['open'] == "true")){

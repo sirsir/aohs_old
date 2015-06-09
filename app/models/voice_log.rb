@@ -65,16 +65,19 @@ class VoiceLog < ActiveRecord::Base
 	end
 	@@call_response_time = xanswer_time
   end
-   
+  
   def start_position_sec
-    unless self.call_response_time.nil?
-      cr = self.call_response_time.to_time
-      st = Time.parse(self.start_time.strftime("%Y-%m-%d %H:%M:%S")).to_time
-      return ((cr - st).to_i)
-    else
-      return 0
+    if not self.response_time.nil? and self.response_time > self.start_time
+      pos = self.response_time - self.start_time
+      if pos <= self.duration.to_i
+				return pos
+			else
+				return 0
+			end
+			return
     end
-  end  
+    return 0
+  end
 
   def tags_exist?
     tag = Taggings.select("id").where(:taggable_id => self.id).first
