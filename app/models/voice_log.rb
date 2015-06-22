@@ -57,24 +57,23 @@ class VoiceLog < ActiveRecord::Base
   end
 
   def call_response_time
-	xanswer_time = nil
-	if self.answer_time.is_a?(String)
-		xanswer_time = Time.parse(self.answer_time) rescue nil 
-	else
-		xanswer_time = self.answer_time
-	end
-	@@call_response_time = xanswer_time
+		xanswer_time = nil
+		if self.answer_time.is_a?(String)
+			xanswer_time = Time.parse(self.answer_time) rescue nil 
+		else
+			xanswer_time = self.answer_time
+		end
+		@call_response_time = xanswer_time
+		return @call_response_time
   end
   
   def start_position_sec
-    if not self.response_time.nil? and self.response_time > self.start_time
-      pos = self.response_time - self.start_time
+    if not self.response_time.nil? and self.response_time >= self.start_time
+      pos = (self.response_time - self.start_time).abs
       if pos <= self.duration.to_i
 				return pos
-			else
-				return 0
 			end
-			return
+			return 0
     end
     return 0
   end

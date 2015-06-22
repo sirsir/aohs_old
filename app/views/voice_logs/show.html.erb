@@ -368,6 +368,8 @@
     voicelog_start_msec = new Date (new Date().toDateString()+" "+call_information[current_call].st).getTime();
 
     AmiAdvw.Reset();
+    //AmiAdvw.SetProperty("SelectedRangeOnLoaded0", "0");
+    //AmiAdvw.SetProperty("SelectedRangeOnLoaded1", "320");   
     AmiAdvw.LoadFromFile(call_information[current_call].url);
 
     setCallerInfo();

@@ -72,6 +72,17 @@ module Format
     
   end
 
+  def is_start_with?(x,v)
+    if v.length < x.length
+      d = v.length - 1
+      if x[0..d] == v
+        return true
+      end
+      return false
+    end
+    return false 
+  end
+
   def format_phone(phone)
 
     phone_r = ""
@@ -89,16 +100,17 @@ module Format
       when l <= 7
         phone_r = phone
       when l <= 11
-        if (phone[0..1].to_i == 90) and (l == 11 or l == 10)
+        if is_start_with?(phone,"90") and (l == 11 or l == 10)
+          # start with 90...
           phone_r = /(90)(.+)/.match(phone)[2] rescue phone
           phone_r = "0#{phone_r}"
-        elsif (l == 8 or l == 9)
+        elsif not is_start_with?(phone,"0") and (l == 8 or l == 9)
           phone_r = "0#{phone}"
         else
           phone_r = phone
         end
       when l <= 12
-        if (phone[0..2].to_i == 801)
+        if is_start_with?(phone,"801")
           phone_r = /(801)(.+)/.match(phone)[2] rescue phone
           phone_r = "0#{phone_r}"
         else

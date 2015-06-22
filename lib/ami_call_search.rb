@@ -926,7 +926,8 @@ module AmiCallSearch
       
       sc[:page] = valid_page_no(sc[:page])
       start_row = get_start_row_no(sc[:perpage],sc[:page]) 
-		
+      has_answer_time = ActiveRecord::Base.connection.column_exists?('voice_logs','response_time')
+	
       voice_logs.each_with_index do |vc,i|
 
         datetime 			= vc.start_time_full
@@ -1029,7 +1030,7 @@ module AmiCallSearch
             :path => vc.disposition,
             :open => is_open,
             :trfc => is_found_transfer,
-            :offset_sec => vc.start_position_sec
+            :offset_sec => (has_answer_time ? vc.start_position_sec : 0)
         }
         
         if is_found_transfer and (ctrl[:show_sub_call] == true)
@@ -1148,6 +1149,11 @@ module AmiCallSearch
 				conditions << "#{v}.flag <> 'm'"
 			end
 		rescue
+		end
+		
+		# check answer_time
+		if ActiveRecord::Base.connection.column_exists?(v,'response_time')
+			#conditions << "#{v}.response_time IS NOT NULL"	
 		end
 		
 		# default call selection
