@@ -138,19 +138,19 @@ class ComputerLogController < ApplicationController
 			data[:remote_ip]  = remote_ip
 			data[:check_time] = Time.new.strftime("%Y-%m-%d %H:%M:%H")
       
-      data[:computer_event] = event_name
+      # data[:computer_event] = event_name
       
       ccs = CurrentComputerStatus.where({ :remote_ip => remote_ip }).first
       if ccs.nil?
         ccs = CurrentComputerStatus.new(data)
         ccs.save!
       else
-        ccs = CurrentComputerStatus.update_all(data,{:computer_name => computer_name, :remote_ip => remote_ip})  
+        ccs = CurrentComputerStatus.update_all(data,{:computer_name => computer_name, :remote_ip => remote_ip}) 
       end
 
       cpl = ComputerLog.new(data)
       cpl.save!
-           
+  
       if messages.empty?
         messages << "OK"
       end
@@ -204,7 +204,7 @@ class ComputerLogController < ApplicationController
 			event_name = params[:event]
 		end
 		
-    if not computer_name.nil? and not remote_ip.nil? and not event_name == "logoff"
+    if not computer_name.nil? and not remote_ip.nil? #and not event_name == "logoff"
       
 			user   = nil
 			ext    = nil      
@@ -217,7 +217,7 @@ class ComputerLogController < ApplicationController
 				cond = xconds.shift
 				ext  = Extension.includes(:computer_extension_map).where(cond).first
 			end
-      
+       
 			unless ext.nil?
 				
 				user    = User.alive.where(:login => login_name).first
@@ -232,22 +232,22 @@ class ComputerLogController < ApplicationController
 				end
 				eam.save!
 				
-				unless eam.nil?
-					dids = Did.where({ :extension_id => ext.id }).all
-					unless dids.empty?
-						dids.each do |did|
-							dam = DidAgentMap.where({ :number => did.number }).first
-							if dam.nil?
-								dam = DidAgentMap.new({ :number => did.number, :agent_id => user_id })
-							else
-								dam.agent_id = user_id
-							end
-							dam.save!
-						end						
-					end
-				end
+				#unless eam.nil?
+				#	dids = Did.where({ :extension_id => ext.id }).all
+				#	unless dids.empty?
+				#		dids.each do |did|
+				#			dam = DidAgentMap.where({ :number => did.number }).first
+				#			if dam.nil?
+				#				dam = DidAgentMap.new({ :number => did.number, :agent_id => user_id })
+				#			else
+				#				dam.agent_id = user_id
+				#			end
+				#			dam.save!
+				#		end						
+				#	end
+				#end
 
-        result << "extension updated successfully to #{user_id}#(#{ext.number})"
+        result << "extension updated to #{user_id}|(#{ext.number})"
       
       else
         
@@ -263,6 +263,8 @@ class ComputerLogController < ApplicationController
     else			
       result << "no computer name or remote ip"
     end
+    
+    STDOUT.puts "ExtensionMapResult=#{result}"
     
     return result
 

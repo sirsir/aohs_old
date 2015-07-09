@@ -1146,7 +1146,7 @@ module AmiCallSearch
 		
 		begin
 			if ActiveRecord::Base.connection.column_exists?(v,'flag')
-				conditions << "#{v}.flag <> 'm'"
+				conditions << "#{v}.flag NOT IN ('m','d')"
 			end
 		rescue
 		end

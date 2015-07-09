@@ -1,11 +1,11 @@
 --- 
 development: 
   adapter: jdbcmysql
-  database: aohsdb_aeon
-  host: 192.168.1.64
+  database: amivoice_operators_help_aeoncms
+  host: 192.168.1.15
   port: 3306
   username: mysqladmin
-  password: password
+  password: mysqladmin
   encoding: utf8
   pool: 5
   timeout: 5000
