@@ -68,13 +68,16 @@ class VoiceLog < ActiveRecord::Base
   end
   
   def start_position_sec
-    if not self.response_time.nil? and self.response_time >= self.start_time
-      pos = (self.response_time - self.start_time).abs
-      if pos <= self.duration.to_i
-				return pos
+		begin
+			if not self.response_time.nil? and self.response_time >= self.start_time
+				pos = (self.response_time - self.start_time).abs
+				if pos <= self.duration.to_i
+					return pos
+				end
+				return 0
 			end
-			return 0
-    end
+		rescue
+		end
     return 0
   end
 

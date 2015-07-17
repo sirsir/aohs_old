@@ -965,17 +965,17 @@ module AmiCallSearch
           end
 				end
       
-        if Aohs::MOD_CUST_CAR_ID and Aohs::MOD_CUSTOMER_INFO
-          unless vc.voice_log_cars.empty?
-            car_no = []
-            vc.voice_log_cars.each do |c|
-              unless c.car_number.nil?
-                car_no << format_car_id(c.car_number.car_no)
-              end
-            end
-            car_no = car_no.join(",")
-          end
-        end
+        #if Aohs::MOD_CUST_CAR_ID and Aohs::MOD_CUSTOMER_INFO
+          #unless vc.voice_log_cars.empty?
+          #  car_no = []
+          #  vc.voice_log_cars.each do |c|
+          #    unless c.car_number.nil?
+          #      car_no << format_car_id(c.car_number.car_no)
+          #    end
+          #  end
+          #  car_no = car_no.join(",")
+          #end
+        #end
       
         is_found_transfer = false
         vc_ng_count = 0
