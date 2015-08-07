@@ -197,10 +197,12 @@ class ExtensionController < ApplicationController
       params[:p] = 'today'
     end
     
+    dst_time = (Date.today - day_ago).strftime("%Y-%m-%d 00:00:00")
+    
     case params[:k]
     when 'unknown_comp'
       
-      sql_a = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where date(check_time) >= (date(now()) - #{day_ago}) group by computer_name,remote_ip) a"
+      sql_a = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where check_time >= '#{dst_time}' group by remote_ip) a"
       sql_b = "(select e.number as extension,c.computer_name as comp1,c.ip_address as ip1 from extensions e left join computer_extension_maps c on e.id = c.extension_id) b"
       sql_c = "(select u.login as username,g.name as group_name from users u left join groups g on u.group_id = g.id) c"
       
@@ -212,7 +214,7 @@ class ExtensionController < ApplicationController
     when 'unknown_user'
 
       sql_a = "(select e.number as extension,c.computer_name as comp1,c.ip_address as ip1 from extensions e left join computer_extension_maps c on e.id = c.extension_id) a"
-      sql_b = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where date(check_time) >= (date(now()) - #{day_ago}) group by computer_name,remote_ip) b"
+      sql_b = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where check_time >= '#{dst_time}' group by remote_ip) b"
       sql_c = "(select u.login as username,g.name as group_name from users u left join groups g on u.group_id = g.id) c"
      
       sql = "select * from #{sql_a} left join #{sql_b} on a.ip1 = b.ip2 left join #{sql_c} on b.login_name = c.username "
@@ -223,8 +225,8 @@ class ExtensionController < ApplicationController
     when 'unmatched_user'
       
       #sql_a = "(select u.login as username,u.display_name,g.name as group_name,r.name as role_name from users u left join groups g on u.group_id = g.id left join roles r on u.role_id = r.id where u.flag = false and u.login not in (#{ Aohs::PRIVATE_ACCOUNTS.map { |a| "'#{a}'" } })) a"
-      sql_a = "(select u.login as username,u.display_name,g.name as group_name,r.name as role_name from users u left join groups g on u.group_id = g.id left join roles r on u.role_id = r.id where u.flag = false ) a"
-      sql_b = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where date(check_time) >= (date(now()) - #{day_ago}) group by computer_name,remote_ip) b"
+      sql_a = "(select u.login as username,u.display_name,g.name as group_name,r.name as role_name from users u left join groups g on u.group_id = g.id join roles r on u.role_id = r.id where u.state <> 'deleted' ) a"
+      sql_b = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where check_time >= '#{dst_time}' group by remote_ip) b"
       
       sql = "select * from #{sql_a} left join #{sql_b} on a.username = b.login_name "
       sql << "where b.login_name is null "
@@ -232,11 +234,11 @@ class ExtensionController < ApplicationController
     
     when 'matched_success'
       
-      sql_a = "(select e.number as extension,c.computer_name as comp1,c.ip_address as ip1 from extensions e left join computer_extension_maps c on e.id = c.extension_id) a"
-      sql_b = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where date(check_time) >= (date(now()) - #{day_ago}) group by computer_name,remote_ip) b"
+      sql_a = "(select e.number as extension,c.computer_name as comp1,c.ip_address as ip1 from extensions e join computer_extension_maps c on e.id = c.extension_id) a"
+      sql_b = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where check_time >= '#{dst_time}' group by remote_ip) b"
       sql_c = "(select u.login as username,u.id as agent_id1,g.name as group_name from users u left join groups g on u.group_id = g.id) c"
-      sql_d = "(select v.agent_id as agent_id2 from #{VoiceLogTemp.table_name} v where date(v.start_time) >= (date(now()) - #{day_ago}) group by v.agent_id) d"
-     
+      sql_d = "(select distinct v.agent_id as agent_id2 from #{VoiceLogTemp.table_name} v where v.start_time >= '#{dst_time}' and v.agent_id > 0) d"
+    
       sql = "select * from #{sql_a} left join #{sql_b} on a.ip1 = b.ip2 left join #{sql_c} on b.login_name = c.username left join #{sql_d} on c.agent_id1 = d.agent_id2 "
       sql << "where b.ip2 is not null and c.username is not null "
       sql << "group by a.extension,a.ip1 "
@@ -245,10 +247,10 @@ class ExtensionController < ApplicationController
     else
       params[:k] = 'overview'
       
-      sql_a = "(select e.number as extension,c.computer_name as comp1,c.ip_address as ip1 from extensions e left join computer_extension_maps c on e.id = c.extension_id) a"
-      sql_b = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where date(check_time) >= (date(now()) - #{day_ago}) group by computer_name,remote_ip) b"
+      sql_a = "(select e.number as extension,c.computer_name as comp1,c.ip_address as ip1 from extensions e join computer_extension_maps c on e.id = c.extension_id) a"
+      sql_b = "(select c.check_time,c.computer_name as comp2,c.remote_ip as ip2,c.login_name from current_computer_status c where check_time >= '#{dst_time}' group by remote_ip) b"
       sql_c = "(select u.login as username,u.id as agent_id1,g.name as group_name from users u left join groups g on u.group_id = g.id) c"
-      sql_d = "(select v.agent_id as agent_id2 from #{VoiceLogTemp.table_name} v where date(v.start_time) >= (date(now()) - #{day_ago}) group by v.agent_id) d"
+      sql_d = "(select distinct v.agent_id as agent_id2 from #{VoiceLogTemp.table_name} v where v.start_time >= '#{dst_time}' and v.agent_id > 0) d"
       
       sql = "select * from #{sql_a} left join #{sql_b} on a.ip1 = b.ip2 left join #{sql_c} on b.login_name = c.username left join #{sql_d} on c.agent_id1 = d.agent_id2 "
       sql << "group by a.extension,a.ip1 "

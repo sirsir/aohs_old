@@ -1077,9 +1077,14 @@ module AmiCallSearch
 					:voice_file_url,
 					:call_direction,
 					:start_time,
-					:call_id,
-					:response_time
+					:call_id
 		]
+	  
+	  if ActiveRecord::Base.connection.column_exists?('voice_logs_today','response_time')
+			# skip response time
+			cols << :response_time
+		end
+	  
 	  cols_counter = [
 					:ngword_count,
 					:mustword_count,

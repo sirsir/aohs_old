@@ -26,9 +26,11 @@
       <div style="font-weight:bold; font-style:italic; padding:3px; padding-bottom:10px;">Period:</div>
       <p class="<%= "selected-content" if params[:p] == 'today' %>"><a href="<%= url_for(:action => 'watcher_result', :k => params[:k], :p => 'today') %>">Today</a></p><br/>
       <p class="<%= "selected-content" if params[:p] == '7days' %>"><a href="<%= url_for(:action => 'watcher_result', :k => params[:k], :p => '7days') %>">7 Days ago</a></p><br/>
+      <!--
       <p class="<%= "selected-content" if params[:p] == '30days' %>"><a href="<%= url_for(:action => 'watcher_result', :k => params[:k], :p => '30days') %>">30 Days ago</a></p><br/>
       <p class="<%= "selected-content" if params[:p] == '6months' %>"><a href="<%= url_for(:action => 'watcher_result', :k => params[:k], :p => '6months') %>">6 Month ago</a></p><br/>
       <p class="<%= "selected-content" if params[:p] == 'alltime' %>"><a href="<%= url_for(:action => 'watcher_result', :k => params[:k], :p => 'alltime') %>">All Time</a></p><br/>
+      -->
     </td>
     <td valign="top">
       <% if params[:k] == 'unknown_comp' %>
