@@ -12,7 +12,7 @@
 <all-permissions/>
 </security>
     <resources>
-        <j2se version="1.6+"/>
+        <j2se version="1.6+" max-heap-size="128m"/>
         <jar href="AmiVoiceCallMonitor.jar" main="true"/>
     <jar href="lib/imq.jar"/>
 <jar href="lib/jain-sip-api-1.2.jar"/>

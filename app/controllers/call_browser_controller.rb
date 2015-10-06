@@ -115,7 +115,7 @@ class CallBrowserController < ApplicationController
         ds = ds.group(:agent_id).all
         
         cs = CurrentChannelStatus.select("*, timediff(now(), start_time) as diff, time(start_time) as st_time")
-        cs = cs.where(["agent_id in (?) and connected = 'connected' and start_time >= ?",all_agent_id,Time.now.strftime("%-%m-%d 00:00:00")])
+        cs = cs.where(["agent_id in (?) and connected = 'connected' and start_time >= ?",all_agent_id,Time.now.strftime("%Y-%m-%d 00:00:00")])
         cs = cs.order("start_time desc").all
         
         usr.each do |u|
