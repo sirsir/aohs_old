@@ -137,20 +137,27 @@ class ComputerLogController < ApplicationController
 			data[:versions]   = data_versions.join(',')
 			data[:remote_ip]  = remote_ip
 			data[:check_time] = Time.new.strftime("%Y-%m-%d %H:%M:%H")
+      data[:computer_event] = event_name
       
-      # data[:computer_event] = event_name
-      
-      ccs = CurrentComputerStatus.where({ :remote_ip => remote_ip }).first
-      if ccs.nil?
-        ccs = CurrentComputerStatus.new(data)
-        ccs.save!
-      else
-        ccs = CurrentComputerStatus.update_all(data,{:computer_name => computer_name, :remote_ip => remote_ip}) 
+      begin
+        ccs = CurrentComputerStatus.where({ :remote_ip => remote_ip }).first
+        if ccs.nil?
+          ccs = CurrentComputerStatus.new(data)
+          ccs.save!
+        else
+          ccs = CurrentComputerStatus.update_all(data,{:computer_name => computer_name, :remote_ip => remote_ip}) 
+        end
+      rescue => e
+        STDERR.puts e.message
       end
-
-      cpl = ComputerLog.new(data)
-      cpl.save!
-  
+      
+      begin
+        cpl = ComputerLog.new(data)
+        cpl.save!
+      rescue => e
+        STDERR.puts e.message  
+      end
+    
       if messages.empty?
         messages << "OK"
       end
@@ -225,13 +232,20 @@ class ComputerLogController < ApplicationController
 
 				# update extension agent map
 				eam = ExtensionToAgentMap.where({:extension => ext.number}).first
-				if eam.nil?
-					eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user_id})
-				else
-					eam.agent_id = user_id
-				end
-				eam.save!
-				
+				if event_name == "logoff"
+          unless eam.nil?
+            eam.agent_id = 0
+            eam.save
+          end
+        else
+          if eam.nil?
+            eam = ExtensionToAgentMap.new({:extension => ext.number, :agent_id => user_id})
+          else
+            eam.agent_id = user_id
+          end
+          eam.save!        
+        end
+
 				#unless eam.nil?
 				#	dids = Did.where({ :extension_id => ext.id }).all
 				#	unless dids.empty?

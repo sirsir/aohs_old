@@ -581,14 +581,14 @@ buildAgentPattern();
   <div class="condStyle1">
     <span class="condName1">Call Direction:</span>
 	<div class="chk-direction">
-	<% if @conds == false %>
-	    <input type="checkbox" name="vcCD1" id="vcCD1" value="i" checked> <label for="vcCD1" class="vcCD">In</label>
-	    <input type="checkbox" name="vcCD2" id="vcCD2" value="o" checked> <label for="vcCD2" class="vcCD">Out</label>		
-	<% else %>
-	    <input type="checkbox" name="vcCD1" id="vcCD1" value="i" <%= ((@conds[:cd].nil? or @conds[:cd] == 'i') ? "checked" : "") %>> <label for="vcCD1" class="vcCD">In</label>
-	    <input type="checkbox" name="vcCD2" id="vcCD2" value="o" <%= ((@conds[:cd].nil? or @conds[:cd] == 'o') ? "checked" : "") %>> <label for="vcCD2" class="vcCD">Out</label>	
-	<% end %>
-    <input type="checkbox" name="vcCD3" id="vcCD3" value="e" checked> <label for="vcCD3" class="vcCD">Other</label>
+    <% if @conds == false %>
+        <input type="checkbox" name="vcCD1" id="vcCD1" value="i" checked> <label for="vcCD1" class="vcCD">In</label>
+        <input type="checkbox" name="vcCD2" id="vcCD2" value="o" checked> <label for="vcCD2" class="vcCD">Out</label>		
+    <% else %>
+        <input type="checkbox" name="vcCD1" id="vcCD1" value="i" <%= ((@conds[:cd].nil? or @conds[:cd] == 'i') ? "checked" : "") %>> <label for="vcCD1" class="vcCD">In</label>
+        <input type="checkbox" name="vcCD2" id="vcCD2" value="o" <%= ((@conds[:cd].nil? or @conds[:cd] == 'o') ? "checked" : "") %>> <label for="vcCD2" class="vcCD">Out</label>	
+    <% end %>
+    <!-- <input type="checkbox" name="vcCD3" id="vcCD3" value="e" checked> <label for="vcCD3" class="vcCD">Other</label> -->
     </div>
   </div>
   <div class="condStyle1" style="<%= 'display:none;' if not Aohs::MOD_CALL_TRANSFER %>">

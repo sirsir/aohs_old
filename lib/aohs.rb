@@ -60,8 +60,8 @@ module Aohs
   LOGGERS_ID                  = []
                               # [1,2], [] 
   LOGGERS_LIST                = [
-                                  {:id => 2, :name => "Sub", :url => "http://172.22.101.51:8081/AohsWeb"},
-                                  {:id => 1, :name => "Main", :url => "http://172.22.101.40:8081/AohsWeb"}
+                                  {:id => 2, :name => "Sub", :url => "http://192.168.1.88:3003?main"},
+                                  {:id => 1, :name => "Main", :url => "http://192.168.1.88:3003?sub"}
                                 ]
   VLTBL_PREFIX                = "voice_logs_"
   

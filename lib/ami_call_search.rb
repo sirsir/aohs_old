@@ -3,18 +3,19 @@ module AmiCallSearch
   def set_current_user_for_call_search(user_id=nil)
 
     @app_user = nil
-		if (not user_id.nil?) and (user_id.to_i > 0)
+		if user_id.to_i <= 0 and defined? current_user
 			user_id = current_user.id
 		end
-    @app_user = User.where({:id => user_id }).first
-    
+		
+    @app_user = User.where({:id => user_id.to_i }).first unless user_id.nil?
+   
   end
   
   def retrive_sort_columns(sort_by,order_by="DESC")
 
-    orders 		= []
-		order_sql = ""
-		order_by  = "DESC" if order_by.empty?
+    orders 			= []
+		order_sql 	= ""
+		order_by  	= "DESC" if order_by.empty?
 		
     vl_cols 		= VoiceLogTemp.new.attribute_names.to_a
     vc_cols 		= VoiceLogCounter.new.attribute_names.to_a
@@ -32,8 +33,9 @@ module AmiCallSearch
 		else
 			order_sql = "#{vl_tblname}.start_time"
     end
+	
 		order_sql << " #{order_by}"
-    orders 		<< order_sql
+    orders << order_sql
     
     return orders
     
@@ -116,14 +118,16 @@ module AmiCallSearch
 		end
     
     if period_type == 0
-      # custom period
-      dt_cond = "#{vl_tbl_name}.start_time BETWEEN '#{call_from_date}' AND '#{call_to_date}'"
+			call_to_date = Time.parse(call_to_date)
+			call_from_date = Time.parse(call_from_date)	
     else
-      dt_cond = "#{vl_tbl_name}.start_time BETWEEN '#{call_from_date.strftime("%Y-%m-%d")} 00:00:00' AND '#{call_to_date.strftime("%Y-%m-%d")} 23:59:59'"
+			call_to_date = Time.parse("#{call_to_date.strftime("%Y-%m-%d")} 23:59:59")
+			call_from_date = Time.parse("#{call_from_date.strftime("%Y-%m-%d")} 00:00:00")
     end
+    dt_cond = "#{vl_tbl_name}.start_time BETWEEN '#{call_from_date.strftime("%Y-%m-%d %H:%M:%S")}' AND '#{call_to_date.strftime("%Y-%m-%d %H:%M:%S")}'"
+    
+    return dt_cond, call_from_date, call_to_date
 
-    return dt_cond
-  
   end
 
   def retrive_duration_conditions(from_dur,to_dur)
@@ -186,11 +190,12 @@ module AmiCallSearch
           agents = agents.concat(leaders.map { |y| y.leader_id })
         end
       end
-
+      
+      # added unknown agent
+      agents << 0
       managers = find_manager_watch()
       agents = agents.concat(managers)
-			agents = agents.sort.uniq
-			
+      agents = agents.sort.uniq
     else
       agents = nil
     end
@@ -302,11 +307,11 @@ module AmiCallSearch
 		vl_tblname 	= VoiceLogTemp.table_name
 		
 		# normal
-		select					= []
-		conditions  		= []
-	  orders 					= []
-		joins  					= []
-		sqla  					= ""
+		select				= []
+		conditions  	= []
+		orders 				= []
+		joins  				= []
+		sqla  				= ""
 		
 		select = column_select_list
 		
@@ -424,14 +429,15 @@ module AmiCallSearch
 		select = column_select_list
 		vindex = get_index_key(sc)
 		
-		joins << "LEFT JOIN voice_log_counters c ON v.id = c.voice_log_id"
+		#joins << "LEFT JOIN voice_log_counters c ON v.id = c.voice_log_id"
 
 		# joins/wheres
 		sc[:conditions].each do |cond|
 			condx = cond.clone
 			case 0
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
-				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/) or (condx =~ /flag/)
+				#if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/) or (condx =~ /flag/) or (condx =~ /agent_id/)
+				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /flag/) or (condx =~ /agent_id/)
 					conditions << condx.gsub(vl_tblname,"v")
 				end
 			when condx =~ /(voice_log_counters)/
@@ -440,9 +446,9 @@ module AmiCallSearch
 			when condx =~ /(voice_log_customers)/
 				joins << "LEFT JOIN voice_log_customers cu ON v.id = cu.voice_log_id"
 				conditions << condx.gsub("voice_log_customers","cu")
-			when condx =~ /(voice_log_cars)/
-				joins << "LEFT JOIN voice_log_cars cr ON v.id = cr.voice_log_id"
-				conditions << condx.gsub("voice_log_cars","cr")				
+			#when condx =~ /(voice_log_cars)/
+			#	joins << "LEFT JOIN voice_log_cars cr ON v.id = cr.voice_log_id"
+			#	conditions << condx.gsub("voice_log_cars","cr")				
 			end
 		end
 	
@@ -509,7 +515,8 @@ module AmiCallSearch
 			condx = cond.clone
 			case 0
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
-				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/) or (condx =~ /flag/)
+				#if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/) or (condx =~ /flag/) or (condx =~ /agent_id/) 
+				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /flag/) or (condx =~ /agent_id/) 
 					conditions << condx.gsub(vl_tblname,"v")
 				end
 			when condx =~ /(voice_log_counters)/
@@ -518,9 +525,9 @@ module AmiCallSearch
 			when condx =~ /(voice_log_customers)/
 				joins << "LEFT JOIN voice_log_customers cu ON v.id = cu.voice_log_id"
 				conditions << condx.gsub("voice_log_customers","cu")
-			when condx =~ /(voice_log_cars)/
-				joins << "LEFT JOIN voice_log_cars cr ON v.id = cr.voice_log_id"
-				conditions << condx.gsub("voice_log_cars","cr")				
+			#when condx =~ /(voice_log_cars)/
+			#	joins << "LEFT JOIN voice_log_cars cr ON v.id = cr.voice_log_id"
+			#	conditions << condx.gsub("voice_log_cars","cr")				
 			end
 		end
 	
@@ -562,10 +569,11 @@ module AmiCallSearch
 				joins << "JOIN taggings tg ON vs.id = tg.taggable_id "
 				conditions << condx.gsub("taggings","tg")
 				conditions << "tg.taggable_type = 'VoiceLog'"
-				conditions << "tg.context = 'tags'"			
+				conditions << "tg.context = 'tags'"
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
-				if (condx =~ /(call_direction)/) or (condx =~ /(extension)/) or (condx =~ /(flag)/)
-				elsif (condx =~ /(start_time)/) or (condx =~ /(duration)/)
+				#if (condx =~ /(call_direction)/) or (condx =~ /(extension)/) or (condx =~ /(flag)/) or (condx  =~ /(agent_id)/) or (condx =~ /(duration)/) or (condx =~ /(duration)/)
+				if (condx =~ /(call_direction)/) or (condx =~ /(flag)/) or (condx  =~ /(agent_id)/) or (condx =~ /(duration)/) or (condx =~ /(duration)/) 
+				elsif (condx =~ /(start_time)/)
 					conditions_all << condx.gsub(vl_tblname,"vs")
 				else
 					conditions << condx.gsub(vl_tblname,"vs")
@@ -584,7 +592,7 @@ module AmiCallSearch
 			unless conditions.empty?
 				sql << "WHERE #{conditions.join(" AND ")} "
 			end
-			sql << "ORDER BY NULL "
+			sql << "ORDER BY NULL "	
 			sql = "JOIN (#{sql}) vs ON v.call_id = vs.xcall_id "
 		end
 		
@@ -609,9 +617,9 @@ module AmiCallSearch
       when condx =~ /(voice_log_customers)/
 				joins << "JOIN voice_log_customers cu ON vs.id = cu.voice_log_id "
 				conditions << condx.gsub("voice_log_customers","cu")
-      when condx =~ /(voice_log_cars)/
-				joins << "JOIN voice_log_cars cr ON vs.id = cr.voice_log_id "
-				conditions << condx.gsub("voice_log_cars","cr")
+      #when condx =~ /(voice_log_cars)/
+			#	joins << "JOIN voice_log_cars cr ON vs.id = cr.voice_log_id "
+			#	conditions << condx.gsub("voice_log_cars","cr")
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
 				if (condx =~ /(call_direction)/)
 				elsif (condx =~ /(start_time)/) or (condx =~ /(duration)/)
@@ -776,7 +784,7 @@ module AmiCallSearch
 
     if not sc[:page] == false
       page 				= sc[:page]
-      total_page 	= ((record_count).to_f / sc[:perpage]).ceil
+      total_page 	= ((record_count).to_f / sc[:perpage].to_i).ceil
       page = 0 if total_page == 0
       sc[:page] = page
       page_info = {
@@ -956,14 +964,14 @@ module AmiCallSearch
           end
         end
 				
-				if Aohs::MOD_CUSTOMER_INFO
-					unless vc.voice_log_customer.nil?
-						unless vc.voice_log_customer.customer.nil?
-              customer_id = vc.voice_log_customer.customer.id
-              customer_name = vc.voice_log_customer.customer.customer_name rescue ""
-            end
-          end
-				end
+				#if Aohs::MOD_CUSTOMER_INFO
+				#	unless vc.voice_log_customer.nil?
+				#		unless vc.voice_log_customer.customer.nil?
+        #      customer_id = vc.voice_log_customer.customer.id
+        #      customer_name = vc.voice_log_customer.customer.customer_name rescue ""
+        #    end
+        #  end
+				#end
       
         #if Aohs::MOD_CUST_CAR_ID and Aohs::MOD_CUSTOMER_INFO
           #unless vc.voice_log_cars.empty?
@@ -989,11 +997,17 @@ module AmiCallSearch
 					vc_tranfered_count = vc.trf_call_count #vc.transfer_call_count.to_i
 				rescue
 					vcc = vc.voice_log_counter
-					vc_ng_count 	= vcc.ngword_count.to_i
-					vc_must_count = vcc.mustword_count.to_i
-					vc_book_count = vcc.bookmark_count.to_i
-					vc_tranfered_count = vcc.transfer_call_count.to_i
-				end 
+					begin
+						unless vcc.nil?
+							vc_ng_count 	= vcc.ngword_count.to_i
+							vc_must_count = vcc.mustword_count.to_i
+							vc_book_count = vcc.bookmark_count.to_i
+							vc_tranfered_count = vcc.transfer_call_count.to_i
+						end
+					rescue
+					end
+				end
+        
 				if Aohs::MOD_CALL_TRANSFER
 					is_found_transfer = vc.have_transfered_call?(vc_tranfered_count)
 				end
@@ -1099,13 +1113,13 @@ module AmiCallSearch
 					:ori_call_id,
 					:answer_time					 
 			])
-			cols_counter.concat([
-					:transfer_call_count
-			])
+			#cols_counter.concat([
+			#		:transfer_call_count
+			#])
 		end
     
 	  select = cols.map { |c| "v.#{c.to_s}" }
-		select.concat(cols_counter.map { |c| "c.#{c.to_s}"})
+		#select.concat(cols_counter.map { |c| "c.#{c.to_s}"})
 	  
 	  return select
   
@@ -1114,24 +1128,23 @@ module AmiCallSearch
 	def column_select_sum
 		
 	  cols = [
-					"COUNT(v.id) AS call_count",
-					"SUM(v.duration) AS duration",
-					"SUM(c.ngword_count) AS ng_word",
-					"SUM(c.mustword_count) AS mu_word",
-					"SUM(IF(v.call_direction = 'i',1,0)) as call_in",
-					"SUM(IF(v.call_direction = 'o',1,0)) as call_out"
-
+      "COUNT(0) AS call_count",
+      "SUM(v.duration) AS duration",
+      "SUM(c.ngword_count) AS ng_word",
+      "SUM(c.mustword_count) AS mu_word",
+      "SUM(IF(v.call_direction = 'i',1,0)) as call_in",
+      "SUM(IF(v.call_direction = 'o',1,0)) as call_out"
 		]
 
     case Aohs::CURRENT_LOGGER_TYPE
 		when :eone
 		when :extension
 			cols.concat([
-					"SUM(c.transfer_in_count) AS trf_in",
-					"SUM(c.transfer_out_count) AS trf_out",
-					"SUM(c.transfer_duration) AS trf_duration",
-					"SUM(c.transfer_ng_count) AS trf_ng_count",
-					"SUM(c.transfer_must_count) AS trf_must_count",
+        #"SUM(c.transfer_in_count) AS trf_in",
+        #"SUM(c.transfer_out_count) AS trf_out",
+        "SUM(c.transfer_duration) AS trf_duration",
+        "SUM(c.transfer_ng_count) AS trf_ng_count",
+        "SUM(c.transfer_must_count) AS trf_must_count",
 			])
 		end
 	  
