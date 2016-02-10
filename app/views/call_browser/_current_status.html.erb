@@ -368,7 +368,7 @@
           var conn = data.conn;
           var ng = data.ng_count;
           var mst = data.mst_count;
-
+          var ext = data.ext;
           /* in _real_time page */
           update_currentcall_label(st_time, dir, from, to);
           
@@ -376,7 +376,7 @@
             change_status_talking(agent_id, st_time, from, to, sys_id, dev_id, chn_id, dir);
           
           if(callmonitorx != null){
-            callmonitorx.addSipSetting(sys_id,dev_id,chn_id);
+            callmonitorx.addSipSetting(sys_id,dev_id,chn_id, ext);
             callmonitorx.startListening();
           }
           

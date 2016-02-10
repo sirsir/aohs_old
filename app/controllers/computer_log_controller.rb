@@ -97,7 +97,7 @@ class ComputerLogController < ApplicationController
     if params.has_key?(:remote_ip) and not params[:remote_ip].empty?
       remote_ip = params[:remote_ip]
     else
-      remote_ip = request.remote_ip
+      remote_ip = get_real_ip #request.remote_ip
     end
 
 		event_name = ""
@@ -202,7 +202,7 @@ class ComputerLogController < ApplicationController
     if params.has_key?(:remote_ip) and not params[:remote_ip].empty?
       login_name = params[:login_name].to_s.strip.gsub(" ","")
     else
-      remote_ip = request.remote_ip
+      remote_ip = get_real_ip #request.remote_ip
     end
     result << "ip=#{remote_ip}"
 
@@ -283,5 +283,19 @@ class ComputerLogController < ApplicationController
     return result
 
   end
+
+  def get_real_ip
+    
+    client_ip = request.env["HTTP_X_FORWARDED_FOR"].to_s
+    if client_ip.empty?
+      client_ip = request.env['REMOTE_ADDR'].to_s
+      if client_ip.empty?
+        client_ip = request.remote_ip
+      end
+    end
+    
+    return client_ip
   
+ end
+
 end

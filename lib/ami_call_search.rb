@@ -437,7 +437,8 @@ module AmiCallSearch
 			case 0
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
 				#if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/) or (condx =~ /flag/) or (condx =~ /agent_id/)
-				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /flag/) or (condx =~ /agent_id/)
+				#if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /flag/) or (condx =~ /agent_id/)
+        if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /flag/)
 					conditions << condx.gsub(vl_tblname,"v")
 				end
 			when condx =~ /(voice_log_counters)/
@@ -516,7 +517,8 @@ module AmiCallSearch
 			case 0
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
 				#if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /extension/) or (condx =~ /flag/) or (condx =~ /agent_id/) 
-				if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /flag/) or (condx =~ /agent_id/) 
+				#if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /flag/) or (condx =~ /agent_id/)
+        if (condx =~ /start_time/) or (condx =~ /call_direction/) or (condx =~ /duration/) or (condx =~ /flag/)
 					conditions << condx.gsub(vl_tblname,"v")
 				end
 			when condx =~ /(voice_log_counters)/
@@ -572,7 +574,8 @@ module AmiCallSearch
 				conditions << "tg.context = 'tags'"
 			when condx =~ /(voice_logs)/, condx =~ /(\(voice_logs)/
 				#if (condx =~ /(call_direction)/) or (condx =~ /(extension)/) or (condx =~ /(flag)/) or (condx  =~ /(agent_id)/) or (condx =~ /(duration)/) or (condx =~ /(duration)/)
-				if (condx =~ /(call_direction)/) or (condx =~ /(flag)/) or (condx  =~ /(agent_id)/) or (condx =~ /(duration)/) or (condx =~ /(duration)/) 
+				#if (condx =~ /(call_direction)/) or (condx =~ /(flag)/) or (condx  =~ /(agent_id)/) or (condx =~ /(duration)/) or (condx =~ /(duration)/)
+        if (condx =~ /(call_direction)/) or (condx =~ /(flag)/) or (condx =~ /(duration)/) or (condx =~ /(duration)/) 
 				elsif (condx =~ /(start_time)/)
 					conditions_all << condx.gsub(vl_tblname,"vs")
 				else
@@ -592,7 +595,7 @@ module AmiCallSearch
 			unless conditions.empty?
 				sql << "WHERE #{conditions.join(" AND ")} "
 			end
-			sql << "ORDER BY NULL "	
+			sql << "ORDER BY NULL "
 			sql = "JOIN (#{sql}) vs ON v.call_id = vs.xcall_id "
 		end
 		

@@ -48,6 +48,7 @@ class CallBrowserController < ApplicationController
             :chn_id => ccl.channel_id.to_i,
             :ani => ccl.ani,
             :dnis => ccl.dnis,
+            :ext => ccl.extension,
             :diff => ccl.diff,
             :c_dir => ccl.call_direction,
             :st_time => ccl.start_time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -161,6 +162,7 @@ class CallBrowserController < ApplicationController
                 xu[:call_start_time] = cc.st_time
                 xu[:call_ani] = cc.ani
                 xu[:call_dnis] = cc.dnis
+                xu[:call_ext] = cc.extension
                 xu[:call_duration] = cc.diff
                 xu[:call_direction] = cc.call_direction
                 xu[:call_conn] = cc.connected
