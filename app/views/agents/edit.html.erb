@@ -97,12 +97,12 @@
           <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
             <tr>
               <td width="140px" valign="top"><label for="login">Username:</label></td>
-              <td><%= f.text_field :login, :size => 20, :maxsize => 50, :class =>'input-text' %><span class="span-require">*</span>
+              <td><%= f.text_field :login, :size => 20, :maxlength => 50, :class =>'input-text' %><span class="span-require">*</span>
               <br><span class="note">Account must have a minimum of 4 characters</span></td>
             </tr>
             <tr>
               <td><label for="display_name">Display name:</label></td>
-              <td><%= f.text_field :display_name, :size => 20, :maxsize => 50, :class =>'input-text' %></td>
+              <td><%= f.text_field :display_name, :size => 20, :maxlength => 50, :class =>'input-text' %></td>
             </tr>
             <tr>
               <td><label for="group">Group:</label></td>
@@ -110,12 +110,12 @@
             </tr>
             <tr>
               <td width="150px" valign="top"><label for="cti_agent_id">CTI Agent ID:</label></td>
-              <td><%= f.text_field :cti_agent_id, :size => 20, :maxsize => 50, :class =>'input-text' %></td>
+              <td><%= f.text_field :cti_agent_id, :size => 20, :maxlength => 20, :class =>'input-text' %></td>
             </tr>
 			<!-- ID CARD -->				   
             <tr>
               <td width="150px" valign="top"><label for="id_card">Citizen ID:</label></td>
-              <td><%= f.text_field :id_card, :size => 20, :maxsize => 50, :class =>'input-text' %>
+              <td><%= f.text_field :id_card, :size => 20, :maxlength => 30, :class =>'input-text' %>
 			  <br><span class="note">Citizen ID is composed of 13 digits.</span></td>
             </tr> 		
 			         
@@ -148,13 +148,13 @@
           <tr>
             <td width="140px" valign="top"><label for="Password">Password:</label></td>
             <td>
-              <%= f.password_field :password, :size => 25, :maxsize => 20,:class =>'input-text' %><span class="span-require">*</span>
+              <%= f.password_field :password, :size => 25, :maxlength => 20,:class =>'input-text' %><span class="span-require">*</span>
               <br><span class="note">Password must have a minimum of 6 characters</span>
             </td>
           </tr>
           <tr>
             <td><label for="password_confirmation">Confirm Password:</label></td>
-            <td><%= f.password_field :password_confirmation, :size => 25, :maxsize => 20,:class =>'input-text' %><span class="span-require">*</span></td>
+            <td><%= f.password_field :password_confirmation, :size => 25, :maxlength => 20,:class =>'input-text' %><span class="span-require">*</span></td>
           </tr>
             <tr>
               <td></td>

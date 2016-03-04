@@ -145,12 +145,18 @@ module ApplicationHelper
   
   def display_cti_id(cti)
 	
-  	if cti.nil?
-  		return ""
-  	else
-  		return sprintf("%05d",cti)
-  	end
+  	#if cti.nil?
+  	#	return ""
+  	#else
+  	#	return sprintf("%05d",cti)
+  	#end
 	
+    if cti.blank?
+      return ""
+    else
+      return cti.to_s.strip
+    end
+    
   end
   
   def weekly_picker(name,current_week="2100-01-01",weeks=6*4)

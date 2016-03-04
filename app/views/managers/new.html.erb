@@ -47,30 +47,30 @@
                 <tr>
                     <td width="150px" align="left" valign="top"><label>Username:</label></td>
                     <td>
-                        <%= text_field 'manager', 'login', :size => 30, :maxsize => 50, :class =>'input-text' %><span class="span-require">*</span>
+                        <%= text_field 'manager', 'login', :size => 30, :maxlength => 50, :class =>'input-text' %><span class="span-require">*</span>
                         <br><span class="note">Username must have a minimum of 3 characters</span>
                     </td>
                 </tr>
                 <tr>
                     <td><label>Display name:</label></td>
-                    <td><%= text_field 'manager', 'display_name', :size => 30, :maxsize => 50,:class =>'input-text' %><span class="span-require">*</span></td>
+                    <td><%= text_field 'manager', 'display_name', :size => 30, :maxlength => 50,:class =>'input-text' %><span class="span-require">*</span></td>
                 </tr>
                 <tr>
                     <td><label>E-mail:</label></td>
-                    <td><%= text_field 'manager', 'email', :size => 50, :maxsize => 50,:class =>'input-text' %>
+                    <td><%= text_field 'manager', 'email', :size => 50, :maxlength => 50,:class =>'input-text' %>
 					<br><span class="note">E-mail address must use format "youremail@domainname"</span>
 					</td>
                 </tr>
 				<!-- ID CARD-->					
                 <tr>
                    <td><label>Citizen ID:</label></td>
-                   <td><%= text_field 'manager','id_card',:size => 13,:maxsize => 13,:class => 'input-text' %>
+                   <td><%= text_field 'manager','id_card',:size => 13,:maxlength => 13,:class => 'input-text' %>
 				   <br><span class="note">Citizen ID is composed of 13 digits.</span>
 				   </td>
                 </tr>								
                 <tr>
                    <td><label>CTI Agent ID:</label></td>
-                   <td><%= text_field 'manager','cti_agent_id', :size => 30, :maxsize => 13,:class => 'input-text' %></td>
+                   <td><%= text_field 'manager','cti_agent_id', :size => 30, :maxlength => 20,:class => 'input-text' %></td>
                 </tr>
                <tr>
                 <td><label for="sex">Sex:</label></td>

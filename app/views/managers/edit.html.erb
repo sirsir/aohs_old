@@ -340,27 +340,27 @@
             <table class="tbl-frm-details" cellpadding="0" cellspacing="0">
             <tr>
               <td width="130px" align="left" valign="top"><label>Username:</label></td>
-              <td width="300px"><%= f.text_field :login,{:class =>'input-text',:size => 20,:maxsize => 30} %><span class="span-require">*</span>
+              <td width="300px"><%= f.text_field :login,{:class =>'input-text',:size => 20,:maxlength => 30} %><span class="span-require">*</span>
               <br><span class="note">Username must have a minimum of 4 characters</span></td>
             </tr>
             <tr>
               <td><label>Display name:</label></td>
-              <td><%= f.text_field :display_name,{:class =>'input-text',:size => 20,:maxsize => 30} %><span class="span-require">*</span></td>
+              <td><%= f.text_field :display_name,{:class =>'input-text',:size => 20,:maxlength => 30} %><span class="span-require">*</span></td>
             </tr>
             <tr>
               <td><label>E-mail:</label></td>
-              <td><%= f.text_field :email,{:class =>'input-text',:size => 20,:maxsize => 100} %></td>
+              <td><%= f.text_field :email,{:class =>'input-text',:size => 20,:maxlength => 100} %></td>
             </tr>			
             <tr>
               <td><label>CTI Agent ID:</label></td>
-              <td><%= f.text_field :cti_agent_id,{:class => 'input-text',:size => 20,:maxsize => 30} %>
+              <td><%= f.text_field :cti_agent_id,{:class => 'input-text',:size => 20,:maxlength => 20} %>
 			   <br><span class="note">Citizen ID is composed of 13 digits.</span>
 			  </td>
             </tr>
 			<!-- ID CARD-->			
             <tr>
               <td><label>Citizen ID:</label></td>
-              <td><%= f.text_field :id_card,{:class => 'input-text',:size => 20,:maxsize => 30} %></td>
+              <td><%= f.text_field :id_card,{:class => 'input-text',:size => 20,:maxlength => 30} %></td>
             </tr>		
 				
             <tr>

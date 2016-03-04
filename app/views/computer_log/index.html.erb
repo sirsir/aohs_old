@@ -201,7 +201,7 @@
 	  <td class="string"><%=h log.computer_name %></td>
 	  <td class="string"><%=h log.remote_ip %>&nbsp;</td>
 	  <td class="string"><%= log.login_name %>&nbsp;</td>
-	  <td class="string"><%=h log.cti_agent_id.blank? ? "" : sprintf("%05d",log.cti_agent_id) %>&nbsp;</td>
+	  <td class="string"><%=h display_cti_id(log.cti_agent_id) %>&nbsp;</td>
       <td class="string"><%=h log.os_version %>&nbsp;</td>
       <td class="string"><%=h log.java_version %>&nbsp;</td>
       <td class="none"><%=h log.watcher_version %>&nbsp;</td>

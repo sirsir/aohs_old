@@ -82,6 +82,8 @@ class User < ActiveRecord::Base
 
   def do_delete
      self.deleted_at = Time.now.utc
+     self.flag  = '1'
+     self.state = 'deleted'
   end
 
   def do_activate
