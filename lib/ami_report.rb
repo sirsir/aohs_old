@@ -65,9 +65,9 @@ module AmiReport
   def chek_report_period(period)
 
     case period
-    when 'd','daily':
+    when 'd','daily'
       return 'd'
-    when 'w','weekly':
+    when 'w','weekly'
       return 'w'
     else 
       #'m','monthly'

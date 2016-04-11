@@ -1,0 +1,70 @@
+<% content_for :header do %>
+<style>
+  .btn {
+    padding: 3px;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-right: 2px;
+  }
+</style>
+<script type="text/javascript">
+  
+  var ofile = "<%= params[:ofile] %>";
+  
+  function uploadFile() {
+    $("form[name=frm_browse]").submit();
+  }
+  
+  function onLoadFile() {
+    var furl = $("#btn_browse")[0].files[0].name;
+    var fext = furl.substr(-3,3);
+    if ((fext == "spx") || (fext == "wav")) {
+      uploadFile();
+    } else {
+      alert("Unknown file format " + fext);
+    }
+  }
+  
+  function loadAudioFile() {
+    //,fpath = fpath.replace(/\\/g,"\\\\");
+    if (ofile.length > 3) {
+      AmiAdvw.LoadFromFile("<%= @pubilc_url %>/" + ofile);
+    }
+  }
+  
+  $(document).ready(function(){
+    $("#btn_browse").change(function(){
+      onLoadFile();
+    });
+    setTimeout(function(){
+      loadAudioFile();
+    },100);    
+  });
+</script>
+<% end %>
+<div style="padding:5px">
+  <h2>Audio Viewer</h2>
+  <% if params[:ofile] %>
+  <h3>File: <%= params[:ofile] %></h3>
+  <% end %>
+</div>
+<div style="padding:5px">
+  <object id="AmiAdvw" classid="clsid:E95BFCD4-723A-4580-B8A6-ACADCE6DE293" width="100%" height="30%" codebase="http://journey/tools/amiadvw/AmiAdvwCtrl.exe#version=1,0,0,0" onerror="this.outerHTML = '<center><font color=red>Audio Viewer ActiveX Control is not installed yet.</font></center>';" style="z-index:-2;" title="activex">
+    <param name="MeasureVisible" value="1">
+    <param name="MeterVisible" value="0">
+    <param name="TimeSamplesGuideVisible" value="0">
+    <param name="ColorTheme" value="1">
+    <param name="ScrollBarVisible" value="1">
+    <param name="ColorTheme" value="2">
+  </object>
+</div>
+<div style="padding:5px">
+  <form name="frm_browse" action="<%= url_for(:controller => 'voice_logs', :action => 'viewer', :upload => 'yes') %>" method="post" enctype="multipart/form-data">
+    <input name="authenticity_token" type="hidden" value="<%=form_authenticity_token %>">
+    <input type="file" id="btn_browse" name="audio_file" class="btn">
+    <input type="button" id="btn_play" name="btn_play" value="Play" class="btn" onclick="AmiAdvw.Play();">
+    <input type="button" id="btn_stop" name="btn_stop" value="Stop" class="btn" onclick="AmiAdvw.StopPlaying();">
+    <input type="button" id="btn_dec_vol" name="btn_dec_vol" value="- Vol" class="btn" onclick="AmiAdvw.ChangePlayingVolumeDown();">
+    <input type="button" id="btn_inc_vol" name="btn_inc_vol" value="+ Vol" class="btn" onclick="AmiAdvw.ChangePlayingVolumeUp();">
+  </form>
+</div>

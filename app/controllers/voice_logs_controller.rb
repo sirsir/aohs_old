@@ -2,8 +2,8 @@ require 'cgi'
 
 class VoiceLogsController < ApplicationController
 
-  before_filter :login_required
-  before_filter :permission_require, :except => [:voice_log_cols,:timeline_source,:manage_bookmark,:manage_keyword,:search_voice_log,:save_change_bookmark,:get_transfer_calls,:get_call_info,:file]
+  before_filter :login_required, :except => [:viewer]
+  before_filter :permission_require, :except => [:voice_log_cols,:timeline_source,:manage_bookmark,:manage_keyword,:search_voice_log,:save_change_bookmark,:get_transfer_calls,:get_call_info,:file,:viewer]
 
   include AmiTimeline
   include AmiCallSearch
@@ -307,7 +307,7 @@ class VoiceLogsController < ApplicationController
     end
     
     case params[:layout]
-    when /^report/:
+    when /^report/
       render :layout => 'voice_logs_report'
     end
     
@@ -560,4 +560,35 @@ class VoiceLogsController < ApplicationController
       
    end
 
+	 def viewer
+			
+			@public_dir = "/var/www/html/tmpaudio"
+			@pubilc_url = "http://192.168.1.88:80/tmpaudio"
+			
+			if params.has_key?(:upload) and params[:upload] == "yes"
+        
+        out_file = "false"
+        
+        if params.has_key?(:audio_file)
+					
+					tmp_dir = @public_dir          
+					uploaded_file = params[:audio_file]
+					tmp_file = File.join(@public_dir,uploaded_file.original_filename)
+					File.open(tmp_file,'wb') do |file|
+						file.write(uploaded_file.read)
+					end
+					
+					out_file = uploaded_file.original_filename
+					
+        end
+        
+        redirect_to :action => 'viewer', :result => "success", :ofile => out_file
+      
+			else
+		
+				render :layout => 'blank'
+      end
+      
+   end
+	 
 end

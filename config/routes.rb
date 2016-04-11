@@ -75,12 +75,13 @@ AohsWeb::Application.routes.draw do
   match 'voice_logs/get_call_info' => 'voice_logs#get_call_info'
   match 'voice_logs/:period' => 'voice_logs#index', :period => /(today)|(yesterday)|(day_ago)|(this_week)|(this_month)|(daily)|(weekly)|(monthly)/
   match 'voice_logs/file/:id.:format' => 'voice_logs#file'
+  match 'voice_logs/viewer' => 'voice_logs#viewer'
   match 'agents/userlist' => 'agents#userlist'
   match 'agents/list.:format' => 'agents#list'
   match 'voice_logs/list.:format' => 'voice_logs#list'
   match 'configurations/get_config' => 'configurations#get_config'
   match 'configurations/update_config' => 'configurations#update_config'
-
+  
   match 'favorites/tag_print' => 'favorites#tag_print'
 
   resources :keywords
@@ -91,7 +92,7 @@ AohsWeb::Application.routes.draw do
   resources :groups
   resources :group_categories
   resources :group_category_types
- 
+  
   match 'call_browser' => 'call_browser#index'
   
   match 'calls/:year' => 'voice_logs#index'
