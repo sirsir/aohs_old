@@ -12,16 +12,23 @@
   var ofile = "<%= params[:ofile] %>";
   
   function uploadFile() {
-    $("form[name=frm_browse]").submit();
+    $("#error-msg").html("Please wait ...");
+    $("form[name=frm_browse]").trigger('submit');
+    //$("form[name=frm_browse]").submit();
   }
   
   function onLoadFile() {
-    var furl = $("#btn_browse")[0].files[0].name;
-    var fext = furl.substr(-3,3);
-    if ((fext == "spx") || (fext == "wav")) {
-      uploadFile();
-    } else {
-      alert("Unknown file format " + fext);
+    //var furl = $("#btn_browse")[0].files[0].name;
+    try {
+      var furl = $("#btn_browse").val();
+      var fext = furl.substring(furl.length-3);
+      if ((fext == "spx") || (fext == "wav")) {
+        uploadFile();
+      } else {
+        $("#error-msg").html("Unknown file format " + fext);
+      }      
+    } catch(e){
+      $("#error-msg").html(e.message);
     }
   }
   
@@ -36,9 +43,7 @@
     $("#btn_browse").change(function(){
       onLoadFile();
     });
-    setTimeout(function(){
-      loadAudioFile();
-    },100);    
+    setTimeout("loadAudioFile()",100);    
   });
 </script>
 <% end %>
@@ -62,9 +67,11 @@
   <form name="frm_browse" action="<%= url_for(:controller => 'voice_logs', :action => 'viewer', :upload => 'yes') %>" method="post" enctype="multipart/form-data">
     <input name="authenticity_token" type="hidden" value="<%=form_authenticity_token %>">
     <input type="file" id="btn_browse" name="audio_file" class="btn">
+    <!-- <input type="button" id="btn_submit" name="btn_submit" value="Submit" class="btn" onclick="onLoadFile();"> -->
     <input type="button" id="btn_play" name="btn_play" value="Play" class="btn" onclick="AmiAdvw.Play();">
     <input type="button" id="btn_stop" name="btn_stop" value="Stop" class="btn" onclick="AmiAdvw.StopPlaying();">
     <input type="button" id="btn_dec_vol" name="btn_dec_vol" value="- Vol" class="btn" onclick="AmiAdvw.ChangePlayingVolumeDown();">
     <input type="button" id="btn_inc_vol" name="btn_inc_vol" value="+ Vol" class="btn" onclick="AmiAdvw.ChangePlayingVolumeUp();">
   </form>
 </div>
+<div id="error-msg"></div>
