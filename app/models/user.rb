@@ -85,7 +85,12 @@ class User < ActiveRecord::Base
      self.flag  = '1'
      self.state = 'deleted'
   end
-
+  
+  def do_active
+     self.flag  = '0'
+     self.state = 'active'
+  end
+  
   def do_activate
      @activated = true
      self.activated_at = Time.now.utc

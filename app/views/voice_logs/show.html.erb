@@ -225,7 +225,7 @@
                              slide: function(event, ui){
                                AmiAdvw.PlayingSpeed = (ui.value/10);
                              }});
-
+    
     initialVoiceLog();
     if(<%= @voice_log.have_transfered_call? %>){
       initailTransferCall();
@@ -309,7 +309,7 @@
                         from: kw.from,
                         id: kw.id});
                       }
-                }
+                    }
               });
     }
     <% end %>
@@ -371,7 +371,7 @@
     //AmiAdvw.SetProperty("SelectedRangeOnLoaded0", "0");
     //AmiAdvw.SetProperty("SelectedRangeOnLoaded1", "320");   
     AmiAdvw.LoadFromFile(call_information[current_call].url);
-
+    AmiAdvw.ReChannel(1);
     setCallerInfo();
     refreshTag();
     <% if Aohs::MOD_KEYWORDS %>
@@ -523,7 +523,7 @@
 
   var call_information;
 
-  var keyword_pattern = [ <%= (@keyword_pattern.to_a.map { |k| "{id: '#{k.id}', name: '#{k.name}',type: '#{k.keyword_type}',group_id: #{k.group_id},group_name:'#{k.group_name}'}"}).join(',') %> ];
+  var keyword_pattern = [<%= (@keyword_pattern.to_a.map { |k| "{id: \"#{k.id}\", name: \"#{k.name}\",type: \"#{k.keyword_type}\", group_id: #{k.group_id.to_i}, group_name: \"#{k.group_name}\"} "}).join(',') %>];
   var keyword_source = ["result_keywords", "edit_keywords"];
   
   var voicelog_start_msec;

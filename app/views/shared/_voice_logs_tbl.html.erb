@@ -163,6 +163,19 @@
           }
       }
 	  
+		function voiceDownload(id) {
+      var url = "<%= url_for(:controller => "voice_logs", :action => "download_file") %>" + "/" + id;
+			$("#dl-dialog").css("display","block");
+			$("#dl-dialog .btn-dl").unbind("click").click(function(){
+				var fmt = $(this).attr("data-type");
+				if (fmt.length == 3) {
+					url = url + "?type=" + fmt;
+					window.open(url);
+        }
+				$("#dl-dialog").css("display","none");
+			});
+    }
+		
 	  function applyClickRow(){ }
 	  
 		function loadDataTable(data){
@@ -207,7 +220,7 @@
     if((vc['open'] == true) || (vc['open'] == "true")){
 		    <% if permission_by_name('voice_logs-download') %>
 			if((vc['duration'] != "00:00")){
-				menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='more' onclick=\"voiceButton("+ vc['id'] +",'more')\"><img src='<%= image_path('detail.png') %>'/></li><li   title=\"Export\"  onclick=\"window.open('"+ vc['path'] +"')\"><img src='<%= image_path('export.png') %>'/></li> <li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
+				menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='more' onclick=\"voiceButton("+ vc['id'] +",'more')\"><img src='<%= image_path('detail.png') %>'/></li><li   title=\"Export\"  onclick=\"voiceDownload('"+ vc['id'] +"')\"><img src='<%= image_path('export.png') %>'/></li> <li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
 			}else{
 				menu = "<ul class=\"call-button\" voice_id='" + vc['id'] + "'><li act='play' onclick=\"voiceButton("+ vc['id'] +",'play')\"><img src='<%= image_path('speaker.gif') %>'/></li><li act='more' onclick=\"voiceButton("+ vc['id'] +",'more')\"><img src='<%= image_path('detail.png') %>'/></li><li act='tool' title=\"Tag - " + vc['tags'] + "\" class=\"btntool myToolTip\" onclick=\"voiceButton("+ vc['id'] +",'tool')\"><img src='<%= image_path('more.gif') %>'/></li></ul>";
 			}
@@ -547,7 +560,19 @@
 				pageChecker();
 				bindBtnTool(); 
 		});
-</script>    
+</script>
+<style>
+	.btn-dl {
+		display: inline-block;
+		padding: 5px;
+		margin-left: 5px;
+		margin-right: 5px;
+		background-color: #708090;
+		border: 1px solid #708090;
+		color: #FFFFFF;
+		cursor: pointer;
+	}
+</style>
 <% end %>
 <ul id="exportli" style="display:none">
 	<li><a href="#" onclick="vc_export(true)">All page</a></li>
@@ -569,6 +594,17 @@
 	<li act="RemoveT"><span class="cbtn" act="remt">Remove Tag</span></li>
 	<% end %>
 </ul>
+<div id="dl-dialog" style="width: 100%; height: 100%; text-align: center; background-color: #F0F8FF; opacity: 0.9; position: absolute; display: none; padding: 20px;">
+	<div style="width: 250px; padding: 10px; background-color: #F0F8FF; border: 1px solid #708090; opacity: 1.0 !important;">
+		<div>Download voice file as:</div>
+		<div style="padding: 5px;">
+			<div id="btn-spx" data-type="spx" class="btn-dl">SPX</div>
+			<div id="btn-wav" data-type="wav" class="btn-dl">WAV</div>
+			<div id="btn-mp3" data-type="mp3" class="btn-dl">MP3</div>
+			<div id="btn-canc" data-type="" class="btn-dl">Cancel</div>			
+		</div>
+	</div>
+</div>
 <!-- VIEW -->
 <div>
 	<div id="div-tblCtrl">

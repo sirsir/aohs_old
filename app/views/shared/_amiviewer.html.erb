@@ -43,6 +43,9 @@ enaspd = $CF.get("client.aohs_web.audioViewer.showSpeed").to_i
 				border: 0;
 				background-color: #66C2FF;
 		}
+		#lb-filemode {
+			margin-bottom: 5px;
+		}
 </style> 
 <script type="text/javascript">
 		var iconMedia = {
@@ -134,7 +137,33 @@ enaspd = $CF.get("client.aohs_web.audioViewer.showSpeed").to_i
 				ctrlAmiV.audioSet = false;
 				setVolumeAndSpeed();
 		}
- 
+    
+		var selectedPlayingMode = 2;
+		
+		function forceToMono() {
+			try{
+				if (selectedPlayingMode == 1) {
+					AmiAdvw.ReChannel(1);
+					//AmiAdvw.SamplesPerSec = 16000;  
+					//AmiAdvw.Channels = 1;
+				} else {
+					AmiAdvw.ReChannel(2);
+					//AmiAdvw.SamplesPerSec = 8000;   
+					//AmiAdvw.Channels = 2;
+				}
+			}catch(e){}
+    }
+		
+		function swapMonoStereo() {
+			if (selectedPlayingMode == 1) {
+        selectedPlayingMode = 2;
+				$("#lb-filemode").html("Stereo");
+      } else {
+				selectedPlayingMode = 1;
+				$("#lb-filemode").html("Mono");
+			}
+    }
+		
 		function onVoiceLoad(row_no){	
 			onVoiceStop();	
 			ctrlAmiV.audioSet = false;
@@ -148,6 +177,7 @@ enaspd = $CF.get("client.aohs_web.audioViewer.showSpeed").to_i
 						if(AudioPlayer.isActiveX){
 							AmiAdvw.Reset();
 							AmiAdvw.LoadFromFile(audioUrl);
+							forceToMono();
 							setPlayOffset(parseInt(o.attr("play_offset_sec")));						
 						} else {
 							AmiAdvw.reset();
@@ -426,6 +456,7 @@ enaspd = $CF.get("client.aohs_web.audioViewer.showSpeed").to_i
             <a href="#" onclick="onVoiceStop();" title="Stop"><img border="0" src="<%=image_path("padding.png")%>" id="icon-onstop" alt="Stop"></a>
             <a href="#" onclick="onVoicePlayPrev();" title="Previous"><img border="0" src="<%=image_path("padding.png")%>" id="icon-onprev" alt="Previous"></a>
             <a href="#" onclick="onVoicePlayNext();" title="Next"><img border="0" src="<%=image_path("padding.png")%>" id="icon-onnext" alt="Next"></a>
+						<a href="#" onclick="swapMonoStereo()" id="lb-filemode">Stereo</a>
         </div>
         <div>
             <table cellpadding="2" cellspacing="0">

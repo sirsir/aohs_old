@@ -83,8 +83,8 @@ module AmiSource
                     # get users
 
                     u = {}
-                      
-                    u[:cti_agent_id], u[:id_card], u[:login], u[:display_name], u[:email], u[:group_name], u[:gender], u[:role_name], u[:status], u[:expired_date] = line.split(',',9)
+
+                    u[:cti_agent_id], u[:id_card], u[:login], u[:display_name], u[:email], u[:group_name], u[:gender], u[:role_name], u[:status], u[:expired_date] = line.split(',',10)
                     
                     u[:password] = Aohs::DEFAULT_PASSWORD_NEW
                     
@@ -94,7 +94,18 @@ module AmiSource
                     u[:password] = map_password_blank(u[:login],u[:password])
                     u[:cti_agent_id] = check_cti_agent_id(u[:cti_agent_id])
                     u[:email] = nil if u[:email].to_s.strip.empty?
-		    
+                    case u[:gender].to_s.downcase
+                    when "female", "f"
+                      u[:gender] = "f"
+                    when "male", "m"
+                      u[:gender] = "m"
+                    else
+                      u[:gender] = "u"
+                    end
+                    u[:status] = u[:status].to_s.downcase.strip
+                    u[:display_name] = u[:display_name].to_s.strip
+                    u[:login] = u[:login].to_s.strip
+                    
                     # save
                     kact = "SKIP"
                     case u[:role_type]
@@ -110,10 +121,18 @@ module AmiSource
                           result[:new] += 1
                         else
                           if op[:update] == true
-                            xu = {:display_name => u[:display_name],:email => u[:email],:sex => u[:gender], :role_id => u[:role_id], :group_id => u[:group_id],:state => 'active',:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
-                            rs = User.update(x.id,xu)
+                            state = 'active'
+                            unless u[:status] == 'active'
+                              state = 'deleted'
+                              x.do_delete
+                            else
+                              x.do_active
+                            end
+                            xu = {:display_name => u[:display_name],:email => u[:email],:sex => u[:gender], :role_id => u[:role_id], :group_id => u[:group_id],:state => state, :cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
+                            x.attributes = xu
+                            #rs = User.update(x.id,xu)
                             #rs = Agent.update(x.id,xu)
-                            if(rs)
+                            if x.save
                               kact = "UPDATE"
                               result[:update] += 1
                             else
@@ -137,11 +156,19 @@ module AmiSource
                           result[:new] += 1
                         else
                           if op[:update] == true
+                            state = 'active'
+                            unless u[:status] == 'active'
+                              state = 'deleted'
+                              x.do_delete
+                            else
+                              x.do_active
+                            end
                             # skip upd ,:password => u[:password],:password_confirmation => u[:password]
-                            xu = {:display_name => u[:display_name],:sex => u[:gender],:type => 'Manager', :email => u[:email], :role_id => u[:role_id], :group_id => u[:group_id],:state => 'active',:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
-                            rs = User.update(x.id,xu)
+                            xu = {:display_name => u[:display_name],:sex => u[:gender],:type => 'Manager', :email => u[:email], :role_id => u[:role_id], :group_id => u[:group_id],:state => state,:cti_agent_id => u[:cti_agent_id],:id_card => u[:id_card], :expired_date => u[:expired_date]}
+                            x.attributes = xu
+                            #rs = User.update(x.id,xu)
                             #rs = Manager.update(x.id,xu)
-                            if(rs)
+                            if x.save
                               kact = "UPDATE"
                               result[:update] += 1
                             else

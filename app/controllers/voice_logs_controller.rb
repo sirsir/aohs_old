@@ -591,4 +591,17 @@ class VoiceLogsController < ApplicationController
       
    end
 	 
+	 def download_file
+			
+			voice_log_id = params[:id]
+			file_fmt = params[:type].to_s.downcase.to_sym
+			
+			voice_log = VoiceLog.select([:voice_file_url]).where({ :id => voice_log_id }).first
+			tmp_file = AudioFileConverter.convert_from_url(voice_log.voice_file_url, file_fmt)
+			
+			send_data File.read(tmp_file), :filename => File.basename(tmp_file)
+			#send_file tmp_file
+			
+   end
+	 
 end

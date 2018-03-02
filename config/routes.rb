@@ -76,6 +76,7 @@ AohsWeb::Application.routes.draw do
   match 'voice_logs/:period' => 'voice_logs#index', :period => /(today)|(yesterday)|(day_ago)|(this_week)|(this_month)|(daily)|(weekly)|(monthly)/
   match 'voice_logs/file/:id.:format' => 'voice_logs#file'
   match 'voice_logs/viewer' => 'voice_logs#viewer'
+  match 'voice_logs/download_file/:id' => 'voice_logs#download_file'
   match 'agents/userlist' => 'agents#userlist'
   match 'agents/list.:format' => 'agents#list'
   match 'voice_logs/list.:format' => 'voice_logs#list'

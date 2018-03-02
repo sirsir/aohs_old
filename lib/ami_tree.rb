@@ -290,9 +290,9 @@ module AmiTree
   def tree_node_type(node_type)
 
     case node_type
-    when /text/:
+    when /text/
         return 'Text'
-    when /task/:
+    when /task/
         return 'TaskNode'
     else
         return 'Text'
