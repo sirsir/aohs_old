@@ -22,6 +22,8 @@ class ApplicationController < ActionController::Base
     
   end
 
+  
+
   def sql_injection
     result = true
 
@@ -36,7 +38,10 @@ class ApplicationController < ActionController::Base
       
     end
 
-    result
+    if not result
+      raise "sql_injection"
+    end
+
   end
     
 end
