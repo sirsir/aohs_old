@@ -237,7 +237,7 @@ class CustomerController < ApplicationController
     
     customers = []
 
-    if params.has_key?(:cust_name) and not params[:cust_name].empty?
+    if params.has_key?(:cust_name) and not params[:cust_name].empty? and params[:cust_name].match(/^[[:alnum:]]+$/)
         customers = Customer.where("customer_name like '#{params[:cust_name]}%'").all
         customers_temp = customers
         customers = []
