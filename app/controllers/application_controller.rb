@@ -36,7 +36,7 @@ class ApplicationController < ActionController::Base
       
     end
 
-    return result
+    result
   end
     
 end
