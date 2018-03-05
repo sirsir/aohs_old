@@ -27,8 +27,10 @@ class ApplicationController < ActionController::Base
 
     if params[:cust_name]
       result = false
+      p "falsssssss"
 
       if params[:cust_name].match(/^[[:alnum:]]+$/)
+        p "true"
         result = true
       end
       
