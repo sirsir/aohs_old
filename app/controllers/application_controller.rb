@@ -8,6 +8,8 @@ class ApplicationController < ActionController::Base
   include Format
 
   before_filter :initial_config
+
+  before_filter :sql_injection
   
   def initial_config
     
@@ -18,6 +20,21 @@ class ApplicationController < ActionController::Base
     ## fixed
     AmiTool.switch_table_voice_logs
     
+  end
+
+  def sql_injection
+    result = true
+
+    if params[:cust_name]
+      result = false
+
+      if params[:cust_name].match(/^[[:alnum:]]+$/)
+        result = true
+      end
+      
+    end
+
+    return result
   end
     
 end
