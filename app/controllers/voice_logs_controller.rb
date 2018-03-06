@@ -246,6 +246,10 @@ class VoiceLogsController < ApplicationController
 				voice_logs = []
 			end
 
+      voice_logs.each {|vl|
+        vl[:path] = 'xxxxxxxx'
+      }
+
 			@voice_logs_ds = {:data => voice_logs, :page_info => page_info,:summary => summary }
 			
 	end
