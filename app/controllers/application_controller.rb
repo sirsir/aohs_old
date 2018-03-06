@@ -24,7 +24,7 @@ class ApplicationController < ActionController::Base
 
   
 
-  def sql_injection
+  def sql_injection0
     result = true
 
     if params[:cust_name]
@@ -34,13 +34,25 @@ class ApplicationController < ActionController::Base
       if params[:cust_name].match(/^[[:alnum:]]+$/)
         p "true"
         result = true
-      end
-      
+      end  
     end
 
     if not result
       raise "sql_injection"
     end
+
+  end
+
+  def sql_injection
+
+    params.each_pair { |k,v|
+      unless [].include? k
+        params[k] = v.gsub(/[^0-9a-z _\/]/i,"")
+      end
+
+    }
+
+    
 
   end
     
