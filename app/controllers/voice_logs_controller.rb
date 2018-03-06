@@ -247,6 +247,7 @@ class VoiceLogsController < ApplicationController
 			end
 
       voice_logs.each {|vl|
+        p vl
         vl[:path] = 'xxxxxxxx'
       }
 
