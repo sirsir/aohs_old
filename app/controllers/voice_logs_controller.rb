@@ -248,8 +248,8 @@ class VoiceLogsController < ApplicationController
 			end
 
       voice_logs.each {|vl|
-        vl[:path] = Base64.encode64(vl[:path])
-        vl[:path] = Base64.encode64(vl[:path])
+        # vl[:path] = Base64.encode64(vl[:path])
+        # vl[:path] = Base64.encode64(vl[:path])
         vl[:path] = Base64.encode64(vl[:path])
       }
 
