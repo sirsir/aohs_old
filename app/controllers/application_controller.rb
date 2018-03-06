@@ -25,7 +25,7 @@ class ApplicationController < ActionController::Base
   
 
   def valid_sql_injection
-    unless ['voice_logs','customer','customers'].include?(controller_name.to_s)
+    if ['voice_logs','customer','customers'].include?(controller_name.to_s)
       params.each do |kname,val|
         next if ['controller','action'].include?(kname)
         next if val.blank?
