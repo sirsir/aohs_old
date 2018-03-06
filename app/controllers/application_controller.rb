@@ -66,9 +66,11 @@ class ApplicationController < ActionController::Base
     regexp = /\b(OR|AND|ALTER|CREATE|DELETE|DROP|EXEC(UTE){0,1}|INSERT( +INTO){0,1}|MERGE|SELECT|UPDATE|UNION( +ALL){0,1})\b/i
 
     if txt.match(regexp)
+      p "reg true"
       return true
     end
 
+    p "reg false"
     return false
   end
 
