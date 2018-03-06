@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
 
   before_filter :initial_config
 
-  before_filter :sql_injection
+  before_filter :valid_sql_injection
   
   def initial_config
     
@@ -24,23 +24,52 @@ class ApplicationController < ActionController::Base
 
   
 
-  def sql_injection0
-    result = true
+  def valid_sql_injection
+    unless ['voice_logs','customer','customers'].include?(controller_name.to_s)
+      params.each do |kname,val|
+        next if ['controller','action'].include?(kname)
+        next if val.blank?
 
-    if params[:cust_name]
-      result = false
-      p "falsssssss"
+        # perform check
+        if found_sql_injection?(val)
+          # response code 404
+          render :status => 500
 
-      if params[:cust_name].match(/^[[:alnum:]]+$/)
-        p "true"
-        result = true
-      end  
+        end
+      end
     end
 
-    if not result
-      raise "sql_injection"
+    # result = true
+
+    # if params[:cust_name]
+    #   result = false
+    #   p "falsssssss"
+
+    #   if params[:cust_name].match(/^[[:alnum:]]+$/)
+    #     p "true"
+    #     result = true
+    #   end  
+    # end
+
+    # if not result
+    #   # raise "sql_injection"
+    #   # response 404
+
+    # end
+
+  end
+  
+  def found_sql_injection?(val)
+    txt = val.to_s.chomp.strip
+
+    # /'.*\b(ALTER|CREATE|DELETE|DROP|EXEC(UTE){0,1}|INSERT( +INTO){0,1}|MERGE|SELECT|UPDATE|UNION( +ALL){0,1})\b/
+    regexp = /\b(OR|AND|ALTER|CREATE|DELETE|DROP|EXEC(UTE){0,1}|INSERT( +INTO){0,1}|MERGE|SELECT|UPDATE|UNION( +ALL){0,1})\b/i
+
+    if txt.match(regexp)
+      return true
     end
 
+    return false
   end
 
   def sql_injection
