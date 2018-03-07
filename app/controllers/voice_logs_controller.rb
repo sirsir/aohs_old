@@ -251,10 +251,7 @@ class VoiceLogsController < ApplicationController
         # vl[:path] = Base64.encode64(vl[:path])
         # vl[:path] = Base64.encode64(vl[:path])
         vl[:path] = Base64.encode64(vl[:path])
-<<<<<<< HEAD
-=======
         vl[:path] = encrypt(vl[:path], vl[:id])
->>>>>>> ece9947d866b273b2b81029fc8859c1582a8381e
       }
 
 			@voice_logs_ds = {:data => voice_logs, :page_info => page_info,:summary => summary }
