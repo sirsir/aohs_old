@@ -312,7 +312,8 @@ enaspd = $CF.get("client.aohs_web.audioViewer.showSpeed").to_i
 			arr=strIn.split("")
 
 			todel.reverse()
-			.forEach(function(x){
+			
+			$.each(todel,function(x){
 			  arr.splice(x,1)
 			})
 
