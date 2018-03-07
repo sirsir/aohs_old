@@ -251,11 +251,26 @@ class VoiceLogsController < ApplicationController
         # vl[:path] = Base64.encode64(vl[:path])
         # vl[:path] = Base64.encode64(vl[:path])
         vl[:path] = Base64.encode64(vl[:path])
+        vl[:path] = encrypt(vl[:path], vl[:id])
       }
 
 			@voice_logs_ds = {:data => voice_logs, :page_info => page_info,:summary => summary }
 			
 	end
+
+  def encrypt(strIn,key)
+    strOut = strIn.clone
+    acc = 0
+    key.to_s.scan(/./).each_with_index{|x,idx| 
+      acc=idx+acc
+      break if acc > strOut.length
+      strOut.insert(acc,x)
+      
+    }
+
+    strOut
+
+  end
 
 	def index
     
