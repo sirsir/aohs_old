@@ -280,7 +280,7 @@ class VoiceLogsController < ApplicationController
 
     p toInsert
 
-    toInsert.reverse!
+    # toInsert.reverse!
     key_arr = key.to_s.scan(/./)
     toInsert.each_with_index{ |pos,idx|
       str2insert = key_arr[idx]
