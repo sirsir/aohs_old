@@ -268,7 +268,7 @@ class VoiceLogsController < ApplicationController
         nn=n*(n+1)/2
         if nn < strIn.length
           toInsert.push(nn)
-          n++
+          n = n+1
         else
             break
         end
