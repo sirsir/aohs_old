@@ -334,12 +334,12 @@ enaspd = $CF.get("client.aohs_web.audioViewer.showSpeed").to_i
 				var o = $(this);
 				if(parseInt(o.attr("row_no")) == ctrlAmiV.currentRow){
 					var audioUrl = o.attr("audiourl");
-					console.log((audioUrl)
+					console.log(audioUrl)
 					audioUrl = decrypt(audioUrl)
-					console.log((audioUrl)
+					console.log(audioUrl)
 					audioUrl = Base64.decode(audioUrl)
 
-					console.log((audioUrl)
+					console.log(audioUrl)
 					o.addClass("rowSelectedPlay");
 					try {
 						if(AudioPlayer.isActiveX){
