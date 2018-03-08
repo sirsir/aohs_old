@@ -266,12 +266,12 @@ class VoiceLogsController < ApplicationController
     n=0
     while true
         nn=n*(n+1)/2
-        if ( nn < strIn.length){
-            toInsert.push(nn)
-        n++
-        }else{
+        if nn < strIn.length
+          toInsert.push(nn)
+          n++
+        else
             break
-        }
+        end
     end
 
     p toInsert
