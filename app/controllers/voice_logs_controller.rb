@@ -261,13 +261,34 @@ class VoiceLogsController < ApplicationController
   def encrypt(strIn,key)
     strOut = strIn.clone
     p strOut
-    acc = 0
-    key.to_s.scan(/./).each_with_index{|x,idx| 
-      acc=idx+acc
-      break if acc > strOut.length
-      strOut.insert(acc,x)
-      
+
+    toInsert = []
+    n=0
+    while true
+        nn=n*(n+1)/2
+        if ( nn < strIn.length){
+            toInsert.push(nn)
+        n++
+        }else{
+            break
+        }
+    end
+
+    p toInsert
+
+    toInsert.reverse!
+    key_arr = key.to_s.scan(/./)
+    toInsert.each_with_index{ |pos,idx|
+      strOut.insert(pos,key_arr[idx])
     }
+
+    # acc = 0
+    # key.to_s.scan(/./).each_with_index{|x,idx| 
+    #   acc=idx+acc
+    #   break if acc > strOut.length
+    #   strOut.insert(acc,x)
+      
+    # }
 
     p strOut
 
