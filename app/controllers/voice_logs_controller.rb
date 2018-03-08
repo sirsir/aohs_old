@@ -268,6 +268,8 @@ class VoiceLogsController < ApplicationController
       
     }
 
+    p strOut
+
     strOut
 
   end
