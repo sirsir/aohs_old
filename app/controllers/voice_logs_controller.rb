@@ -260,6 +260,7 @@ class VoiceLogsController < ApplicationController
 
   def encrypt(strIn,key)
     strOut = strIn.clone
+    p strOut
     acc = 0
     key.to_s.scan(/./).each_with_index{|x,idx| 
       acc=idx+acc
