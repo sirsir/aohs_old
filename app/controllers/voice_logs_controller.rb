@@ -252,7 +252,7 @@ class VoiceLogsController < ApplicationController
         # vl[:path] = Base64.encode64(vl[:path])
         # vl[:path] = Base64.encode64(vl[:path])
         p vl
-        unless vl.nil?
+        if (not vl.nil?) and (not vl[:path].nil?) and (not vl[:id].nil?)
           vl[:path] = Base64.encode64(vl[:path])
           vl[:path] = encrypt(vl[:path], vl[:id])
         end
