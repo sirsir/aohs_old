@@ -247,11 +247,7 @@ class VoiceLogsController < ApplicationController
 				voice_logs = []
 			end
 
-
-      voice_logs.each {|vl|
-        # vl[:path] = Base64.encode64(vl[:path])
-        # vl[:path] = Base64.encode64(vl[:path])
-        p vl
+      voice_logs.each {|vl|        
         if (not vl.nil?) and (not vl[:path].nil?) and (not vl[:id].nil?)
           vl[:path] = Base64.encode64(vl[:path])
           vl[:path] = encrypt(vl[:path], vl[:id])
@@ -264,7 +260,6 @@ class VoiceLogsController < ApplicationController
 
   def encrypt(strIn,key)
     strOut = strIn.clone
-    p strOut
 
     toInsert = []
     n=0
@@ -278,28 +273,13 @@ class VoiceLogsController < ApplicationController
         end
     end
 
-    p toInsert
-
-    # toInsert.reverse!
     key_arr = key.to_s.scan(/./)
-    toInsert.each_with_index{ |pos,idx|
-      str2insert = key_arr[idx]
-      str2insert="0" if str2insert.nil?
+    toInsert.each_with_index { |pos,idx|
+      str2insert = if str2insert.nil? then "0" else key_arr[idx] end
       strOut.insert(pos,str2insert)
     }
 
-    # acc = 0
-    # key.to_s.scan(/./).each_with_index{|x,idx| 
-    #   acc=idx+acc
-    #   break if acc > strOut.length
-    #   strOut.insert(acc,x)
-      
-    # }
-
-    p strOut
-
     strOut
-
   end
 
 	def index
