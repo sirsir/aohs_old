@@ -8,7 +8,6 @@ class ApplicationController < ActionController::Base
   include Format
 
   before_filter :initial_config
-
   before_filter :valid_sql_injection
   
   def initial_config
@@ -22,8 +21,6 @@ class ApplicationController < ActionController::Base
     
   end
 
-  
-
   def valid_sql_injection
     if ['voice_logs','customer','customers'].include?(controller_name.to_s)
       params.each do |kname,val|
@@ -32,59 +29,22 @@ class ApplicationController < ActionController::Base
 
         # perform check
         if found_sql_injection?(val)
-          # response code 404
           render :status => 500
-
         end
       end
     end
-
-    # result = true
-
-    # if params[:cust_name]
-    #   result = false
-    #   p "falsssssss"
-
-    #   if params[:cust_name].match(/^[[:alnum:]]+$/)
-    #     p "true"
-    #     result = true
-    #   end  
-    # end
-
-    # if not result
-    #   # raise "sql_injection"
-    #   # response 404
-
-    # end
-
   end
   
   def found_sql_injection?(val)
     txt = val.to_s.chomp.strip
 
-    # /'.*\b(ALTER|CREATE|DELETE|DROP|EXEC(UTE){0,1}|INSERT( +INTO){0,1}|MERGE|SELECT|UPDATE|UNION( +ALL){0,1})\b/
     regexp = /\b(OR|AND|ALTER|CREATE|DELETE|DROP|EXEC(UTE){0,1}|INSERT( +INTO){0,1}|MERGE|SELECT|UPDATE|UNION( +ALL){0,1})\b/i
 
     if txt.match(regexp)
-      p "reg true"
       return true
     end
 
-    p "reg false"
     return false
-  end
-
-  def sql_injection
-
-    params.each_pair { |k,v|
-      unless [].include? k
-        params[k] = v.gsub(/[^0-9a-z _\/]/i,"")
-      end
-
-    }
-
-    
-
   end
     
 end
