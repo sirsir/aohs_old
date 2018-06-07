@@ -1,0 +1,27 @@
+= panel_tableview do
+  - unless @templates.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :title
+          = th_tag :description
+          = th_tag :template_file_type
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @templates.each_with_index do |p,i|
+          tr
+            td.no
+              = row_no(i)
+            td
+              = p.title
+            td
+              = p.description
+            td
+              = p.file_type_name
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(p,'ed')
+  - else
+    = no_record_tag

@@ -1,0 +1,37 @@
+= hbs_template "template-anaresult-msglogs" do
+  table class="table table-default table-borderless"
+    thead
+    tbody
+      = hb 'this' do
+        tr.tr-sep
+          td
+            = hb 'no'
+          td
+            = hb 'speech_at'
+        tr
+          td class="text-center td-cowr"
+          td
+            label
+              | T:
+            = hb 'text'
+        tr
+          td class="text-center"
+          td
+            label
+              | Q:
+            = hb 'faq_question'
+        tr
+          td class="text-center"
+          td
+            label
+              | A:
+            = hb 'html_safe faq_answer'
+            
+div class="block-scroll"
+  div class="row"
+    div class="col-sm-12"
+      h5 Recommendation
+    div class="col-sm-12"
+      div id="block-anaresult-msglogs"
+        div class="panel panel-default"
+          div class="panel-body" No record.

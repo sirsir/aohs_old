@@ -1,0 +1,165 @@
+@import 'charts';
+@import 'themes/default/style';
+@import 'd3-tip.min';
+@import 'pikaday';
+
+html, body {
+  overflow: hidden;
+}
+
+.das-left-panel {
+  position: absolute;
+  height: 96.5%;
+  width: 15em;
+  border-right: 1px solid #E3E3E3;
+  top: 2.8em;
+  overflow: auto;
+  box-shadow: 1px 2px 1px #F7F7F7;
+  background-color: #FAFAFA;
+}
+
+.das-right-panel {
+  margin-left: 16em;
+  margin-right: 0em;
+  min-height: 300px;
+  overflow: auto;
+  overflow-x: hidden;
+  
+  .content-group {
+    padding-top: 0.6em;
+    padding-right: 1em;
+  }
+  
+  .content-box {
+    width: 100%;
+    height: 100%;
+    padding: 0.9em;
+    border: 1px solid #F7F7F7;
+    box-shadow: 2px 2px 1px #EDEDED;
+    border-radius: 2px;
+    background-color: #FCFCFC;
+    
+    &:hover {
+      border: 1px solid #F5F5F5;
+    }
+  }
+
+  .content-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+    padding-left: 0.3em;
+    color: #4F4F4F;
+  }  
+  
+  #btn-cur-date {
+    padding-left: 2em;
+    padding-right: 2em;
+  }
+}
+
+.jsico-group, .jsico-user, .jsico-leader {
+  background-repeat: repeat;
+  background-position: center !important;
+  background-size: 1em 1em;
+}
+
+.jsico-group {
+  background-image: url(telemarketer15_1.png) !important;
+}
+
+.jsico-user {
+  background-image: url(jsico-agent.png) !important;
+}
+
+.jsico-leader {
+  background-image: url(jsico-leader.png) !important;
+}
+
+#das-all, #das-groups, #das-group, #das-usr {
+  display: none;
+}
+
+.lb-val-1 {
+  font-style: inherit;
+  color: #ADADAD;
+  text-align: center;
+  font-size: 0.9em;
+  height: 2.5em;
+}
+.text-val-1 {
+  font-weight: bold;
+  font-size: 1.5em;
+  padding-top: 0.25em;
+  padding-bottom: 0.25em;
+}
+
+.chart-timeline {
+  svg {
+    background-color: #F0F0F0;
+    min-height: 20;
+    //margin: 0px;
+  }
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font-family: sans-serif;
+  font-size: 10px;
+}
+
+.timeline-label {
+  font-family: sans-serif;
+  font-size: 12px;
+}
+.coloredDiv {
+  height:20px; width:20px; float:left;
+}
+
+.date-btns {
+  margin-top: 0.8em;
+  margin-right: 0.5em;
+  
+  button {
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+    border: 1px solid #EBEBEB;
+  }
+  
+  button#btn-cur-date {
+    font-weight: bold;
+  }
+}
+
+.chart-ana1 {
+  height: 15em;
+}
+
+.badge-warning {
+  background: red;
+}
+
+.emotion-icon-sm {
+  width: 1.2em;
+  height: 1.2em;
+}
+
+#tbl-repeat-dialed{
+  td{
+    text-align: center;
+  }
+}
+
+#tbl-groups-summary{
+  td:nth-child(n+2){
+    text-align: center;
+  }
+}
+

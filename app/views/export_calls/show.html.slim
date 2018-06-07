@@ -1,0 +1,116 @@
+div class="mnt-menu"
+  = render 'export_calls/submenu'
+  = horizontal_bar
+
+div class="mnt-cont mnt-form"
+  div class="row"
+    div class="col-sm-12"
+      h3
+        | Detail
+      table class="table"
+        tr
+          td style="width:10em;"
+            label
+              | Name
+          td
+            = @task.name
+        tr
+          td style="width:10em;"
+            label
+              | Category
+          td
+            = @task.category
+        tr
+          td
+            label
+              | Description
+          td
+            = @task.desc
+  div class="row"
+    div class="col-sm-12"
+      h4 Exported File(s)
+      div class="help-block"
+        | Please click below link to download file.      
+      table class="table table-default-all table-bordered"
+        thead
+          tr
+            th No
+            th Filename
+            th Size
+            th N of File(s)
+            th Modified Time
+        tbody
+          - @total_size = 0
+          - @task.get_file_list.each_with_index do |f,i|
+            - @total_size += f[:fsize]
+            tr
+              td
+                = i+1
+              td
+                a href="#{f[:shared_url]}"
+                  = f[:fname]
+              td class="text-right"
+                = number_to_human_size(f[:fsize])
+              td class="text-right"
+                | N/A
+              td class="text-center"
+                = f[:mtime].to_formatted_s(:web)
+        tfoot
+          tr
+            td colspan="2"
+              | Total
+            td class="text-right"
+              = number_to_human_size(@total_size)
+            td class="text-right"
+              | N/A
+            td
+            
+  div class="row"
+    div class="col-sm-12"
+      h4 Result
+      div class="help-block"
+      table class="table table-default-all table-bordered"
+        thead
+          tr
+            th No
+            th Status
+            th Total
+            th Success
+            th Failed
+            th Created At
+            th Updated At
+            th Condition Details
+        tbody
+          - @result_logs.each_with_index do |l,i|
+            - @t_total = @t_total.to_i + l.result["total"]
+            - @t_success = @t_success.to_i + l.result["success"]
+            - @t_failed = @t_failed.to_i + l.result["failed"]
+            tr
+              td
+                = i+1
+              td class="bg-sts-#{l.status_name.downcase}"
+                = l.status_name
+              td class="text-right"
+                = l.result["total"]
+              td class="text-right"
+                = l.result["success"]
+              td class="text-right"
+                = l.result["failed"]
+              td class="text-center"
+                = l.created_at.to_formatted_s(:web)
+              td class="text-center"
+                = l.updated_at.to_formatted_s(:web)
+              td class="json-view"
+                = l.condition_string.to_json
+          tfoot
+            tr
+              td colspan="2"
+                | Total
+              td class="text-right"
+                = @t_total
+              td class="text-right"
+                = @t_success
+              td class="text-right"
+                = @t_failed
+              td colspan="3"
+              

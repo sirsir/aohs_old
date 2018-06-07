@@ -1,0 +1,66 @@
+script type="text/template" id="template-word-row"
+  = hb 'this' do
+    h6
+      = hb 'word'
+    div class="progress"
+      div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="#{ hb 'percentage' }" aria-valuemin="0" aria-valuemax="100" style="width:#{ hb 'percentage' }%"
+        | #{ hb 'count' } (#{ hb 'percentage' })
+
+div class="panel-analytics"
+  
+  div class="row"
+    div class="col-sm-12"
+      = render 'analytics/submenu'
+
+  div class="row"
+    div class="col-sm-10"
+      div class="filter-group"
+        div
+          label
+            | Date Range      
+        div
+          input type="text" class="form-control" id="fl-date-range" name="fl-date-range"
+        div
+          label
+            | Speaker
+        div
+          select id="fl-period-type" name="fl-speaker-type" class="form-control"
+            option
+            option value="A" Agent
+            option value="C" Customer
+        - CallCategory.category_types.each_with_index do |ctype,i|
+          div
+            label
+              = ctype
+            div
+              select id="cs-flag-#{i}" name="cs-flag" class="form-control"
+                option
+                - CallCategory.find_type(ctype).not_deleted.order_by_default.all.each do |c|
+                  option value="#{c.id}" #{c.title}
+        div
+          label
+            | Type
+          div class="f-field"
+            select id="cs-flag" name="cs-flag" class="form-control"
+              option
+              - CallCategory.undefined_type.not_deleted.order_by_default.all.each do |c|
+                option value="#{c.id}" #{c.title}
+        div
+          label
+            | Top    
+        div
+          select id="fl-top" name="fl-top" class="form-control"
+            - [10, 20, 50, 100].each do |t|
+              option value="#{t}" #{t}
+    div class="col-sm-2"
+      div class="filter-act-group text-right"
+        div
+          button type="button" class="btn btn-primary" id="btn-search"
+            = icon "search"
+            
+  div class="row"
+    div class="col-sm-10"      
+      div id="box-wordcloud"
+    div class="col-sm-2"
+      div id="box-topwords"
+        table

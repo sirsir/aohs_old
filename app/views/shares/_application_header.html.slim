@@ -1,0 +1,89 @@
+div id="panel-app-header" class="panel-app-header"
+  div class="block-left-side"
+    ul
+      li.block-web-title id="link-sites-to"
+        a href="#{url_for(controller: 'home', action: 'index')}" title="AOHS - Back to main page" 
+          span class="logo-amivoice"
+            = image_tag("amivoiceth-logo2.png", align: "bottom")
+            span class="webapp-version"
+              = APP_REVISION
+          span class="text-app-desc"
+            | #{Settings.site.short_description}
+          - locs = other_site_locations
+          - unless locs.empty?
+            div id="block-site-redirect-to"
+              ul
+                - locs.each do |lc|
+                  li
+                    = link_to lc[:display_name], lc[:url], target: "_blank"
+                
+      - unless on_page_portal?
+        - if true
+          li.top-menu
+            div class="mn-link #{menu_selected_class('dashboard')}" data-url="#{url_for(controller: 'home', action: 'index')}"
+              a href="#{url_for(controller: 'home', action: 'index')}"
+                span Dashboard
+
+        - if false and can_view?(:assignments)
+          li.top-menu
+            div class="mn-link #{menu_selected_class('assignments')}" data-url="#{url_for(controller: 'assignments', action: 'index')}"
+              a href="#{url_for(controller: 'assignments', action: 'index')}"
+                span Assignment
+              
+        - if can_view?(:call_browser)
+          li.top-menu
+            div class="mn-link #{menu_selected_class('call_browser')}" data-url="#{url_for(controller: 'call_browser', action: 'index')}"
+              a href="#{url_for(controller: 'call_browser', action: 'index')}"
+                span Agent Monitor
+
+        - if can_view?(:call_histories)
+          li.top-menu
+            div class="mn-link #{menu_selected_class('call_histories')}" data-url="#{url_for(controller: 'call_histories', action: 'index')}"
+              a href="#{url_for(controller: 'call_histories', action: 'index')}"
+                span Call History
+
+        - if can_view?(:evaluations)
+          li.top-menu
+            div class="mn-link #{menu_selected_class('call_evaluation')}" data-url="#{url_for(controller: 'call_evaluation', action: 'index')}"
+              a href="#{url_for(controller: 'call_evaluation', action: 'index')}"
+                span Call Evaluation
+    
+        - if can_view?(:reports)
+          li.top-menu
+            div id="btn-reports" class="mn-link #{menu_selected_class('reports evaluation_reports')}" data-url="#{url_for(controller: 'reports', action: 'index')}"
+              a href="#{url_for(controller: 'reports', action: 'index')}"
+                span Report
+        
+        - if can_view?(:faq_questions)
+          li.top-menu
+            div id="btn-reports" class="mn-link #{menu_selected_class('faq_questions')}" data-url="#{url_for(controller: 'faq_questions', action: 'index')}"
+              a href="#{url_for(controller: 'faq_questions', action: 'index')}"
+                span FAQ Settings
+
+  div class="block-right-side pull-right"
+    ul
+      - if can_do?(:maintenances, :view)
+        li.top-menu
+          div class="mn-link showtip" data-url="#{url_for(:controller => 'maintenances', :action => 'index', )}" data-tooltip="Setting and Maintenance"
+            = image_tag("settings10.png", alt: "System Setting and Maintenance")
+      - if true
+        li.top-menu
+          div class="mn-link showtip" data-url="#{url_for(:controller => 'users', :action => 'profile', :id => @current_usr_id)}" data-tooltip="My profile"
+            span class="text-marg-r"
+              = image_tag("user-account10.png", alt: "Profile's #{@current_usr_name}")
+            span
+              | #{@current_usr_name}
+      - if true
+        li.top-menu
+          div class="mn-link showtip" data-url="#{url_for(controller: 'users', action: 'logout')}" data-tooltip="Sign Out"
+            = image_tag("logout11.png", alt: "Sign Out")        
+
+div id="block-manual-side"
+  div class="row"
+    div class="col-sm-12"
+      button class="btn btn-link" id="btn-close-manual-dialog"
+        = icon 'close'
+        span class="text-marg-l" Close
+  div class="row"
+    div class="col-sm-12"
+      iframe id="manual-page" src="about:blank" frameborder="0"

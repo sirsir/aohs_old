@@ -1,0 +1,13 @@
+ul class="nav nav-pills nav-sm"
+
+  li class="#{ (params[:action] == "app_info" ? "active" : "") }"
+    a href="#{url_for(action: 'app_info')}" role="tab" App Info
+
+  li class="#{ (params[:action] == "tools" ? "active" : "") }"
+    a href="#{url_for(action: 'tools')}" role="tab" Tools
+
+  li class="#{ (params[:action] == "tables" ? "active" : "") }"
+    a href="#{url_for(action: 'tables')}" role="tab" Table Summary
+
+  li class="#{ (params[:action] == "schedule" ? "active" : "") }"
+    a href="#{url_for(action: 'schedule')}" role="tab" Schedule

@@ -1,0 +1,17 @@
+= panel_form do
+  = form_for(@tag, layout: :horizontal, errors: { icons: false }) do |f|
+    
+    = f.legend 'Detail'
+    
+    = f.text_field :name, label: "Name", required: true, placeholder: ''
+    
+    = f.text_field :tag_code, label: "Code", placeholder: '', help: "Name used for mapping data"
+    
+    = f.text_field :color_code, label: "Color", placeholder: '', readonly: true, class: 'color'
+    
+    - unless @tag.got_more_tags?
+      = f.select :parent_id, Tag.all_tag_options({ exclude: [params[:id].to_i]}), include_blank: true, label: "Subgroup of"
+    - else
+      = f.hidden_field :parent_id
+    
+    = f.submit "OK", class: "submit" 

@@ -1,0 +1,189 @@
+script id="template-evaluation-form" type="text/x-handlebars"
+  = hb 'this' do
+    div class="block-question-group"
+      span class="txt-group-title"
+        = hb 'title'
+      div class="block-questions"
+        = hb 'questions' do
+          div class="block-question" id="data-question-id-#{ hb 'id' }" data-choice-type="#{ hb 'choice_type' }" data-question-id="#{ hb 'id' }" data-revision-no="#{ hb 'revision_no' }"
+            div
+              = hb 'title'
+              a href="#" class="btn-quest-comment text-marg-l" title="Comment"
+                = icon 'comment-o'
+            table class="block-choices-group"
+              tr
+                td
+                  div class="block-choices"
+                    = hb 'ifEqual choice_type \'radio\''
+                      = hb 'choices' do
+                        div class="block-choice"
+                          label
+                            input type="radio" name="quest_answer[#{ hb '../id' }]" data-require-comment="#{ hb 'require_comment' }" data-value-name="#{ hb 'fillText title' }" value="#{hb 'score'}"
+                          div class="choice-title"
+                            = hb 'title'
+                            span class="note-block"
+                              = hb 'ifDefined note' do
+                                = hb 'note'
+                    = hb 'ifEqual choice_type \'checkbox\''
+                      = hb 'choices' do
+                        div class="block-choice"
+                          label
+                            input type="checkbox" name="quest_answer[#{ hb '../id' }]"  data-require-comment="#{ hb 'require_comment' }" data-value-name="#{ hb 'fillText title' }" value="#{hb 'score'}"
+                          div class="choice-title"
+                            = hb 'title'
+                    = hb 'ifEqual choice_type \'combo\''
+                      div class="block-choice"
+                        select class="form-control" name="quest_answer[#{ hb 'id' }]"
+                          option
+                          = hb 'choices' do
+                            option data-require-comment="#{ hb 'require_comment' }" value="#{ hb 'score' }"
+                              = hb 'title'
+                    = hb 'ifEqual choice_type \'numeric\''
+                      div class="block-choice"
+                        input type="number" name="quest_answer[#{ hb 'id' }]" class="form-control" min="0" max="#{hb 'choices.max_score'}"
+                  div class="block-quest-comment hide-comment"
+                    input type="text" name="quest_comment[#{ hb 'id' }]" class="form-control quest_comment" maxlength="150"                
+            div class="block-auto-asst-result" id="data-asst-id-#{ hb 'id' }"
+
+script id="template-attachment-list" type="text/x-handlebars"
+  table class="table"
+    = hb 'this' do
+      tr
+        td
+          = hb 'title'
+        td class="text-right"
+          button type="button" data-template-id="#{ hb 'id' }" data-log-id="#{ hb 'evaluation_log_id'}" class="btn btn-xs btn-primary btn-edit-atch btn-marg-r"
+            = icon 'pencil'
+            span Edit
+          button type="button" data-template-id="#{ hb 'id' }" data-log-id="#{ hb 'evaluation_log_id'}" class="btn btn-xs btn-primary btn-download-atch"
+            = icon 'download'
+            span Download
+
+script id="template-asst-details" type="text/x-handlebars"
+  div class="block-asst-reason"
+    = hb 'brief_summary'
+  div class="block-asst-sentences animated fadeIn hide-block"
+    = hb 'matched_sentenses' do
+      div
+        div
+          = icon 'phone'
+          = hb 'call_time'
+        ul
+          = hb 'sentences' do
+            li
+              a href="#" class="btn-seek-sentense" data-voice-id="#{hb '../voice_log_id'}" data-ssec="#{hb 'stime'}"
+                = hb 'html_safe text'
+                span class="text-time-tag"
+                  = "(#{ hb 'dsptime'})"
+  = hb 'if showToggle' do
+    button type="button" class="btn btn-default btn-xs btn-toggle-asst-result"
+      = icon 'chevron-down'
+
+script id="template-attachment-dialog" type="text/x-handlebars"
+  ul class="nav nav-pills"
+    = hb 'atchs' do
+      li id="template_id_#{ hb 'id' }" data-template-id="#{ hb 'id' }" data-log-id="#{ hb '../log_id' }"
+        a href="#"
+          = hb 'title'
+  iframe id="atch_form" src="#{ hb 'url' }" height="450px" width="100%" style="border:none; margin-top:0.25em;"
+
+div class="panel-evl-form panel-evaluation"
+  div class="block-fixed-top"
+    div class="form-options pnl-options"
+      div class="row"
+        div class="col-sm-4"
+          label
+            | Form
+          select name="evaluation_form" class="sel_evaluation_form"
+            - EvaluationPlan.find_plans_for_call(params[:id]).each do |form|
+              - if params[:ef].to_i == form[:id] or form[:selected] == true
+                option value="#{form[:id]}" selected="selected" data-revision-no="#{form[:locked_revision_no]}" #{form[:title]} 
+              - else
+                option value="#{form[:id]}" #{form[:title]}
+          span id="lb-check-result"
+  
+        div class="col-sm-8 text-right"
+          - if can_doact?("evaluations:evaluate") and can_doact?("evaluations:modify")
+            button type="button" id="btn-edit-evl" class="btn btn-primary btn-hidden"
+              = icon 'pencil'
+              span class="text-space"
+                | Edit
+          - if Settings.evaluation.show_check_button and can_doact?("evaluations:evaluate") and can_doact?("evaluations:recheck")
+            button type="button" id="btn-check-evl" class="btn btn-primary btn-hidden"
+              = icon 'check'
+              span class="text-space"
+                | Check
+          - if can_doact?("evaluations:evaluate") and can_doact?("evaluations:delete")
+            button type="button" id="btn-remove-evl" class="btn btn-danger btn-hidden"
+              = icon 'remove'
+              span class="text-space"
+                | Remove
+
+    div id="box-inprocessing" class="box-noform evl-form hide-block"
+      | Please wait.
+      
+    div id="box-noform" class="box-noform evl-form bg-warning"
+      | No evaluation form.
+    
+    div id="box-oper-info" class="box-oper-info evl-form"
+      div id="box-evl-msg"
+      div
+        input type="hidden" id="evl_check_result" name="evl_check_result" value="N"
+        input type="hidden" id="evl_check_comment" name="evl_check_comment" value=""
+        input type="hidden" id="evl_edit_mode" name="evl_edit_mode" value="evaluate"
+        div class="fl-group"
+          label
+            | Agent
+          select name="evl_usr_id" id="evl_usr_id"
+        div class="fl-group"
+          label
+            | Group
+          = select_tag :evl_group_id, options_for_select(Group.all_group_options), class: "form-control-no"
+        - GroupMemberType.all_types.each do |mem_type|
+          div class="fl-group"
+            label
+              = mem_type.title
+            = select_tag "group_leader[#{mem_type.field_name}]", options_for_select([]), class: "fd-group-leader form-control-no", 'data-leader-type': mem_type.field_name
+
+  div class="block-scroll"
+    table class="table-fullsize"
+      tr
+        td
+          div id="box-no-available-form" class="hide-block"
+            div class="panel panel-info"
+              div class="panel-body" No available form.
+          div id="box-evaluation-form" class="box-evaluation-form evl-form"
+          div id="box-summary-comment" class="box-summary-comment evl-form"
+            label
+              | Comment
+            textarea class="form-control" name="evl_comment" id="evl_comment" placeholder="Enter comment"
+            span class="help-block"
+              | Maximum length is 1,200 characters
+              span id="fd-remain-txt"
+          div id="box-check-comment" class="box-check-comment hide-box" class="evl-form"
+            div
+              label Reviewer
+              div class="btn-group text-marg-l"
+                input type="hidden" name="reviewer_flag" value="no"
+                button type="button" class="btn btn-xs btn-default btn-check-correct" id="btn-check-correct"
+                  = icon 'check'
+                  | Correct
+                button type="button" class="btn btn-xs btn-default btn-check-wrong" id="btn-check-wrong"
+                  = icon 'times'
+                  | Wrong
+            div id="comment-reviwer"
+              textarea class="form-control" name="reviewer_comment" id="reviewer_comment"
+          div id="box-doc-attachment" class="box-doc-attachment hide-box evl-form"
+            label
+              | Attachment
+            div
+          div id="box-endform-buttons" class="evl-form box-endform-buttons"
+            - if can_doact?("evaluations:evaluate")
+              button type="button" id="btn-save-evl" class="btn btn-primary btn-hidden"
+                = icon 'save'
+                span class="text-space"
+                  | Save
+            button type="button" id="btn-cancel-evl" class="btn btn-warning btn-hidden"
+              = icon 'ban'
+              span class="text-space"
+                | Cancel

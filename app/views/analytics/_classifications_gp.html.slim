@@ -1,0 +1,31 @@
+script type="text/template" id="callclass-template"
+  div class="col-sm-4" id="callclass-#{ hb 'id' }" data-category-id="#{ hb 'id' }"
+    div class="box-call-class"
+      table
+        tr
+          td class="txt-class-title"
+            a href="#" class="btn-callclass-select" data-category-id="#{ hb 'id' }"
+              = hb 'title'
+          td colspan="2" class="btn-find-callcate txt-dsp-number text-right" data-category-id="#{ hb 'id' }" date-count="#{ hb 'count' }"
+            = hb 'count'
+        tr
+          td
+            = hb 'agent_count'
+            |  Agents
+          td
+          td class="text-right"
+            = hb 'avg_agent'
+            |  Call(s)/Agent
+        tr
+          td colspan="3" class="bx-sparklines text-center"
+            span class="sparklines"
+
+script type="text/template" id="callclass-pg-template"
+  h6
+    = hb 'title'
+  div class="progress"
+    div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="#{ hb 'percentage' }" aria-valuemin="0" aria-valuemax="100" style="width:#{ hb 'percentage' }%"
+      | #{ hb 'count' } (#{ hb 'percentage' })
+      
+div id="dashb-call-class"
+  

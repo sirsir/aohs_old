@@ -1,0 +1,68 @@
+script id="tbl-template" type="text/x-handlebars"
+  table class="table table-striped table-bordered table-mnt" cellspacing="0"
+    thead
+      tr
+        th Group
+        th Description
+        th Delete
+    tbody
+      = hb 'each members' do
+        tr
+          td
+            = hb 'group_name'
+          td
+            = hb 'desc'
+          td.doact
+            span class="btn-delete-link btn-delete-img" data-delete-id="{{group_id}}" href="javascript:void(0)"
+              = image_tag('delete1.png')
+
+div class="panel panel-default panel-edit-group-member col-md-12" 
+  div class="col-md-8"
+    - if can_do?("voice_logs","disabled_call_permission", @user.id)
+      div class="panel panel-warning"
+        div class="panel-body bg-warning"
+          | This role has been disabled to use access control.
+    label
+      | Members
+    div id="group_member" class="panel-tblview"
+    div class="help-block"
+      label Note
+      ul
+        li All users or groups which is under upper list, system will allow to listen
+        li A User who have lower priority role, system will not allow to listen.
+        
+  div class="col-md-4"
+    div class="form-group"
+      label
+        | List of Group 
+      = select_tag :group, options_for_select(Group.all_group_options), { class: "form-control" }
+      
+      = button_tag 'Add', class: "btn btn-primary btn-add-group", id: "add_group"
+    
+    - if LocationInfo.count(0) > 0
+      div class="form-group"
+        = hidden_field_tag :user_attr_location, UserAttribute::C_LOCATIONS
+        label
+          | Site or Location
+        - LocationInfo.order(:name).all.each do |lc|
+          div
+            label class="control-label"
+              = check_box_tag :list_location, lc.id, (@sites.empty? or @sites.include?(lc.id))  
+              = " #{lc.name}"
+          
+    - unless can_do?("voice_logs","disabled_call_permission",@user.id)
+      label
+        | Permission of calls
+        
+      div class="form-group"
+        div class="checkbox"
+          label
+            = check_box_tag("chb-unknown","1",@user.user_attr(:unknown_call).is_checked?)
+            | Unknown Call.
+  
+      div class="form-group"
+        div class="checkbox"
+          label
+            = check_box_tag("chb-all-groups","2",@user.user_attr(:unknown_call).is_checked?)
+            | All groups.
+          

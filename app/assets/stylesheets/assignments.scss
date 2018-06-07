@@ -1,0 +1,70 @@
+@import 'base_form';
+@import 'charts';
+
+div.block-task-summary {
+  padding: 0.5em;
+  padding-bottom: 1em;
+  
+  span {
+    display: inline-block;
+    margin-right: 0.5em;
+    margin-left: 0.5em;
+    
+    a.tab-data-view {
+      border: 1px solid #FFFFFF;
+      border-radius: 0.4em;
+      padding: 0.5em;
+      padding-left: 0.8em;
+    }
+    
+    a.tab-data-view.active {
+      border-color: #4F94CD;
+      background-color: #4F94CD;
+      color: #FFFFFF;
+    }
+  }
+}
+
+div.block-task-list {
+  width: 100%;
+  margin-left: 0.5em;
+  min-height: 10em;
+}
+
+div.block-table-action {
+  padding: 0.5em;
+  position: absolute;
+  margin-top: -3.5em;
+  
+  button.btn {
+    margin-right: 0.5em;
+  }
+}
+
+table.table {
+  tr {
+    td.td-select-row {
+      width: 1em;
+    }
+    
+    td.td-action {
+      width: 3em;
+    }
+  }
+}
+
+div#chart-my-task-summary {
+  text-align: center;
+
+  div.chart-block {
+    width: 15em;
+    display: inline-block;
+    canvas {
+      width: 15em;
+    } 
+  }
+}
+
+div.block-left-panel {
+  padding-left: 0.5em;
+}

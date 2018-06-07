@@ -1,0 +1,76 @@
+div class="mnt-menu"
+  = render 'users/submenu'
+  = horizontal_bar
+  
+div class="mnt-cont mnt-upload"
+  div class="panel panel-default"
+    
+    div class="panel-import-h"
+      h3 Import User
+    
+    - case @step
+    - when :verify
+      = render 'users/import_preview'
+    - else
+      = render 'shares/upload_file'
+      
+  div class="panel panel-default"
+    div class="panel-heading"
+      h4
+        | How to import.    
+    div class="panel-body"
+      ol
+        li
+          | Prepare list of user as below structure in spreadsheet.
+          p
+            table class="table table-default-all"
+              tr
+                th Name
+                th Column's Name
+              tr
+                td
+                  | Username*
+                td
+                  | login, username
+              tr
+                td
+                  | Employee Id*
+                td
+                  | employee_id
+              tr
+                td
+                  | Name
+                td
+                  | full_name, full_name_en, name_en, full_name_th, name_th
+              tr
+                td
+                  | E-mail
+                td
+                  | email, e-mail, mail
+              tr
+                td
+                  | Citizen Id
+                td
+                  | citizen_id
+              tr
+                td
+                  | Role
+                td
+                  | role
+              tr
+                td
+                  | Group or Team
+                td
+                  | group
+          p
+            | For update existing record, system will use "Username" and "Employee Id" as key.
+          p
+            = image_tag 'screen_import01.png'
+            
+        li
+          | Save file in CSV format and UTF-8.
+        li
+          | Start an import by click button "Select File"
+          
+
+      

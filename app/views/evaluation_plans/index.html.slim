@@ -1,0 +1,12 @@
+- if is_index_action?
+  = paginate_panel_tag @plans
+  
+div class="mnt-menu"
+  = render 'evaluation_plans/submenu'
+  = horizontal_bar
+
+div class="mnt-cont mnt-filter"
+  = render 'evaluation_plans/filter'
+
+div class="mnt-cont mnt-tbl"
+  = render 'evaluation_plans/viewtbl'

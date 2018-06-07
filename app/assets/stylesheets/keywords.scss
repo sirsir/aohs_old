@@ -1,0 +1,29 @@
+@import 'summernote';
+
+.table {
+  td.td-notify-icon {
+    width: 3em;
+  }
+  
+  td.td-notify-icon[data-icon="comment"] {
+    color: #4682B4; 
+  }
+  
+  td.td-notify-icon[data-icon="exclamation-triangle"] {
+    color: #FFD700; 
+  }
+  
+  td.td-desktop-alert {
+    width: 12em;
+  }
+  
+  td.td-word-count {
+    width: 12em;
+  }
+}
+
+.has-error {
+  .CodeMirror {
+    border-color: red;
+  }
+}

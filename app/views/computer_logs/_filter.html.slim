@@ -1,0 +1,14 @@
+= panel_filter do
+  = form_filter_tag :computer_log, action: "index" do
+
+    = field_group_inline_tag :log_date, "Last updated" do
+      = text_field_tag :log_date, params[:log_date], class: "form-control input-date-rank"
+
+    = field_group_inline_tag :remote_ip, "Remote IP" do
+      = text_field_tag :remote_ip, params[:remote_ip], class: "form-control"
+
+    = field_group_inline_tag :computer_name, "Computer Name" do
+      = text_field_tag :computer_name, params[:computer_name], class: "form-control"
+      
+    = field_group_inline_tag :login, "Login" do
+      = text_field_tag :login, params[:login], class: "form-control"

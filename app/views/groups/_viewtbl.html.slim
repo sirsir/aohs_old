@@ -1,0 +1,32 @@
+= panel_tableview do
+  - unless @groups.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :short_name, label: "Name"
+          = th_tag :description, label: "Description"
+          - GroupMemberType.all_types.each do |type|
+            = th_tag :leader, label: type.title
+          = th_tag :total_member, label: "N of Members"
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @groups.each_with_index do |g,i|
+          tr
+            td.no
+              = g.seq_no2
+            td.group-shortname class="level-#{g.level_no}"
+              = g.short_name              
+            td.description
+              = g.description
+            - GroupMemberType.all_types.each do |type|
+              td
+                = g.leader_info(type.member_type).leader_info.display_name rescue nil
+            td class="text-numeric"
+              = g.count_members
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(g,'ed')
+  - else
+    = no_record_tag

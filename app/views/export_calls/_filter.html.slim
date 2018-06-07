@@ -1,0 +1,11 @@
+= panel_filter do
+  = form_filter_tag :task, action: "index" do
+    
+    = field_group_inline_tag :name, "Title" do
+      = text_field_tag :title, params[:title], class: "form-control"
+
+    = field_group_inline_tag :category, "Category" do
+      = text_field_tag :category, params[:category], class: "form-control"
+      
+    = field_group_inline_tag :type, "Type" do
+      = select_tag :type, options_for_select(ExportTask.schedule_type_options,params[:type]), include_blank: true, class: "form-control"      

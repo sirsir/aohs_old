@@ -1,0 +1,21 @@
+= render 'users/dialogs'
+
+- if is_index_action?
+  = paginate_panel_tag @users
+  
+= nav as: :pills, class: 'navbar-mnt' do
+  - if can_view?
+    = nav_link_to :view
+    
+  - if can_manage? and not (is_edit_action? or is_show_action?)
+    = nav_link_to :create
+  
+  - if can_manage? and (is_edit_action? or is_show_action?)
+    = nav_link_to :edit
+  
+  - if can_view? and is_index_action?
+    = nav_link_to :filter
+    
+  - if can_doact?(:import_export)
+    = nav_link_to :import
+    = nav_link_to :export_dialog

@@ -1,0 +1,16 @@
+ul class="nav nav-tabs"
+
+  li class="#{ params[:action] == "index" ? "active" : "" }"
+    a href="#{url_for(action: 'index')}" Overview
+
+  li class="#{ params[:action] == "word_cloud" ? "active" : "" }"
+    a href="#{url_for(action: 'word_cloud')}" Word Cloud
+    
+  /li class="#{ params[:action] == "classification" ? "active" : "" }"
+    a href="#{url_for(action: 'classification')}" Classification
+
+  /li class="#{ params[:action] == "reason" ? "active" : "" }"
+    a href="#{url_for(action: 'reason')}" Root Cause
+
+  /li class="#{ params[:action] == "assessment" ? "active" : "" }"
+    a href="#{url_for(action: 'assessment')}" Auto Assessment

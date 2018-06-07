@@ -1,0 +1,20 @@
+ul class="nav nav-tabs" role="tablist" style="margin-bottom:0.5em;" 
+  - @conf_groups.each do |cfg|
+    li class="#{(params[:name] == cfg.name ? "active" : "")}" role="presentation"
+      = link_to cfg.name.capitalize, { action: "index", name: cfg.name }, { role: "tab" }
+
+  li class="#{(params[:name] == "program" ? "active" : "")}" role="presentation"
+    = link_to "Programs", { action: "index", name: "program" }, { role: "tab" }
+
+  li class="#{(params[:name] == "module" ? "active" : "")}" role="presentation"
+    = link_to "Modules", { action: "index", name: "module" }, { role: "tab" }
+    
+  li class="#{(params[:name] == "location_info" ? "active" : "")}" role="presentation"
+    = link_to "Locations (Logger)", { action: "index", name: "location_info" }, { role: "tab" }
+
+  li class="#{(params[:name] == "display_tables" ? "active" : "")}" role="presentation"
+    = link_to "Display Tables", { action: "index", name: "display_tables" }, { role: "tab" }
+
+  li class="#{(params[:name] == "group_member_type" ? "active" : "")}" role="presentation"
+    = link_to "Group Member Type", { action: "index", name: "group_member_type" }, { role: "tab" }
+    

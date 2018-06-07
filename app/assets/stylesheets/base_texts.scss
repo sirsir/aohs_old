@@ -1,0 +1,179 @@
+.text-state-active {
+  color: #00CD00;
+}
+
+.text-state-suspended {
+  color: #FFA500;
+}
+
+.text-state-deleted {
+  color: #EE0000;
+}
+
+.text-inbound, .text-inb {
+  color: #00CD00;
+}
+
+.text-outbound, .text-outb {
+  color: #1C86EE;
+}
+
+/* text alignment */
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;  
+}
+
+.text-numeric {
+  text-align: right;
+}
+
+.text-truncate {
+  width: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-tag {
+  padding: 0;
+  margin: 0;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  display: inline-block;
+  margin-right: 0.2em;
+  max-width: 5.5em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9em;
+  
+  span {
+    font-weight: 500;
+    filter: invert(30%);    
+  }
+}
+
+.text-call-category {
+  border: 1px solid #CCCCCC;
+  border-radius: 0.2em;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  margin-right: 0.2em;
+}
+
+.text-label {
+  font-weight: bold;  
+}
+
+.text-space {
+  padding-left: 0.4em;
+  padding-right: 0.4em;
+}
+
+.text-space-r {
+  padding-right: 0.3em;
+}
+
+.text-space-l {
+  padding-right: 0.3em;
+}
+
+.text-marg-l {
+  margin-left: 0.3em;  
+}
+
+.text-marg-r {
+  margin-right: 0.3em;  
+}
+
+.text-marg-lr {
+  margin-left: 0.3em;  
+  margin-right: 0.3em;
+}
+
+.text-word-m {
+  color: #00EE76;  
+}
+
+.text-word-a {
+  color: #1874CD;
+}
+
+.text-word-n {
+  color: #FF3030;
+}
+
+.text-required {
+  color: #B40404;
+}
+
+.text-symbol {
+  border: 1px solid #8F8F8F;
+  border-radius: 0.3em;
+  padding: 0.1em;
+  padding-left: 0.3em;
+  padding-right: 0.3em;
+  margin-right: 0.1em;
+  margin-bottom: 0.1em;
+  display: inline-block;
+  font-size: 0.9em;
+  button {
+    margin-left: 0.2em;
+    padding: 0em !important;
+    line-height: 1.1em;
+    i {
+      margin: 0em !important;
+    }
+  }
+}
+
+.text-symbol[status-name="new"] {
+  border-color: #1874CD;
+  color: #1874CD;
+  background-color: #F0F8FF;
+}
+
+.text-symbol[status-name="enabled"],
+.text-symbol[status-name="in use"],
+.text-symbol[state-name="active"] {
+  border-color: #3CB371;
+  color: #3CB371;
+  background-color: #F0FFF0;
+}
+
+.text-symbol[status-name="disabled"] {
+  border-color: #708090;
+  color: #708090;
+  background-color: #F5F5F5;
+}
+
+.text-symbol[state-name="suspended"] {
+  border-color: #F4A460;
+  color: #F4A460;
+  background-color: #FAEBD7;
+}
+
+.text-symbol[state-name="deleted"] {
+  border-color: #CD5C5C;
+  color: #CD5C5C;
+  background-color: #FAEBD7;
+}
+
+.text-symbol-option {
+  border-left: 4px solid #8F8F8F;
+  display: inline-block;
+  padding-left: 0.25em;
+  font-size: 0.9em;
+  min-width: 100%;
+}
+
+th span.text-unit {
+  font-weight: normal !important;
+  font-size: 0.8em !important;
+  display: block;
+}

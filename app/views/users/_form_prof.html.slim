@@ -1,0 +1,30 @@
+= panel_form do
+  div class="row"
+    div class="col-sm-2"
+      div class="text-center avatar-box"
+        = image_tag url_for(controller: 'users', action: 'avatar', id: params[:id])
+    div class="col-sm-10"
+      = form_for(@user, layout: :horizontal, errors: { icons: false }) do |f|
+        
+        = f.legend 'Details'
+      
+        = f.text_field :login, label: "Username", placeholder: '', disabled: true
+        
+        = f.text_field :employee_id, label: "Employee or Staff ID", placeholder: '', disabled: true
+        
+        = f.text_field :citizen_id, label: "Citizen ID", placeholder: '', disabled: true
+      
+        = f.text_field :full_name_en, label: "Name (EN)", placeholder: '', disabled: true
+      
+        = f.text_field :full_name_th, label: "Name (TH)", placeholder: '', disabled: true
+        
+        = f.email_field :email, label: "E-Mail", placeholder: '', disabled: true
+        
+        = f.select :sex, SystemConst.sex_options, {}, label: "Sex", disabled: true
+        
+        = f.fields_for "group_member", @group_member do |gm|
+          = gm.select :group_id, Group.all_group_options, {}, label: "Group", disabled: true
+        
+        / = f.select :role_id, Role.role_options, {}, label: "Role", disabled: true
+        
+        / = f.submit "OK", class: "submit" 

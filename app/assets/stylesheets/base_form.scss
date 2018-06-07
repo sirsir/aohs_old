@@ -1,0 +1,17 @@
+@import 'bootstrap-multiselect';
+@import 'datatable';
+@import url("skins/square/_all.css");
+
+input.input-date-rank {
+  background-image: asset-url('calendar-with-a-clock-time.png');
+  background-position: right;
+  background-repeat: no-repeat;
+  background-size: 6%;
+}
+
+div.form-group {
+  div.btn-group > button > input[type=checkbox] {
+    visibility: hidden;
+    position: absolute;
+  }
+}

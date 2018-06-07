@@ -1,0 +1,46 @@
+script type="text/template" id="keywords-pg-template"
+  = hb 'this' do
+    h6
+      = hb 'word'
+    div class="progress"
+      div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="#{ hb 'percentage' }" aria-valuemin="0" aria-valuemax="100" style="width:#{ hb 'percentage' }%"
+        | #{ hb 'count' } (#{ hb 'percentage' })
+
+div class="panel-analytics"
+  
+  div class="row"
+    div class="col-sm-12"
+      = render 'analytics/submenu'
+  
+  div class="row"
+    div class="col-sm-10"
+
+      div class="row"  
+        div class="col-sm-12"
+          h3
+            = icon 'calendar-o', class: 'text-space-r'
+            = @calendar_label
+          
+      div class="row"  
+        div class="col-sm-12"
+          h3
+            | Call Classifications
+          = render 'classifications_gp'
+            
+    div class="col-sm-2"
+      div class="row"
+        div class="col-sm-12"
+          = render 'calendar_widget'
+      
+      div class="row"
+        div class="col-sm-12"
+          h4
+            | Top Keyword
+          div id="box-top-keywords"
+            div id="box-wordcloud"
+            
+      div class="row"
+        div class="col-sm-12"
+          h4
+            | Top Call Classification
+          div id="box-top-callclass"

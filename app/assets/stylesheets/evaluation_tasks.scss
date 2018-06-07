@@ -1,0 +1,124 @@
+@import 'base_form';
+
+table.table {
+  tr {
+    th.th-move-btn, td.td-move-btn {
+      width: 4em;
+      max-width: 4em;
+      text-align: center;
+    }
+    
+    td.td-enabled {
+      width: 10em;
+      max-width: 10em;
+      text-align: center;
+    }
+  }
+}
+
+div.block-asg-step {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 1em;
+  
+  div.item-step {
+    display: inline-block;
+    padding: 0.5em;
+    border: 1px solid #5D6D7E;
+    border-radius: 0.3em;
+    width: 10em;
+    text-align: center;
+  }
+  
+  div.item-step.selected {
+    background-color: #5D6D7E;
+    color: #FDFEFE;
+  }
+  
+  div.item-line {
+    display: inline-block;
+    border: 2px solid #5D6D7E;
+    width: 5%;
+  }
+}
+
+div.block-step-page {
+  border: 1px solid #CCCCCC;
+  border-radius: 0.5em;
+  padding: 1.5em;
+  
+  div.field-group {
+    input, label {
+      margin-top: 0.25em;
+      margin-bottom: 0.25em;
+    }
+  }
+  
+  span.help-block {
+    font-weight: normal !important;
+  }
+  
+  div.iradio_square-blue, div.icheckbox_square-blue {
+    margin-right: 0.25em;
+  }
+  
+  button.btn {
+    display: inline-block;
+    width: 8em;
+    margin-right: 0.5em;
+  }
+  
+  button#btn-assign-submit {
+    margin-right: 1em;
+  }
+  
+  div.block-user-list {
+    border: 1px solid #CCCCCC;
+    border-radius: 0.3em;
+    min-height: 10em;
+    padding: 0.25em;
+  }
+  
+  table.table {
+    tr {
+      td {
+        button.btn-select, button.btn-unselect {
+          width: 3em;
+          &:hover {
+            background-color: #5499C7;
+            color: #FFFFFF;
+          }
+        }
+      }
+      
+      td.td-cnt {
+        width: 15em;
+        max-width: 15em;
+      }
+      
+      td.td-checkbox {
+        width: 2em;
+        max-width: 2em;
+        text-align: center;
+      }
+    }
+  }
+  
+  div.form-group.has-error {
+    label { color: #B22222; }
+    
+    div.block-user-list {
+      border-color: #B22222;
+    }
+  }
+}
+
+select#duedate_type {
+  margin-bottom: 0.25em;  
+}
+
+input#task_end_date, input#task_within_days {
+  &.hidden {
+    display: none;  
+  }
+}

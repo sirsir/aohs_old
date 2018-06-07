@@ -1,0 +1,91 @@
+= html_template "template-unassigned-table"
+  table class="table table-striped table-bordered table-condensed table-default"
+    thead
+      tr
+        th rowspan="2" User
+        th colspan="2" Assigned
+        th rowspan="2" Number of Record to Unassign
+      tr
+        th Total
+        th Duration (Hrs)
+    tbody
+      = hb 'this' do
+        tr
+          td
+            = hb 'display_name'
+          td class="text-right"
+            = hb 'assigned_count'
+          td class="text-right"
+            = hb 'minToHr assigned_duration'
+          td class="text-center"
+            input type="text" class="form-control fd_unassign_count text-center" data-assignee-id="#{ hb 'id' }" name="unassign_count_#{ hb 'id' }" value="#{ hb 'assigned_count' }"
+
+= html_template "template-assigned-table"
+  table class="table table-striped table-bordered table-condensed table-default"
+    thead
+      tr
+        th rowspan="2" User
+        th colspan="2" Assigned
+      tr
+        th Total
+        th Duration (Hrs)
+    tbody
+      = hb 'this' do
+        tr
+          td
+            = hb 'display_name'
+          td class="text-right"
+            = hb 'assigned_count'
+          td class="text-right"
+            = hb 'minToHr assigned_duration'
+            
+div class="mnt-menu"
+  = render partial: 'submenu'
+  = horizontal_bar
+
+div class="mnt-cont mnt-form"
+  
+  
+  
+/ div class="mnt-cont mnt-form"
+  h3 Ad Hoc Unassignment
+  div id="block-select-data"
+    div class="row"
+      div class="col-sm-12"
+        h4 Search Data
+    div class="row"
+      div class="form-group col-sm-4"
+        label Date Range
+        input type="text" class="form-control input-date-rank" name="call_date" id="fd_call_date"
+      div class="form-group col-sm-4"
+        label Extension
+        input type="text" class="form-control" name="extension" id="fd_extension"
+      div class="form-group col-sm-4"
+        label Caller No.
+        input type="text" class="form-control" name="ani" id="fd_ani"
+      div class="form-group col-sm-4"
+        label Dialed No.
+        input type="text" class="form-control" name="dnis" id="fd_dnis"        
+    div class="row"
+      div class="col-sm-12" id="block-unassigned-result"
+    div class="row"
+      div class="form-group col-sm-12"
+        button type="button" class="btn btn-primary" id="btn-next-unassign" Next
+  div id="block-unassign-list" class="hide-block"
+    div class="row"
+      div class="col-sm-12"
+        h4 Unassign
+    div class="row"
+      div class="col-sm-12"
+        div id="tbl-unassign-list"
+    div class="row"  
+      div class="form-group col-sm-12"
+        button type="button" class="btn btn-primary btn-marg-r" id="btn-prev-select" Previous
+        button type="button" class="btn btn-success btn-marg-l" id="btn-next-summary" Unassign
+  div id="block-unassign-result" class="hide-block"
+    div class="row"
+      div class="col-sm-12"
+        h4 Unassign Summary
+    div class="row"
+      div class="col-sm-12"
+        div id="tbl-unassign-summary"

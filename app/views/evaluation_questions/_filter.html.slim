@@ -1,0 +1,5 @@
+= panel_filter do
+  = form_filter_tag :custom_dictionaries, action: "index" do
+    
+    = field_group_inline_tag :title, "Question" do
+      = text_field_tag :title, params[:title], class: "form-control"

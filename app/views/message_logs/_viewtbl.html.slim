@@ -1,0 +1,51 @@
+= panel_tableview do
+  - unless @message_logs.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :message_type, order: false
+          = th_tag :extension, label: "Ext.", order: false
+          = th_tag :call_time, label: "Call Time", order: false
+          = th_tag :speech_at, label: "Speech Time", order: false
+          = th_tag :ut_end_at, label: "Utt. EndTime", order: false
+          = th_tag :accepted_at, label: "Recog. Time", order: false
+          = th_tag :detected_at, label: "Detected Time", order: false
+          = th_tag :created_at, label: "Sent Time", order: true
+          = th_tag :display_at, label: "Display Time", order: false
+          = th_tag :updated_at, label: "Ack. Time", order: false
+          = th_tag :who_receive, label: "Receiver", order: false
+          = th_tag :message_content, label: "Detail", order: false
+      tbody
+        - @message_logs.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td.message_type
+              = r.log_type_name
+            td.text-center
+              - if r.voice_log_id.to_i > 0
+                = r.voice_log_info.extension
+            td.dt_text.text-center
+              - if r.voice_log_id.to_i > 0
+                = link_to r.call_start_time_t, call_history_path(r.voice_log_info.id.to_i), target: "_blank"
+            td.dt_text.text-center
+              = r.speech_at_t3
+            td.dt_text.text-center
+              = r.ut_ended_at_s
+            td.dt_text.text-center
+              = r.accepted_result_at_t
+            td.time_text.text-center
+              = r.detected_result_at_dsp
+            td.time_text.text-center
+              = r.created_at.to_formatted_s(:time)
+            td.time_text.text-center
+              = r.display_at.nil? ? "" : r.display_at.to_formatted_s(:time)
+            td.time_text.text-center
+              = r.acknowledge_date.nil? ? "" : r.acknowledge_date.to_formatted_s(:time)
+            td.agent_name
+              = r.receiver_info.display_name
+            td
+              = r.message_description.to_s.html_safe
+  - else
+    = no_record_tag

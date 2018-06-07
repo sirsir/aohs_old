@@ -1,0 +1,3 @@
+class SearchController < CallHistoriesController
+  
+end

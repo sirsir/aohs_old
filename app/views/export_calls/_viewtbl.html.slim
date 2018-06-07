@@ -1,0 +1,41 @@
+= panel_tableview do
+  - unless @tasks.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :status, order: true
+          = th_tag :title, order: true
+          = th_tag :category, order: true
+          = th_tag :type, order: true
+          = th_tag :description
+          = th_tag :created_at, order: true
+          = th_tag :last_export_date, order: true
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @tasks.each_with_index do |t,i|
+          tr data-status-name="#{t.state_name.downcase}"
+            td.ec-status
+              span class="txt-status-name"
+                span class="txt-status-ico"
+                  = icon icon_status(t.state_name)
+                = t.state_name
+            td
+              = t.name
+              span class="text-taskid"
+                = "(##{t.id})"
+            td
+              = t.category                
+            td.ec-task-type class="text-center" 
+              = t.type_name
+            td
+              = t.desc
+            td.ec-date class="text-center"
+              = t.created_at.to_formatted_s(:web)
+            td.ec-date class="text-center"
+              = t.last_processed_date.to_formatted_s(:web) rescue nil
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(t,'sed')
+  - else
+    = no_record_tag

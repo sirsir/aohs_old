@@ -1,0 +1,144 @@
+div class="row" id="block-portal"
+
+  div id="block-left-side-portal" class="col-sm-6"
+  
+    div class="block-group-menu col-sm-12"
+      div class="block-group-icon"
+        = image_tag 'pt-woman-headset'
+      div class="block-group-links"
+        h4 Call Recording
+        div class="block-note"
+          | Search inbound calls, outbound calls, and monitor agent in realtime.
+        ul
+          - if can_view?(:dashboard)
+            li
+              a href="#{url_for(controller: 'dashboard', action: 'agent_monitor')}"
+                span
+                  | Agent Call Dashboard
+          - if can_view?(:call_browser)
+            li
+              a href="#{url_for(controller: 'call_browser')}"
+                span
+                  | Agent Realtime Monitor
+          - if can_view?(:call_histories)
+            li
+              a href="#{url_for(controller: 'call_histories', findnow: 'yes')}"
+                span
+                  | Call History
+    
+    - if false and (can_manage?(:evaluation_tasks) or can_view?(:assignments))
+      div class="block-group-menu col-sm-12"
+        div class="block-group-icon"
+          = image_tag 'pt-tasks'
+        div class="block-group-links"
+          h4 Assignment
+          div class="block-note"
+          ul
+            - if can_view?(:assignments)
+              li
+                a href="#{url_for(controller: 'assignments', action: 'index')}"
+                  span
+                    | My Assignment
+            - if can_manage?(:evaluation_tasks)
+              li
+                a href="#{url_for(controller: 'evaluation_tasks', action: 'new')}"
+                  span
+                    | Create Assignment
+              li
+                a href="#{url_for(controller: 'evaluation_tasks', action: 'index')}"
+                  span
+                    | Manage Auto Assignment
+
+    - if can_view?(:auto_assessment_rules) or can_view?(:evaluations) or can_view?(:evaluation_plans)
+      div class="block-group-menu col-sm-12"
+        div class="block-group-icon"
+          = image_tag 'pt-qa'
+        div class="block-group-links"
+          h4 Quality Assurance
+          div class="block-note"
+            | Call quality monitoring and evaluate.
+          ul
+            - if can_view?(:evaluations)
+              li
+                a href="#{url_for(controller: 'call_evaluation', findnow: 'yes')}"
+                  span
+                    | Call Evaluation Search
+            - if can_view?(:evaluation_plans)    
+              li
+                a href="#{url_for(controller: 'evaluation_plans', action: 'index')}"
+                  span
+                    | Evaluation Forms
+              li
+                a href="#{url_for(controller: 'evaluation_questions', action: 'index')}"
+                  span
+                    | Evaluation Questions
+              li
+                a href="#{url_for(controller: 'evaluation_grade_settings', action: 'index')}"
+                  span
+                    | Grade Settings
+              / li
+                a href="#{url_for(controller: 'auto_assessment_rules', action: 'index')}"
+                  span
+                    | Auto Assessment Rules
+    
+    - if can_view?(:maintenances)
+      div class="block-group-menu col-sm-12"
+        div class="block-group-icon"
+          = image_tag 'pt-settings'
+        div class="block-group-links"
+          h4 Settings
+          div class="block-note"
+            | Manage content data, configurations and view logs.
+          ul
+            - if can_view?(:users) 
+              li
+                a href="#{url_for(controller: 'users')}"
+                  span
+                    | Users and Groups
+            - if can_view?(:tags) 
+              li
+                a href="#{url_for(controller: 'tags')}"
+                  span
+                    | Tags
+            - if can_view?(:maintenances) 
+              li
+                a href="#{url_for(controller: 'maintenances')}"
+                  span
+                    | Other settings
+
+  div id="block-right-side-portal" class="col-sm-6"
+  
+    div class="block-group-menu col-sm-12"
+      div class="block-group-icon"
+        = image_tag 'pt-business-report'
+      div class="block-group-links"
+        h4 Reports
+        div class="block-note"
+        ul
+          - if can_view?(:reports)
+            li
+              a href="#{url_for(controller: 'reports', report_for: 'calls')}"
+                span
+                  | Call Statistic Reports
+          - if can_view?(:reports)
+            li
+              a href="#{url_for(controller: 'reports', report_for: 'keywords')}"
+                span
+                  | Keyword Reports
+          - if can_view?(:reports) and display_for?([:aeoncol,:acss])
+            li
+              a href="#{url_for(controller: 'reports', report_for: 'recommendation')}"
+                span
+                  | System Recommendation Reports
+          - if can_view?(:evaluation_reports)
+            li
+              a href="#{url_for(controller: 'reports', report_for: 'evaluations')}"
+                span
+                  | Agent Evaluation Reports
+                  
+    / div class="block-group-menu col-sm-12"
+      div class="block-group-icon"
+        = image_tag 'pt-analytics'
+      div class="block-group-links"
+        h4 Analytics
+        div class="block-note"

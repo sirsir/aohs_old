@@ -1,0 +1,11 @@
+| # -*- coding: uft-8 -*-
+= "\r\n"
+| # This keyword list is automatically generated from database at #{Time.now.to_formatted_s(:web)}
+= "\r\n"
+= "# " << ["Original Data:",request.url].join("\t")
+= "\r\n"
+= "# " << ["Format:","keywords.name","keywords.group","keywords.type","keywords.id"].join("\t")
+= "\r\n"
+- @keywords.each do |k|
+  = [k.name,k.parent_keyword_name,k.keyword_type.name,k.parent_keyword_id].join("\t")
+  = "\r\n"

@@ -1,0 +1,39 @@
+= panel_form do
+  = form_for(@evaluation_doc, layout: :horizontal, errors: {icons: false}) do |f|
+    input type="hidden" name="document_template_id" value="#{@evaluation_doc.document_template_id}"
+    input type="hidden" name="evaluation_log_id" value="#{@evaluation_doc.evaluation_log_id}"
+    input type="hidden" name="log_id" value="#{@evaluation_doc.evaluation_log_id}"
+    input type="hidden" name="dlfile" value="false"
+    div class="row"
+      div class="col-sm-9 col-sm-offset-3"
+        span class="help-block"
+          | Please update as below field(s) and click "OK" to raise the form.
+          
+    - @evaluation_doc.mapped_fields.each do |field|
+      div class="row form-group"
+        div class="col-sm-3 text-right"
+          label
+            = field["title"]
+        div class="col-sm-9"
+          - if field["readonly"]
+            - if /(COMMENT)/.match(field["name"])
+              textarea name="cst[#{field["name"].gsub(/\[|\]/,"")}]" class="form-control" readonly="readonly"
+                = field["value"]
+            - else
+              input type="text" name="cst[#{field["name"].gsub(/\[|\]/,"")}]" class="form-control" value="#{field["value"]}" readonly="readonly"
+          - else
+            - if /(COMMENT)/.match(field["name"])
+              textarea name="cst[#{field["name"].gsub(/\[|\]/,"")}]" class="form-control"
+                = field["value"]
+            - else
+              input type="text" name="cst[#{field["name"].gsub(/\[|\]/,"")}]" class="form-control" value="#{field["value"]}"
+            
+    div class="row"
+      div class="col-sm-9 col-sm-offset-3"
+          button type="submit" id="btn-save-change" class="btn btn-primary btn-mar-right"
+            | Save
+          button type="submit" id="btn-save-change-withdl" class="btn btn-primary btn-mar-right"
+            | Save and Download
+          - if @evaluation_doc.id.to_i > 0
+            button type="button" id="btn-delete" class="btn btn-danger btn-mar-right" data-id="#{ @evaluation_doc.id }"
+              | Delete

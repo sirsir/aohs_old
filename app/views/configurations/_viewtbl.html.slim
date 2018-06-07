@@ -1,0 +1,34 @@
+= panel_tableview do
+  - unless @configurations.empty?
+    = form_tag url_for(action: 'update', id: @conf_group.id, type: @conf_for), {method: 'PATCH'} do
+      = table_tag :mnt, { id: "table-configuration" } do
+        thead
+          tr
+            = th_tag :no
+            = th_tag :variable
+            = th_tag :variable_type
+            = th_tag :default_value
+            = th_tag :value, label: "Value (#{@conf_for.capitalize})"
+        tbody
+          - @configurations.each_with_index do |conf,i|
+            - conf.set_config_for(@conf_for)
+            tr
+              td.no
+                = row_no(i)
+              td
+                = conf.variable
+              td class="text-center"
+                = conf.value_type                
+              td class="field-conf"
+                = conf.get_default
+              td class="field-conf"
+                span class="form-group"
+                  - if can_manage?
+                    input type="text" name="conf[#{conf.id}]" class="form-control input-sm" value="#{conf.get_value}"
+                  - else
+                    = conf.get_value
+      div class="box-btn-group"
+        = submit_tag 'Save', class: 'btn btn-primary btn-save-config'
+  - else
+    = no_record_tag
+

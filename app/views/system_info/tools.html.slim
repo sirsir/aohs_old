@@ -1,0 +1,109 @@
+div class="mnt-menu"
+  = render partial: 'menu'
+  
+div class="mnt-cont"
+  div class="row"
+    div class="col-sm-12 panel panel-default"
+      table class="table"
+        tr
+          th Title
+          th Path
+          th Description
+        tr
+          td
+            | Ruby
+          td
+            = Settings.libexec.ruby
+          td
+            = AppUtils::ToolInfo.ruby_version
+        tr
+          td
+            | JRuby
+          td
+            = Settings.libexec.jruby
+          td
+            = AppUtils::ToolInfo.jruby_version
+        tr
+          td
+            | Gnuplot
+          td
+            = Settings.libexec.gnuplot
+          td
+            = AppUtils::ToolInfo.gnuplot_version
+        tr
+          td
+            | Java
+          td
+            = Settings.libexec.java
+          td
+            = AppUtils::ToolInfo.java_version
+        tr
+          td
+            | Unoconv
+          td
+            = Settings.libexec.unoconv
+          td
+            = AppUtils::ToolInfo.unoconv_version
+        tr
+          td
+            | WGET
+          td
+            = Settings.libexec.wget
+          td
+            = AppUtils::ToolInfo.wget_version
+        tr
+          td
+            | SOX
+          td
+            = Settings.libexec.sox
+          td
+            = AppUtils::ToolInfo.sox_version
+        tr
+          td
+            | LAME(MP3)
+          td
+            = Settings.libexec.lame
+          td
+            = AppUtils::ToolInfo.lame_version
+        tr
+          td
+            | SPEEXENC
+          td
+            = Settings.libexec.speexenc
+          td
+            = AppUtils::ToolInfo.speexenc_version
+        tr
+          td
+            | SPEEXDEC
+          td
+            = Settings.libexec.speexdec
+          td
+            = AppUtils::ToolInfo.speexdec_version
+        tr
+          td
+            | TAR
+          td
+            = Settings.libexec.tar
+          td
+            = AppUtils::ToolInfo.tar_version
+        tr
+          td
+            | Bzip2
+          td
+            = Settings.libexec.bzip2
+          td
+            = AppUtils::ToolInfo.bzip2_version
+        tr
+          td
+            | Unzip
+          td
+            = Settings.libexec.unzip
+          td
+            = AppUtils::ToolInfo.unzip_version
+        tr
+          td
+            | JpegOptimizer
+          td
+            = Settings.libexec.jpegoptim
+          td
+            = AppUtils::ToolInfo.jpegoptim_version

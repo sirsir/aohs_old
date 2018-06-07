@@ -1,0 +1,44 @@
+div class="au-control"
+  
+  div class="btn-group-left"
+    div id="btn-play" class="btn"
+      = icon 'play'
+    div id="btn-stop" class="btn"
+      = icon 'stop'
+    div id="btn-pause" class="btn"
+      = icon 'pause'
+      
+  div id="slider-audio"
+    input id="au-input-slider" data-slider-id='au-slider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-tooltip="hide"
+
+  div class="btn-group-right"
+    
+    div id="au-duration" class="btn"
+      | 00:00/00:00
+
+    - if false and defined? btns and btns[:next_prev] == true
+      div id="btn-prev-track" class="btn"
+        = icon 'chevron-left'
+      div id="btn-next-track" class="btn"
+        = icon 'chevron-right'
+      
+    div id="slider-volume"
+      input type="range" min="0" max="100" step="5" value="50"   
+    div id="btn-audio-volume" class="btn"
+      = icon 'volume-up'
+
+    div id="slider-pan" class="hide-input-range"
+      input type="range" min="0" max="200" step="10" value="100"
+    div id="btn-audio-pan" class="btn"
+    
+    div id="slider-playing-rate"
+      input type="range" min="0.5" max="2" step="0.05" value="1"
+    div id="btn-playing-rate" class="btn"
+      | 1x
+
+    / div id="btn-mono-stereo" class="btn"
+      | Stereo
+      
+    - if defined? btns and btns[:toggle] == true    
+      div id="btn-toggle-audioview" class="btn" data-toggle="button"
+        = icon 'chevron-up'

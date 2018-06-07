@@ -1,0 +1,21 @@
+div class="row"
+  div class="col-sm-12"
+    - unless @lead_hists.empty?
+      = table_tag :mnt do
+        thead
+          tr
+            = th_tag :no
+            = th_tag :leader, label: "Leader", order: false
+            = th_tag :leader_type, label: "Type", order: false
+            = th_tag :beginning_date, order: false
+        tbody
+          - @lead_hists.each_with_index do |mh,i|
+            tr
+              td
+                = i + 1
+              td
+                = mh.user.display_name
+              td
+                = mh.type_name
+              td class="text-center"
+                = mh.created_date.to_formatted_s(:web)

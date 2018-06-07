@@ -1,0 +1,125 @@
+@import 'bootstrap-multiselect';
+
+legend.legend-criteria {
+  margin-bottom: 0em;  
+}
+
+.block-category, .block-question {
+  border: 1px solid #CCCCCC;
+  border-radius: 0.3em;
+  width: 100%;
+  margin-bottom: 0.25em;
+  
+  table {
+    width: 100%;
+    
+    th {
+      border-bottom: 1px solid #CCCCCC;
+      background-color: #F5F5F5;
+      text-align: center;
+      height: 2.5em;
+    }
+    
+    td {
+      padding: 0.3em;
+      padding-top: 0.5em;
+      padding-bottom: 0.5em;
+      border-bottom: 1px solid #CCCCCC;
+    }
+    
+    td.td-checkbox {
+      width: 1em;
+      padding-left: 0.5em;
+      text-align: center;
+    }
+    
+    td.td-act {
+      text-align: right;
+      max-width: 8em;
+      width: 8em;
+    }
+    
+    td.td-weighted {
+      width: 4em;
+      
+      input {
+        width: 4em;
+        border-radius: 0.2em;
+        border: 1px solid #CCCCCC;
+        padding: 0.2em;
+        text-align: center;
+      }
+    }
+    
+    td.td-ans-type {
+      width: 4em;
+      text-align: center;
+    }
+    
+    td.td-score {
+      width: 4em;
+      text-align: right;
+    }
+    
+    tr.row_active {
+      td {
+        background-color: #E0EEEE;
+      }
+    }
+    
+    tr.q-deleted {
+      td {
+        background-color: #FADBD8;
+      }
+    }
+        
+    tfoot tr td {
+      background-color: #F5F5F5;
+    }
+  }
+  
+  .block-question-answer {
+    display: none;
+  }
+  
+  .btn-unselect {
+    i { color: #CCCCCC; }  
+  }
+  
+  .btn-hide {
+    display: none;
+  }
+  
+  table tr:first-child .btn-move-up,
+  table tr:last-child .btn-move-down {
+    display: none;
+  }
+}
+
+.has-error {
+  color: red;  
+}
+
+#dialog-addcate {
+  position: absolute;
+  background-color: white;
+  width: auto;
+  height: 90%;
+  z-index: 999;
+  margin-top: 1.5em;
+  right: 1.5em;
+  left: 14.5em;
+  display: none;
+  
+  iframe {
+    border: 1px solid #CCCCCC;
+  }
+}
+
+button#btn-add-rule {
+  margin-top: 0.25em;
+}
+
+legend.block-legend {
+  margin-top: 0.5em;
+}

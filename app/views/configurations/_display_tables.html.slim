@@ -1,0 +1,53 @@
+div class="panel"
+  select id="table-list" class="form-control"
+    - @display_tables.each do |tbl|
+      - if params[:table] == tbl.table_name
+        option value="#{tbl.table_name}" selected="selected"
+          = tbl.table_name.gsub("_"," ").capitalize
+      - else
+        option value="#{tbl.table_name}" 
+          = tbl.table_name.gsub("_"," ").capitalize
+          
+= panel_tableview do
+  - unless @display_columns.empty?
+    = table_tag :mnt, { id: "table-display-settings" } do
+      thead
+        tr
+          th
+            | Title
+          th
+            | Sortable
+          th
+            | Enable?
+          th
+            | Searchable?
+          th
+            | Order
+      tbody
+        - @display_columns.each do |col|
+          tr
+            td
+              = col.title
+              input type="hidden" name="display_id" value="#{col.id}"
+            td class="td-action text-center"
+              span class="text-symbol"
+                = col.sortable_status_name
+            td class="td-action text-center"
+              - if col.enabled?
+                input type="checkbox" name="column_enable" data-toggle="toggle" data-on="Enabled" data-off="Disabled" data-size="normal" data-height="30" data-width="80" checked="checked"
+              - else
+                input type="checkbox" name="column_enable" data-toggle="toggle" data-on="Enabled" data-off="Disabled" data-size="normal" data-height="30" data-width="80"
+            td class="td-action text-center"
+              - if col.searchable?
+                input type="checkbox" name="column_searchable" data-toggle="toggle" data-on="Enabled" data-off="Disabled" data-size="normal" data-height="30" data-width="80" checked="checked"
+              - else
+                input type="checkbox" name="column_searchable" data-toggle="toggle" data-on="Enabled" data-off="Disabled" data-size="normal" data-height="30" data-width="80"
+            td class="td-action text-center"
+              button class="btn btn-default btn-moveup"
+                = icon "arrow-up"
+              button class="btn btn-default btn-movedown"
+                = icon "arrow-down"
+ 
+    div class="box-btn-group"
+      button type="button" class="btn btn-primary" id="btn-dc-update"
+        | Update

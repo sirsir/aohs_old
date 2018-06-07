@@ -1,0 +1,29 @@
+div class="row"
+
+  div class="col-sm-6"
+    div class="group-select"
+      label class="text-space-r"
+        | Groups
+      div class="btn-group"
+        = select_tag :cb_group, options_for_select(Group.all_group_options({user_id: current_user.id})), include_blank: true, multiple: true
+        button id="btn-search" class="btn btn-primary pull-right"
+          = icon 'search'
+  
+  div class="col-sm-6 text-right form-inline"
+    div class="form-group"
+      input type="text" id="cb-filter" class="form-control" placeholder="Filter here"
+    
+    div class="form-group" 
+      div class="dropdown" id="tbl-opt-box"
+        button class="btn btn-default dropdown-toggle" id="btn-tbl-opt" type="button" data-toggle="dropdown" aria-expanded="true"
+          = icon 'cog'
+          span class="caret"
+        ul class="dropdown-menu" role="menu" aria-labelledby="btn-tbl-opt"
+          li class="dropdown-header"
+            | Show/hide columns
+          li
+            a href="#" class="showhide_col" data-col-index="3"
+              | Work Experience (Years)
+          li
+            a href="#" class="showhide_col" data-col-index="4"
+              | Group

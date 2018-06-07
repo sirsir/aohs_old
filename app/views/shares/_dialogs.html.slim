@@ -1,0 +1,26 @@
+= hbs_template :dialog_download_fileformat do
+  div class="row"
+    div class="col-sm-12"
+      h4
+        | Select below file type to download.
+      = hb 'formats' do
+        button type="button" data-file-format="#{ hb 'format' }" class="btn btn-block btn-default btn-filedownload btn-fileformat-#{hb 'format'}"
+          div class="ico-file-type"
+          div
+            = hb 'title'
+
+= hbs_template "template-audiofile-download-dialog" do
+  div class="row"
+    div class="col-sm-12" class="dialog-audiofile-select"
+      h4 Choose audio file format to download.
+      - SystemConst.audio_filetypes.each do |ft|
+        button type="button" class="btn btn-default btn-dl-audiofile" data-file-format="#{ ft[:file_type]}"
+          = ft[:text]
+
+div id="box-processing-all"
+  div class="box-msg"
+    div class="wait-ico"
+      = image_tag(loading_images.sample)
+    div class="wait-msg" id="fl-processing-msg"
+      | Please wait
+    div class="wait-msg-2" id="fl-processing-msg-2"

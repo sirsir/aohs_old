@@ -1,0 +1,91 @@
+= hbs_template "template-assigned-list" do
+  thead
+    tr
+      th
+      th Action
+      th Call Date/Time
+      th Agent's Name
+      th Extension
+      th Duration
+      th Assigned Date
+  tbody
+    = hb 'this' do
+      tr
+        td.td-select-row.text-center
+          input type="checkbox" name="row_select" value="#{ hb 'c_voice_log_id' }"
+        td.td-action.text-center
+          button type="button" class="btn btn-xs btn-default btn-do-evaluate" data-voice-log-id="#{ hb 'c_voice_log_id' }" Evaluate
+        td
+          = hb 'c_datetime'
+        td
+          = hb 'c_agent_name'
+        td
+          = hb 'c_extension'
+        td
+          = hb 'c_duration_s'
+        td
+          = hb 'assigned_at'
+  tfoot
+
+= hbs_template "template-closed-list" do
+  thead
+    tr
+      th
+      th Call Date/Time
+      th Agent's Name
+      th Extension
+      th Duration
+      th Evaluated Date
+      th Assigned Date
+  tbody
+    = hb 'this' do
+      tr
+        td.td-action.text-center
+          button type="button" class="btn btn-xs btn-default btn-do-evaluate" data-voice-log-id="#{ hb 'c_voice_log_id' }" Evaluate
+        td
+          = hb 'c_datetime'
+        td
+          = hb 'c_agent_name'
+        td
+          = hb 'c_extension'
+        td
+          = hb 'c_duration_s'
+        td
+          = hb 'evaluated_at'
+        td
+          = hb 'assigned_at'
+  tfoot
+
+= hbs_template "template-assigned-dialog" do
+  div class="row"
+    div class="col-sm-12"
+      div class="form-group"
+        label class="col-sm-12" Assginee
+        div class="col-sm-12"
+          = select_tag "fd-assignee", options_for_select(User.user_options), class: 'form-control'
+            
+div class="row"
+  div class="col-sm-12"
+    h4 My Tasks
+    div class="row"
+      div class="col-sm-9"
+        div class="block-task-summary"
+          | Tasks:
+          span
+            a href="#blk-assigned" class="tab-data-view active"
+              | Assigned
+              span id="lb-assigned-task-count" class="badge" 0
+          span
+            a href="#blk-closed" class="tab-data-view"
+              | Closed
+      div class="col-sm-3 text-right"
+      
+div class="row"
+  div class="col-sm-12"
+    div class="block-task-list" id="blk-assigned"
+      table id="tbl-task-assigned" class="table table-default table-striped table-bordered table-hover"
+      div class="block-table-action pull-left"
+        - if can_do?("evaluation_tasks","manage")
+          button type="button" id="btn-bulk-reassign" class="btn btn-xs btn-primary" Reassign
+    div class="block-task-list hide-block" id="blk-closed"
+      table id="tbl-task-closed" class="table table-default table-striped table-bordered table-hover"

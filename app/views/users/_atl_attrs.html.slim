@@ -1,0 +1,99 @@
+div class="panel panel-default col-md-12 panel-atlattrs"
+  h4 Current Detail
+  div class="row"
+    div class="col-sm-12"
+      - atllogs = @user.user_atl_attrs.not_deleted.order_by_latest.all
+      table class="table table-default table-bordered table-hover"
+        thead
+          tr
+            th No.
+            th Operator ID
+            th Team ID
+            th Team Name
+            th Performance Group ID
+            th Performance Group Name
+            th Section ID
+            th Section Name
+            th Delinquent
+            th Grade
+            th Extension
+            th Dummy
+            th Last Update
+        tbody
+          - atllogs.each_with_index do |t,i|
+            tr
+              td
+                = i+1
+              td.text-center
+                = t.operator_id
+              td.text-center
+                = t.team_id
+              td
+                = t.team_name
+              td.text-center
+                = t.performance_group_id
+              td
+                = t.performance_group_name
+              td
+                = t.section_id
+              td  
+                = t.section_name
+              td.text-center
+                = t.delinquent_no
+              td.text-center
+                = t.grade
+              td.text-center
+                = t.extension
+              td.text-center
+                = t.dummy_flag.to_s.upcase
+              td.text-center
+                = t.updated_at.to_formatted_s(:web)
+  div class="row"
+    div class="col-sm-12"
+      h4 Changes History
+      - atllogs = @user.user_atl_attrs.only_deleted.order_by_latest.limit(10).all
+      table class="table table-default table-bordered table-hover"
+        thead
+          tr
+            th No.
+            th Operator ID
+            th Team ID
+            th Team Name
+            th Performance Group ID
+            th Performance Group Name
+            th Section ID
+            th Section Name
+            th Delinquent
+            th Grade
+            th Extension
+            th Dummy
+            th Last Update
+        tbody
+          - atllogs.each_with_index do |t,i|
+            tr
+              td
+                = i+1
+              td.text-center
+                = t.operator_id
+              td.text-center
+                = t.team_id
+              td
+                = t.team_name
+              td.text-center
+                = t.performance_group_id
+              td
+                = t.performance_group_name
+              td
+                = t.section_id
+              td  
+                = t.section_name
+              td.text-center
+                = t.delinquent_no
+              td.text-center
+                = t.grade
+              td.text-center
+                = t.extension
+              td
+                = t.dummy_flag
+              td.text-center
+                = t.updated_at.to_formatted_s(:web)

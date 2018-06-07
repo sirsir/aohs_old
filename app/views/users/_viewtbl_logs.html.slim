@@ -1,0 +1,28 @@
+= panel_tableview do
+  - unless @logs.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :created_at, label: "Timestamp"
+          = th_tag :log_type, label: "Type"
+          = th_tag :module_name, label: "Module"
+          = th_tag :event_type, label: "Event"
+          = th_tag :remote_ip, label: "Remote IP", order: true
+      tbody
+        - @logs.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td.log_date
+              = r.created_at.to_formatted_s(:web)
+            td.log_type class="log-#{r.log_type.downcase}"
+              = r.log_type
+            td
+              = r.module_name
+            td
+              = r.event_type2
+            td
+              = r.remote_ip
+  - else
+    = no_record_tag

@@ -1,0 +1,73 @@
+script type="text/template" id="template-calltype-btn"
+  div class="text-symbol" data-call-category-id="#{ hb 'id' }" data-call-category="#{ hb 'title' }"
+    = hb 'title'
+    - if can_doact?("voice_logs:classification")
+      button class="btn btn-xs btn-link btn-remove-calltype"
+        = icon 'close'
+      
+script type="text/template" id="template-calltag-btn"
+  div class="text-symbol" data-tag-id="#{ hb 'id' }" data-call-tag="#{ hb 'title' }"
+    = hb 'title'
+    - if can_doact?("voice_logs:tagging")
+      button class="btn btn-xs btn-link btn-remove-calltype"
+        = icon 'close'
+
+div id="audioplayer" class="panel-audioplayer"
+  = render partial: 'players/audio_player_ctl', locals: { btns: { next_prev: true, toggle: true } }
+
+div id="audioview" class="panel-call-details panel-audioview"
+
+  div id="call-contents"
+  
+    div class="tabbable"
+      ul class="nav nav-pills"
+        li class="active"
+          a href="#pnl-detail" role="tab" data-toggle="tab"
+            = icon 'info', class: 'strong text-space-r'
+            | Detail
+        li
+          a href="#comment-list" role="tab" data-toggle="tab"
+            = icon 'comment', class: 'strong text-space-r'
+            | Comment
+
+        - if can_doact?("voice_logs:download")
+          li
+            a href="#file-download" role="tab" data-toggle="tab"
+              = icon 'file-audio-o', class: 'strong text-space-r'
+              | Download
+
+    div class="tab-content"
+      div role="tabpanel" class="tab-pane active" id="pnl-detail"
+        div class="row"
+          div class="col-sm-6"
+            table class="table table-default"
+              tr
+                td
+                  label Category
+                td class="hide-select2"
+                  span id="block-call-type-list" class="block-call-type"
+                  - if can_doact?("voice_logs:classification")
+                    button type="button" class="btn btn-xs btn-link btn-default" id="btn-add-calltype"
+                      = icon 'plus-square'
+                    select class="form-control" id="fl-call-type"
+              tr
+                td
+                  label Tag
+                td class="hide-select2"
+                  span id="block-call-tag-list" class="block-call-tag"
+                  - if can_doact?("voice_logs:tagging")
+                    button type="button" class="btn btn-xs btn-link btn-default" id="btn-add-calltag"
+                      = icon 'plus-square'
+                    select class="form-control" id="fl-call-tag"
+                    
+          div class="col-sm-6"
+
+      div role="tabpanel" class="tab-pane " id="comment-list"
+        = render 'call_histories/call_comments'
+        
+      / div role="tabpanel" class="tab-pane" id="tag-list"
+        = render 'call_histories/call_tags'
+
+      - if can_do?(:voice_logs,:download)
+        div role="tabpanel" class="tab-pane" id="file-download"
+          = render 'call_histories/call_download'

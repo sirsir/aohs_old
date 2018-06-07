@@ -1,0 +1,41 @@
+= panel_filter do
+  = form_filter_tag :user, action: "index" do
+    
+    = field_group_inline_tag :login_name, "Username" do
+      = text_field_tag :login, params[:login], class: "form-control"
+
+    = field_group_inline_tag :name, "Name" do
+      = text_field_tag :name, params[:name], class: "form-control"
+
+    = field_group_inline_tag :employee_id, "Employee ID" do
+      = text_field_tag :employee_id, params[:employee_id], class: "form-control"
+      
+    = field_group_inline_tag :citizen_id, "Citizen ID" do
+      = text_field_tag :citizen_id, params[:citizen_id], class: "form-control"
+
+    = field_group_inline_tag :email, "E-Mail" do
+      = text_field_tag :email, params[:email], class: "form-control"
+    
+    = field_group_inline_tag :group, "Group" do
+      = select_tag :group_id, options_for_select(Group.all_group_options,params[:group_id]), include_blank: true, class: "form-control"
+
+    - if display_for?([:aeoncol,:acss])
+      = field_group_inline_tag :performance_group_id, "Performance Group" do  
+        = select_tag :performance_group_id, options_for_select(SystemConst.options_for("atl-perfgroups",{ show_code: true }),params[:performance_group_id]), include_blank: true, class: "form-control"
+
+      = field_group_inline_tag :state, "State" do
+        = select_tag :state, options_for_select(SystemConst.user_state_options(),params[:state]), include_blank: true, class: "form-control"
+
+      = field_group_inline_tag :branch_code, "Branch Code" do
+        = text_field_tag :branch_code, params[:branch_code], class: "form-control"
+      
+      = field_group_inline_tag :section_id, "Section" do
+        = select_tag :section_id, options_for_select(SystemConst.options_for("atl-sections",{ show_code: true }),params[:section_id]), include_blank: true, class: "form-control"
+
+      = field_group_inline_tag :region, "Region" do
+        = select_tag :region, options_for_select(SystemConst.options_for("atl-regions",{ show_code: true }),params[:region]), include_blank: true, class: "form-control"
+        
+    = field_group_inline_tag :role, "Role" do
+      = select_tag :role_id, options_for_select(Role.role_options,params[:role_id]), include_blank: true, class: "form-control"
+
+    

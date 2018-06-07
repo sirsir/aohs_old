@@ -1,0 +1,46 @@
+div class="mnt-menu"
+  = render 'users/submenu'
+  = horizontal_bar
+  
+div class="mnt-cont mnt-form"
+  div
+    form
+      div class="form-group"
+        label Notification Level
+        select class="form-control" id="notif-level"
+          option value="notice" Notice (Info)
+          option value="warning" Warning
+
+      div class="form-group"
+        label Send To
+        input type="text" class="form-control" id="notif-target-user" disabled="disabled" value="#{@user.login}"
+        
+      div class="form-group"
+        label Title
+        input type="text" class="form-control" id="notif-title"
+          
+      div class="form-group"
+        label Message or Detail
+        input type="text" class="form-control" id="notif-detail" value="You've received message from system."
+      
+      div class="form-group"
+        label Alert Timeout
+        select class="form-control" id="notif-timeout"
+          option value="5" 5 Seconds
+          option value="10" 10 Seconds
+          option value="-1" No timeout
+          
+      div class="form-group"
+        button type="button" class="btn btn-primary" id="btn-submit" Submit
+
+  div class="row"
+    div class="col-sm-12"
+      h4 Example
+      div class="col-sm-6"
+        div
+          - t = NotificationTemplate.new(:default)
+          = t.render({ message: "You've received message from system.", timestamp: Time.now }).html_safe
+      div class="col-sm-6"
+        div
+          - t = NotificationTemplate.new(:warning)
+          = t.render({ message: "You've received message from system.", timestamp: Time.now }).html_safe

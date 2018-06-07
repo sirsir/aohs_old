@@ -1,0 +1,75 @@
+= render 'call_browser/user_list'
+= render 'call_browser/call_evaluation'
+
+div id="bx-header1" class="row"
+  div class="col-sm-12 panel-filter-option"
+    = render 'call_browser/options'
+
+div id="bx-call-summary" class="row"
+  div class="col-sm-12"
+    div class="col-sm-2 info-group"
+      div class="text-label" Agent
+      div id="fd-tt-user" class="text-count" 0
+    div class="col-sm-2 info-group"
+      div class="text-label" Idle
+      div id="fd-tt-idle" class="text-count" 0
+    div class="col-sm-2 info-group"
+      div class="text-label" Talking
+      div id="fd-tt-talking" class="text-count" 0
+    div class="col-sm-2 info-group"
+      div class="text-label" Inbound
+      div id="fd-tt-inbound" class="text-count text-inbound" 0
+    div class="col-sm-2 info-group"
+      div class="text-label" Outbound
+      div id="fd-tt-outbound" class="text-count text-outbound" 0
+
+div id="bx-chn-list" class="row"
+  div class="col-sm-12"
+    div id="cont-list"
+    
+div id="bx-detail1" class="row"
+  div class="col-sm-12"
+    div id="cur-listen" class="cur-listen"
+      table cellspacing="0" cellpadding="0"
+        tr
+          td id="cur-fd-avartar" class="td-avartar"
+          td id="cur-fd-opname" class="td-user"
+          td class="td-callinfo block-current-call-infos"
+            table cellspacing="0" cellpadding="0" width="100%"
+              tr
+                td
+                  label Status
+                td
+                  label Extension
+                td
+                  label Duration
+                td rowspan="2"
+                  div.txt-onwrap
+                    label Time:
+                    span id="cur-fd-stime"
+                  div.txt-onwrap
+                    label Direction:
+                    span id="cur-fd-calldir"
+                  div.txt-onwrap
+                    label Phone:
+                    span id="cur-fd-phno"
+              tr
+                td
+                  span.lb-acc-status id="cur-fd-callsts"
+                td
+                  span.lb-extension-no id="cur-fd-extno"
+                td
+                  span.lb-call-duration id="cur-fd-duration"
+          td class="text-right"
+            div              
+              button id="btn-calllist" class="btn btn-primary"
+                = icon 'list'
+                span class="text-marg-l"
+                  | History
+              
+              span
+                button id="btn-volume" class="btn btn-default"
+                  = icon 'volume-up'        
+                span id="slider-volume"
+                  input id="vol-input-slider" data-slider-id='au-slider-v' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="50" data-slider-tooltip="hide"
+                  

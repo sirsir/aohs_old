@@ -1,0 +1,207 @@
+@import url('css/bootstrap-slider');
+
+div.panel-audioplayer {
+	background-color: #FAFAFA;
+	width: 100%;
+	margin: 0em;
+	padding: 0em;
+	padding-left: 0.4em;
+	line-height: 1em;
+	border-top: 1px solid #E8E8E8;
+}
+
+.au-control {
+	width: 100%;
+	
+	> div {
+		display: inline-block;
+	}
+	
+	div#slider-audio {
+		margin-left: 0.25em;
+		width: 500px;
+		
+		.slider.slider-horizontal {
+			height: 0.5em;
+
+			.slider-track {
+				height: 0.5em;
+				background-color: #DEDEDE !important;
+			}
+			
+			.slider-selection {
+				background: #63B8FF;
+			}
+			
+			.slider-handle {
+				height: 0.65em;
+				width: 0.65em;
+				visibility: hidden;
+			}
+		}
+	}
+	
+	div.hide-input-range {
+		input[type="range"] {
+			display: none;
+		}
+	}
+	
+	div#slider-volume, div#slider-pan, div#slider-playing-rate {
+		display: inline-block;
+		input[type="range"] {
+			max-width: 6em;
+			min-width: 6em;
+			padding: 0em;
+		}
+		/* fixed for IE support */
+		input[type=range]::-ms-track {
+			background: #ddd;
+			color: #ddd;
+		}
+	}
+
+	div#btn-stop, div#btn-pause, div#btn-audio-pan {
+		display: none;
+	}
+	
+	div#btn-play,
+	div#btn-audio-pan,
+	div#btn-prev-track,
+	div#btn-next-track,
+	div#btn-volume,
+	div#btn-pause,
+	div#btn-stop,
+	div#btn-fast-backward,
+	div#btn-fast-forward,
+	div#btn-audio-waveform,
+	#btn-toggle-audioview,
+	#btn-playing-rate {
+		width: 1.6em;
+		height: 1.6em;
+		margin-right: 0.2em;
+		background-repeat: no-repeat;
+		background-size: 1em;
+		background-position: center;
+		border-radius: 4px;
+		padding: 0.2em;
+		
+		:hover {
+			color: #1E90FF;
+		}
+	}
+	
+	div#btn-fast-backward,
+	div#btn-fast-forward {
+		color: #C2C2C2;
+		font-size: 5pt;
+	}
+	
+	div#btn-audio-waveform {
+		background-image: url('waveform-yes.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: 50%;
+	}
+	
+	div#btn-audio-waveform.hide-wave {
+		background-image: url('waveform-no.png');
+	}
+	
+	div#btn-audio-pan {
+		background-image: url('music-balc.png');
+		background-position: center;
+	}
+	
+	div#au-duration {
+		padding: 0.2em;
+		vertical-align: middle;
+	}
+	
+}
+	
+.box-waveform {
+	overflow: scroll;
+	overflow-y: hidden;
+	width: 100%;
+	min-width: 1em;
+	min-height: 1em;
+	border: 0em;
+	
+	svg {
+		width: 100%;
+		height: 100%;
+	}
+	
+	.ico-position {
+		background-image: url('pin56.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: contain;
+	}
+	
+	.box-topics {
+		height: 1.3em;
+		line-height: 1em;
+		width: 100%;
+		
+		div.cl-topic {
+			height: 100%;
+			display: inline-block;
+			margin: 0em;
+			padding: 0em;
+			padding-left: 1px;
+			padding-top: 1px;
+			font-size: 0.8em;
+			color: #708090;
+			text-align: left;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			overflow:hidden;
+			outline: 1px solid #CCCCCC;
+			background-color: #FDF5E6;
+		}
+	}
+	
+	.box-events
+	{
+		height: 1.3em;
+		background-color: #FCFCFC;
+		line-height: 1em;
+		width: 100%;
+		
+		div.box-segment
+		{
+			height: 100%;
+			display: inline-block;
+			margin: 0em;
+			padding: 0em;
+			padding-left: 1px;
+			padding-top: 1px;
+			font-size: 0.8em;
+			color: #7A7A7A;
+			text-align: left;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			overflow:hidden;
+		}
+		
+		.program-idle {
+			background-color: #E5E5E5;
+		}
+	}
+	
+}
+
+.box-waveform::-webkit-scrollbar {
+	height: 0.55em;
+}
+
+.box-waveform::-webkit-scrollbar-track-piece {
+	background-color: #B0C4DE;
+}
+
+.box-waveform::-webkit-scrollbar-thumb {
+	background-color: #4682B4 !important;
+	border-radius: 0.2em;
+}

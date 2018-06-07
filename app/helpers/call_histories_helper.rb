@@ -1,0 +1,3 @@
+module CallHistoriesHelper
+  
+end

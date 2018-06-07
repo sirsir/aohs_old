@@ -1,0 +1,16 @@
+= panel_form do
+  = form_for(@role, layout: :horizontal, errors: { icons: false }) do |f|
+
+    = f.legend 'Details'
+    
+    = f.text_field :name, label: "Name", placeholder: '', required: true, disabled: @role.is_locked?
+
+    = f.text_field :ldap_dn, label: "Role DN (LDAP)", placeholder: ''
+
+    = f.select :priority_no, Role.priority_options, label: "Priority", help: 'Maximun value is highest priority', disabled: @role.is_locked?
+
+    = f.select :level, Role.type_options, label: "Type", disabled: @role.is_locked?
+    
+    = f.select :landing_page, SystemConst.landing_page_options, label: "Landing Page"
+    
+    = f.submit "OK", class: "submit" 

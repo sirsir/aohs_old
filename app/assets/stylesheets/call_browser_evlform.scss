@@ -1,0 +1,121 @@
+#box-evaluation-inner {
+  padding: 0.5em;
+  overflow: scroll;
+  overflow-x: hidden;
+}
+
+#btn-canc-evaluate {
+  display: none;
+}
+
+.panel-evl-form {
+  width: 100%;
+
+  select, button.btn {
+    margin-left: 0.25em;
+  }
+  
+  .box-evaluation-form,
+  .box-noform,
+  .box-oper-info,
+  .box-summary-comment,
+  .box-more-info {
+    width: 100%;
+    border: 1px solid #F0F0F0;
+    border-radius: 0.2em;
+    margin-top: 0.5em;
+    padding: 0.5em;
+  }
+
+  select.sel_evaluation_form,
+  select.sel_evaluation_task {
+    padding: 0.5em;
+    border-radius: 4px;
+    width: 15em;
+    max-width: 15em;
+  }
+  
+  .box-oper-info {
+    padding: 0.5em;
+    
+    .fl-group {
+      display: inline-block;
+      width: 20%;
+      margin-right: 0.5em;
+    }
+  }
+  
+  .box-evaluation-form {
+    
+    .evl-category {
+      width: 100%;
+      padding: 0.4em;
+      padding-left: 0.7em;
+      color: #000000;
+      
+      .ct-name {
+        font-weight: bold;
+        padding-bottom: 0.4em;
+      }
+    }
+    
+    .evl-category.level-1 {
+      padding-left: 0em; /*remove padding first cate*/
+    }
+    
+    .evl-item {
+      color: #000000;
+      padding-left: 1em;
+      padding-top: 0.25em;
+      padding-bottom: 0.25em;
+      
+      &:hover {
+        background-color: #F5F5F5;
+      }
+    }
+    
+    .evl-score {
+      div {
+        display: inline-block;
+        width: 10em;
+        
+        label {
+          margin-bottom: 0em;
+        }
+        input {
+          margin-right: 0.2em;
+        }
+      }
+      
+      div.item-description {
+        color: #8F8F8F;
+        font-size: 0.9em;
+        font-style: italic;
+        padding: 0.2em;
+      }
+    }
+    
+    .has-error {
+      background-color: #ffe5e5;
+    }
+    
+    select.has-error {
+      border-color: #ffe5e5;
+    }
+  }
+
+  #btn-save-evl,
+  #btn-edit-evl,
+  #btn-check-evl,
+  #btn-cancel-evl,
+  #btn-remove-evl {
+    display: none;
+  }
+  
+  .box-more-info {
+    #btn-more-info {
+      width: 100%;
+      padding: 0.1em;
+    }
+  }
+}

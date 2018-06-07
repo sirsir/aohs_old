@@ -1,0 +1,45 @@
+.keyword-list {
+  input[type="text"] {
+    margin-bottom: 0.25em;
+  }
+}
+
+input.has-error, span.has-error {
+  border-color: red;
+}
+
+span.has-error {
+  color: red;  
+}
+
+#keyword_bg_color {
+  width: 10em;
+}
+
+button#btn-try-alert {
+	margin-left: 2em;
+}
+
+form {
+  label.lb-keyword-stype {
+    margin-right: 0.35em;
+    
+    input[type=radio] {
+      margin-right: 0.25em;  
+    }  
+  }  
+}
+
+form#detection-setting-form {
+  div.form-group {
+    margin-bottom: 1em;
+    
+    label {
+      margin-right: 1em;
+    }
+    
+    input[type=radio], input[type=checkbox] {
+      margin-right: 0.25em;
+    }  
+  }
+} 

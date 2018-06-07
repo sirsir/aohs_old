@@ -1,0 +1,23 @@
+doctype html
+html
+  head
+    title #{Settings.site.title} - #{controller.controller_name.capitalize}
+    meta charset="UTF-8"
+    meta name="author" content="AmiVoice(TH)"
+    meta http-equiv="X-UA-Compatible" content="IE=edge"
+    = javascript_include_tag \
+      "application"
+    = controller_javascript_tags
+    == yield :javascript
+    = stylesheet_link_tag \
+      "application"
+    = controller_stylesheet_tags
+    == yield :stylesheet
+    == yield :header
+    = include_token
+    = include_gon
+  body
+    = render "shares/dialogs"
+    = render "shares/flash_message"
+    div class="panel-allbody"
+      == yield

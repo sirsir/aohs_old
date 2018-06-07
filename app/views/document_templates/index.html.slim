@@ -1,0 +1,12 @@
+- if is_index_action?
+  = paginate_panel_tag @templates
+  
+div class="mnt-menu"
+  = render 'document_templates/submenu'
+  = horizontal_bar
+  
+div class="mnt-cont mnt-filter"
+  = render 'document_templates/filter'
+
+div class="mnt-cont mnt-tbl"
+  = render 'document_templates/viewtbl'

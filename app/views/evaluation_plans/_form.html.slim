@@ -1,0 +1,11 @@
+= panel_form do
+
+  = form_for(@evaluation_plan, layout: :horizontal, errors: {icons: false}) do |f|
+
+    = f.legend 'Detail'
+    
+    = f.text_field :name, label: "Title", placeholder: '', required: true
+    
+    = f.text_field :description, label: "Description", placeholder: '', maxlength: 200
+
+    = f.submit "OK", class: "submit" 

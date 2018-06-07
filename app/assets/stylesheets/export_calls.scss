@@ -1,0 +1,48 @@
+table.table {
+  
+  td.ec-status {
+    width: 10em;
+    text-align: center;
+    span.txt-status-ico {
+      display: inline-block;
+      margin-right: 0.3em;
+    }
+    span.txt-status-name {
+      border: 1px solid #DCDCDC;
+      border-radius: 0.35em;
+      padding-left: 0.4em;
+      padding-right: 0.4em;
+      padding-top: 0.1em;
+      padding-bottom: 0.1em;
+    }
+  }
+  
+  td.ec-date {
+    width: 12em;  
+  }
+  
+  td.ec-task-type {
+    width: 8em;
+  }
+  
+  tr[data-status-name="wait"] {
+    span.txt-status-name { background-color: #FFFACD; }
+  }
+
+  tr[data-status-name="success"] {
+    span.txt-status-name { background-color: #00CD00; }
+  }
+  
+  tr[data-status-name="done"] {
+    span.txt-status-name { background-color: #00CD00; }
+  }
+
+  tr[data-status-name="failed"] {
+    span.txt-status-name { background-color: #FF6A6A; }
+  }
+
+  tr[data-status-name="exporting"] {
+    span.txt-status-name { background-color: #BFEFFF; }
+  }
+  
+}

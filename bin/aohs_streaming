@@ -1,0 +1,4 @@
+#!/bin/bash
+APP_PATH=$(dirname $(dirname $(readlink -f $0)))
+EXEC_SCRIPT="$APP_PATH/service/qlogger_streaming/bin/voice_streaming"
+$EXEC_SCRIPT $1

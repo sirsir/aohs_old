@@ -1,0 +1,9 @@
+li class="btn-group more-options"
+  button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+    span class="caret"
+    span class="sr-only"
+  ul class="dropdown-menu" role="menu"
+    li class="dropdown-header" Result per page:
+    - Settings.pagination.per_pages.each do |pp|
+      li class="btn-perpage"
+        = link_to "#{pp} records", url_for(params.merge({per: pp}))

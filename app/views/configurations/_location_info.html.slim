@@ -1,0 +1,22 @@
+= panel_tableview do
+  = table_tag :mnt, { id: "table-location-settings" } do
+    thead
+      tr
+        = th_tag :flag, label: "In Use"
+        = th_tag :location_id, label: "Site Id"
+        = th_tag :title
+    tbody
+      - @location_infos.each_with_index do |lc,i|
+        tr data-id="#{lc.id}"
+          td class="text-center"
+            - if lc.available?
+              span class="label label-success"
+                = icon "check"
+          td
+            input type="text" name="id" value="#{lc.id}" data-original-value="#{lc.id}" maxlength="3" class="form-control" readonly="readonly"
+          td
+            input type="text" name="title" value="#{lc.code_name}" data-original-value="#{lc.code_name}" maxlength="20" class="form-control" required="required"
+
+  div class="box-btn-group"
+    button type="button" class="btn btn-primary" id="btn-lc-update"
+      | Update

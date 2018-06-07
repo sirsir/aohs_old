@@ -1,0 +1,39 @@
+script id="comments-template" type="text/x-handlebars"
+
+  div class="comment-box"
+    div
+      span class="comment-by"
+        = hb 'comment_by'
+      span class="comment-time pull-right"
+        = hb 'ctime'
+
+    div class="comment-details"
+      div
+        = hb 'details'
+      div class="form-group"
+        textarea class="col-sm-12 form-control disabled" name="comment" maxlength="255" placeholder="Enter comment"
+          = hb 'details'
+        button name="update-comment" class="btn btn-primary btn-update-comment" disabled="disabled"
+          | OK
+
+  = hb 'comments' do
+    div class="comment-box"
+      div
+        span class="comment-by"
+          = hb 'comment_by'
+        span class="comment-time pull-right"
+          = hb 'ctime'
+  
+      div class="comment-details"
+        div
+          = hb 'details'
+        div class="form-group written-comment"
+          textarea class="form-control" name="comment" maxlength="255"
+            = hb 'details'
+          button type="button" class="btn btn-primary btn-update-comment" value="OK" data-comment-id="#{ hb 'id' }"
+        div class="pull-right"
+          a class="btn-delete#{ hb 'disabled' }" data-comment-id="#{ hb 'id' }"
+            | Remove
+
+div class="panel-call-comments"
+  div id="call-comments-body"

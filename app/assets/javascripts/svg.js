@@ -1,0 +1,1 @@
+// = require 'snap.svg-min.js'

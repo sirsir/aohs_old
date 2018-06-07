@@ -1,0 +1,43 @@
+= panel_tableview do
+  - unless @extensions.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :extension, order: true
+          = th_tag :computer_ip, order: true
+          = th_tag :computer_name, order: true
+          = th_tag :location, order: true
+          = th_tag :dids, order: false
+          = th_tag :logged_user, label: 'Last logged user'
+          = th_tag :logged_time, label: 'Last logged time'
+          = th_tag :user, order: false
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @extensions.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td
+              = r.extension_number
+            td
+              = r.ip_address
+            td
+              = r.computer_name
+            td
+              = r.location_name
+            td
+              = r.did_number
+            td
+              = r.last_logged_user
+            td
+              = (r.last_logged_time.nil? ? "" : r.last_logged_time.to_formatted_s(:web))
+            td
+              - unless r.user.nil?
+                = r.user.display_name
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(r,'ed')
+  - else
+    = no_record_tag

@@ -1,0 +1,17 @@
+div class="panel-mnt-menus"
+  div class="right-border"
+    div class="mnt-links"
+      - LIST_MAINTENANCE_MENUS.clone.each do |m_group|
+        div class="list-group-header"
+          = m_group[:name]
+        - m_group[:items].each do |m|
+          - next if m.has_key?(:su) and m[:su] == true and not current_user.super_admin?
+          - if can_do?(m[:controller],:view)
+            div class="xlink btnlink #{curr_controller(m[:controller])}" data-url="#{url_for(:controller => m[:controller], :action => m[:action])}"
+              = image_tag("mnt-#{m[:controller].to_s}.png")
+              span #{m[:name]}
+           
+            - if params[:controller] == m[:controller] and not m[:sub].blank?
+              - m[:sub].each do |s|
+                div class="xlink xlink-sub btnlink" data-url="#{url_for(:controller => m[:controller], :action => s[:action])}"
+                  span #{s[:name]}

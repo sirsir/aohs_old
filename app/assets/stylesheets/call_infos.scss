@@ -1,0 +1,154 @@
+.panel-call-comments {
+  
+  .comment-box {
+    padding: 1em;
+    padding-bottom: 0em;
+    width: 100%;
+  }
+
+  .comment-by {
+    font-weight: bold;
+  }
+  
+  .comment-time {
+    font-style: italic;
+    display: block;
+    color: #8C8C8C;
+    padding-left: 2em;  
+  }
+  
+  .comment-details {
+    margin-top: 0.5em;
+    padding-bottom: 1.5em;
+    border-bottom: 1px solid #F7F7F7;
+  }
+  
+  .write-time-at {
+    max-width: 5em;
+  }
+  
+  .btn-delete {
+    cursor: pointer;
+  }
+  
+  .btn-delete_disabled {
+    display: none;  
+  }
+  
+  textarea {
+    margin-bottom: 1em;
+    min-height: 1em;
+  }
+}
+
+#call-taggings {
+  width: 100%;
+}
+
+.form-call-tags {
+  width: 100%;
+  
+  #form-tag-input {
+    display: none;  
+  }
+  
+  .form-group {
+    #btn-save-tag, #btn-cancel-tag {
+      margin-top: 1em;
+      margin-right: 1em;
+    }
+  }
+}
+
+/* for call search page */
+#tag-list {
+  .form-call-tags {
+    padding: 1em;
+  }
+}
+
+#call-download {
+  padding: 1em;
+}
+
+.hl-word,
+.hl-word-impolite,
+.hl-word-polite {
+  background-color: #C6E2FF;
+  border-bottom: 1px dashed #6C7B8B;
+  border-radius: 3px;
+  padding-left: 0.1em;
+  padding-right: 0.1em;
+  margin-left: 0.1em;
+  margin-right: 0.1em;
+}
+.hl-word-impolite {
+  background-color: #FFE4E1;
+  border-bottom: 1px dashed #FF6A6A;
+}
+
+.hl-word-polite {
+  background-color: #C1FFC1;
+  border-bottom: 1px dashed #32CD32;
+}
+
+#call-taggings {
+  
+  #dialog-tags-list {
+    margin-top: -17em;
+    background-color: #FFFFFF;
+    min-height: 1em;
+    min-width: 10em;
+    border: 1px solid #CCCCCC;
+    border-radius: 0.2em;
+    display: none;
+    position: absolute;
+    padding: 0.2em;
+    
+    .tag-header {
+      background-color: #D6DBDF;
+      font-weight: bold;
+      padding: 0.25em;
+      padding-bottom: 0.1em;
+      margin-bottom: 0.2em;
+      
+      span {
+        display: inline-block;
+        width: 50%;
+      }
+    }
+    
+    .list {
+      margin-top: 0.2em;
+      overflow: auto;
+      overflow-y: scroll;
+      height: 10em;
+      min-height: 10em;
+      
+      .tag-item span {
+        padding-left: 2em;
+      }
+      
+      .tag-item span[data-checked="checked"] {
+        background-image: asset-url('checked1.png');
+        background-repeat: no-repeat;
+        background-position: 0.2em 0.2em;
+        background-size: 1em 1em;
+      }
+    }
+  }
+  
+  div.tag-item {
+    padding: 0.2em;
+    
+    &:hover {
+      background-color: #CCCCCC;
+    }
+  }
+}
+
+.emotion-icon-sm {
+  width: 1.1em;
+  height: 1.1em;
+  display: inline-block;
+}

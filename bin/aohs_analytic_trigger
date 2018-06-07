@@ -1,0 +1,7 @@
+#!/bin/sh
+APP_ROOT="$(dirname $(readlink -f $0))"
+RUBY_EXEC="$(which ruby)"
+EXEC_FILE="./service/analytic_trigger/analytic_trigger_daemon.rb"
+CMD="cd $APP_ROOT/.. && $RUBY_EXEC $EXEC_FILE $1 > /tmp/anastartup.log"
+sh -c "$CMD"
+echo "done"

@@ -1,0 +1,134 @@
+= render partial: 'evaluation_questions/items'
+
+= panel_form do
+  = form_for(@question, layout: :horizontal, errors: {icons: false}) do |f|
+    = hidden_field_tag :lyt, params[:lyt]
+    
+    = f.legend 'Detail'
+    
+    = f.select  :question_group_id, EvaluationQuestionGroup.select_options({ include_id: @question.question_group_id }), { label: 'Group of Question' }, required: true, disabled: (layout_blank? and is_edit_action?)
+    
+    div class="form-group"
+      div class="col-sm-9 col-sm-offset-3"
+        button type="button" class="btn btn-primary" id="btn_add_group"
+          | Add new group
+ 
+    = f.text_field :title, label: "Question", placeholder: '', required: true, maxlength: 100
+
+    = f.text_field :code_name, label: "Code", placeholder: '', pattern: "^[A-Za-z][A-Za-z0-9_]*[A-Za-z0-9]", maxlength: 20, help: 'Only A-Z, 0-9 and underscore. Must start with A-Z'
+
+    = f.text_field :report_title, label: "Report Title", placeholder: '', required: false, maxlength: 100
+    
+    = f.legend 'Choice(s)'
+   
+    div class="form-group"
+      div class="col-sm-3 text-right"
+        label 
+          | Type
+          = help_dialog_button('001.002')
+      div class="col-sm-9"
+        select id="select-answer-type" class="form-control" name="answer_type" required="required"
+          - [["",""],["numeric","Numeric"],["checkbox","Checkbox"],["radio","Radio"],["combo","Combo box"]].each do |atype|
+            - if atype[0] == @answer.answer_type
+              option value="#{atype[0]}" selected="selected" #{atype[1]}
+            - else
+              option value="#{atype[0]}" #{atype[1]}
+        div id="box-choice-list" class="box-choice-list"
+          table id="tbl-choice-list" class="table table-default"
+            thead
+              tr
+                th.th-title Title
+                th.th-value Value
+                th.th-note Note
+                th Required Comment
+                th
+            tbody
+              - @answer.sorted_answer_list.each do |ans|
+                tr
+                  td
+                    input type="text" name="answerlist_title[]" class="form-control" value="#{ans["title"]}" maxlength="80" pattern="[^'\x21'\x22'\x23'\x24'\x25'\x26'\x27'\x2A'\x2F'\x3A'\x3B'\x3C'\x3D'\x3E'\x3F'\x5C]+"
+                  td
+                    input type="number" name="answerlist_value[]" step="0.1" class="form-control text-right input-score" value="#{ans["score"]}"
+                  td
+                    input type="text" name="answerlist_note[]" class="form-control" value="#{ans["note"]}" maxlength="100"
+                  td
+                    - if ans["require_comment"]
+                      button type="button" class="btn btn-default btn-success btn-comment-required"
+                        span Yes
+                        input type="hidden" name="answerlist_cmmt[]" value="Y"
+                    - else
+                      button type="button" class="btn btn-default btn-comment-required"
+                        span No
+                        input type="hidden" name="answerlist_cmmt[]" value="N"
+                  td.cell-nowrap-all
+                    button type="button" class="btn btn-primary btn-marg-r btn-ana-config"
+                      input type="hidden" name="answerlist_ana_rules[]" value="#{ans["rules"].to_json}"
+                      span
+                        = icon 'cog'
+                        | Auto Asst 
+                    button type="button" class="btn btn-danger btn-remove-list"
+                      = icon 'minus'
+          div
+            span class="help-block"
+              | Required at least 2 choices. Length of title minimum required 2 characters.
+          div
+            button type="button" id="btn-add-list" class="btn btn-primary"
+              = icon 'plus'
+              
+        div id="box-choice-score" class="box-choice-score"
+          input type="number" name="answer_score" class="form-control" min="1" max="100" value="#{@answer.max_score}"
+          span class="help-block"
+            | Maximum score, Must be between 1 and 100.
+
+    div style="display:none;"
+      = f.legend 'Auto Assessment Settings'
+      
+      div class="form-group"
+        div class="col-sm-3 text-right"
+          label 
+            | Engine Name
+        div class="col-sm-9"
+          input type="text" name="engine_name" class="form-control" value="#{@answer.ana_settings["engine_name"]}"
+      
+      div class="form-group"
+        div class="col-sm-3 text-right"
+          label 
+            | Rule Name
+        div class="col-sm-9"
+          input type="text" name="rule_name" class="form-control" value="#{@answer.ana_settings["rule_name"]}"
+  
+      div class="form-group"
+        div class="col-sm-3 text-right"
+          label 
+            | Parameters
+        div class="col-sm-9"
+          input type="text" name="rule_parameters" class="form-control" value="#{@answer.ana_settings["parameters"]}"
+    
+    - if layout_blank?
+      div class="form-group"
+        div class="col-sm-offset-3" style="padding-left:1.5em;"
+          button type="submit" class="btn btn-primary"
+            | OK
+          button type="button" class="btn btn-default" id="btn-cancel-dialog" style="margin-left:1.5em;"
+            | Cancel
+    - else
+      = f.submit "OK", class: "submit"
+
+- unless layout_blank?
+  div class="panel panel-default"
+    div class="panel-body"
+      - @using_forms = @question.dependency_forms.all
+      - if @using_forms.count > 0
+        h4 Dependency Evaluation Form(s)
+        table class="table table-default"
+          thead
+            tr
+              th Title
+              th Description
+          - @using_forms.each do |form|
+            tbody
+              tr
+                td
+                  = form.title
+                td
+                  = form.description

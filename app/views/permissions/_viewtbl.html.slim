@@ -1,0 +1,37 @@
+= panel_tableview do
+  - unless @privileges.empty?
+    = table_tag :mnt, { id: "table-permissions" } do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :privilege, label: "Role Privilege"
+          = th_tag :name, label: "Event/Action"
+          - @roles.each do |r|
+            = th_tag :role_name, label: r.name
+      tbody
+        - @privileges.each_with_index do |privilege,i|
+          - at_i = 0
+          - if @categories.last == privilege.category
+            tr
+              td class="td-category" colspan="#{4 + @roles.length}"
+                = @categories.pop
+          - privilege.events.each do |p|
+            tr
+              - if at_i == 0
+                - at_i += 1
+                td.no rowspan="#{privilege.events.count}"
+                  = row_no(i)
+                td.module-name rowspan="#{privilege.events.count}"
+                  = p.module_display_name
+              td.event-name
+                div class="block-item-#{p.indent_count}"
+                  = p.event_display_name
+              - @roles.each do |r|
+                td.permission-chkbox
+                  - data = { url: url_for(action: 'update_permission', id: (p.id + r.id), privilege_id: p.id, role_id: r.id ) }
+                  - if (r.not_admin? and can_manage?)
+                    = check_box_tag "permission_#{r.name.downcase}_#{p.id}", [r.id,p.id].join(".") , p.got_permission?(r.id), { onclick: "onUpdatePermission(this)", data: data }
+                  - else
+                    = check_box_tag "permission_#{r.name.downcase}_#{p.id}", [r.id,p.id].join(".") , p.got_permission?(r.id), { disabled: true }
+  - else          
+    = no_record_tag

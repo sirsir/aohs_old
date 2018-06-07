@@ -1,0 +1,1 @@
+require "#{EXTENDED_PATH}/secret_token"

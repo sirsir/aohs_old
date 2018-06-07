@@ -1,0 +1,26 @@
+div id="call-taggings" class="form-call-tags"
+  / a id="fl-tags" href="#"
+    | No tag
+  / div id="form-tag-input" class="form-group"
+    select id="tag-select" multiple="multiple" class="form-control"
+    button class="btn btn-primary" id="btn-save-tag"
+      | Save
+    button class="btn btn-default" id="btn-cancel-tag"
+      | Cancel
+  div
+    div id="tagged-list"
+    div
+    - if can_doact?("voice_logs:tagging")
+      button type="button" class="btn btn-xs btn-default" id="btn-edit-tags"
+        | Change Tag
+    div id="dialog-tags-list"
+      div class="tag-header"
+        span
+          | Tag
+        span class="text-right"
+          button type="button" class="btn btn-xs" id="btn-hide-tagdialog"
+            = icon "times"
+      div
+        input type="text" id="fd-find-tag" class="form-control" name="tag_title"
+      div class="list"
+      

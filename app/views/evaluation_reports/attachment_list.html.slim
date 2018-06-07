@@ -1,0 +1,65 @@
+= render partial: 'reports/default'
+
+div class="panel-evaluation-reports"
+  h3 Document - #{@document.title}
+
+  div class="row"
+    div class="col-sm-10"
+      form class="form-inline" action="javascript:void(0);"
+        
+        = hidden_field_tag 'fl-col-by', params[:col_by]
+        = hidden_field_tag 'fl-calc', params[:calc]
+        
+        div class="form-group"
+          = label_tag 'Document', nil, class: "label-control text-space"
+          = select_tag :document_template, options_from_collection_for_select(@doc_templates, :id, :title, params[:template_id]), class: 'form-control'
+
+        div class="form-group"
+          = label_tag 'Call Date Range', nil, class: "label-control text-space"
+          = text_field_tag 'fl-date-range', params[:date_range], class: 'form-control', "data-default-daterange": default_input_date_range(:today, false)  
+
+        div class="form-group"
+          = label_tag 'Form', nil, class: "label-control text-space"
+        div class="form-group"
+          = select_tag 'fl-evaluation-form', options_from_collection_for_select(EvaluationPlan.where(id: params[:form_name]),"id", "name"), class: 'form-control'
+          
+        div class="form-group"
+          = label_tag "Agent's Name", nil, class: "label-control text-space"
+        div class="form-group"  
+          = text_field_tag 'fl-user-name', params[:agent_name], class: 'form-control'
+  
+    div class="col-sm-2 text-right"  
+      form class="form-inline" action="javascript:void(0);"
+        - unless @doc_templates.empty?
+          div class="form-group"
+            button id="btn-refresh" class="btn btn-gap-r btn-primary"
+              = icon 'search'
+          div class="form-group"
+            button id="btn-download-xlsx" class="btn btn-primary"
+              = icon 'download'
+
+  div class="row"
+    div class="col-sm-12" id="block-attach-list" style="padding-top:0.5em;"
+      - unless @all_attachments.empty?
+        = table_tag :mnt do
+          thead
+            tr
+              = th_tag :no
+              - @document.display_fields.each do |field|
+                = th_tag field[:name], label: field[:title]
+              = th_tag :issue_date
+              = th_tag :action
+          tbody
+            - @all_attachments.each_with_index do |r,i|
+              tr
+                td.no
+                  = row_no(i)
+                - @document.display_fields.each do |field|
+                  td
+                    = r.mapped_fields_for_render[field[:name]]
+                td
+                  = r.created_at.to_formatted_s(:web)
+                td
+                  button type="button" class="btn btn-xs btn-primary btn-download-attch" data-template-id="#{r.document_template_id}" data-log-id="#{r.evaluation_log_id}" Download
+      - else
+        = no_record_tag

@@ -1,0 +1,29 @@
+= render partial: 'default'
+
+div class="panel-call-report"
+  h3 Top Repeated Inbound Call
+
+  div class="row"
+    div class="col-sm-10"
+      form class="form-inline" action="javascript:void(0);"
+        
+        input type="hidden" name="output_type" value="dialed-outbound"
+        
+        div class="form-group"
+          = label_tag 'Call Date Range', nil, class: "label-control text-space"
+          = text_field_tag 'fl-date-range', nil, class: 'form-control', "data-default-daterange": default_input_date_range(:this_month)
+
+        div class="form-group"
+          = label_tag 'Phone Type', nil, class: "label-control text-space"
+        div class="form-group"
+          = select_tag 'fl-phone-type', options_for_select(["", "Extension", "Fixed Line", "Mobile Phone", "Other"]), class: 'form-control'
+          
+        div class="form-group"
+          = label_tag 'Top', nil, class: "label-control text-space"
+        div class="form-group"
+          = select_tag 'fl-limit', options_for_select([25, 50, 100]), class: 'form-control'
+
+    div class="col-sm-2 text-right"
+      = render partial: 'buttons'
+    
+  = render partial: 'table_template'

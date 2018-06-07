@@ -1,0 +1,21 @@
+
+table.table {
+  tr {
+    td.message_type {
+      width: 10em;
+      max-width: 10em;
+    }
+    td.dt_text {
+      width: 11em;
+      max-width: 11em;
+    }
+    td.time_text {
+      width: 7em;
+      max-width: 7em;
+    }
+    td.agent_name {
+      width: 10em;
+      max-width: 10em;
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "template_matching": {
+    "label": "Template Matching",
+    "options": {
+      "input": "select",
+      "type": "string",
+      "operators": ["equal","not_equal"],
+      "values": null
+    }
+  },
+  "talking_speed_detection": {
+    "label": "Talking Speed Detection",
+    "options": {
+      "input": "text",
+      "type": "integer",
+      "operators": ["less", "less_or_equal", "greater", "greater_or_equal", "between", "not_between"]
+    }
+  },
+  "holding_time": {
+    "label": "Holding Time",
+    "options": {
+      "input": "text",
+      "type": "integer",
+      "operators": ["less", "less_or_equal", "greater", "greater_or_equal", "between", "not_between"]
+    }
+  }
+}

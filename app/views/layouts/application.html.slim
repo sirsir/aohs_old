@@ -1,0 +1,28 @@
+doctype html
+html
+  head
+    title #{Settings.site.title} - #{controller.controller_name.capitalize} - #{APP_REVISION}.#{APP_REVISION_UPDATED_AT}
+    link rel="shortcut icon" href="#{image_url("favicon.gif")}"
+    meta charset="UTF-8"
+    meta name="author" content="AmiVoice(TH)"
+    meta name="copyright" content="AmiVoice Thai Co.Ltd."
+    meta http-equiv="X-UA-Compatible" content="IE=edge"
+    = javascript_include_tag \
+      "application"
+    = controller_javascript_tags
+    == yield :javascript
+    = stylesheet_link_tag \
+      "application"
+    = controller_stylesheet_tags
+    == yield :stylesheet
+    == yield :header
+    = include_token
+    = include_gon
+    
+  body
+    = render partial: 'shares/password_expiry_dialog'
+    = render "shares/dialogs"
+    = render "shares/flash_message"
+    = render "shares/application_header"
+    div id="panel-app-body" class="panel-app-body margin-top-menu"
+      == yield

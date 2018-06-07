@@ -1,0 +1,25 @@
+= panel_tableview do
+  - unless @keywords.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :notification, label: icon("bell")
+          = th_tag :name, label: "Keyword", order: true
+          = th_tag :keyword_type
+          = th_tag :action
+      tbody
+        - @keywords.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td.td-notify-icon class="text-center" data-icon="#{r.notification_level_icon_name}"
+              = icon r.notification_level_icon_name
+            td
+              = r.name
+            td
+              = r.keyword_type.name
+            td.doact
+              = rowmnt_button_tag(r,'ed')
+  - else
+    = no_record_tag

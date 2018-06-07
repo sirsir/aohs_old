@@ -1,0 +1,5 @@
+= panel_filter do
+  = form_filter_tag :tag, action: "index" do
+    
+    = field_group_inline_tag :name, "Question" do
+      = text_field_tag :question, params[:question], class: "form-control"

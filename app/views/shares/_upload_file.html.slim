@@ -1,0 +1,14 @@
+div class="panel-uploadfile"
+
+  span id="btn-selectfile" class="btn btn-primary fileinput-button"
+    | Select file
+    input id="fileupload" type="file" class="" required="true" name="uploadedfile" accept=".csv" data-url="#{url_for(controller: "file_upload", action: "upload", :accept => "csv")}"
+
+  span id="btn-upload" class="btn-upload"
+  
+  span id="upload-status" class="text-nmstatus"
+
+  div class="progress"
+    div id="upload-progressbar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"
+      span class="sr-only"
+        | Complete

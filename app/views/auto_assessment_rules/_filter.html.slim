@@ -1,0 +1,5 @@
+= panel_filter do
+  = form_filter_tag :auto_assessment_rules, action: "index" do
+    
+    = field_group_inline_tag :name, "Name" do
+      = text_field_tag :name, params[:name], class: "form-control"

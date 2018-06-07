@@ -1,0 +1,33 @@
+= html_template "call-view-template" do
+  table class="table table-striped table-bordered table-hover table-default-all" cellspacing="0"
+    thead
+      tr
+        th
+          | No.
+        th
+          | Name
+        th
+          | Total Views
+        th
+          |
+    tbody
+      = hb 'this' do
+        tr
+          td
+            = hb 'no'
+          td
+            = hb 'name'
+          td class="text-numeric"
+            = hb 'total_view'
+          td
+            div id="callview-#{ hb 'user_id' }"
+
+= render partial: 'reports/default'
+
+div class="panel-reports"
+  
+  div class="row"
+    div class="col-sm-12"
+      h3
+        | Monitoring Activity Report (Last #{@past_days} days)
+    div id="call_view_list" class="col-sm-12"

@@ -1,0 +1,25 @@
+script id="tbl-callinfo-template" type="text/x-handlebars"
+  table class="table table-striped table-bordered table-hover table-default-all" cellspacing="0"
+    thead
+      tr
+        th class="h-no"
+          | No.
+        th class="h-datetime"
+          | Time
+        th class="h-event"
+          | Event
+        th
+          | Remark
+    tbody
+      = hb 'call_events' do
+        tr
+          td class="no"
+            = hb 'no'
+          td
+            = hb 'display_time'
+          td
+            = hb 'event_name'
+          td
+            = hb 'remark'
+
+div id="call-events"

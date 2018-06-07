@@ -1,0 +1,23 @@
+= panel_form do
+  = form_for(@rule, layout: :horizontal, errors: {icons: false}) do |f|
+    = f.legend 'Detail'
+
+    = f.text_field :name, label: "Name", placeholder: '', required: true, help: 'Name used for mapping.'
+    
+    = f.text_field :display_name, label: "Description", placeholder: ''
+    
+    = f.select :rule_type, AutoAssessmentRule.rule_type_options, { label: "Type" }, required: true
+    
+    div class="form-group"
+      label class="col-sm-3 control-label"
+        | Accept Message
+      div class="col-sm-9"
+        = text_field_tag "rule_options[accept_message]", @rule.rule_options2["accept_message"], class: 'form-control'
+
+    div class="form-group"
+      label class="col-sm-3 control-label"
+        | Reject Message
+      div class="col-sm-9"
+        = text_field_tag "rule_options[reject_message]", @rule.rule_options2["reject_message"], class: 'form-control'
+        
+    = f.submit "OK", class: "submit"

@@ -1,0 +1,1 @@
+//= require 'faq_questions_edit'

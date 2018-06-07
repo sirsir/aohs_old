@@ -1,0 +1,40 @@
+= hbs_template('program-row') do
+    tr data-id="0"
+      td
+        input type="text" name="title" maxlength="100" class="form-control"
+      td.col-bg-color
+        input type="color" name="bg_color" maxlength="7"
+      td.col-act class="text-center"
+        button type="button" class="btn btn-danger btn-pg-remove"
+          = icon 'remove'
+
+= panel_tableview do
+  - unless @programs.empty?
+    = table_tag :mnt, { id: "table-program-settings" } do
+      thead
+        tr
+          = th_tag :title , label: "Display Title"
+          = th_tag :proc, label: "Process Name"
+          = th_tag :bg_color, label: "Background Color"
+          = th_tag :delete
+      tbody
+        - @programs.each_with_index do |pg,i|
+          tr data-id="#{pg.id}"
+            td
+              input type="text" name="title" value="#{pg.name}" data-original-value="#{pg.name}" maxlength="100" class="form-control"
+            td
+              = pg.proc_name
+            td.col-bg-color
+              input type="color" name="bg_color" value="#{pg.bg_color_code}" data-original-value="#{pg.bg_color_code}" maxlength="7"
+            td.col-act class="text-center"
+              button type="button" class="btn btn-danger btn-pg-remove"
+                = icon 'remove'
+                
+  - else
+    = no_record_tag
+
+  div class="box-btn-group"
+    button type="button" class="btn btn-primary" id="btn-pg-save"
+      | Save Change  
+    button type="button" class="btn btn-info" id="btn-update-list"
+      | Find new programs

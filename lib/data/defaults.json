@@ -1,0 +1,305 @@
+{
+
+  "call_direction": [
+    { "code": "i",      "name": "Inbound" },
+    { "code": "o",      "name": "Outbound" }
+  ],
+  
+  "call-type": [
+    { "code": "P",      "name": "Private Call" },
+    { "code": "C",      "name": "Claim Call" }
+  ],
+  
+  "delinquent": [
+    { "code": "D0",     "name": "Current" },
+    { "code": "D1",     "name": "D1" },
+    { "code": "D2",     "name": "D2" },
+    { "code": "D3",     "name": "D3" },
+    { "code": "D4",     "name": "D4" },
+    { "code": "D5",     "name": "D5" },
+    { "code": "D6",     "name": "D6" },
+    { "code": "OC",     "name": "OC" }
+  ],
+  
+  "edu-degree": [
+    { "code": 10,       "name": "Primary (ประถมศึกษา)"},
+    { "code": 20,       "name": "Secondary (มัธยมศึกษา)"},
+    { "code": 30,       "name": "Vocational Cert. (ปวช.)"},
+    { "code": 40,       "name": "High Vocational Cert. (ปวส.)"},
+    { "code": 50,       "name": "Technical Cert. (ปวท.)"},
+    { "code": 60,       "name": "Non-Formal (กศน.)"},
+    { "code": 70,       "name": "B.A. (ปริญญาตรี)"},
+    { "code": 80,       "name": "M.A. (ปริญญาโท)"},
+    { "code": 90,       "name": "Ph.D. (ปริญญาเอก)"},
+    { "code": 99,       "name": "Other" }
+  ],
+  
+  "file-types": [
+    { "code": "csv",    "name": "CSV (Comma delimited)" },
+    { "code": "xlsx",   "name": "Excel Spreadsheet" },
+    { "code": "xls",    "name": "Excel 97-2003 Spreadsheet" }
+  ],
+   
+  "groups": [
+    { "name": "Administrator Team",   "short_name": "ADMIN" },
+    { "name": "Other",                "short_name": "OTHER" }
+  ],
+
+  "group_types": [
+    { "code": "Branch",               "name": "branch" },
+    { "code": "Department",           "name": "department" }
+  ],
+
+  "keyword_type": [
+    { "code": "n", "name": "NG Word (NG)" },
+    { "code": "m", "name": "Must Word (MU)" },
+    { "code": "g", "name": "Magic Word (MA)" },
+    { "code": "o", "name": "Other Word" }
+  ],
+
+  "landing-page": [
+    { "code": "default", "name": "Default" },
+    { "code": "qa_manager", "name": "QA Manager" },
+    { "code": "qa_supervisor", "name": "QA Supervisor" },
+    { "code": "qa_agent", "name": "QA Agent" },
+    { "code": "sale_lead", "name": "Sale Lead" },
+    { "code": "sale_manager", "name": "Sale Manager" }
+  ],
+  
+  "log-types": [
+    { "code": "info",  "name": "INFO" },
+    { "code": "warn",  "name": "WARNING" },
+    { "code": "error", "name": "ERROR" }
+  ],
+  
+  "log-events": [
+    { "code": "add",    "name": "Add" },
+    { "code": "update", "name": "Update" },
+    { "code": "delete", "name": "Delete" }
+  ],
+
+  "name-title": [
+    { "code": 1,        "name": "Mr./นาย" },
+    { "code": 2,        "name": "Mrs./นาง" },
+    { "code": 3,        "name": "Ms./นางสาว" }
+  ],
+
+  "notify_level": [
+    { "code": "notice", "name": "Notice" },
+    { "code": "warning", "name": "Warning" }
+  ],
+  
+  "roles": [
+    { "name": "Administrator",  "desc": "Administrator",      "pri": 90, "flag": "A" },
+    { "name": "Agent",          "desc": "Agent or Operator",  "pri": 10, "flag": "O" },
+    { "name": "Manager",        "desc": "Manager",            "pri": 70, "flag": "M" },
+    { "name": "Supervisor",     "desc": "Supervisor",         "pri": 50, "flag": "S" },
+    { "name": "Staff",          "desc": "Staff",              "pri": 30, "flag": "S" },
+    { "name": "Chief",          "desc": "Chief",              "pri": 50, "flag": "S" }
+  ],
+  
+  "sexs": [
+    { "code": "u", "name": "Undefined" },
+    { "code": "f", "name": "Female" },
+    { "code": "m", "name": "Male" }
+  ],
+
+  "speaker_type": [
+    { "code": "A", "name": "Agent" },
+    { "code": "C", "name": "Customer" }
+  ],
+  
+  "users": [
+    {
+      "username": "AohsAdmin",
+      "employee_id": "99999999",
+      "full_name": "AOHS Administrator",
+      "role": "Administrator",
+      "group": "Administrator Team"
+    }
+  ],
+    
+  "user-states": [
+    { "code": "A", "name": "Active" },
+    { "code": "S", "name": "Suspended" },
+    { "code": "D", "name": "Deleted" }
+  ],
+
+  "configurations": {
+    "amiwatcher": [
+      { "name": "aohs.baseurl",
+                "type":     "string",
+                "default":  "http://localhost/aohs",
+                "desc":     "base url of aohs web" },
+      { "name": "agentactivity.foreground_check.enabled",
+                "type":     "integer",
+                "default":  "0",
+                "desc":     "Check which application is used at agent PC." },
+      { "name": "agentactivity.idle_check.enabled",
+                "type":     "integer",
+                "default":  "0",
+                "desc":     "Checking idle time at agent PC." },
+      { "name": "agentactivity.idle_check.min_time.sec",
+                "type":     "integer",
+                "default":  "10",
+                "desc":     "" },
+      { "name": "agentactivity.ie_history_check.enabled",
+                "type":     "integer",
+                "default":  "0",
+                "desc":     "Check ie history." },
+      { "name": "agentactivity.ie_history_check.timer.sec",
+                "type":     "integer",
+                "default":  "30",
+                "desc":     "Time period to check IE history." },
+      { "name": "agentactivity.localstorage.filename",
+                "type":     "string",
+                "default":  "%TEMP%\aa",
+                "desc":     "agent activity file local storage file name" },
+      { "name": "agentactivity.senddata.timer.sec",
+                "type":     "integer",
+                "default":  "20",
+                "desc":     "Update agent activity data period." },
+      { "name": "agentactivity.upload_fail_recoveryN",
+                "type":     "integer",
+                "default":  "24",
+                "desc":     "When upload agentactivity file is failed, watcher does not upload again over this trial count." },
+      { "name": "agentactivity.url",
+                "type":     "string",
+                "default":  "http://localhost/services/agent_activity",
+                "desc":     "agent activity upload URL" },
+      { "name": "notification.register_url",
+                "type":     "string",
+                "default":  "http://localhost/webapi/client_notify",
+                "desc":     "Notification URL" },
+      { "name": "computer_info.cti",
+                "type":     "string",
+                "default":  "C:\Program Files\EventCapture\CTI_TOOLBAR.exe",
+                "desc":     "" },
+      { "name": "computer_info.advw",
+                "type":     "string",
+                "default":  "C:\Program Files\AmiVoice\Audio Viewer\AmiAdvw.dll",
+                "desc":     "" },										  
+      { "name": "computer_info",
+                "type":     "string",
+                "default":  "cti,advw,java,os,mediaplayer,ie",
+                "desc":     "" },     
+      { "name": "target.enable_watching_ie_control",
+                "type":     "integer",
+                "default":  "0",
+                "desc":     "enable to ie control watching. This is beta function.  It should be 0." },
+      { "name": "target.finding.executable_filename",
+                "type":     "string",
+                "default":  "CTI_TO",
+                "desc":     "" },
+      { "name": "target.finding.window_class.name",
+                "type":     "string",
+                "default":  "ThunderRT6FormDC",
+                "desc":     "" },
+      { "name": "target.finding.window_class.position",
+                "type":     "string",
+                "default":  "0",
+                "desc":     "" },
+      { "name": "target.finding.window_title.anti_pattern",
+                "type":     "string",
+                "default":  "Initiate Action,Log",
+                "desc":     "" },
+      { "name": "target.finding.window_title.anti_pattern_delim",
+                "type":     "string",
+                "default":  ",",
+                "desc":     "" },
+      { "name": "target.window_title.number_of_characters",
+                "type":     "string",
+                "default":  "48",
+                "desc":     "" },
+      { "name": "target.window_title.pattern",
+                "type":     "string",
+                "default":  "SoftPhone :: ACD={\a+} : Ext={\a+} : Ag ID={\a+}",
+                "desc":     "" },
+      { "name": "target.window_title.result_index.agentid",
+                "type":     "string",
+                "default":  "2",
+                "desc":     "" },
+      { "name": "target.window_title.result_index.extension",
+                "type":     "string",
+                "default":  "1",
+                "desc":     "" },
+      { "name": "target.window_title.result_index.extension2",
+                "type":     "string",
+                "default":  "0",
+                "desc":     "" },
+      { "name": "target.window_title.start_index",
+                "type":     "string",
+                "default":  "0",
+                "desc":     "" },
+      { "name": "target.window_title.logout_pattern",
+                "type":     "string",
+                "default":  "logged out",
+                "desc":     "" },
+      { "name": "update_computer.retry_count_max",
+                "type":     "integer",
+                "default":  "5",
+                "desc":     "" },
+      { "name": "update_computer.retry_wait",
+                "type":     "integer",
+                "default":  "10",
+                "desc":     "" },
+      { "name": "update_computer.sending_logoff",
+                "type":     "integer",
+                "default":  "1",
+                "desc":     "" },
+      { "name": "update_extension.url",
+                "type":     "string",
+                "default":  "http://localhost/services/update_extension",
+                "desc":     "" },
+      { "name": "update_computer.url",
+                "type":     "string",
+                "default":  "http://localhost/services/update_computer_log",
+                "desc":     "" },
+      { "name": "watcher.log4cxx_properties.url",
+                "type":     "string",
+                "default":  "",
+                "desc":     "" },
+      { "name": "watcher.startup_delay.sec",
+                "type":     "integer",
+                "default":  "0",
+                "desc":     "" },
+      { "name": "watcher.timer.msec",
+                "type":     "integer",
+                "default":  "1000",
+                "desc":     "" },
+      { "name": "computer_info.moss",
+                "type":     "string",
+                "default":  "",
+                "desc":     "" },
+      { "name": "screencapture.record.vdo.enable",
+                "type":     "integer",
+                "default":  "0",
+                "desc":     "1=enable" },
+      { "name": "screencapture.record.vdo.fps",
+                "type":     "integer",
+                "default":  "4",
+                "desc":     "Frame per sec" },
+      { "name": "screencapture.record.vdo.resize_scale",
+                "type":     "float",
+                "default":  "0.5",
+                "desc":     "" }, 
+      { "name": "screencapture.record.timer.sec",
+                "type":     "integer",
+                "default":  "2",
+                "desc":     "" },
+      { "name": "watcher.local_app.limit_size_Mb",
+                "type":     "integer",
+                "default":  "100",
+                "desc":     "" },
+      { "name": "screencapture.record.vdo.upload.url",
+                "type":     "string",
+                "default":  "http://192.168.1.153/upload.php",
+                "desc":     "" },
+      { "name": "computer_info.senddata.timer.min",
+                "type":     "integer",
+                "default":  "60",
+                "desc":     "Interval time to resend computer info after start." }
+    ]
+  }
+  
+}

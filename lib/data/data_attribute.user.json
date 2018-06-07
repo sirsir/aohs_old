@@ -1,0 +1,26 @@
+{
+  "amivoice": {
+    "deliquent": { "id":100, "label":"Deliquent", "input_type":"select-box", "source": "delinquent" },
+    "extension": { "id":101, "label": "Extension", "input_type":"text", "note": "Extension No (ATL)" },
+    "branch_code": { "id":102, "label": "Branch Code", "input_type": "text", "note": "Branch Code (ATL)" },
+    "region_code": { "id":103, "label": "Region Code", "input_type": "select-box", "note": "Region Code Code (ATL)", "source": "atl-regions" },
+    "role_code": { "id":105, "label": "ATL Role", "input_type": "select-box", "source": "atl-roles" }
+  },
+  "aeoncms": {
+  
+  },
+  "aeoncol": {
+    "deliquent": { "id":100, "label":"Deliquent", "input_type":"select-box", "source": "delinquent" },
+    "extension": { "id":101, "label": "Extension", "input_type":"text", "note": "Extension No (ATL)" },
+    "branch_code": { "id":102, "label": "Branch Code", "input_type": "text", "note": "Branch Code (ATL)" },
+    "region_code": { "id":103, "label": "Region Code", "input_type": "select-box", "note": "Region Code Code (ATL)", "source": "atl-regions" },
+    "role_code": { "id":105, "label": "ATL Role", "input_type": "select-box", "source": "atl-roles" }
+  },
+  "acss": {
+    "deliquent": { "id":100, "label":"Deliquent", "input_type":"select-box", "source": "delinquent" },
+    "extension": { "id":101, "label": "Extension", "input_type":"text", "note": "Extension No (ATL)" },
+    "branch_code": { "id":102, "label": "Branch Code", "input_type": "text", "note": "Branch Code (ATL)" },
+    "region_code": { "id":103, "label": "Region Code", "input_type": "select-box", "note": "Region Code Code (ATL)", "source": "atl-regions" },
+    "role_code": { "id":105, "label": "ATL Role", "input_type": "select-box", "source": "atl-roles" }
+  }
+}

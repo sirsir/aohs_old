@@ -1,0 +1,16 @@
+= panel_tableview do
+  - unless @member_types.empty?
+    = table_tag :mnt, { id: "table-member-types" } do
+      thead
+        tr
+          th
+            | Title
+          th
+            | Code
+      tbody
+        - @member_types.each do |r|
+          tr
+            td
+              = r.title
+            td
+              = r.member_type

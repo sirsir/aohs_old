@@ -1,0 +1,9 @@
+= panel_form do
+  = form_for(@phone, url: (['new','create'].include?(params[:action]) ? phone_infos_path : phone_info_path(@phone)), layout: :horizontal, errors: {icons: false}) do |f|
+    = f.legend 'Detail'
+
+    = f.text_field :number, label: "Number", placeholder: '', required: true
+    
+    = f.select :number_type, TelephoneInfo.number_type_options, { label: "Type" }, required: true
+
+    = f.submit "OK", class: "submit"

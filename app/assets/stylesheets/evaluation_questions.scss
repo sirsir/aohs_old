@@ -1,0 +1,50 @@
+@import 'query-builder.default.min';
+
+.tab-question-group {
+  margin-bottom: 0.5em;
+}
+
+input.has-error {
+  border: 1px solid red;
+}
+
+input.input-score {
+  width: 6em;  
+}
+
+#box-choice-list,
+#box-choice-yesno,
+#box-choice-score {
+  margin-top: 0.5em;
+  display: none;
+}
+
+.block-rule-group {
+  border: 1px solid #CCCCCC;
+  border-radius: 0.3em;
+  background-color: #FCFCFC;
+  min-height: 1em;
+  padding: 0.5em;
+  margin-top: 0.5em;
+  
+  button {
+    margin-left: 0.25em;
+  }
+}
+
+.block-rule-list {
+  table {
+    margin-top: 0.25em;
+    
+    td.td-act {
+      width: 5em;
+    }
+  }
+}
+
+#tbl-choice-list {
+  th.th-value {
+    max-width: 6em;
+    width: 6em;
+  }
+}

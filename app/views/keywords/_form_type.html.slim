@@ -1,0 +1,56 @@
+= panel_form do
+  = form_for(@keyword_type, layout: :horizontal, errors: { icons: false }) do |f|
+    
+    = f.legend 'Detail'
+    
+    = f.text_field :name, label: "Keyword Type", placeholder: '', required: true, disabled: true
+    
+    div class="form-group"
+      label class="control-label col-sm-3" Notification Level
+      div class="col-sm-9"
+        = select_tag "notify[level]", options_for_select(SystemConst.notification_level_options, @keyword_type.notify_details2["level"]), class: "form-control"
+
+    div class="form-group"
+      label class="control-label col-sm-3" Title
+      div class="col-sm-9"
+        input type="text" class="form-control" required="required" name="notify[title]" value="#{@keyword_type.notify_details2["title"]}" maxlength="50"
+        span class="help-block"
+          | Example: Found [keyword] in your conversation.
+          
+    div class="form-group"
+      label class="control-label col-sm-3" Subject
+      div class="col-sm-9"
+        input type="hidden" class="form-control" id="kwtype_nofify_subject" name="notify[subject]" value="#{@keyword_type.notify_details2["subject"]}" maxlength="120"
+        div id="notify_subject"
+          = @keyword_type.notify_details2["subject"].to_s.html_safe
+        span class="help-block"
+          | Example: Found [keyword] in your conversation.
+                    
+    = f.legend 'Notification Preference'
+    
+    div class="form-group"
+      label class="control-label col-sm-3" Desktop Notifications
+      div class="col-sm-9"
+        = check_box_tag "notify[desktop_alert]", "yes", @keyword_type.enabled_desktop_notification?, { 'data-toggle':'toggle', 'data-on':'Enabled', 'data-off':'Disabled', 'data-size':'normal', 'data-height':'30', 'data-width':'90' }
+    
+    div class="form-group"
+      label class="control-label col-sm-3" Notification Sound
+      div class="col-sm-9"
+        = check_box_tag "notify[desktop_sound]", "yes", @keyword_type.enabled_sound_alert?, { 'data-toggle':'toggle', 'data-on':'Yes', 'data-off':'No', 'data-size':'normal', 'data-height':'30', 'data-width':'90' }
+        span class="help-block"
+          | Play a sound when notification arrives.
+          
+    div class="form-group"
+      label class="control-label col-sm-3" Display Timeout     
+      div class="col-sm-9"
+        = select_tag "notify[timeout]", options_for_select(SystemConst.notification_timeout_options, @keyword_type.notify_details2["timeout"]), class: "form-control"          
+        span class="help-block"
+          | Time length for display.
+    
+    div class="form-group"
+      div class="col-sm-offset-3 col-sm-9"
+        label class="label-control"
+          = check_box_tag "notify[cc_leader]", "yes", @keyword_type.cc_leader?
+          | Sending message to team leader or supervisor.
+        
+    = f.submit "OK", class: "submit"

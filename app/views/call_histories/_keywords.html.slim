@@ -1,0 +1,25 @@
+script id="tbl-keywordinfo-template" type="text/x-handlebars"
+  table class="table table-striped table-bordered table-hover table-default-all" cellspacing="0"
+    thead
+      tr
+        th class="h-no"
+          | No.
+        th class="h-datetime"
+          | Time
+        th class="h-keywordtype"
+          | Type
+        th
+          | Keyword
+    tbody
+      = hb 'keywords' do
+        tr
+          td class="no"
+            = hb 'no'
+          td
+            = hb 'dsp_stime'
+          td class="text-word-#{ hb 'keyw_code' }"
+            = hb 'keyw_type'
+          td
+            = hb 'keyw_name'
+
+div id="tbl-keywords"

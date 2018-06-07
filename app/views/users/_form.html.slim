@@ -1,0 +1,78 @@
+= panel_form do
+  = form_for(@user, layout: :horizontal, errors: { icons: false }) do |f|
+    
+    = f.legend 'Detail'
+
+    = f.text_field :login, label: "Username", placeholder: '', required: true, disabled: (@user.is_locked? or @user.ldap_auth?)
+    
+    - if @user.ldap_auth?
+      = f.text_field :domain_name, label: "Domain", placeholder: '', disabled: true
+    
+    = f.text_field :employee_id, label: "Employee ID", required: true, placeholder: ''
+    
+    = f.text_field :atl_code, label: "Operator ID", required: false, placeholder: '', help: 'Operator ID or Staff Code', maxlength: 8
+    
+    = f.text_field :citizen_id, label: "Citizen ID", placeholder: ''
+    
+    = f.select :title_id, SystemConst.nametitle_options, { include_blank: true }, label: "Title", disabled: @user.is_locked?
+    
+    = f.text_field :full_name_en, label: "Name (EN)", placeholder: '', required: true, disabled: @user.is_locked?
+
+    = f.text_field :full_name_th, label: "Name (TH)", placeholder: '', disabled: @user.is_locked?
+    
+    = f.email_field :email, label: "E-Mail", placeholder: ''
+    
+    = f.select :sex, SystemConst.sex_options, {}, label: "Sex", disabled: @user.is_locked?
+    
+    = f.text_field :dob, label: "Date of Birth", placeholder: '', help: "Format: yyyy-mm-dd"
+
+    = f.text_field :joined_date, label: "Joined date", placeholder: '', help: "Format: yyyy-mm-dd. "
+    
+    = f.fields_for "group_member", @group_member do |gm|
+      = gm.select :group_id, Group.all_group_options, {}, label: "Group", disabled: @user.is_locked?
+    
+    = f.select :role_id, Role.role_options, {}, label: "Role", disabled: @user.is_locked?
+
+    = f.text_area :notes, label: "Notes", placeholder: '', rows: 3, maxlength: 120
+
+    = f.text_field :dsr_profile_id, label: "Profile ID", placeholder: ''
+
+    - UserAttribute.custom_attributes.each do |atr|
+      div class="form-group"
+        label class="control-label col-sm-3"
+          = atr["label"]
+        div class="col-sm-9"
+          - if atr["input_type"] == "select-box"
+            = select_tag "custom_attribute[#{atr["id"]}]", options_for_select(atr["values"],@user.user_attr(atr["id"]).attr_val), include_blank: true, class: 'form-control'
+          - if atr["input_type"] == "text"
+            = text_field_tag "custom_attribute[#{atr["id"]}]", @user.user_attr(atr["id"]).attr_val, class: 'form-control', maxlength: 100
+          - unless atr["note"].blank?
+            div class="help-block"
+              = atr["note"]
+
+    - if is_edit_action? and not @user.is_locked?
+      = f.legend "Account Status"
+      div class="radio"
+        = f.radio_button :state, "A", label: "Active", class: 'radio-inline'
+        = f.radio_button :state, "S", label: "Suspend", class: 'radio-inline'
+    - else
+      = f.hidden_field :state
+
+    - if is_edit_action? and not @user.is_locked? and not @user.ldap_auth?
+      = f.legend "Authentication"
+      
+      = f.password_field :password, label: "Password", placeholder: ''
+      
+      = f.password_field :password_confirmation, label: "Password Confirmation", placeholder: ''
+    
+      div class="form-group"
+        label class="col-sm-3 control-label"
+        div class="col-sm-9"
+          div class="checkbox"
+            label
+              = check_box_tag "reset_password", "yes", false
+              | Reset password
+            div class="help-block"
+              | Use when you want to change current password to default.
+
+    = f.submit "OK", class: "submit"

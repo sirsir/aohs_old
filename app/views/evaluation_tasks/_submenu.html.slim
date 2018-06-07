@@ -1,0 +1,14 @@
+= nav as: :pills, class: 'navbar-mnt' do
+  - if can_view?
+    = nav_link_to :view
+    
+  - if can_manage?
+    = nav_link_to :create, label: "Assign", params: { mode: 'run_once' }
+    = nav_link_to :create, label: "Auto Assignment", params: { mode: 'schedule' }
+
+  - if can_manage? and is_edit_action?
+    = nav_link_to :edit
+
+  - if can_manage?
+    / = nav_link_to :assignment, label: "Reassign", params: { mode: 'reassign' }
+    = nav_link_to :assignment, label: "Unassign", params: { mode: 'unassign' }

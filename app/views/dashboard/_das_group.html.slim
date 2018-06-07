@@ -1,0 +1,151 @@
+script type="html/template" id="tbl-users-template"
+  table class="table table-striped table-hover"
+    thead
+      tr
+        th rowspan="2"
+          | Agent
+        th colspan="3"
+          | Inbound
+        th colspan="3"
+          | Outbound
+        / th rowspan="2"
+          | FCR
+        / th rowspan="2"
+          | AHT
+        / th rowspan="2"
+          | EMO
+        / th rowspan="2"
+          | ASST
+        th rowspan="2"
+          | Timeline (8:00-20:00)
+      tr
+        th
+          | Total
+        th
+          | Avg Duration<br>(HH:mm:ss)
+        th
+          | Max Duration<br>(HH:mm:ss)
+        th
+          | Total
+        th
+          | Avg Duration<br>(HH:mm:ss)
+        th
+          | Max Duration<br>(HH:mm:ss)
+    tbody
+      = hb 'ds_users' do
+        tr
+          td
+            = hb 'name'
+          td
+            = hb 'inb_total'
+          td
+            = hb 'inb_avgd'
+          td
+            = hb 'inb_maxd'
+          td
+            = hb 'oub_total'
+          td
+            = hb 'oub_avgd'
+          td
+            = hb 'oub_maxd'
+          / td
+            = hb 'fcr'
+          / td
+            = hb 'aht'
+          / td class="text-center"
+            div class="emotion-icon-sm emotion-#{ hb 'emo_id'}"
+          / td class="text-center"
+            span class="#{ hb 'asst_badge' }"
+              = hb 'asst'
+          td
+            div class="chart-timeline text-center" id="timeline-cl-#{ hb 'id' }"
+
+div id="das-group"
+  div class="row content-group"
+    div class="col-sm-4"
+      div class="row"
+        div class="col-sm-12"
+          div
+            label class="text-space-r"
+              | Group:
+            span id="fl-grp-name"
+          div
+            label class="text-space-r"
+              | Leader:
+            span id="fl-lea-name"
+            span id="fl-lea-role"
+
+    div class="col-sm-8"
+      div class="content-group"
+        div class="row"
+          div class="col-sm-2"
+            div class="lb-val-1" Users
+            div class="text-val-1 text-center ds-tt-usr"
+          div class="col-sm-2"
+            div class="lb-val-1" Total
+            div class="text-val-1 text-center ds-tt-call"
+          div class="col-sm-2"
+            div class="lb-val-1" Inbound
+            div class="text-val-1 text-center ds-tt-inb text-inbound"
+          div class="col-sm-2"
+            div class="lb-val-1" Outbound
+            div class="text-val-1 text-center ds-tt-oub text-outbound"
+          div class="col-sm-2"
+            div class="lb-val-1" Max Duration<br>(HH:mm:ss)
+            div class="text-val-1 text-center ds-max-dur"
+          div class="col-sm-2"
+            div class="lb-val-1" Avg Duration<br>(HH:mm:ss)
+            div class="text-val-1 text-center ds-avg-dur"
+          
+  div class="row"
+    div class="content-group"
+      div class="col-sm-6"
+        div class="content-box"
+          div class="content-title"
+            | Hourly Call Usage
+          div class="chart-call-by-hr "
+      div class="col-sm-6"
+        div class="content-box"
+          div class="content-title"
+            | Call Usage by duration range
+          div class="chart-call-by-dur"
+
+  / div class="row"
+    div class="content-group"
+      div class="col-sm-4"
+        div class="content-box"
+          div class="content-title"
+            | Call Classification
+          div class="chart-ana-class chart-ana1"
+      div class="col-sm-4"
+        div class="content-box"
+          div class="content-title"
+            | Call Reason
+          div class="chart-ana1 chart-ana-reason"
+      div class="col-sm-4"
+        div class="content-box"
+          div class="content-title"
+            | Auto Assessment
+          div class="chart-ana1 chart-ana-asst"
+
+  / div class="row"
+    div class="content-group"
+      / div class="col-sm-4"
+        div class="content-box"
+          div class="content-title"
+            | Customer Satisfaction
+          div class="chart-ana1 chart-ana-csat"
+      / div class="col-sm-4"
+        div class="content-box"
+          div class="content-title"
+            | First Call Resolution (FCR)
+          div class="chart-ana1 chart-ana-fcr"
+          
+  div class="row"
+    div class="content-group" 
+      div class="col-sm-12"
+        div class="content-box"
+          div class="content-title"
+            | Summary
+          div id="tbl-users-summary"
+        

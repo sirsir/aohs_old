@@ -1,0 +1,71 @@
+= hbs_template "template-tbl-assigned-list" do
+  table class="table table-default table-striped table-bordered"
+    thead
+      th
+        = icon 'check-o'
+      th QA Name
+      th Pending Tasks
+      th Number of Task to Unassign
+    tbody
+      = hb 'this' do
+        tr.checked
+          td.td-checkbox
+            input type="checkbox" name="unassign_user_id" value="#{ hb 'qa_id' }" checked="checked"
+          td
+            = hb 'qa_name'
+          td.td-cnt class="text-center"
+            = hb 'assigned_count'
+          td.td-cnt class="text-center"
+            input type="number" name="n_of_unassign" min="0" max="#{ hb 'assigned_count' }" value="#{ hb 'assigned_count' }" class="form-control"
+            
+div class="row"
+  div class="col-sm-12"
+
+div class="row"
+  div class="col-sm-12"
+    = form_tag "", class: "form-horizontal" do
+      div class="block-step-page"
+        div class="form-group"
+          label class="label-control col-sm-12"
+            | Assignment Case
+          div
+            div class="col-sm-3"
+              label
+                = radio_button_tag "case_name", "all", true
+                | All
+            - EvaluationTask.get_assigenment_cases.each_with_index do |cse, idx|
+              div class="col-sm-3"
+                label
+                  = radio_button_tag "case_name", cse[:name], false
+                  = cse[:label]
+                  
+        div class="form-group"
+          label class="col-sm-12"
+              | Select Assigned Data
+          div class="field-group"
+            label class="col-sm-2 control-label"
+              | Assigned Date Range
+            div class="col-sm-4"
+              input type="text" name="data_assigned_datetime" allow-blank="true" class="form-control input-date-rank"
+            label class="col-sm-2 control-label"
+              | Content Date Range
+            div class="col-sm-4"  
+              input type="text" name="data_content_datetime" allow-blank="true" class="form-control input-date-rank"
+
+        div class="form-group"
+          div class="col-sm-12"
+            div class="pull-right"
+              button type="button" id="btn-search-assigned" class="btn btn-primary" Search
+              
+        div class="form-group"
+          label class="col-sm-12" Assiged Data
+          div class="col-sm-12"
+            div id="tbl-assigned-list"
+              div class="panel panel-info"
+                div class="panel-body"
+                  | No selected data.
+                  
+        div class="form-group"
+          div class="col-sm-12"
+            div class="pull-right"
+              button type="button" id="btn-unassign" class="btn btn-warning" Unassign

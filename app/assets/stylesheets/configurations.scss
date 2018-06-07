@@ -1,0 +1,53 @@
+@import 'mcColorPicker';
+
+.field-conf {
+  width: 30em;
+}
+
+.box-btn-group {
+  width: 100%;
+  padding: 1em;
+  
+  button {
+    margin-left: 1em;
+  }
+}
+
+span.colorChooser {
+  display: inline-block;
+  margin-left: 0.2em;
+}
+
+#table-program-settings {
+  
+  td.col-bg-color {
+    width: 14em;
+    text-align: center;
+    
+    input {
+      display: inline-block;
+      width: 8em !important;
+    }    
+  }
+  
+  td.col-act {
+    width: 6em;
+  }
+  
+  tbody tr[data-id="0"], tbody tr[data-changed="yes"] {
+    background-color: #FFFACD;
+  }
+  
+}
+
+#table-display-settings {
+  
+  .btn-moveup, .btn-movedown {
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+  }
+  
+  td.td-action {
+    width: 10em;  
+  }
+}

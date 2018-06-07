@@ -1,0 +1,28 @@
+script id="template-asst-result" type="text/x-handlebars"
+  table class="table table-striped table-condensed table-hover"
+    thead
+      tr
+        th
+        th
+          | Result
+        th
+    tbody
+      = hb 'assessment_items' do
+        tr class="tr-type-#{hb 'type'}"
+          td class="td-title"
+            = hb 'title'
+          td class="text-center"
+            div class="txt-asst-result asst-result-#{ hb 'result' }"
+              = hb 'result'
+          td
+            = hb 'id'
+    tfoot
+      tr
+        td
+        td
+          = hb 'result'
+        td
+div class="row"
+  div class="col-sm-12"
+    div id="block-asst-result"
+    

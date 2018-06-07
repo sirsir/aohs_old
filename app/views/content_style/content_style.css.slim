@@ -1,0 +1,18 @@
+- if defined? @cc and not @cc.empty?
+  - @cc.all.each do |c|
+    = ".#{c.css_content_class} { background-color: #{c.bg_color} !important; color: #{c.fg_color_auto} !important; }"
+    =  ".progress-bar-#{c.css_content_class} { background-color: #{c.bg_color} !important; color: #{c.fg_color_auto} !important; }"
+    
+- elsif defined? @im and not @im.empty?
+  - @im.each do |m|
+    = ".#{m.css_content_class} { background-image: url(#{asset_path(m.image_path)}); background-repeat: no-repeat; background-size: contain; }"
+    
+- elsif defined? @cates and not @cates.empty?
+  - @cates.each do |c|
+    - next if c.fg_color.blank?
+    = ".text-symbol[data-call-category=\"#{c.title}\"] { color: #{c.fg_color}; border-color: #{c.fg_color} }".html_safe
+    = ".text-symbol-option[data-call-category=\"#{c.title}\"] { color: #{c.fg_color}; border-color: #{c.fg_color} }".html_safe
+
+- elsif defined? @tels and not @tels.empty?
+  - @tels.each do |t|
+    = "td.telno-type[data-number-type=\"#{t[:name]}\"] { background-color: #{t[:bg_color]}; }".html_safe

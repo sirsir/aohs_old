@@ -1,0 +1,171 @@
+= content_for :header do
+  = tag_stylesheets_link
+  = content_stylesheets_link('program')
+  = content_stylesheets_link('keyword')
+  = content_stylesheets_link('emotion')
+  = content_stylesheets_link('call_category')  
+= render partial: 'call_histories/email_dialog'
+
+script type="text/template" id="template-calltype-btn"
+  div class="text-symbol" data-call-category-id="#{ hb 'id' }" data-call-category="#{ hb 'title' }"
+    = hb 'title'
+    - if can_doact?("voice_logs:classification")
+      button class="btn btn-xs btn-link btn-remove-calltype"
+        = icon 'close'
+
+script type="text/template" id="template-calltag-btn"
+  div class="text-symbol" data-tag-id="#{ hb 'id' }" data-call-tag="#{ hb 'title' }"
+    = hb 'title'
+    - if can_doact?("voice_logs:tagging")
+      button class="btn btn-xs btn-link btn-remove-calltype"
+        = icon 'close'
+
+script type="application/json" id="voicelog-data"
+  = @voice_log.details.to_json.html_safe
+
+= hbs_template "template-callinf-topbar" do
+  span class="call-cd" id="fd-cd-img" data-cd="#{ hb 'call_direction' }"
+  span class="text-space text-label" Agent:
+  span class="text-space" id="fd-agent-name"
+    = hb 'agent_name'
+  span class="text-space text-label" Time:
+  span class="text-space" id="fd-call-time"
+    = hb 'start_time'
+  span class="text-space text-label" Direction:
+  span class="text-space" id="fd-cd"
+    = hb 'call_direction_text'
+  span class="text-space text-label" Caller:
+  span class="text-space" id="fd-ani"
+    = hb 'ani'
+  span class="text-space text-label" Dialed:
+  span class="text-space" id="fd-dnis"
+    = hb 'dnis'
+  span class="text-space text-label" Ext:
+  span class="text-space" id="fd-ext"
+    = hb 'extension'
+  span class="text-space text-label" Customer:
+  span class="text-space" id="fd-cust-name"
+    = hb 'customer_name'
+= hbs_template "template-callinf-channels" do
+  = hb 'this' do
+    div class="item-channel" data-channel-type="#{ hb 'type' }"
+
+= hbs_template "template-releated-calllist" do
+  table class="table table-default table-bordered table-condensed table-hover"
+    tbody
+      = hb 'this' do
+        tr
+          td
+            = hb 'start_time_s'
+          td
+            = hb 'duration_s'
+            
+div class="row"
+  div class="col-sm-12"
+    div class="block-callinf-header panel-call-header"
+      div class="pull-right"
+        / button class="btn btn-xs btn-link" id="btn-show-waveform"
+          = icon 'check'
+          | Waveform
+        button class="btn btn-xs btn-link" id="btn-send-mail"
+          = icon 'envelope' 
+          | E-mail
+        - if can_do?('voice_logs','download')
+          button class="btn btn-xs btn-link" id="btn-file-download"
+            = icon 'download' 
+            | File Download
+      div id="block-callinf-topbar"
+
+div class="row"
+  div class="col-sm-12"
+    div class="block-callinf-player panel-call-info"
+      table cellpadding="0" cellspacing="0"
+        tr
+          td id="block-releated-callslist"
+            div
+          td id="block-channel-list" class="td-channel" 
+          td
+            div class="panel-waveform"
+              - if Settings.audioplayer.waveform.disabled == false
+                div id="audioview" class="panel-audioview"
+                  = render 'players/audio_player_wf'        
+              div id="audioplayer" class="panel-audioplayer"
+                = render partial: 'players/audio_player_ctl', locals: { btns: { next_prev: false, toggle: false } }
+
+div class="row"
+  div class="col-sm-12"
+    table id="cdt-container"
+      tr
+        td class="td-cdt-1 td-cdt-left hide-panel" id="td-cdt-1"
+          div class="pull-right"
+            button type="button" class="btn btn-xs btn-link" id="btn-hide-cdt1"
+              = icon 'chevron-right'
+          
+          div id="box-cdt-left" class="block-scroll"
+            div class="cdt-group-info"
+              h4
+                = icon 'angle-down'
+                | Call Classification
+              div id="box-call-type" class="box-lft hide-select2"
+                span id="block-call-type-list"
+                button id="btn-add-calltype" class="btn btn-xs btn-link"
+                  = icon 'plus-square'
+                select id="fl-call-type"
+              
+            div class="cdt-group-info"
+              h4
+                = icon 'angle-down'
+                | Tag
+              div id="box-call-tags" class="box-lft hide-select2"
+                span id="block-call-tag-list" class="block-call-tag"
+                button type="button" class="btn btn-xs btn-link btn-default" id="btn-add-calltag"
+                  = icon 'plus-square'
+                select class="form-control" id="fl-call-tag"
+
+            div class="cdt-group-info"
+              h4
+                = icon 'angle-down'
+                | Activity Usage
+              div id="box-user-activity" class="box-lft"
+                div
+                
+            div class="tagging"
+              div id="taggin-list"
+                ul class="list"
+                
+        td class="td-cdt-2 hide-panel" id="td-cdt-2"
+          div id="pnl-trans"
+            = render 'call_histories/call_trans'
+          
+        td class="td-cdt-3 td-cdt-right" id="td-cdt-3"
+          div class="handle-resize"
+          div id="box-cdt-right"
+            div class="box-tabs"                
+              - if can_doact?("evaluations:view") or can_doact?("evaluations:evaluate")
+                div class="tb-tab" data-pnl="pnl-evaluate"
+                  | Evaluation
+
+              div class="tb-tab" data-pnl="pnl-app-usage"
+                | App Usage
+                
+              div class="tb-tab" data-pnl="pnl-comment"
+                | Comment
+              
+              - if current_user.is_admin?
+                div class="tb-tab" data-pnl="pnl-ana-result" id="tab-ana-result"
+                  | Analysis Result
+                div class="tb-tab" data-pnl="pnl-info"
+                  | Other
+        
+            div class="box-pnl"
+              div id="pnl-evaluate" class="tb-pnl"
+                = render 'call_histories/call_evaluation'
+              div id="pnl-app-usage" class="tb-pnl"
+                = render 'call_histories/app_usage'
+              div id="pnl-comment" class="tb-pnl"
+                = render 'call_histories/call_comments'
+              div id="pnl-info" class="tb-pnl"
+                = render 'call_histories/call_other_info'
+              div id="pnl-ana-result" class="tb-pnl"
+                = render 'call_histories/call_ana_result'
+                

@@ -1,0 +1,105 @@
+script type="html/template" id="tbl-groups-template"
+  table class="table table-striped table-hover"
+    thead
+      tr
+        th rowspan="2"
+          | Group
+        th rowspan="2"
+          | Leader
+        th colspan="4"
+          | Inbound
+        th colspan="4"
+          | Outbound
+      tr
+        th
+          | Total
+        th
+          | Per Agent
+        th
+          | Avg Duration<br>(HH:mm:ss)
+        th
+          | Max Duration<br>(HH:mm:ss)
+        th
+          | Total
+        th
+          | Per Agent
+        th
+          | Avg Duration<br>(HH:mm:ss)
+        th
+          | Max Duration<br>(HH:mm:ss)
+    tbody
+      = hb 'ds_groups' do
+        tr
+          td
+            = hb 'name'
+          td
+            = hb 'leader_name'
+          td
+            = hb 'inb_total'
+          td
+            = hb 'inb_avgc'
+          td
+            = hb 'inb_avgd'
+          td
+            = hb 'inb_maxd'
+          td
+            = hb 'oub_total'
+          td
+            = hb 'oub_avgc'
+          td
+            = hb 'oub_avgd'
+          td
+            = hb 'oub_maxd'
+            
+div id="das-groups"
+  div class="row"
+    div class="content-group"
+      div class="col-sm-4"
+        div class="row"
+          div class="col-sm-2"
+          div class="col-sm-2"
+      div class="col-sm-8"
+        div class="row"
+          div class="col-sm-2"
+            div class="lb-val-1" Users
+            div class="text-val-1 text-center ds-tt-usr"
+          div class="col-sm-2"
+            div class="lb-val-1" Total
+            div class="text-val-1 text-center ds-tt-call"
+          div class="col-sm-2"
+            div class="lb-val-1" Inbound
+            div class="text-val-1 text-center ds-tt-inb text-inbound"
+          div class="col-sm-2"
+            div class="lb-val-1" Outbound
+            div class="text-val-1 text-center ds-tt-oub text-outbound"
+          div class="col-sm-2"
+            div class="lb-val-1" Max Duration<br>(HH:mm:ss)
+            div class="text-val-1 text-center ds-max-dur"
+          div class="col-sm-2"
+            div class="lb-val-1" Avg Duration<br>(HH:mm:ss)
+            div class="text-val-1 text-center ds-avg-dur"
+
+  div class="row"
+    div class="content-group"
+      div class="col-sm-6"
+        div class="content-box"
+          div class="content-title"
+            | Hourly Call Usage
+          div class="chart-call-by-hr "
+      div class="col-sm-6"
+        div class="content-box"
+          div class="content-title"
+            | Call Usage by duration range
+          div class="chart-call-by-dur"
+  
+  div class="row"
+    div class="content-group"
+      div class="col-sm-12"
+          div class="content-box"
+            div class="content-title"
+              | Summary
+            div id="tbl-groups-summary"
+            
+  div class="row"
+    div class="content-group"
+      div class="col-sm-12"

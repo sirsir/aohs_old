@@ -1,0 +1,80 @@
+= hbs_template "trans-log-template" do
+  tbody
+    = hb 'this' do
+      tr class="playat typ-#{hb 'type'}" id="trx-no-#{ hb 'no' }" data-start-sec="#{ hb 'ssec'}" data-duration="#{ hb 'duration' }" data-channel="#{ hb 'channel' }" data-edited-flag="#{ hb 'edited_flag' }" data-recogn-result="#{ hb 'org_result' }"
+        td class="trans-type"
+          div class="typ-#{hb 'type'}"
+        td class="time_tag"
+          = hb 'stime'
+        td class="trans_rs"
+          - if can_do?("voice_logs","edit_transcriptions")
+          div class="row-init-actions"
+            button type="button" class="btn btn-xs btn-link btn-on-init btn-edit-trans"
+              = icon 'pencil'
+              | Edit
+            button type="button" class="btn btn-xs btn-link btn-on-edit btn-hidden btn-edit-ok"
+              = icon 'check'
+              | Save
+            button type="button" class="btn btn-xs btn-link btn-on-edit btn-hidden btn-edit-cancel"
+              = icon 'times'
+              | Cancel
+            button type="button" class="btn btn-xs btn-link btn-on-edit btn-hidden btn-edit-undo"
+              = icon 'undo'
+              | Reset
+          div class="fd-text"
+            = hb 'html_safe result'
+          div class="fd-edit hide-block"
+            textarea class="form-control"
+
+= hbs_template "template-callinf-keywords" do
+  = hb 'this' do
+    div class="content-keyword #{ hb 'cssClass' }"
+      = hb 'text'
+
+= hbs_template "template-additional-info" do
+  div
+  
+= hbs_template "template-customer-detail" do
+  h4
+    | Customer Detail
+  table class="table-fullsize table-condensed"
+    thead
+      tr
+        th Name
+        th BOD
+        th Age
+        th Weight
+        th Height
+    tbody
+      = hb 'this' do
+        tr
+          td
+            = hb 'name'
+          td
+            = hb 'birthdate'
+          td
+            = hb 'age'
+          td
+            = hb 'weight'
+          td
+            = hb 'height'
+
+div class="row"
+  div class="col-sm-12"
+    div id="box-trans-option"
+      button type="button" class="btn btn-xs btn-link" id="btn-auto-scroll" title="Enable auto scroll for transcription"
+        = icon 'check-square-o'
+        | Auto Scroll
+      - if can_doact?("voice_logs:dl_transcriptions")
+        button type="button" class="btn btn-xs btn-link btn-download-trans" id="btn-download-trans" title="Download transcriptions file"
+          = icon 'download'
+      button type="button" class="btn btn-xs btn-link btn-hidden" id="btn-reset-alltrans" title="Restore changed transcription"
+          = icon 'history'
+div id="box-detected-info"
+  div id="box-additional-info"
+    div class="hide-block animated fadeIn"
+    button id="btn-showhide-addinfo" type="button" class="btn btn-xs btn-link btn-default" title="More additional information"
+      = icon 'chevron-down'
+  div id="box-keyword-list" class="trans-keywords" 
+div class="trans-result block-scroll"
+  table id="tb-call-trans" class="tb-call-trans"

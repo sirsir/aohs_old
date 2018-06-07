@@ -1,0 +1,8 @@
+<div class="block-notification warning" style="width: <%=width %>; height: <%= height %>">
+  <div class="block-icon" style="height: <%= height %>"></div>
+  <div class="block-body" style="height: <%= height %>">
+    <div class="block-body-title"><%= title %></div>
+    <div class="block-body-inner"><%= subject %></div>
+    <div class="block-footer"><span class="text-timestamp"><%= Time.parse(timestamp).strftime("%H:%M:%S") %></span></div>
+  </div>
+</div>

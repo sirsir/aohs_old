@@ -1,0 +1,15 @@
+/ = render "shares/not_available"
+
+div class="mnt-menu"
+  = render 'export_calls/submenu'
+  = horizontal_bar
+
+div class="mnt-cont mnt-filter"
+  = render 'export_calls/filter'
+
+div class="mnt-cont mnt-tbl"
+  = render 'export_calls/viewtbl'
+  
+  p
+    span
+      | These tasks will be removed automatically within #{Settings.callexport.expiry_day_in} days after exported.

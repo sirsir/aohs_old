@@ -1,0 +1,28 @@
+#
+# MySQL.  Versions 5.5+ are recommended.
+#
+
+default: &default
+  adapter:    mysql2
+  encoding:   utf8
+  pool:       10
+  host:       <%= Settings.server.database.hostname %>
+  username:   <%= Settings.server.database.username %>
+  password:   <%= Settings.server.database.password %>
+  socket:     /var/lib/mysql/mysql.sock
+  reconnect:  true
+  timeout:    60
+  
+development:
+  <<: *default
+  database:   <%= Settings.server.database.dbname %>
+
+test:
+  <<: *default
+  database:   aohsdb_test
+
+production:
+  <<: *default
+  database:   <%= Settings.server.database.dbname %>
+  # username:   aohs
+  # password:   <%= ENV['AOHS_DATABASE_PASSWORD'] %>

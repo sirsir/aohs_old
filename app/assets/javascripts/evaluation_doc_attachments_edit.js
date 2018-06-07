@@ -1,0 +1,1 @@
+//=require 'evaluation_doc_attachments_new'

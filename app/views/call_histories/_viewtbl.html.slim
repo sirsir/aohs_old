@@ -1,0 +1,10 @@
+div id="panel-display-call-hist"
+  = render 'call_histories/viewtbl_template'
+  
+  div class="row"
+   - if params[:controller] == "search"
+    div class="col-sm-12"
+      div class="panel-viewlist" id="tbl-voicelogs"
+   - else
+    div class="col-sm-12"
+      div class="panel-viewlist" id="tbl-voicelogs"

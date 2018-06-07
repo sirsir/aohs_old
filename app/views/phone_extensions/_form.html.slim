@@ -1,0 +1,21 @@
+= panel_form do
+  = form_for(@extension, layout: :horizontal, errors: { icons: false } ) do |f|
+
+    = f.legend 'Detail'
+    
+    = f.text_field :number, label: "Extension No.", placeholder: '', required: true
+ 
+    = f.select :location_id, LocationInfo.location_options, { include_blank: true }, label: "Location"
+
+    = f.select :user_id, User.user_options, include_blank: true, label: "Specific User", help: 'Extension owner. If this is not defined, system will automatically check by Amivoice Watcher.'
+    
+    = f.fields_for :dids, @extension.dids do |did|
+      = did.hidden_field :id
+      = did.text_field :number, label: "DID No.", placeholder: ''
+  
+    = f.fields_for :computer_info, @extension.computer_info do |comp|
+      = comp.hidden_field :id
+      = comp.text_field :computer_name, label: "Computer Name", placeholder: ''
+      = comp.text_field :ip_address, label: "IP address", placeholder: ''
+
+    = f.submit "OK", class: "submit" 

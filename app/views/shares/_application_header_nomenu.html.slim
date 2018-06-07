@@ -1,0 +1,18 @@
+div id="panel-app-header" class="panel-app-header"
+
+  div class="panel-app-title"
+    a href="#{url_for(action: 'index')}"
+      span class="logo-amivoice"
+        = image_tag("amivoiceth-logo2.png", align: "bottom")
+      span class="text-app-desc"
+        | #{Settings.site.short_description}
+      
+  div class="panel-app-mainmenu"
+    div class="mn-link #{menu_selected_class('home')}" data-url="#{url_for(controller: 'home', action: 'index')}"
+      span Dashboard
+
+  div class="panel-app-account"
+      
+    - if true
+      div class="mn-link showtip" data-url="#{url_for(controller: 'users', action: 'logout')}" data-tooltip="Sign Out"
+        = image_tag("logout11.png", alt: "Sign Out")

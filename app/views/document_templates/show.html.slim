@@ -1,0 +1,48 @@
+div class="row"
+  div class="col-sm-12"
+    = form_for([@evaluation_plan,@doc_template], layout: :horizontal, errors: {icons: false}) do |f|
+      
+      = f.hidden_field :evaluation_plan_id
+      
+      = f.text_field :title, label: "Title", placeholder: '', disabled: true
+      
+      = f.text_field :description, label: "Description", placeholder: '', disabled: true
+  
+div class="row"
+  div class="col-sm-3 text-right"
+    label
+      | Field List
+  div class="col-sm-9"
+    table class="table"
+      thead
+        tr
+          th
+            | Sheet
+          th
+            | Field name
+      tbody
+        - @doc_params.each_pair do |sheet_name, vars|
+          tr
+            td rowspan="#{vars.length+1}"
+              = sheet_name
+            - if vars.empty?
+              td
+                | No field.
+          - unless vars.empty?
+            - vars.each do |var|
+              tr
+                td
+                  = var[:name]
+
+div class="row"
+  div class="col-sm-3"
+  div class="col-sm-5"
+    p
+      button type="button" id="btn-close" class="btn btn-primary btn-mar-right"
+        | Close
+      button type="button" id="btn-edit" class="btn btn-primary btn-mar-right"
+        | Edit
+  div class="col-sm-4 text-right"
+    p
+      button type="button" id="btn-delete" class="btn btn-danger btn-mar-right"
+        | Delete

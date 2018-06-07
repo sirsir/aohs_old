@@ -1,0 +1,67 @@
+= html_template "cond-row-template" do
+  tr id="cond_#{ hb 'id' }"
+    td.xc-cd class="text-center"
+      = hb 'date_range'
+    td.xc-rk
+      = hb 'remark'
+    td.xc-bt class="text-center"
+      button type="button" class="btn btn-edit-cond btn-primary" data-id="#{hb 'id'}"
+        | Edit
+      button type="button" class="btn btn-rem-cond btn-danger" data-id="#{hb 'id'}"
+        | Remove
+
+= html_template "cond-dialog-template" do
+
+  div class="row"
+    div class="col-sm-12"
+      
+      div class="form-group"
+        label Date Range
+        input type="text" name="fd_date_range" id="fd_date_range" value="#{ hb 'date_range' }" class="form-control" required="required"
+
+      div class="form-group"
+        label Hour(s)
+        input type="text" name="fd_hour" id="fd_hour" value="#{ hb 'hours' }" class="form-control"
+        div class="help-block"
+          | Example: 8, 13-17
+
+      / div class="form-group"
+        label Tag(s)
+        select name="fd_tag" id="fd_tag" value="" class="form-control"
+        div class="help-block"
+          = "Example: tag1, tag2, ..., tagN"
+
+      div class="form-group"
+        label Phone or Extension Numbers
+        textarea name="fd_phone" id="fd_phone" class="form-control" maxlength="2048" required="required"
+          = hb 'phones'
+        div class="help-block"
+          = "Example: number1, number2, ..., numberN"
+
+      div class="form-group"
+        label Call Direction
+        select name="fd_cd" id="fd_cd" class="form-control"
+          = hb "select call_direction" do
+            option value="" Both
+            option value="i" Inbound
+            option value="o" Outbound
+
+      div class="form-group"
+        label Duration Range
+        div class="row"
+          div class="col-sm-6 form-group" 
+            label From
+            input type="text" name="fd_from" id="fd_from" value="#{ hb 'duration_from' }" class="form-control"
+            div class="help-block"
+              | unit: second
+          div class="col-sm-6 form-group"
+            label To
+            input type="text" name="fd_to" id="fd_to" value="#{ hb 'duration_to' }" class="form-control"
+            div class="help-block"
+              | unit: second
+              
+      div class="form-group"
+        label Remark
+        input type="text" name="fd_remark" id="fd_remark" value="#{ hb 'remark' }" class="form-control"
+
+      input type="hidden" name="fd_id" id="fd_id" value="#{ hb 'id' }"

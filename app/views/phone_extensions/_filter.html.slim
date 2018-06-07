@@ -1,0 +1,14 @@
+= panel_filter do
+  = form_filter_tag :extension, action: "index" do
+  
+    = field_group_inline_tag :extension, "Extension" do
+      = text_field_tag :extension, params[:extension], class: "form-control"
+
+    = field_group_inline_tag :computer_ip, "Computer Ip" do
+      = text_field_tag :computer_ip, params[:computer_ip], class: "form-control"
+
+    = field_group_inline_tag :computer_name, "Computer Name" do
+      = text_field_tag :computer_name, params[:computer_name], class: "form-control"
+      
+    = field_group_inline_tag :dids, "Dids" do
+      = text_field_tag :dids, params[:dids], class: "form-control"

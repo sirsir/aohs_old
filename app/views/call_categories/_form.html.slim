@@ -1,0 +1,14 @@
+= panel_form do
+  = form_for(@call_category, layout: :horizontal, errors: {icons: false}) do |f|
+
+    = f.legend 'Detail'
+    
+    = f.text_field :title, label: "Title", placeholder: '', required: true, maxlength: 100, disabled: @call_category.locked?
+    
+    = f.text_field :code_name, label: "Code", placeholder: '', help: 'Short or alias title', maxlength: 50, disabled: @call_category.locked?
+    
+    = f.text_field :category_type, label: "Type", placeholder: ''
+    
+    = f.color_field :fg_color, label: "Color"
+    
+    = f.submit "OK", class: "submit" 

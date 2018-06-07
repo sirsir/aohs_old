@@ -1,0 +1,19 @@
+div class="panel-evaluation-reports"
+  h3 Auto Assessment Report by Question
+  
+  div class="row"
+    div class="col-sm-10"
+      form class="form-inline" action="javascript:void(0);"
+
+        div class="form-group"
+          = label_tag 'Call Date Range', nil, class: "label-control text-space"
+          = text_field_tag 'fl-date-range', nil, class: 'form-control', "data-default-daterange": default_input_date_range(:this_month)          
+        div class="form-group"
+          = label_tag 'Type', nil, class: "label-control text-space"
+          = select_tag :call_type, options_for_select(["Sale (TM)","Service (CS)"]), class: 'form-control'
+          
+    div class="col-sm-2 text-right"  
+      = render partial: 'buttons'
+  
+  div class="row"
+    = render partial: 'table_template'

@@ -1,0 +1,25 @@
+# default setting
+# if you want to modify it, please change it in settings directory
+
+site:
+  codename:               aeoncol
+  company:                AmiVoice Thai Co,.Ltd
+  description:            Demo Server
+  short_description:              
+  title:                  AOHS
+  relative_url:           aohs
+
+server:
+  docroot:                http://192.168.1.88
+  database:
+    adapter:              mysql2
+    dbname:               aohsdb_dev2
+    hostname:             192.168.1.50
+    username:             mysqladmin
+    password:             Password@1
+  es:
+    host:                 192.168.1.54:9200
+    username:             none
+    password:             none
+    enable:               true
+    prefix:               as

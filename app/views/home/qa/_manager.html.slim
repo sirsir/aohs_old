@@ -1,0 +1,29 @@
+script type="text/template" id="template-list-qaagent"
+  = hb 'this' do
+    tr
+      td
+        = hb 'display_name'
+      td
+        = hb 'group_name'
+      td
+        = hb 'total_all'
+          
+div class="row"
+  div class="col-sm-12"
+    h3 QA Manager
+
+div class="row"
+  div class="col-sm-12"
+    h4 Daily Usage (Number of Evaluated Calls)
+    div id="chart-evaluation-count"
+  
+div class="row"
+  div class="col-sm-12"
+    table class="table" id="tbl-qa-agent"
+      thead
+        tr
+          th QA Agent
+          th Group
+          th Evaluated Call
+      tbody
+          

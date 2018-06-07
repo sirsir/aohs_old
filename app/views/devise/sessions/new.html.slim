@@ -1,0 +1,50 @@
+div class="row"
+  div class="col-sm-12"
+    div class="panel-site-info"
+      table
+        tr
+          td
+            = image_tag("logo/#{company_logo_path}")
+          td
+            h3 #{Settings.site.company}
+            h4 #{Settings.site.description}
+
+div class="row"
+  div class="col-md-4"
+  
+  div class="panel-login col-md-4"
+    div class="form-login"
+    
+      div class="apptitle"
+        | AmiVoice<sup>&reg;</sup> Operator's Help System
+      
+      div style="max-width:20em; margin-left:auto; margin-right:auto;"
+        = form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: 'form' }) do |f|
+          - locs = other_site_locations
+          - unless locs.empty?
+            div class="form-group"
+              = select_tag :site_redirect_to, options_for_select(locs.collect{ |l| [l[:display_name], l[:url]] },current_site_location), include_blank: false, class: "form-control"
+          div class="form-group"
+            = f.label :username, class: "col-sm-2x control-labelx"
+            = f.text_field :login, autofocus: true,  class: "form-control"
+          div class="form-group"
+            = f.label :password, class: "col-sm-2x control-labelx"
+            = f.password_field :password, autocomplete: "off",  class: "form-control"
+          div class="form-group"
+            div class="checkbox"
+              label
+                = f.check_box :remember_me
+                | Remember Me
+          div class="form-group"
+            = f.submit "Log in", class: "btn btn-primary", id: "btn-login"
+                  
+        - unless flash.empty?
+          div class="alert alert-warning text-center"
+            - flash.each do |name, msg|
+              div id="flash_#{name}"
+                | #{msg}
+      - unless (browser.modern? or browser.chrome? or browser.firefox? or browser.edge? or browser.ie?([">10"]))
+        div class="alert alert-warning text-center"
+          | Your browser is not supported. Please use Chrome, Firefox, Microsoft Edge or Internet Explorer 11+ .
+          
+  div class="col-md-4"

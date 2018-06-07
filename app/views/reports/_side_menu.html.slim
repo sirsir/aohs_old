@@ -1,0 +1,78 @@
+div class="block-left-side-menu hidden-panel animated" id="block-left-side-menu"
+  = icon 'list', class: 'icon-expand'
+  div class="block-left-side-inner"
+    ul class="list-group"
+      li
+        span.list-header data-menu-selector="calls"
+          = icon 'phone-square', class: "text-marg-r"
+          | Call Recording Reports
+          span class="ico-showhide"
+            = icon 'chevron-down'
+        ul class="list-items"
+          = li_report_tag "Call Overview", { controller: 'reports', action: 'call_overview' , report_for: 'calls' }
+          = li_report_tag "Agent Call Summary", { controller: 'reports', action: 'agent_call_summary' , report_for: 'calls' }
+          = li_report_tag "Agent Call Hourly Summary", { controller: 'reports', action: 'hourly_call_summary' , report_for: 'calls' }
+          / = li_report_tag "Agent Call Usage", { controller: 'reports', action: 'agent_call_usage' }
+          / = li_report_tag "Group Call Summary", { controller: 'reports', action: 'group_call_summary' }
+          = li_report_tag "Top Repeated Outbound Call", { controller: 'reports', action: 'top_repeated_outbound' , report_for: 'calls' }
+          = li_report_tag "Call Tag Summary", { controller: 'reports', action: 'call_tags' , report_for: 'calls' }
+          / = li_report_tag "Top Repeated Inbound Call", { controller: 'reports', action: 'top_repeated_inbound' }
+          / = li_report_tag "Private Call Summary", { controller: 'reports', action: 'private_call_summary' }
+      li
+        span.list-header data-menu-selector="keywords"
+          = icon 'comment', class: "text-marg-r"
+          | Keyword Reports
+          span class="ico-showhide"
+            = icon 'chevron-down'
+        ul class="list-items"
+          = li_report_tag "Top Keyword Summary Report by Agent", { controller: 'reports', action: 'agent_keyword_summary' , report_for: 'keywords' }
+      li
+        span.list-header data-menu-selector="recommendation"
+          = icon 'comment', class: "text-marg-r"
+          | Recommendation Reports
+          span class="ico-showhide"
+            = icon 'chevron-down'
+        ul class="list-items"
+          = li_report_tag "Recommendation Summary Report by Agent", { controller: 'reports', action: 'notif_rec_summary', report_for: 'recommendation' }
+          = li_report_tag "Keyword Alert Summary Report by Agent", { controller: 'reports', action: 'notif_keyword_summary', report_for: 'recommendation' }
+      li
+        span.list-header data-menu-selector="evaluations"
+          = icon 'check-circle', class: "text-marg-r"
+          | Agent Evaluation Reports
+          span class="ico-showhide"
+            = icon 'chevron-down'
+        ul class="list-items"
+          - if display_for?(:aeon)
+            h5 CMS
+            = li_report_tag 'Agent Evaluation Detail Report By Question', { controller: 'evaluation_reports', action: 'agent_detail', col_by: 'question', calc: 'total' , report_for: 'evaluations' }
+            = li_report_tag 'Agent Evaluation Detail Report By Group Question', { controller: 'evaluation_reports', action: 'agent_detail', col_by: 'group_question', 'calc': 'total' , report_for: 'evaluations' }
+            = li_report_tag 'Agent Evaluation Summary Report By Question', { controller: 'evaluation_reports', action: 'agent_summary', col_by: 'question', calc: 'total' , report_for: 'evaluations' }
+            = li_report_tag 'Agent Evaluation Summary Report By Group Question', { controller: 'evaluation_reports', action: 'agent_summary', col_by: 'group_question', 'calc': 'total' , report_for: 'evaluations' }
+            = li_report_tag 'Group Summary Report By Question', { controller: 'evaluation_reports', action: 'group_summary', col_by: 'question', 'calc': 'total' , report_for: 'evaluations' }
+            = li_report_tag 'Group Summary Report By Group Question', { controller: 'evaluation_reports', action: 'group_summary', col_by: 'group_question', 'calc': 'total' , report_for: 'evaluations' }
+            = li_report_tag 'QA Agent Performance Summary Report', { controller: 'evaluation_reports', action: 'evaluator_summary' , report_for: 'evaluations' }
+
+          - if display_for?([:aeoncol,:acss])
+            h5 QMS
+            = li_report_tag 'Agent Evaluation Detail Report', { controller: 'evaluation_reports', action: 'agent_detail', col_by: 'group_question', 'calc': 'total' , report_for: 'evaluations' }
+            = li_report_tag 'Agent Evaluation Summary Report', { controller: 'evaluation_reports', action: 'agent_summary', col_by: 'group_question', 'calc': 'total', report_for: 'evaluations' }
+            = li_report_tag 'Agent Evaluation Summary Report by Answer', { controller: 'evaluation_reports', action: 'acs_evaluation_summary' , report_for: 'evaluations' }
+            = li_report_tag 'Agent Summary Report (Duration, Greeting and NG Usage)', { controller: 'evaluation_reports', action: 'acs_agent_call_summary' , report_for: 'evaluations' }
+            = li_report_tag 'Greeting Summary Report', { controller: 'evaluation_reports', action: 'acs_greeting' , report_for: 'evaluations' }
+            = li_report_tag 'NG Word Usage Report', { controller: 'evaluation_reports', action: 'attachment_list', ngword_usage: "yes" , report_for: 'evaluations' }
+            = li_report_tag 'NG Word Usage Summary Report By Group', { controller: 'evaluation_reports', action: 'acs_ngusage_summary' , report_for: 'evaluations' }
+            = li_report_tag 'QMS Summary Report', { controller: 'evaluation_reports', action: 'acs_call_summary' , report_for: 'evaluations' }
+            = li_report_tag 'Monitoring Summary Report by QA Agent', { controller: 'evaluation_reports', action: 'evaluator_call_summary', row_by: 'qa_agent' , report_for: 'evaluations' }
+            = li_report_tag 'Monitoring Summary Report by Agent', { controller: 'evaluation_reports', action: 'evaluator_call_summary', row_by: 'agent' , report_for: 'evaluations' }
+            = li_report_tag 'QA Agent Performance Summary Report', { controller: 'evaluation_reports', action: 'evaluator_summary' , report_for: 'evaluations' }
+            = li_report_tag 'Checking Summary Report by QA Agent', { controller: 'evaluation_reports', action: 'check_summary', row_by: 'qa_agent' , report_for: 'evaluations' }
+            = li_report_tag 'Checking Summary Report by Agent', { controller: 'evaluation_reports', action: 'check_summary', row_by: 'agent' , report_for: 'evaluations' }
+            
+      li
+        span.list-header data-menu-selector="others"
+          = icon 'line-chart', class: "text-marg-r"
+          | Other
+          span class="ico-showhide"
+            = icon 'chevron-down'
+        ul class="list-items"
+          = li_report_tag "Monitoring Activity", { controller: 'reports', action: 'monitoring_usage' , report_for: 'others' }

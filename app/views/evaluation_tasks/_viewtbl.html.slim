@@ -1,0 +1,27 @@
+= panel_tableview do
+  - unless @tasks.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :title, label: "Title"
+          = th_tag :desciption, label: "Description"
+          - if can_manage?
+            = th_tag :enable, label: "Enable"
+            = th_tag :action
+      tbody
+        - @tasks.each_with_index do |t,i|
+          tr
+            td.no
+              = row_no(i)
+            td.title
+              = t.title
+            td
+              = t.description
+            - if can_manage?
+              td.td-enabled
+                = check_box_tag :enable_task, "enabled", t.schedule_enabled?,  { 'data-task-id': t.id, 'data-toggle':'toggle', 'data-on':'Enabled', 'data-off':'Disabled', 'data-size':'normal', 'data-height':'20', 'data-width':'90' }
+              td.doact
+                = rowmnt_button_tag(t,'ed')
+  - else
+    = no_record_tag

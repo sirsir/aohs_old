@@ -1,0 +1,11 @@
+= panel_filter do
+  = form_filter_tag :custom_dictionaries, action: "index" do
+    
+    = field_group_inline_tag :word, "Word" do
+      = text_field_tag :word, params[:word], class: "form-control"
+
+    = field_group_inline_tag :spoken, "Spoken Word" do
+      = text_field_tag :spoken_word, params[:spoken_word], class: "form-control"
+
+    = field_group_inline_tag :type, "Type" do
+      = text_field_tag :class_map, params[:class_map], class: "form-control"

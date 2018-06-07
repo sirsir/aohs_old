@@ -1,0 +1,15 @@
+div id="call-download"
+  div class="call-download-box"
+    form class="form" action="#{js_void}"
+      div class="form-group"
+        label class="form-label"
+          | Download As
+        select id="dl-file-type" class="form-control"
+          option value="wav" WAV File (*.wav)
+          option value="spx" Speex File (*.spx)
+          option value="mp3" MP3 File (*.mp3)
+        
+      div class="form-group"
+        label
+        button class="btn btn-primary" id="btn-file-download"
+          | Download

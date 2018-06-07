@@ -1,0 +1,26 @@
+div class="mnt-menu"
+  = render partial: 'menu'
+  
+div class="mnt-cont"
+  = panel_tableview do
+    - unless @result.empty?
+      = table_tag :mnt do
+        thead
+          tr
+            = th_tag :no
+            = th_tag :name
+            = th_tag :message
+            = th_tag :last_processed_time
+        tbody
+          - @result.each_with_index do |r,i|
+            tr
+              td.no
+                = row_no(i)
+              td
+                = r.name
+              td
+                = r.message
+              td class="text-center"
+                = "#{r.last_processed_time.to_formatted_s(:web)} (#{distance_of_time_in_words_to_now(r.last_processed_time)})"
+    - else
+      = no_record_tag

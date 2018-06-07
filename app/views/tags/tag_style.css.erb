@@ -1,0 +1,20 @@
+<% @tags.each do |t| %>
+.bg-tag-<%=t.id %>,
+.text-symbol[data-tag-id="<%= t.id %>"] {
+  background-color: <%=t.display_color_code %>;
+  display: inline-block;
+  padding: 0.2em;
+  padding-bottom: 0em;
+  border-radius: 0.35em;
+  margin-right: 0.2em;
+  margin-bottom: 0.2em;
+  
+  a {
+    color: inherit;
+  }
+}
+
+.bd-left-tag[data-tag-id="<%= t.id %>"] {
+  border-left: 0.4em solid <%=t.display_color_code %>;
+}
+<% end %>

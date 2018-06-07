@@ -1,0 +1,36 @@
+= render partial: 'reports/default'
+
+div class="panel-evaluation-reports"
+  h3 QA Agent Performance Summary Report
+  
+  div class="row"
+    div class="col-sm-10"
+      form class="form-inline" action="javascript:void(0);"
+
+        div class="form-group"
+          = label_tag 'View', nil, class: "label-control text-space"
+          select id="fl-period-view" name="fl-period-view" class="form-control"
+            option value="summary" Summary
+            option value="daily" selected="selected" Daily
+            option value="weekly" Weekly
+            option value="monthly" Monthly
+
+        div class="form-group"
+          = label_tag 'Call Date Range', nil, class: "label-control text-space"
+          = text_field_tag 'fl-date-range', nil, class: 'form-control', "data-default-daterange": default_input_date_range(:this_week, false)                       
+        
+        div class="form-group"
+          = label_tag 'Form', nil, class: "label-control text-space"
+        div class="form-group"
+          = select_tag 'fl-evaluation-form', nil, class: 'form-control'
+
+        div class="form-group"
+          = label_tag "QA Agent Name", "QA Agent Name", class: "label-control text-space"
+        div class="form-group"
+          = select_tag 'fl-evaluator-id', options_for_select(User.evaluator_options), include_blank: true, class: 'form-control'
+
+    div class="col-sm-2 text-right"  
+      = render partial: 'buttons'
+  
+  div class="row"
+    = render partial: 'table_template'

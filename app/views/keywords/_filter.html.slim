@@ -1,0 +1,8 @@
+= panel_filter do
+  = form_filter_tag :tag, action: "index" do
+    
+    = field_group_inline_tag :name, "Keyword" do
+      = text_field_tag :name, params[:name], class: "form-control"
+    
+    = field_group_inline_tag :name, "Keyword type" do
+      = select_tag :keyword_type, options_for_select(KeywordType.type_options,params[:keyword_type]), { include_blank: true, class: 'form-control' }

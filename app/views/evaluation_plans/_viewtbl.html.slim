@@ -1,0 +1,35 @@
+= panel_tableview do
+  - unless @plans.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :name, label: "Title", order: true
+          = th_tag :description, label: "Description"
+          = th_tag :grade, label: "Grade", order: true
+          = th_tag :status, label: "Form Status", order: true
+          = th_tag :asst_status, label: "Auto Assessment Status", order: true
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @plans.each_with_index do |p,i|
+          tr
+            td.no
+              = row_no(i)
+            td.name
+              = p.name            
+            td
+              = p.description
+            td
+              = p.grade_title
+            td class="text-center"
+              span class="text-symbol" status-name="#{p.status_title.downcase}"
+                = p.status_title
+            td class="text-center"
+              span class="text-symbol" status-name="#{p.auto_assessment_status_name.downcase}"
+                = p.auto_assessment_status_name
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(p,'ed')
+  - else
+    = no_record_tag

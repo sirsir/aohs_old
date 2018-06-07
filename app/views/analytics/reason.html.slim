@@ -1,0 +1,51 @@
+div class="panel-analytics"
+  
+  div class="row"
+    div class="col-sm-12"
+      = render 'analytics/submenu'
+
+  div class="row"
+    div class="col-sm-10"
+      div class="filter-group"
+        div
+          label
+            | Type
+        div
+          select id="fl-period-type" name="fl-period-type" class="form-control"
+            option value="daily" Daily
+            option value="weekly" Weekly
+            option value="monthly" Monthly
+        div
+          label
+            | Date Range      
+        div
+          input type="text" class="form-control" id="fl-date-range" name="fl-date-range"
+        div
+          label
+            | Group
+        div
+          input type="text" class="form-control" id="fl-group-name" name="fl-group-name"
+        div
+          label
+            | Agent    
+        div
+          input type="text" class="form-control" id="fl-user-name" name="fl-user-name"
+
+    div class="col-sm-2"
+      div class="filter-act-group text-right"
+        div
+          button type="button" class="btn btn-primary" id="btn-search"
+            = icon "search"
+  
+  div class="row"
+    div class="col-sm-6"
+      h4
+        | Summary
+      div class="panel panel-default"
+        div class="body graph-block" id="gp-class-summary"
+        
+    div class="col-sm-6"
+      h4
+        | Trend
+      div class="panel panel-default"
+        div class="body graph-block" id="gp-class-trend"

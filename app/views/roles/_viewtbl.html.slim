@@ -1,0 +1,30 @@
+= panel_tableview do
+  - unless @roles.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :name, order: true
+          = th_tag :n_of_user, label: "Number of Users"
+          = th_tag :priority, order: true
+          = th_tag :role_type, label: "Type"
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @roles.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td.role-name
+              = r.name
+            td class="text-numeric"
+              = r.total_users
+            td class="text-center"
+              = r.priority_no.to_i
+            td class="text-center"
+              = r.role_type_name
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(r,'ed')
+  - else
+    = no_record_tag

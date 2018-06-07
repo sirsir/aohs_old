@@ -1,0 +1,69 @@
+div class="row"
+  div class="col-sm-12"
+    h3 STATISTIC
+    p
+     | Show graph of quantity.
+  
+div class="row"
+  div class="col-sm-12"
+    table
+      tr
+        td class="cl-form-filter"
+          div style="height: 30px;" 
+          /div class="form-group"
+            label
+              | Type
+            select name="team" class="form-control" id="stat-type"
+              option value="Call reason" Call reason
+              option value="Keyword" Keyword
+          div class="form-group"
+            label
+              | Date Range:
+            input type="text" value="from" class="form-control"
+            input type="text" value="to" class="form-control"
+          div class="form-group"
+            label
+              | View:
+            select name="type" class="form-control"
+              option value="Year" Year
+              option value="Quater" Quater
+              option value="Monthly" Monthly
+              option value="Weekly" Weekly
+          div class="form-group"
+            label
+              | Group
+            select name="team" class="form-control"
+              option value="All" All
+              option value="TeamA" TeamA
+              option value="TeamB" TeamB
+              option value="TeamC" TeamC
+              option value="TeamD" TeamD
+          div class="form-group"
+            label
+              | Agent
+            input type="text" class="form-control"
+          div
+            button type="button" class="btn btn-primary"
+              | Submit
+              
+        td class="cl-gp cl-gp-reason"
+          h4 id="s1topic" Call Reason
+          div class="panel-gp"
+            /div id="graphs1"
+            div id="sequence"
+            /div id="sidebar" class="pull-right"
+              div id="legend" style="visibility: show;"
+            div class="row"
+              div class="col-sm-12"
+                div id="main"
+                  div id="chart"
+                    div id="explanation" style="visibility: hidden;" 
+                      div id="percentage"
+                      | of calls
+            div class="row"
+              div id="gp-reason-legend"
+                      
+        td class="cl-gp cl-gp-trend"
+          h4 id="s2topic" Trend of Call Reason
+          div class="panel-gp"
+            div id="graphs2"

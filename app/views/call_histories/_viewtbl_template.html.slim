@@ -1,0 +1,114 @@
+= html_template "tbl-template" do
+
+  table class="table table-striped table-bordered table-hover table-default-all" cellspacing="0"
+    
+    thead
+      tr
+        th class="nosort col-row-no"
+          | No
+        th class="nosort col-action-btn"
+          | Action
+        - DisplayColumnTable.for(get_display_table).all.each do |col|
+          th data-col="#{col.field_name}" class="#{col.css_classes}"
+            = col.title
+    tbody
+      = hb 'voicelogs' do
+        tr id="row-no-#{hb 'no'}" data-row-no="#{hb 'no'}" data-voice-id="#{hb 'id'}" class="#{hb 'kls'}"
+          td
+            = hb 'no'
+            = hb 'if sbflg'
+              span class="btn_subcall"
+                = icon 'minus-circle'
+            - if @qa_enable
+              span class="ico-evl-status #{hb 'evl.status'}"          
+                = hb 'icon evl.status'
+
+          td class="voice-log-buttons text-center"
+            = hb 'if permiss'
+              span class="button-play-sound"
+              a class="button-show-detail" href="#" rel="noreferrer" target="_blank"
+            = hb 'unless permiss'
+              span class="button-noauth"
+          - DisplayColumnTable.for(get_display_table).all.each do |col|
+            - case col.field_name
+            - when "caller_no"
+              td class="telno-type" data-number-type="#{ hb 'caller_no_type'}"
+                = hb 'caller_no'
+            - when "dialed_no"
+              td class="telno-type" data-number-type="#{ hb 'dialed_no_type'}"
+                = hb 'dialed_no'
+            - when "cd"
+              td class="text-center text-#{hb 'cd_css'}b"
+                = hb 'cd'
+            - when "tags"
+              td
+                = hb 'tags' do
+                  span class="text-tag bg-tag-#{hb 'id'}" title="#{ hb 'name'}"
+                    = hb 'name'
+            - when "ctype"
+              td
+                = hb 'ctype' do
+                  span class="text-symbol" data-call-category="#{ hb 'title' }" title="#{ hb 'title'}"
+                    = hb 'title'
+            - when "emotion.id"
+              td class="text-center"
+                div class="emotion-icon-sm emotion-#{ hb 'emotion.id'}"
+            - when "private_call"
+              td class="text-center"
+                button type="button" class="btn btn-xs btn-default btn-private-call-cb" data-voice-id="#{ hb 'id' }"
+                  = hb 'unless private_call' do
+                    = icon 'square-o'
+                  = hb 'if private_call' do
+                    = icon 'check'
+            - else
+              td
+                = hb "html_safe #{col.field_name}"
+        = hb 'if evl.other_flg'
+            = hb 'evl.other' do
+              tr
+                td
+                  - if @qa_enable
+                    span class="ico-evl-status #{hb 'evl.status'}"            
+                      = hb 'icon evl.status'
+                td
+                - DisplayColumnTable.for(get_display_table).all.each do |col|
+                  td
+                    = hb "#{col.field_name}"
+        = hb 'if sbflg'
+            = hb 'childs' do
+              tr class="child-row-no-#{hb '../no'}" data-voice-id="#{hb 'id'}" class="#{hb 'kls'}"
+                td
+                  - if @qa_enable
+                    span class="ico-evl-status #{hb 'evl.status'}"
+                      = hb 'icon evl.status'
+                td class="voice-log-buttons text-center"
+                  = hb 'if permiss'
+                    = hb 'if hasfile'
+                      span class="button-play-sound"
+                      span class="button-show-detail"
+                      - if Settings.callsearch.show_favourite
+                        span class="button-fav-call #{hb 'fav'}"
+                  = hb 'unless permiss'
+                    span class="button-noauth"
+                - DisplayColumnTable.for(get_display_table).all.each do |col|
+                  - case col.field_name
+                  - when "cd"
+                    td class="text-center text-#{hb 'cd_css'}b"
+                      = hb 'cd'
+                  - when "tags"
+                    td
+                      = hb 'tags' do
+                        span class="text-tag bg-tag-#{hb 'id'}"
+                          = hb 'name'
+                  - when "ctype"
+                    td
+                      = hb 'ctype' do
+                        span class="text-symbol" data-call-category="#{ hb 'title' }"
+                          = hb 'title'
+                  - when "emotion.id"
+                    td class="text-center"
+                      div class="emotion-icon-sm emotion-#{ hb 'emotion.id'}"
+                      
+                  - else
+                    td
+                      = hb "html_safe #{col.field_name}"

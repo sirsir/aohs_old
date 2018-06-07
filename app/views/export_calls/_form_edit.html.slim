@@ -1,0 +1,80 @@
+= render partial: 'export_calls/subform_cond'
+
+= panel_form do
+  
+  div class="panel mainform"
+  
+    = form_tag({action: 'update', id: params[:id] }, name: :task, id:'export_task', class: 'form-horizontal', remote: true, method: :put) do
+      = token_tag
+      
+      div class="box-subform"
+      
+        h4 Details
+        = horizontal_bar
+            
+        div class="form-group mg-top"
+          label class="control-label col-sm-2" Title
+          div class="col-sm-10" id="gp-name"
+            = text_field_tag "name", @task.name, class: "form-control", required: true
+
+        div class="form-group"
+          label class="control-label col-sm-2" Category
+          div class="col-sm-10" id="gp-category"
+            = text_field_tag "category", @task.category, class: "form-control", required: true
+    
+        div class="form-group"
+          label class="control-label col-sm-2" Description
+          div class="col-sm-10"
+            = text_area_tag "description", @task.desc, class: "form-control"
+          
+        div class="box-subform-title"
+          h4 Condition(s)
+
+        div class="form-group"
+          div class="col-sm-2"
+          div class="col-sm-10"
+            input type="hidden" name="export_condition" id="export_condition" value="#{@task.get_conditions_string}"
+            table class="table table-bordered table-default-all" id="tbl-export-condition"
+              thead
+                tr
+                  th Date
+                  th Remark
+                  th Action
+              tbody
+            button type="button" class="btn btn-primary" id="btn-newcond"
+              | New
+            div class="help-block"
+              | Require at least one condition to perform export.
+              
+        div class="box-subform-title"
+          h4 Output
+
+        div class="form-group mg-top"
+          label class="control-label col-sm-2" File Path
+          div class="col-sm-10" id="gp-filename"
+            = text_field_tag "filename", @task.filename, class: "form-control", required: true
+            div class="help-block"
+              div
+                = "Symbol: <CALL-DATE>, <CALL-TIME>, <CALL-DATETIME>, <EXTENSION>, <CALLID>, <DIRECTION>, <ANI>, <DNIS>, <AGENT-NAME>, <RANDSTR>"
+              div
+                = "Format: path/to/filename"
+              div
+                = "Example: <CALL-DATE>/<CALL-DATETIME>_<ANI>_<DNIS>"
+            
+        div class="form-group"
+          label class="control-label col-sm-2" Audio Format
+          div class="col-sm-10"
+            = select_tag :audio_type, options_for_select(["WAV", "SPX", "MP3"].sort), class: "form-control"
+
+        div class="form-group"
+          label class="control-label col-sm-2" Compression Format
+          div class="col-sm-10"
+            = select_tag :compress_type, options_for_select(["Zip", "Tar", "Gzip","Bzip2", "7-Zip"].sort), class: "form-control"
+            div class="help-block"
+              | To compress directory
+
+        div class="form-group"
+          div class="col-sm-2"
+          div class="col-sm-10"
+            - if not @task.in_progress? and not @task.finished?
+              = button_tag "OK", class: "btn btn-primary"

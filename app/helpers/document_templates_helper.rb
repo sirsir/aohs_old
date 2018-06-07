@@ -1,0 +1,2 @@
+module DocumentTemplatesHelper
+end

@@ -1,0 +1,30 @@
+div class="mnt-menu"
+  = render partial: 'menu'
+  
+div class="mnt-cont"
+  div class="row"
+    div class="col-sm-12 panel panel-default"
+      table class="table"
+        tr
+          td style="width: 15%;"
+            label Environment
+          td
+            = Rails.env
+        tr
+          td
+            label Version
+          td
+            | N/A
+        tr
+          td
+            label Company
+          td
+            div
+              = image_tag "logo/#{Settings.site.logo_file}", width: "50"
+            div style="padding-top: 1em;"
+              = Settings.site.company
+        tr
+          td
+            label Description
+          td  
+            = Settings.site.description

@@ -1,0 +1,296 @@
+= hbs_template "template_data_summary_by_date" do
+  table class="table table-default tbl-mnt table-striped table-bordered table-condensed"
+    thead
+      th Call Date
+      th Total Record(s)
+      th Total Duration
+      th Avg Duration
+    tbody
+      = hb 'this.data' do
+        tr
+          td
+            = hb 'call_date'
+          td class="text-right"
+            = hb 'record_count'
+          td class="text-right"
+            = hb 'total_duration_text'
+          td class="text-right"
+            = hb 'avg_duration'
+    tfoot
+      = hb 'this.summary' do
+        tr
+          td Grand Total
+          td class="text-right"
+            = hb 'record_count'
+          td class="text-right"
+            = hb 'total_duration_text'
+          td class="text-right"
+            = hb 'avg_duration'
+
+= hbs_template "template_table_avail_users" do
+  table class="table table-default table-hover table-striped table-bordered table-condensed"
+    thead
+      tr
+        th Name
+        th Pending Tasks
+        th.th-move-btn Select
+        th New Tasks
+        th Total Tasks
+        th.th-move-btn Unselect
+        th ID
+    tbody
+      = hb 'this' do
+        tr
+          td
+            = hb 'display_name'
+          td
+            = hb 'pending_count'
+          td class="td-btn-move text-center td-move-btn"
+            button type="button" class="btn btn-xs btn-default btn-select"
+              = icon 'arrow-right'
+          td
+            = hb 'new_task'
+          td
+            = hb 'total_task'
+          td class="td-move-btn"
+            button type="button" class="btn btn-xs btn-default btn-unselect"
+              = icon 'arrow-left'
+          td
+            = hb 'id'
+script type="text/json" id="src-evaluators"
+  = @evaluators.to_json.html_safe
+
+div class="row"
+  div class="col-sm-12"
+    div class="row"
+      div class="col-sm-12"
+        div class="block-asg-step"
+          div id="box-step-1" class="item-step selected" Case Selection
+          div class="item-line"
+          div id="box-step-2" class="item-step" Assignment
+          div class="item-line"
+          div id="box-step-3" class="item-step" Options
+          div class="item-line"
+          div id="box-step-4" class="item-step" Complete
+
+    = form_for(@task, layout: :horizontal, errors: {icons: false}) do |f|
+      = hidden_field_tag :task_type, @task.task_type
+      div id="block-page-1" class="block-step-page block-data-filter"
+        div class="form-group"
+          label class="label-control col-sm-12"
+            | Assignment Case
+          div
+            - EvaluationTask.get_assigenment_cases.each_with_index do |cse, idx|
+              div class="col-sm-3"
+                label
+                  = radio_button_tag "case_name", cse[:name], (idx == 0 || cse[:name] == @task.task_options["case_name"])
+                  = cse[:label]
+        
+        div class="form-group"
+          label class="label-control col-sm-12"
+            | Data Filter
+          div class="field-group"
+            - unless schedule_task?
+              div class="row"
+                label class="col-sm-2 control-label"
+                  | Date Range
+                div class="col-sm-4"
+                  input type="text" name="data_datetimerange" class="form-control input-date-rank" required="required"
+                label class="col-sm-2 control-label"
+                  | Extension(s)
+                div class="col-sm-4"
+                  = text_field_tag "data_extension", @task.task_options["filter_extension"], class: 'form-control', maxlength: 120
+                  span class="help-block"
+                    | Example: 1234, 5678
+            - else
+              div class="row"
+                label class="col-sm-2 control-label"
+                  | Extension
+                div class="col-sm-4"
+                  = text_field_tag "data_extension", @task.task_options["filter_extension"], class: 'form-control', maxlength: 120
+                  span class="help-block"
+                    | Example: 1234, 5678
+            div class="row"
+              label class="col-sm-2 control-label"
+                | Caller No.
+              div class="col-sm-4"
+                = text_field_tag "data_ani", @task.task_options["filter_ani"], class: 'form-control', maxlength: 120
+                span class="help-block"
+                  | Example: 0212345678, 0812345678
+              label class="col-sm-2 control-label"
+                | Dialed No.
+              div class="col-sm-4"
+                = text_field_tag "data_dnis", @task.task_options["filter_dnis"], class: 'form-control', maxlength: 120
+                span class="help-block"
+                  | Example: 0212345678, 0812345678
+            div class="row"
+              label class="col-sm-2 control-label"
+                | Duration (From:To)
+              div class="col-sm-2"
+                = text_field_tag "data_duration_from", @task.task_options["filter_duration_from"], class: 'form-control', type: 'number', min: 0
+                span class="help-block" Unit: minute
+              div class="col-sm-2"
+                = text_field_tag "data_duration_to", @task.task_options["filter_duration_to"], class: 'form-control', type: 'number', min: 0
+                span class="help-block" Unit: minute
+            div class="row"
+              label class="col-sm-2 control-label"
+                | Group
+              div class="col-sm-4"
+                = select_tag "data_group_id", options_for_select(Group.all_group_options, @task.task_options["filter_group_id"]), include_blank: true, class: 'form-control'            
+              label class="col-sm-2 control-label"
+                | Agent's Name
+              div class="col-sm-4"
+                = select_tag "data_agent_id", options_for_select(User.user_options, @task.task_options["filter_agent_id"]), include_blank: true, class: 'form-control'
+
+        / div class="form-group"
+          label class="label-control col-sm-12"
+            | Auto Assessment Selection
+          div class="col-sm-12"
+            label
+              = check_box_tag "evaluated_by", "auto_asst", false
+              | Only evaluated by system
+
+        div class="form-group"
+          - unless schedule_task?
+            label class="label-control col-sm-12"
+              | Selected Data Summary by Date
+            div class="col-sm-12"
+              div id="block-tbl-data-bydate"
+              div id="block-no-result-select" class="panel panel-info"
+                div class="panel-body text-center"
+                  | No selected data.
+
+        div class="form-group text-center"
+          div class="pull-right"
+            - unless schedule_task?
+              button type="button" id="btn-assign-check-data" class="btn btn-info" Search
+            button type="button" id="btn-assign-next-assign" class="btn btn-primary" Next
+
+      div id="block-page-2" class="block-step-page block-user-select hide-block"
+        div class="form-group" id="form-group-data-select"
+          label class="label-control col-sm-12" Data Selection
+          div class="col-sm-3"
+            label
+              = radio_button_tag "select_data_limit", "all", @task.task_options["assign_select"] == "all" || true
+              | All Records
+          div class="col-sm-3"
+            label
+              = radio_button_tag "select_data_limit", "limit_record", @task.task_options["assign_select"] == "limit_record"
+              | Limit Records
+            = text_field_tag "select_data_limit_count", @task.task_options["assign_limit_records"], class: 'form-control', type: 'number'
+            span class="help-block" id="help-select_data_limit"
+              | Unit: record
+          div class="col-sm-3"
+            label
+              = radio_button_tag "select_data_limit", "limit_duration", @task.task_options["assign_select"] == "limit_duration"
+              | Limit Duraion (Hours)
+            = text_field_tag "select_data_limit_duration", @task.task_options["assign_limit_duration"], class: 'form-control', type: 'number'
+            span class="help-block" id="help-select_duration_limit"
+              | Unit: hour
+        div class="form-group"
+          label class="label-control col-sm-12"
+            | Assigment Method
+          div class="col-sm-3"
+            label
+              = radio_button_tag "limit_select_type", "sequential",  @task.task_options["assign_method"] == "sequential" || true
+              | Sequential
+          div class="col-sm-3"
+            label
+              = radio_button_tag "limit_select_type", "distribution",  @task.task_options["assign_method"] == "distribution"
+              | Distribution
+
+        div class="form-group" id="form-group-perperson"
+          label class="label-control col-sm-12"
+            | Allocate By
+          div class="col-sm-6"
+            div class="row"
+              div class="col-sm-6"
+                label
+                  = radio_button_tag "per_person_by", "avg_record",  @task.task_options["assign_perperson"] == "avg_record" || true
+                  | Average of records
+              div class="col-sm-6"
+                label
+                  = radio_button_tag "per_person_by", "custom_record",  @task.task_options["assign_perperson"] == "custom_record"
+                  | Custom records
+                = text_field_tag "assign_custom_record", @task.task_options["assign_custom_records"], class: 'form-control', type: 'number'
+                span class="help-block"
+                  | Unit: record
+          div class="col-sm-6"
+            div class="row"
+              div class="col-sm-6"
+                label
+                  = radio_button_tag "per_person_by", "avg_duration",  @task.task_options["assign_perperson"] == "avg_duration"
+                  | Average of duration
+              div class="col-sm-6"
+                label
+                  = radio_button_tag "per_person_by", "custom_duration",  @task.task_options["assign_perperson"] == "custom_duration"
+                  | Custom duration
+                = text_field_tag "assign_custom_duration", @task.task_options["assign_custom_duration"], class: 'form-control', type: 'number'
+                span class="help-block"
+                  | Unit: hour
+          - if schedule_task?
+            div class="col-sm-3"
+              label
+                = radio_button_tag "per_person_by", "agent_available",  @task.task_options["assign_perperson"] == "agent_available"
+                | When Agent Available
+                
+        div class="form-group"
+          label class="label-control col-sm-12"
+            | Assign evaluator(s)
+          div class="col-sm-12"
+            div class="row"
+              div class="col-sm-5"
+                label Available Users
+                div class="block-user-list" id="block-available-users"
+              div class="col-sm-7 form-group" id="form-group-select-users"
+                label Assigned Users
+                div class="block-user-list" id="block-assigned-users"
+                
+        div class="form-group text-center"
+          div class="pull-right"
+            button type="button" id="btn-assign-prev-data" class="btn btn-primary" Previous
+            - unless schedule_task?
+              button type="button" id="btn-assign-check" class="btn btn-info" Check
+            button type="button" id="btn-assign-next-options" class="btn btn-primary" Next
+
+      div id="block-page-3" class="block-step-page block-summary hide-block"
+        div class="form-group col-sm-12"
+          label Detail
+        div class="form-group" id="field-group-title"
+          label class="control-label col-sm-2" Title
+          div class="col-sm-4"
+            = text_field_tag :task_title, @task.title, class: 'form-control', required: @task.schedule_task?
+        div class="form-group"
+          label class="control-label col-sm-2" Description
+          div class="col-sm-4"
+            = text_area_tag :task_description, @task.description, class: "form-control"
+        div class="form-group"
+          label class="col-sm-12"
+        div class="form-group" id="field-group-startdate"
+          label class="control-label col-sm-2"
+            | Start Date
+          div class="col-sm-4"
+            = text_field_tag :task_start_date, @task.start_date, class: 'form-control task-date-picker'
+            span class="help-block"
+              | Beginning date to start assignment. Default is today.
+        div class="form-group" id="field-group-enddate"
+          label class="control-label col-sm-2"
+            | Due Date
+          div class="col-sm-4"
+            = select_tag :duedate_type, options_for_select([["No due date",""],["Custom Date","custom"],["Within X days","within"]]), class: 'form-control'
+            = text_field_tag :task_end_date, @task.end_date, class: 'form-control task-date-picker hidden'
+            = text_field_tag :task_within_days, @task.task_options["task_expiry_in"].to_i, class: 'form-control hidden', type: 'number'
+            span class="help-block"
+              | Due date to finish after task assigned. 
+        div class="form-group text-center"
+          div class="pull-right"
+            button type="button" id="btn-assign-prev-assign" class="btn btn-primary" Previous
+            button type="button" id="btn-assign-next-submit" class="btn btn-success" Finish
+
+      div id="block-page-4" class="block-step-page block-summary hide-block"
+        div class="row"
+          div class="col-sm-12"
+            div class="panel panel-info"
+              div class="panel-body text-center"
+                | Assignment has been created.
+            

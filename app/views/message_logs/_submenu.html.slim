@@ -1,0 +1,12 @@
+- if is_index_action?
+  = paginate_panel_tag @message_logs
+  
+= nav as: :pills, class: 'navbar-mnt' do
+  - if can_view?
+    = nav_link_to :view
+
+  - if can_view? and is_index_action?
+    = nav_link_to :filter
+  
+  - if can_view?
+    = nav_link_to :download, params: { format: :csv }

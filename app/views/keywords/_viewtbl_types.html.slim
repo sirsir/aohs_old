@@ -1,0 +1,27 @@
+= panel_tableview do
+  - unless @keyword_types.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :name, label: "Keyword Type"
+          = th_tag :keyword_count, label: "Total Keywords"
+          = th_tag :desktop_alert, label: "Desktop Notifications"
+          = th_tag :action
+      tbody
+        - @keyword_types.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td
+              = r.name
+            td class="td-word-count text-center"
+              = r.keywords_count
+            td class="td-desktop-alert text-center"
+              - if r.enabled_desktop_notification?
+                span class="text-symbol" data-enabled-alert="#{r.enabled_desktop_notification?}"
+                  | Enabled
+            td.doact
+              div class="edit ico-btn-edit" act="edit" href="#{url_for(action: 'keyword_type', id: r.id)}"
+  - else
+    = no_record_tag

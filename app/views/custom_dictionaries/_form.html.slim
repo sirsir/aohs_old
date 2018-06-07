@@ -1,0 +1,12 @@
+= panel_form do
+  = form_for(@word, layout: :horizontal, errors: {icons: false}) do |f|
+
+    = f.legend 'Detail'
+    
+    = f.text_field :word, label: "Word", placeholder: '', required: true, help: 'Example: อินเทอร์เน็ต'
+
+    = f.text_field :spoken_word, label: "Spoken Word", placeholder: '', required: true, help: 'Example: อิน เทอ เหน็ด'
+
+    = f.text_field :class_map, label: "Type", placeholder: ''
+    
+    = f.submit "OK", class: "submit" 

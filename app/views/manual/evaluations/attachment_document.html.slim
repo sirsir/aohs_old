@@ -1,0 +1,116 @@
+h3
+  | Attachment Document
+
+p
+  | You can upload template to raise some documents after evaluate call for any purposes.
+
+p
+  ul
+    li
+      | Prepare template file for importing to the system in Excel format (.xlsx) only.
+    li
+      | In the template, you can edit field "[FIELD_NAME]" as below table.
+      p
+        table class="table table-striped table-bordered table-hover table-manual"
+          thead
+            tr
+              td
+                | Field Name
+              td
+                | Description
+          tbody
+            tr
+              td
+                | AGENT_NAME
+              td
+                | Agent's name
+            tr
+              td
+                | EMPLOYEE_ID
+              td
+                | Employee ID
+            tr
+              td
+                | GROUP_NAME
+              td
+                | Group
+            tr
+              td
+                | CITIZEN_ID
+              td
+                | Card ID or CItizen ID
+            tr
+              td
+                | AGENT_NAME
+              td
+                | Role
+            tr
+              td
+                | CALL_TIME, CALL_DATE, CALL_DATETIME
+              td
+                | Call start time (YYYY-mm-dd HH:MM:SS)
+            tr
+              td
+                | CALL_LENGTH, CALL_DURATION
+              td
+                | Call duration (HH:MM:SS)
+            tr
+              td
+                | CALLER_NO
+              td
+                | Caller No. (ANI)
+            tr
+              td
+                | DIALED_NO
+              td 
+                | Dialed No. (DNIS)
+            tr
+              td
+                | AGENT_PHONE_NUMBER, CUSTOMER_PHONE_NO
+              td 
+                | Phone number of agent or customer
+            tr
+              td
+                | EXTENSION_NO
+              td
+                | Phone Extension No.
+            tr
+              td
+                | CALL_DIRECTION
+              td
+                | Call diraction (Inbounrd or Outbound)
+            tr
+              td
+                | CUSTOMER_NAME
+              td
+                | Customer's name
+            tr
+              td
+                | SUMMARY_COMMENT, QUESTION_COMMENTS
+              td
+                | All comments that written by evaluator
+            tr
+              td
+                | GRADE
+              td
+                | Grade
+            tr
+              td
+                = "<QUESTION_CODE>"
+              td
+                | Question result (only title)
+            tr
+              td
+                = "<QUESTION_CODE> _COMMENT"
+              td
+                | Comment's question
+            tr
+              td
+                | TIME_STAMP
+              td
+                | Last updated time
+    li
+      | See example as below picture.
+      p
+        div
+          = image_tag 'manuals/doc_attach_excel.png', class: 'pic-mn-80'

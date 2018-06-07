@@ -1,0 +1,2 @@
+module CallTagsHelper
+end

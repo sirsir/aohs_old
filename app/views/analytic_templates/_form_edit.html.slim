@@ -1,0 +1,48 @@
+= panel_form do
+  = form_for(@template, layout: :horizontal, errors: {icons: false}) do |f|
+
+    = f.legend 'Detail'
+    
+    = f.text_field :title, label: "Title", placeholder: ''
+
+    = f.select :speaker_type, SystemConst.speaker_options, { include_blank: true } ,label: "Speaker Type", placeholder: ''
+    
+    = f.legend 'Pattern(s)'
+    
+    div class="row"
+      div class="col-sm-12"
+        ul class="nav nav-tabs"
+          li class="active" 
+            a data-toggle="tab" href="#match" Match
+          li
+            a data-toggle="tab" href="#similar" Similar
+        
+        div class="tab-content"
+          div class="tab-pane active" id="match"
+            table id="tbl-text-match" class="table table-edit table-striped table-condensed table-hover"
+              tbody
+                - @text_matchs.each do |txt|
+                  tr
+                    td
+                      textarea name="textmatch[]" class="form-control" row="1"
+                        = txt.pattern
+              tfoot
+                tr
+                  td
+                    button type="button" class="btn btn-default" id="btn-add-text-match"
+                      | Add
+                      
+          div class="tab-pane" id="similar"
+            table id="tbl-text-similar" class="table table-edit table-striped table-condensed table-hover"
+              tbody
+                - @text_similars.each do |txt|
+                  tr
+                    td
+                      textarea name="textsimilar[]" class="form-control" row="1"
+                        = txt.pattern
+              tfoot
+                tr
+                  td
+                    button type="button" class="btn btn-default" id="btn-add-text-similar"
+                      | Add
+    = f.submit "OK", class: "submit" 

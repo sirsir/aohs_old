@@ -1,0 +1,44 @@
+= panel_form do
+  = form_for(@grade_setting, layout: :horizontal, errors: {icons: false}) do |f|
+
+    = f.legend 'Detail'
+    
+    = f.text_field :title, label: "Title", placeholder: '', required: true, maxlength: 100
+
+    = f.legend 'Scale Settings'
+    
+    div class="row"
+      div class="col-sm-9 col-sm-offset-3"
+        div class="help-block"
+          | Range of score must between 0 and 100
+        table class="table" id="tbl-form-grade"
+          thead
+            th Title
+            th Max Score
+            th Action
+          tbody
+            - if defined? @score_range
+              - @score_range.each do |sc|
+                tr
+                  td
+                    input type="text" name="form_grade_title[]" class="form-grade-title form-control" maxlength="15" value="#{sc.name}"
+                  td
+                    input type="number" name="form_grade_upper[]" class="form-grade-upper form-control" value="#{sc.upper_bound.to_i}"
+                  td
+                    button type="button" class="btn btn-danger btn-remove-grade"
+                      = icon 'minus'
+          tfoot id="row_grade" style="display:none;"
+            tr
+              td
+                input type="text" name="form_grade_title[]" class="form-grade-title form-control" maxlength="15"
+              td
+                input type="number" name="form_grade_upper[]" class="form-grade-upper form-control"
+              td
+                button type="button" class="btn btn-danger btn-remove-grade"
+                  = icon 'minus'
+
+        button type="button" class="btn btn-primary" id="btn-add-grade"
+          = icon 'plus'
+
+    = f.submit "OK", class: "submit"
+    

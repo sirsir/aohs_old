@@ -1,0 +1,51 @@
+div class="panel-dashboard"
+  
+  div class="row"
+    div class="col-sm-4"
+      div class="block-widget-1 block-agent"
+        table
+          tr
+            td
+              span class="text-t1" Agent
+            td rowspan="2" class="text-right"
+              div
+                span class="text-t2" id="fd-agent-count"
+                | agents
+              div
+                span id="fd-exts-count"
+                |  extensions
+          tr
+            td class="td-sparkline"
+              div id="sparkline-agents"
+    div class="col-sm-4"
+      div class="block-widget-1 block-inbound"
+        table
+          tr
+            td
+              span class="text-t1" Inbound
+            td rowspan="2" class="text-right"
+              div
+                span class="text-t2" id="fd-inb-count"
+                | calls
+              div
+                | Duration: 
+                span id="fd-inb-duration"
+          tr
+            td class="td-sparkline"
+              div id="sparkline-inbound"
+    div class="col-sm-4"
+      div class="block-widget-1 block-outbound"
+        table
+          tr
+            td
+              span class="text-t1" Outbound
+            td rowspan="2" class="text-right"
+              div
+                span class="text-t2" id="fd-outb-count"
+                | calls
+              div
+                | Duration: 
+                span id="fd-outb-duration"
+          tr
+            td class="td-sparkline"
+              div id="sparkline-outbound"

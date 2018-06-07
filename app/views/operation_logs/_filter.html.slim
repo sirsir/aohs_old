@@ -1,0 +1,20 @@
+= panel_filter do
+  = form_filter_tag :operation_log, action: "index" do
+
+    = field_group_inline_tag :log_date, "Date range" do
+      = text_field_tag :log_date, params[:log_date], class: "form-control input-date-rank"
+      
+    = field_group_inline_tag :log_type, "Type" do
+      = select_tag :log_type, options_for_select(SystemConst.log_type_options,params[:log_type]), class: "form-control", include_blank: true
+
+    = field_group_inline_tag :module_name, "Module" do
+      = text_field_tag :module_name, params[:module_name], class: "form-control"
+
+    = field_group_inline_tag :event_type, "Event" do
+      = text_field_tag :event_type, params[:event_type], class: "form-control"
+      
+    = field_group_inline_tag :remote_ip, "Remote IP" do
+      = text_field_tag :remote_ip, params[:remote_ip], class: "form-control"
+      
+    = field_group_inline_tag :created_by, "Perform by" do
+      = text_field_tag :created_by, params[:created_by], class: "form-control"

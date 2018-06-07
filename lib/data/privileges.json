@@ -1,0 +1,200 @@
+{
+  "aohs": [
+    { "category":"General", "module":"dashboard", "events":[
+      { "name":"view", "title":"View Call Dashboard", "no":"0" }
+    ]},
+    
+    { "category":"General", "module":"call_browser", "events":[
+      { "name":"view", "title":"Realtime Agent Monitoring", "no": "0" } 
+    ]},
+
+    { "category":"General", "module":"call_histories", "events":[
+      { "name":"view", "title":"Search Call history", "no": "1" },
+      { "name":"trans_search", "title":"Speech transcription search", "no": "1.1" }
+    ]},
+    
+    { "category":"General", "module":"evaluations", "events":[
+      { "name":"view", "title":"View and search call evaluations", "no": "1" },
+      { "name":"find_oth_evaluator", "title":"Able to search other evaluator", "no": "1.1"},
+      { "name":"evaluate", "title":"Evaluate agent's calls", "no": "2" },
+      { "name":"modify", "title":"Modify evaluated calls", "no": "2.1" },
+      { "name":"recheck", "title":"Check evaluated calls", "no": "2.1.1" },
+      { "name":"delete", "title":"Cancel evaluated calls", "no": "2.1.2" }
+    ]},
+    
+    { "category":"General", "module":"voice_logs", "events":[
+      { "name":"disabled_call_permission", "title":"Disable call access control", "no": "1" },
+      { "name":"not_only_own_call", "title":"Not only own calls", "no": "1.1" },
+      { "name":"tagging", "title":"Change call tags", "no": "2" },
+      { "name":"classification", "title":"Change call category (classifications)", "no": "3" },
+      { "name":"transcriptions", "title":"View call's transcriptions", "no": "4" },
+      { "name":"dl_transcriptions", "title":"Download transcriptions", "no": "4.1" },
+      { "name":"edit_transcriptions", "title":"Edit transcriptions", "no": "4.2" },
+      { "name":"export", "title":"Export call list", "no": "5" },
+      { "name":"download", "title":"Download audio file", "no": "6" }
+    ]},
+    
+    
+    { "category":"Analytics and Reports", "module":"analytics", "events":[
+      { "name":"view", "title":"View analytics dashboards and reports", "no":"0" }
+    ]},
+
+    { "category":"Analytics and Reports", "module":"evaluation_reports", "events":[
+      { "name":"view", "title":"View evaluation reports", "no":"1" },
+      { "name":"agent_detail", "link":"question", "title":"Agent Evaluation Detail Report By Question", "no":"1.1", "customer":"aeon" },
+      { "name":"agent_detail", "link":"group_question", "title":"Agent Evaluation Detail Report By Group Question", "no":"1.2", "customer":"aeon,acss,aeoncol" },
+      { "name":"agent_summary", "link":"question", "title":"Agent Evaluation Summary Report By Question", "no":"1.3", "customer":"aeon" },
+      { "name":"agent_summary", "link":"group_question", "title":"Agent Evaluation Summary Report By Group Question", "no":"1.4", "customer":"aeon,acss,aeoncol" },
+      { "name":"group_summary", "link":"question", "title":"Group Summary Report By Question", "no":"1.5", "customer":"aeon" },
+      { "name":"group_summary", "link":"group_question", "title":"Group Summary Report By Group Question", "no":"1.6", "customer":"aeon" },
+      { "name":"evaluator_summary", "title":"QA Agent Performance Summary Report", "no":"1.7", "customer":"aeon" },
+      { "name":"acs_evaluation_summary", "title":"Agent Evaluation Summary Report By Answer Question", "no":"1.50", "customer":"acss,aeoncol" },
+      { "name":"acs_agent_call_summary", "title":"Agent Evaluation Summary Report (Duration, Greeting and NG Usage)", "no":"1.51", "customer":"acss,aeoncol" },
+      { "name":"acs_greeting", "title":"Greeting Summary Report", "no":"1.52", "customer":"acss,aeoncol" },
+      { "name":"attachment_list", "title":"NG Word Usage Report", "no":"1.53", "customer":"acss,aeoncol" },
+      { "name":"acs_ngusage_summary", "title":"NG Word Usage Summary Report By Group", "no":"1.54", "customer":"acss,aeoncol" },
+      { "name":"acs_call_summary", "title":"QMS Summary Report (Outbound Call)", "no":"1.55", "customer":"acss,aeoncol" },
+      { "name":"evaluator_call_summary", "link":"qa_agent", "title":"Monitoring Summary Report by QA Agent", "no":"1.56", "customer":"acss,aeoncol" },
+      { "name":"evaluator_call_summary", "link":"agent", "title":"Monitoring Summary Report by Agent", "no":"1.57", "customer":"acss,aeoncol" },
+      { "name":"evaluator_summary", "title":"QA Agent Performance Summary Report", "no":"1.58", "customer":"acss,aeoncol" },
+      { "name":"check_summary", "link":"qa_agent", "title":"Checking Summary Report by QA Agent", "no":"1.59", "customer":"acss,aeoncol" },
+      { "name":"check_summary", "link":"agent", "title":"Checking Summary Report by Agent", "no":"1.60", "customer":"acss,aeoncol" }
+    ]},
+    
+    { "category":"Analytics and Reports", "module":"reports", "events":[
+      { "name":"view", "title":"View call recording reports", "no":"1" },
+      { "name":"call_overview", "title":"Call Overview", "no":"1.1", "customer":"" },
+      { "name":"agent_call_summary", "title":"Agent Call Summary", "no":"1.3", "customer":"" },
+      { "name":"hourly_call_summary", "title":"Hourly Call Summary by Agent", "no":"1.5", "customer":"" },
+      { "name":"call_tags", "title":"Call Tag Summary", "no":"1.6", "customer":"" },
+      { "name":"agent_keyword_summary", "title": "Keyword Summary Report by Agent", "no": "1.09" },
+      { "name":"notif_rec_summary", "title": "Recommendation Summary Report by Agent", "no": "1.10" },
+      { "name":"notif_keyword_summary", "title": "Keyword Alert Summary Report by Agent", "no": "1.11" },
+      { "name":"private_call_summary", "title": "Private Call Summary", "no": "1.11" }
+    ]},
+
+    
+    { "category":"Evaluation Settings", "module":"evaluation_plans", "events":[
+      { "name":"view", "title":"View evaluation forms", "no":"1" },
+      { "name":"manage", "title":"Manage evaluation forms", "no":"2" }
+    ]},
+
+    { "category":"Evaluation Settings", "module":"evaluation_questions", "events":[
+      { "name":"view", "title":"View evaluation questions", "no":"1" },
+      { "name":"manage", "title":"Manage evaluation questions", "no":"2" }                               
+    ]},
+
+    { "category":"Evaluation Settings", "module":"evaluation_grade_settings", "events":[
+      { "name":"view", "title":"View grade settings", "no":"1" },
+      { "name":"manage", "title":"Manage grade settings", "no":"2" }                               
+    ]},
+
+    { "category":"Evaluation Settings", "module":"document_templates", "events":[
+      { "name":"view", "title":"View document form templates", "no":"1" },
+      { "name":"manage", "title":"Manage document form templates", "no":"2" }                               
+    ]},
+
+    { "category":"Evaluation Settings", "module":"auto_assessment_rules", "events":[
+      { "name":"view", "title":"View auto assessment rules", "no":"1" },
+      { "name":"manage", "title":"Manage auto assessment rules", "no":"2" }                               
+    ]},
+
+    { "category":"Evaluation Settings", "module":"assignments", "events":[
+      { "name":"view", "title":"Access task assignments", "no":"1" }
+    ]},
+    
+    { "category":"Evaluation Settings", "module":"evaluation_tasks", "events":[
+      { "name":"view", "title":"View assignments", "no":"1" },
+      { "name":"manage", "title":"Manage assignments", "no":"2" }
+    ]},
+    
+    
+    { "category":"Maintenance and Settings", "module":"maintenances", "events":[
+      { "name":"view", "title":"Maintenance and Settings Portal", "no":"1" }
+    ]},
+    
+    { "category":"Maintenance and Settings", "module":"users", "events":[
+      { "name":"view", "title":"View users", "no":"1" },
+      { "name":"manage", "title":"Manage users", "no":"2" },
+      { "name":"permission", "title":"Change access control of calls", "no":"2.1" },
+      { "name":"import_export", "title":"Import/Export users", "no":"2.2" }
+    ]},
+    
+    { "category":"Maintenance and Settings", "module":"groups", "events":[
+      { "name":"view", "title":"View user's groups", "no":"1" },
+      { "name":"manage", "title":"Manage user's groups", "no":"2" }
+    ]},
+
+    { "category":"Maintenance and Settings", "module":"roles", "events":[
+      { "name":"view", "title":"View user's roles", "no":"1" },
+      { "name":"manage", "title":"Manage user's roles", "no":"2" }
+    ]},
+
+    { "category":"Maintenance and Settings", "module":"tags", "events":[
+      { "name":"view", "title":"View call tags", "no":"1" },
+      { "name":"manage", "title":"Manage call tags", "no":"2" }
+    ]},
+
+    { "category":"Maintenance and Settings", "module":"call_categories", "events":[
+      { "name":"view", "title":"View call categories", "no":"1" },
+      { "name":"manage", "title":"Manage call categories", "no":"2" }
+    ]},
+    
+    { "category":"Maintenance and Settings", "module":"phone_extensions", "events":[
+      { "name":"view", "title":"View telephone extensions", "no":"1" },
+      { "name":"manage", "title":"Manage telephone extensions", "no":"2" }
+    ]},
+
+    { "category":"Maintenance and Settings", "module":"permissions", "events":[
+      { "name":"view", "title":"View access and permissions", "no":"1" },
+      { "name":"manage", "title":"Manage access and permissions", "no":"2" }
+    ]},
+ 
+    { "category":"Maintenance and Settings", "module":"configurations", "events":[
+      { "name":"view", "title":"View application configurations", "no":"1" },
+      { "name":"manage", "title":"Manage application configurations", "no":"2" }
+    ]},
+
+    { "category":"Maintenance and Settings", "module":"export_calls", "events":[
+      { "name":"view", "title":"View export call tasks", "no":"1" },
+      { "name":"manage", "title":"Manage export call tasks", "no":"2" }
+    ]},
+
+    { "category":"Maintenance and Settings", "module":"keywords", "events":[
+      { "name":"view", "title":"View keyword phrase", "no":"1" },
+      { "name":"manage", "title":"Manage keyword phrase", "no":"2" }
+    ]},
+
+    { "category":"Maintenance and Settings", "module":"faq_questions", "events":[
+      { "name":"view", "title":"View FAQ", "no":"1" },
+      { "name":"manage", "title":"Manage FAQ", "no":"2" }
+    ]},
+    
+    { "category":"Maintenance and Settings", "module":"phone_infos", "events":[
+      { "name":"view", "title":"View phone numbers", "no":"1" },
+      { "name":"manage", "title":"Manage phone numbers", "no":"2" }
+    ]},
+    
+    { "category":"Maintenance and Settings", "module":"web_sessions", "events":[
+      { "name":"view", "title":"Manage web sessions (login)", "no":"1" }
+    ]},
+    
+
+    { "category":"Logging", "module":"message_logs", "events":[
+      { "name":"view", "title":"View message or notification logs", "no":"1" }
+    ]},
+    
+    { "category":"Logging", "module":"computer_logs", "events":[
+      { "name":"view", "title":"View computer clients information", "no":"1" }
+    ]},
+
+    { "category":"Logging", "module":"operation_logs", "events":[
+      { "name":"view", "title":"View application logs", "no":"1" }
+    ]},
+    
+    { "category":"Logging", "module":"system_info", "events":[
+      { "name":"view", "title":"View system information", "no":"1" }
+    ]}
+
+  ]
+}

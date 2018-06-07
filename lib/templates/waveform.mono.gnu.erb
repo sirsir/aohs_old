@@ -1,0 +1,23 @@
+set datafile commentschars ";"
+
+set terminal svg size <%= w %>,<%= h %>
+set output "<%= svg_fname %>"
+
+unset ytics
+unset xtics
+
+#set border linecolor rgbcolor "#<%= bd_color %>" lw 0.1
+unset border
+set object rectangle behind from graph 0,0 to graph 1,1 fillstyle solid border linecolor "#<%= bd_color %>" lw 0.1 fillcolor rgbcolor "#<%= bg_color %>"
+
+set multiplot layout 1,1
+set tmargin 0
+set bmargin 0
+set lmargin 0
+set rmargin 0
+#set xtics 0,1 
+#set format x ""
+set key bottom
+plot "<%= dat_fname %>" using 1:2 every <%= pl %> with lines lw <%= lw %> lc rgbcolor "#<%= fg_color %>" notitle
+
+unset multiplot

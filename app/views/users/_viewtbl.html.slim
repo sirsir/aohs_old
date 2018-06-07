@@ -1,0 +1,58 @@
+= panel_tableview do
+  - unless @users.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :login, order: true
+          = th_tag :employee_id, order: true
+          = th_tag :atl_code, label: 'Operator ID', order: true
+          = th_tag :citizen_id, order: true
+          = th_tag :full_name, order: true
+          = th_tag :group_name, label: 'Group', order: true
+          = th_tag :section_id, label: 'Section ID', order: true
+          = th_tag :branch_code, label: 'Branch Code', order: true
+          = th_tag :region_code, label: 'Region', order: true
+          = th_tag :role_name, label: 'Role', order: true
+          = th_tag :state, order: true
+          = th_tag :auth_type, order: false
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @users.select('users.*, section_id, branch_code, region_code').each_with_index do |u,i|
+          tr
+            td.c_rowno
+              = row_no(i)
+            td
+              = u.login
+            td
+              = u.employee_id
+            td
+              = u.atl_code
+            td
+              = u.citizen_id 
+            td
+              = u.full_name_en
+            td
+              = u.group_name(false)
+            td
+              = u.section_id
+            td
+              = u.branch_code
+            td
+              = u.region_code
+            td
+              = u.role_name
+            td class="text-center"
+              span class="text-symbol" state-name="#{u.state_name.to_s.downcase}"
+                = u.state_name
+            td class="text-center"
+              = u.authen_type_name
+            - if can_manage?
+              td.doact
+                - if u.was_deleted?
+                  = rowmnt_button_tag(u,'u')
+                - else
+                  = rowmnt_button_tag(u,'ed')
+  - else
+    = no_record_tag

@@ -1,0 +1,24 @@
+div class="mnt-menu"
+  = render 'configurations/submenu'
+  = horizontal_bar
+
+div class="mnt-cont mnt-tbl"
+  div class="row"
+    div class="col-sm-12"
+      = render 'configurations/conf_menu'
+  
+  div class="row"
+    div class="col-sm-12"
+      - case params[:name]
+      - when "program"
+        = render 'configurations/programs'
+      - when "module"
+        = render 'configurations/modules'
+      - when "location_info"
+        = render 'configurations/location_info'
+      - when "display_tables"
+        = render 'configurations/display_tables'
+      - when "group_member_type"
+        = render 'configurations/group_member_type'
+      - else
+        = render 'configurations/viewtbl'

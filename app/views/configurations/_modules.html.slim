@@ -1,0 +1,32 @@
+= panel_tableview do
+  = table_tag :mnt do
+    thead
+      tr
+        th style="width:2em;"
+          | No
+        th
+          | Module
+        th style="width:15em;"
+          | Enable/Disable
+    tbody
+      - APP_MODULES.each_with_index do |mod,i|
+        tr
+          td
+            = i + 1
+          td
+            p
+              = mod[:title]
+            p class="text-muted"
+              small
+                = (Privilege.relate_functions(mod[:list]).order_specific_vals.all.map { |p| p.description }).sort.join(", ")
+          td class="text-center"
+            button class="btn btn-default btn-enadis-mod" data-title="#{mod[:title]}" data-module-status="#{Privilege.module_status(mod[:list])}"
+              | Error
+      tr
+        td colspan="2"
+        td class="text-center"
+          button class="btn btn-primary btn-enadis-mod" data-title="reset" data-module-status="reset"
+            | Clear Setting
+            
+div class="help-block"
+  | To enable or disable modules and functions of application.

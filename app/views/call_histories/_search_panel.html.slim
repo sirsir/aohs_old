@@ -1,0 +1,189 @@
+div id="search-panel" class="panel-search hide-panel" 
+  form class="form"
+    
+    input type="hidden" id="cs-reasons" name="cs-reasons" value=""
+    
+    table id="tbl-search-field"
+      tr
+        td class="panel-group-left"
+          div id="panel-sub-groupfields"
+            - if LocationInfo.available?
+              div class="field-group"
+                label class="f-label"
+                  | Site
+                div class="f-field"
+                  select class="form-control" id="cs-site-id"
+                    option
+                    - LocationInfo.location_options({ user_id: current_user.id }).each do |loc|
+                      option value="#{loc[1]}" #{loc[0]}        
+            
+            div class="field-group"
+              label class="f-label"
+                | Date Range
+              div class="f-field"
+                input class="form-control input-submit" type="text" id="cs-period" maxlength="35"
+                input type="hidden" id="cs-from_d"
+                input type="hidden" id="cs-to_d"
+            
+            - if can_doact?("call_histories:trans_search")
+              div class="field-group"
+                label class="f-label"
+                  | Phrase
+                div class="f-field"
+                  input class="form-control input-submit" type="text" id="cs-text" maxlength="100" title="Text"
+            
+            div class="field-group"
+              label class="f-label"
+                | Caller No.
+              div class="f-field"
+                input type="text" id="cs-caller" class="form-control mask-phonenumber" maxlength="15"
+                
+            div class="field-group"
+              label class="f-label"
+                | Dialed No.
+              div class="f-field"
+                input type="text" id="cs-dialed" class="form-control mask-phonenumber" maxlength="15"
+                
+            div class="field-group"
+              label class="f-label"
+                | Ext.
+              div class="f-field"
+                input type="text" id="cs-ext" class="form-control mask-extension" maxlength="6"
+            
+            - if display_for?(:aeoncol)
+              div class="field-group no-text-search"
+                label class="f-label"
+                  | Section
+                div class="f-field"
+                  input type="text" id="cs-atlsection" class="form-control" value="#{@key_params[:atlsection]}"
+                  
+            - if DisplayColumnTable.get_field(get_display_table,'group_name').searchable?
+              div class="field-group no-text-search"
+                label class="f-label"
+                  | Group
+                div class="f-field"
+                  input type="text" id="cs-group" class="form-control" value="#{@key_params[:group_name]}"
+
+            div class="field-group"
+              label class="f-label"
+                | Agent's Name
+              div class="f-field"
+                input type="text" id="cs-agent" class="form-control" value="#{@key_params[:agent_name]}"
+
+            - if DisplayColumnTable.get_field(get_display_table,'customer_name').searchable?
+              / div class="field-group no-text-search"
+                label class="f-label"
+                  | Customer's Name
+                div class="f-field"
+                  input type="text" id="cs-customer" class="form-control"
+                
+            div class="field-group"
+              label class="f-label"
+                | Direction
+              div class="f-field"
+                div class="btn-group" data-toggle="buttons"
+                  button class="btn btn-sm btn-default active"
+                    input type="radio" id="cs-direction-both" name="cs-direction" value="all"
+                    | Both              
+                  button class="btn btn-sm btn-default"
+                    input type="radio" id="cs-direction-in" name="cs-direction" value="in"
+                    | Inbound
+                  button class="btn btn-sm btn-default"
+                    input type="radio" id="cs-direction-out" name="cs-direction" value="out"
+                    | Outbound
+
+            div class="field-group"
+              label class="f-label"
+                | Duration(mm:ss)
+              div class="f-field"
+                input class="form-control input-submit mask-duration text-center f-duration" type="text" id="cs-duration-from"
+                span class="text-space"
+                  | -
+                input class="form-control input-submit mask-duration text-center f-duration" type="text" id="cs-duration-to"
+              
+            - if DisplayColumnTable.get_field(get_display_table,'redial_call_cnt').searchable?
+              div class="field-group no-text-search"
+                label class="f-label"
+                  | Repeated Call
+                div class="f-field"
+                  - if display_for?(:acss)
+                    select class="form-control" id="cs-repdial-opt"
+                      option
+                      option value="1" data-min-count="6" >= 6 times/day
+                      option value="2" data-min-count="6" data-select-only="mob" >= 6 times/day (Mobile)
+                      option value="3" data-min-count="6" data-select-only="fixed" >= 6 times/day (Fixed)
+                      option value="4" data-min-count="6" data-select-only="ext" >= 6 times/day (Extension)
+                  - else
+                    input class="form-control input-submit text-center mask-phonenumbers f-duration" type="text" id="cs-repdial-from" min="0" max="99" maxlength="2"
+                    span class="text-space"
+                      | -
+                    input class="form-control input-submit text-center mask-phonenumbers f-duration" type="text" id="cs-repdial-to" min="0" max="99" maxlength="2"
+                
+            div class="field-group"
+              label class="f-label"
+                | Tag
+              div class="f-field no-text-search"
+                input type="text" id="cs-tags" class="form-control"
+            
+            - if DisplayColumnTable.get_field(get_display_table,'ctype').searchable?
+              - CallCategory.category_types.each_with_index do |ctype,i|
+                - tmp_cates = CallCategory.find_type(ctype).not_deleted.order_by_default.all
+                - unless tmp_cates.empty?
+                  div class="field-group"
+                    label class="f-label"
+                      = ctype
+                    div class="f-field"
+                      select id="cs-flag-#{i}" name="cs-flag" class="cs-flag form-control"
+                        option
+                        - tmp_cates.each do |c|
+                          option value="#{c.id}" #{c.title}
+
+            - if @qa_enable
+              div class="horizontal-line"
+              
+              div class="field-group"
+                label class="f-label"
+                  | Form
+                div class="f-field no-text-search" 
+                  select id="cs-form-id" class="form-control"
+                    option value=""
+                    - EvaluationPlan.order(:name).only_active.all.each do |form|
+                      option value="#{form.id}" #{form.name}
+
+              div class="field-group"
+                label class="f-label"
+                  | Status
+                div class="f-field no-text-search" 
+                  select id="cs-ev-status" class="form-control"
+                    option value=""
+                    option value="E" Evaluated
+                    option value="C" Checked
+                    option value="CC" Checked (Correct)
+                    option value="CW" Checked (Wrong)
+              
+              - if can_do?(:evaluations,:find_oth_evaluator)
+                div class="field-group no-text-search"
+                  label class="f-label"
+                    | Evaluated By
+                  div class="f-field" 
+                    select id="cs-evaluated-by" class="form-control"
+                      option
+                      - User.only_evaluators.all.each do |u|
+                        option value="#{u.id}" #{u.display_name}
+              - else
+                = hidden_field_tag "cs-evaluated-by-only", current_user.id
+                
+        td class="panel-group-right text-right"
+          div class="btn-group"
+            button class="btn btn-primary" type="button" id="btn-find-call"
+              = icon("search")
+            button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+              span class="caret"
+            ul class="dropdown-menu pull-right"
+              li
+                a href="#" id="btn-clear"
+                  = icon ''
+                  | Reset search form
+              li
+                a href="#" id="btn-showhide-search"
+                  | Show/Hide more options

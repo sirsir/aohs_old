@@ -1,0 +1,223 @@
+@import 'css/bootstrap-slider.min';
+@import 'datatable';
+@import 'bootstrap-multiselect';
+@import 'call_browser_evlform';
+
+body, html {
+  overflow: hidden;
+}
+
+.panel-filter-option {
+  margin-top: 0.8em;
+  border-bottom: 1px solid #CCCCCC;
+  padding-bottom: 0.5em;
+  padding-left: 2em;
+  padding-right: 2em;
+  
+  .group-select {
+    width: 300px;
+  }
+}
+
+#bx-call-summary {
+  padding-top: 0.25em;
+  padding-bottom: 0.25em;
+  background-color: #FAFAFA;
+  visibility: hidden;
+  .text-label {
+    font-size: 0.8em;
+  }
+  .text-count {
+    font-size: 1.4em;
+  }
+}
+
+div#cont-list {
+  height: 100%;
+  min-height: 200px;
+}
+
+.avatar-box {
+  margin: 0.3em;
+  margin-bottom: 0.2em;
+  img {
+    width: 3.8em;
+    height: 3.8em;
+    border: 1px solid #DEDEDE;
+    background-color: #F5F5F5;    
+  }
+}
+
+.bx-avatar {
+  max-width: 4.5em;
+  width: 4.5em;
+  padding: 0px !important;
+  margin: 0px !important;
+  position: relative;
+}
+
+/* status */
+
+.txt-user-logged {
+  color: #5CACEE;
+  background-color: #e0f3ff !important;
+}
+
+.txt-user-notlogged {
+  color: #D4D4D4;
+}
+
+.txt-call-connected {
+  color: #3CB371;
+  background-color: #e3ffe4 !important;
+}
+
+.txt-call-disconnected {
+  color: #FF0000;
+  background-color: #ffe9e3 !important;
+}
+
+.bx-listenning td {
+  background-color: #F0F8FF;
+  
+  .islistening {
+    visibility: visible;
+    width: 1.3em;
+    height: 1.3em;
+    z-index: 800;
+    display: block;
+    margin-left: 2.8em;
+    margin-top: 2.6em;
+    position: absolute;
+    background-image: url('headphones20.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 0.8em;
+    background-color: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    border-radius: 0.6em;
+  }
+}
+.bx-listenning td.bx-avatar {
+  background-color: #4F94CD;  
+}
+
+.cur-listen {
+  width: 100%;
+  height: 5em;
+  visibility: hidden;
+  border-bottom: 1px solid #CCCCCC;
+  
+  button.btn {
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+  }
+  
+  table {
+    width: 99%;
+  }
+  
+  .avatar-box {
+    img {
+      width: 3.8em;
+      height: 3.8em;
+      border: 1px solid #DEDEDE;
+      background-color: #F5F5F5;      
+    }
+  }
+  
+  .td-avartar {
+    width: 5em;
+    max-width: 5em;
+  }
+  
+  .td-user {
+    width: 10em;
+    max-width: 10em;
+  }
+  
+  .td-callinfo {
+    width: 34em;
+    max-width: 34em;
+  }
+  
+  #cur-fd-duration,
+  #cur-fd-callsts,
+  #cur-fd-calldir,
+  #cur-fd-phno {
+    padding: 0.2em;
+  }
+  #cur-fd-duration {
+    font-weight: bold;
+  }
+}
+
+#slider-volume {
+  display: none;
+  border: 1px solid #CCCCCC;
+  background-color: #FAFAFA;
+  border-radius: 3px;
+  padding: 0.25em;
+  width: 10em;
+  
+  .slider.slider-horizontal {
+    width: 100%;
+  }
+}
+
+/* evaluation */
+#box-evaluation {
+  display: none;
+  position: absolute;
+  background-color: #CCCCCC;
+  height: auto;
+  z-index: 900;
+  opacity: 0.5;
+  top: 2.6em;
+  bottom: 5em;
+  left: 0em;
+  right: 0em;
+}
+
+#box-evaluation-inner {
+  display: none;
+  position: absolute;
+  background-color: #FFFFFF;
+  height: auto;
+  z-index: 990;
+  border: 1px solid #BDBDBD;
+  border-radius: 0.2em;
+  top: 2.7em;
+  bottom: 5em;
+  left: 0.1em;
+  right: 0.1em;
+}
+
+#tbl-opt-box {
+  margin-left: 0.2em;
+
+  ul.dropdown-menu {
+    margin-left: -11em;
+  }
+}
+
+.block-current-call-infos {
+  table td label {
+    font-size: 0.8em;
+    margin-right: 0.25em;
+  }
+  
+  span.lb-acc-status,
+  span.lb-extension-no,
+  span.lb-call-duration {
+    font-size: 1.2em;
+  }
+  
+  div.txt-onwrap {
+    width: 100%;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

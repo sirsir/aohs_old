@@ -1,0 +1,24 @@
+doctype html
+html
+  head
+    title #{Settings.site.title} - #{controller.controller_name.capitalize}
+    meta charset="UTF-8"
+    meta name="author" content="AmiVoice(TH)"
+    meta name="application-name" content="@AmiVoice Watcher@"
+    meta http-equiv="x-ua-compatible" content="IE=edge,8,9"
+    meta Http-Equiv="Cache-Control" Content="no-cache"
+    meta Http-Equiv="Pragma" Content="no-cache"
+    meta Http-Equiv="Expires" Content="0"
+    
+    = javascript_include_tag \
+      "application_min"
+    = controller_javascript_tags
+    == yield :javascript
+    = stylesheet_link_tag \
+      "application"
+    = controller_stylesheet_tags
+    == yield :stylesheet
+    == yield :header
+    = include_gon
+  body
+    == yield

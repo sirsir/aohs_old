@@ -1,0 +1,10 @@
+script id="export-dialog-templete" type="text/template"
+  div id="export-calllist-dialog"
+    div
+      span class="help-block"
+        = "Maximum of exported rows is #{number_with_delimiter(Settings.callsearch.export.maximun_recs)} rows." 
+    
+    div class="form-group"
+      label
+        | Export as
+      = select_file_type([:csv, :xlsx])

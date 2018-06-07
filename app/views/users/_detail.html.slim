@@ -1,0 +1,19 @@
+= panel_show do
+  
+  = info_group_tag "User detail"
+  
+  = field_tag "Username", @user.login
+    
+  = field_tag "Name", @user.full_name
+  
+  = field_tag "Employee ID", @user.employee_id
+  
+  = field_tag "Citizen ID", @user.citizen_id  
+
+  = field_tag "Sex", @user.sex_name
+  
+  = field_tag "Role", @user.role_name
+
+  = field_tag "Group", @user.group_name
+  
+  = field_tag "Status", @user.state_name

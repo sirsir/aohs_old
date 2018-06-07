@@ -1,0 +1,23 @@
+script id="template-row-inputlist" type="text/x-handlebars"
+  tr
+    td
+      input type="text" name="answerlist_title[]" class="form-control" maxlength="80" pattern="[^'\x21'\x22'\x23'\x24'\x25'\x26'\x27'\x2A'\x2F'\x3A'\x3B'\x3C'\x3D'\x3E'\x3F'\x5C]+"
+    td
+      input type="number" name="answerlist_value[]" step="0.1" class="form-control"
+    td
+      input type="text" name="answerlist_note[]" class="form-control" maxlength="100"
+    td
+      button type="button" class="btn btn-default btn-comment-required"
+        span No
+        input type="hidden" name="answerlist_cmmt[]" value="N"
+    td.cell-nowrap-all
+      button type="button" class="btn btn-primary btn-marg-r btn-ana-config"
+        input type="hidden" name="answerlist_ana_rules[]"
+        span
+          = icon 'cog'
+          | Auto Asst 
+      button type="button" class="btn btn-danger btn-remove-list"
+        = icon 'minus'
+
+script id="rule_data" type="text/json"
+  = AnalyticUtils::AssessmentRuleBase.rules.to_json.html_safe

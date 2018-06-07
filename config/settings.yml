@@ -1,0 +1,280 @@
+# This contains all default settings of application
+# If you need to change modify some setttings, you must create new file for do it.
+# Configuration File:
+# - settings.yml <default>
+# - settings.local.yml <custom>
+# - settings/<rails-env>.yml <default-each-env>
+#
+
+site:
+  codename:               amivoice
+  company:                AmiVoice Thai Co,.Ltd
+  description:            Demo Server
+  short_description:      AMI-OFFICE
+  title:                  AOHS
+  relative_url:           aohs
+  location_code:          amivoice
+
+other_sites:
+
+pagination:
+  per_pages:              [25, 50, 75, 100]
+  per_roles:              6
+  show_perpage:           true
+  voicelog:
+    permin:               25
+    permax:               100
+
+user:
+  password_admin:         Aohs1234*
+  password_default:       Aohs1234*
+  password_expiry_days:   90
+  display_name:           th
+  admin:
+    username:             AohsAdmin
+    password_default:     Password@1
+    role:                 administrator
+  guest:
+    username:             Guest
+  suadmin:                aohsadmin,amiadmin,itadmin
+  
+server:
+  docroot:                http://192.168.1.88
+  directory:
+    backup:               /opt/aohs/backup
+    public:               /var/www/html
+    call_export:          /var/www/html/voicefiles
+    audio_data:           /var/www/html/audiodata
+    log:                  /var/log/aohs
+    export_log:           /var/log/aohs/callexport      
+    spool:                /var/spool/aohs
+    tmp:                  /tmp/aohstmp
+    conf:                 /etc/aohs
+  temp:
+    file_age_hr:          1
+  database:
+    adapter:              mysql2
+    dbname:               aohsdb_dev2
+    hostname:             192.168.1.50
+    username:             mysqladmin
+    password:             Password@1
+  es:
+    host:                 192.168.1.52:9200
+    username:             none
+    password:             none
+    enable:               true
+    prefix:               as
+  rabbitmq:
+    host:                 192.168.1.50
+    port:                 5672
+    vhost:                aohs
+    username:             aohsweb
+    password:             aohsweb
+    queue_amiwatcher:     amiwatcher
+    queue_notify:         aohs.desktop_notifications
+  analytic:
+    notification_url:     192.168.1.88:3002/webapi/client_notify
+    request_timeout:      30
+    auto_summarization:
+      enable:             true
+      url:                http://192.168.1.160:1248/api/call_sum
+    call_type:
+      enable:             false
+      url:                http://192.168.1.150:7000/api/call_type/
+      timeout:            180
+    classifiy:
+      enable:             false
+      url:                http://192.168.1.150:9000/api/call_conserv/
+      timeout:            90
+    word_cloud:
+      enable:             false
+      url:                http://192.168.1.58:5000/api/v1.0/wordcloud/
+      timeout:            90
+    assessment:
+      enable:             true
+      url:                http://192.168.1.150:3639/api/dynamic_form/tm_bucket
+      timeout:            300
+    journey:
+      enable:             true
+      url:                http://192.168.1.150:3639/api/dynamic_form/customer_journey
+      timeout:            300
+  aeon_atl:
+    host:                 192.168.1.51
+    user:                 root
+    password:             amivoice
+    filepath:             /data/aeon/atl
+    filter:
+      include_codes:      none
+      exclude_codes:      none
+      
+ldap_auth:
+  enable:                 false
+  host:                   192.168.1.2
+  port:                   389
+  base:                   dc=office-amivoicethai,dc=com
+  login_name:             samaccountname
+  role_attribute:         memberof
+  group_attribute:        dn
+  
+mail:
+  sender:                 amiaohs@mailgun.com
+  smtp:
+    address:              smtp.mailgun.org
+    username:             postmaster@sandboxb6b370ba2986429ebb391dc3983da689.mailgun.org
+    password:             4036265cb1fe67fab8cd87c505bd5044
+    port:                 587
+
+libexec:
+  ruby:                   /usr/local/bin/ruby
+  ruby_args:              ':rbfile'
+  jruby:                  /usr/bin/jruby
+  java:                   /usr/bin/java
+  unoconv:                /usr/bin/unoconv
+  unoconv_args:           '-f :output_format :input_file'
+  unoconv_args_csv:       '-f :output_format -i 44,34,utf-8 :input_file'
+  sox:                    /usr/bin/sox
+  sox_args_dat:           '-q :wav_fname -r :sample_rate :dat_fname'
+  sox_args_wav:           '-q -r 8000 -c 2 :src_file -e signed-integer -r 8000 -c 2 :dest_file'
+  sox_args_nor:           '-q -r 8000 -c 2 :src_file -e a-law -r 8000 -c 2 :dest_file loudness gain -e -n'
+  sox_args_vol:           '-q -r 8000 -c 2 -v 1.6 :src_file -e a-law -r 8000 -c 2 :dest_file'
+  sox_args_mono:          '-q :src_file -e signed-integer -r 8000 -c 1 :out_file'
+  wget:                   /usr/bin/wget
+  wget_args:              '-q -t 1 -T 5 -O :output_fname :url'
+  gnuplot:                /usr/local/bin/gnuplot
+  gnuplot_args_wf:        ':script_fname'
+  speexenc:               /usr/local/bin/speexenc
+  speexenc_args:          ':src_file :dest_file'
+  speexdec:               /usr/local/bin/speexdec
+  speexdec_args:          ':src_file :dest_file'
+  lame:                   /usr/local/bin/lame
+  lame_args:              '--silent -f :in_file :out_file'
+  jpegoptim:              /usr/bin/jpegoptim
+  jpegoptim_args:         '-m95 :file'
+  tar:                    /usr/bin/tar
+  bzip2:                  /usr/bin/bzip2
+  unzip:                  /usr/bin/unzip
+  openssl:                /usr/bin/openssl
+  decrypt_audio:          'smime -decrypt -binary -in :infile -inform DER -out :outfile -inkey :private_key_file'
+  encrypt_audio:          'smime -encrypt -binary -aes-256-cbc -in :infile -out :outfile -outform DER :public_key_file'
+
+filetype:
+  audio:
+    default:              spx
+  csv:                    csv
+  
+callsearch:
+  calltime_delay_sec:     60
+  max_period_days:        90
+  max_poss_numbers:       50
+  max_taggings:           10
+  scope_search_daterange: 365
+  warn_duration_sec:      1200
+  show_favourite:         false
+  show_phone_area:        true
+  export:
+    maximun_recs:         5000
+  masking_sensitive_data: true
+  es_textscore:           0.12
+  highlight_ngwords:      2
+  merge_transcription:    true
+  reformat_sentence:      true
+  audio_format:           wav
+  
+dashboard:
+  auto_update:            false
+  interval_update_sec:    300
+  delay_load_sec:         2
+  
+callexport:
+  expiry_day_in:          5
+  default_path:           <CALL-DATE>/<CALL-DATETIME>_<ANI>_<DNIS>
+
+audioplayer:
+  default_volume:         50
+  waveform:
+    disabled:             false
+    loadtimeout_sec:      15
+    bg_color:             F0F8FF
+    fg_color:             1E90FF
+    border_color:         9C9C9C
+    
+mq:
+  callstatus:
+    wsurl:                ws://192.168.1.50:18100/wsjms/mqstomp
+    type:                 topic
+    destination:          callstatus
+
+qlogger:
+  stream_host:            192.168.1.51
+  stream_port:            80
+  stream_url:             qlogger_stream
+  # type = eone/extension/ip
+  type:                   eone
+  # transfer = true/false
+  transfer_call:          false
+  cypto:
+    enable:               true
+    encrypt_fext:         enc
+    decrypt_key:          privatekey.key
+    encrypt_key:          publickey.key
+
+notification:
+  callstatus:
+    interval_sec:         4
+
+watcher:
+  agentactivity:
+    enable:               false
+  notification:
+    mirror_client:        mirongs
+    
+statistics:
+  delay_time_sec:         0
+  duration_ranges:        [20, 60, 300, 900]
+  short_duration:         10
+  long_duration:          900
+  callview:
+    past_days:            40
+  reporting:
+    duration_format:      chrono
+    
+logs:
+  # voice logs
+  today_voicelog_keep_days: 15
+  voice_log_keep_days:    732
+  # statistic logs
+  statistics_keep_days:   732
+  general_log_days:       90
+  # transcription logs
+  trsdocs_keep_days:      180
+  
+calendar:
+  days_week:              ['mon','tue','wed','thu','fri','sat','sun']
+  work_time:              ['08:00', '20:00']
+
+callbrowser:
+  user_status:            [['logged','Active'], ['not_logged','Inactive']]
+  call_status:            [['idle','Ready'], ['connected','Talking'], ['disconnected','Hangup'], ["transfer","Transfer"]]
+  duration_colors:        [[0,"#1C1C1C"],[600,"#FFA500"],[1200,"#FF7F00"],[1800,"#FF4500"]]
+  cdirname:               [['i','Inbound'],['o','Outbound']]
+  hangup_delay_sec:       5
+
+evaluation:
+  min_duration_sec:       15
+  show_check_button:      true
+  # action close window - after evaluate - close/confirm/none 
+  close_dialog:           close
+
+group:
+  report_group_columns:   [['department','Department'],['group','Group']]
+
+faq:
+  remote_url:             http://192.168.1.160/aohs_rt_notification
+  actions:
+    index:                faq_question
+    new:                  faq_question_pattern
+    
+style:
+  group:
+    separater:            '-'
+    nof_indent:           3

@@ -1,0 +1,19 @@
+div class="panel-import-options"
+  span id="import-status" class="text-nmstatus"
+
+  div id="import-options"
+    h4
+      | Options
+    div class="form-group"
+      div class="checkbox"
+        label
+          = check_box_tag "replace", "yes", false
+          | Update if exist.
+  span
+    input type="button" id="btn-doimport" class="btn btn-primary btn-hidden" value="Import"
+    
+  div id="import-logs"
+    h4
+      | Log
+    div class="form-group" 
+      textarea id="import-result" class="form-control" disabled="disabled"

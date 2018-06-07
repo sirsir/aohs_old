@@ -1,0 +1,68 @@
+= hbs_template :edu_form_template do
+  div class="row"
+    div class="col-sm-12"
+      = form_tag url_for(controller: 'user_educations', action: 'create', user_id: params[:id]), id: "edu_form", remote: true, class: "form", role:"form"
+        = hidden_field_tag :authenticity_token, form_authenticity_token
+        input type="hidden" name="edu_id" value="#{ hb 'edu.id'}"
+        div class="form-group"
+          label Degree
+          select class="form-control" name="edu_degree"
+            = hb "select edu.degree_id" do
+              - SystemConst.edu_degree.all.each do |deg|
+                option value="#{deg.code}" #{deg.name}
+
+        div class="form-group"
+          label class="form-label" Institution
+          input type="text" name="edu_inst" class="form-control" value="#{ hb 'edu.institution' }"
+        
+        div class="form-group"
+          label Subject/Faculty
+          input type="text" name="edu_subj" class="form-control" value="#{ hb 'edu.subject' }"
+        
+        div class="form-group"
+          label Year of Graduated
+          select name="edu_year_passed" class="form-control" 
+            = hb "select edu.year_passed" do
+              - UserEducation.year_list.each do |y|
+                option value="#{y}" #{y}
+                
+= hbs_template :edu_list_template do
+  = hb 'educations' do
+    tr
+      td
+        = hb 'no'
+      td
+        = hb 'degree_title'
+      td
+        = hb 'institution'
+      td
+        = hb 'subject'
+      td class="text-center"
+        = hb 'year_passed'
+      td class="text-center doact"
+        button type="button" class="btn btn-edu-edit btn-xs btn-primary" data-id="#{hb 'id'}" data-no="#{hb 'no'}"
+          = icon 'pencil'
+        button type="button" class="btn btn-edu-delete btn-xs btn-danger" data-id="#{hb 'id'}" data-no="#{hb 'no'}"
+          = icon 'remove'
+          
+div class="panel panel-default col-md-12 panel-education"
+  div class="row"
+    div class="col-sm-12"
+      h4
+        | Education History
+  div class="row"
+    div class="col-sm-12"
+      table class="table table-striped table-mnt table-bordered table-hover" id="education-list"
+        thead
+          tr
+            th No
+            th Degree
+            th Institution
+            th Subject/Faculty
+            th Year of graduated
+            th Action
+        tbody
+  div class="row"
+    div class="col-sm-12"
+      button type="button" id="btn-add-edu" name="btn-add-edu" class="btn btn-primary"
+        | Add

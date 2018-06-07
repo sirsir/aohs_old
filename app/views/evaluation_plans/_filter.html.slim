@@ -1,0 +1,8 @@
+= panel_filter do
+  = form_filter_tag :evaluation_plan, action: "index" do
+    
+    = field_group_inline_tag :name, "Title" do
+      = text_field_tag :name, params[:name], class: "form-control"
+
+    = field_group_inline_tag :grade, "Grade" do
+      = select_tag :grade, options_for_select(EvaluationGradeSetting.select_options,params[:grade]), include_blank: true, class: "form-control"

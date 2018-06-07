@@ -1,0 +1,40 @@
+= html_template 'detection-settings-template' do
+  div class="row"
+    div class="col-sm-12"
+      
+      div class="help-block"
+        | Setup keyword matching options to detect from conversation between customer and agent.
+      
+      form action="#" class="form" id="detection-setting-form"
+      
+        div class="form-group"
+          label class="control-label"
+            | Match Type
+          div class="col-sm-12"
+            - [['Exact Match','exact_match']].each do |mt|
+              label
+                = radio_button_tag "fl-detetion-match-type", mt[1], true
+                = mt[0]
+                
+        div class="form-group"
+          label class="control-label"
+            | Speaker Type
+          div class="col-sm-12"
+            label
+              = radio_button_tag "fl-detection-channel", "A", true
+              | Agent
+            label
+              = radio_button_tag "fl-detection-channel", "C", false
+              | Customer
+              
+        - if display_for?([:aeoncol,:acss])
+          div class="form-group"
+            label class="control-label"
+              | Delinquent(s)
+            div class="col-sm-12"
+              - SystemConst.options_for(:delinquent).each do |deln|
+                label
+                  = check_box_tag "fl-detection-deln", deln[1], false
+                  = deln[0]
+              div class="help-block"
+                | * No selection means select all.

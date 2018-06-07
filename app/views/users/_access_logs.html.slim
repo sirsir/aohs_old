@@ -1,0 +1,20 @@
+= panel_tableview do
+  - unless @access_logs.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :login_time
+          = th_tag :remote_ip
+      tbody
+        - @access_logs.each_with_index do |u,i|
+          tr
+            td.no
+              = row_no(i)
+            td.login_name
+              = u.login              
+            td.employee_id
+              = u.employee_id
+            td.citizen_id
+  - else
+    = no_record_tag

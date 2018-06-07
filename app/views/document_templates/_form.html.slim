@@ -1,0 +1,32 @@
+= panel_form do
+  = form_for(@doc_template, layout: :horizontal, errors: {icons: false}) do |f|
+    = f.text_field :title, label: "Title", placeholder: '', required: true
+    = f.text_field :description, label: "Description", placeholder: ''
+    = f.file_field :file_data, label: "Upload Template#{help_dialog_button('001.001')}".html_safe, required: !is_edit_action?, accept: ".xlsx", help: "Support only .xlsx file format."
+    - unless is_create_action?
+      div class="form-group"
+        div class="col-sm-4 col-sm-offset-3"
+          button type="button" class="btn btn-default" id="btn-upload"
+            | Change template
+    - if is_edit_action?
+      div class="row"
+        div class="col-sm-3"
+        div class="col-sm-9"
+          label class="text-marg-r"
+            | Defined Fields
+          button type="button" id="btn-dl-preview" class="btn btn-xs btn-link"
+            | Preview in PDF
+          - unless @doc_template.file_template.errors.empty?
+            div class="bg-danger" style="padding:1em;"
+              p
+                = @doc_template.file_template.errors.first
+                |  Please upload new template file again.
+          table class="table"
+            - @doc_template.file_template.fields.each do |sheet, fields|
+              tr
+                td
+                  = sheet
+                td
+                  = (fields.map { |f| f[:name] }).sort.join(", ")
+                  
+    = f.submit "OK", class: "submit"

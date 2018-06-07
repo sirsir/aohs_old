@@ -1,0 +1,29 @@
+= panel_tableview do
+  - unless @tags.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :name, order: true
+          = th_tag :sub_tags
+          = th_tag :color_code, label: "Label Color"
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @tags.each_with_index do |t,i|
+          tr
+            td.no
+              = row_no(i)
+            td.tag_name
+              = link_to_if(t.got_more_tags?,t.name,{tag_id: t.id})
+            td.sub_tags
+              = t.sub_tags_list
+            td class="text-center"
+              span class="text-tag" style="background-color:#{t.color_code};"
+                span
+                  = t.name
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(t,'ed')
+  - else
+    = no_record_tag

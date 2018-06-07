@@ -1,0 +1,100 @@
+@import 'cropper';
+
+.nav-user-edit {
+  margin-bottom: 0.5em;
+}
+
+.panel-edit-group-member {
+  padding-top: 1em;  
+}
+
+.panel-import-h {
+  margin-left: 1em;
+  margin-bottom: 3em;
+}
+
+.btn-add-group {
+  margin-top: 1em;
+}
+
+.mnt-profile {
+  margin:1em;
+  
+  .text-profile {
+    margin-bottom: 1em;
+  }
+}
+
+.avatar-box {
+  display: inline-block;
+  width: 128px;
+  height: 128px;
+  border: 2px solid #CCCCCC;
+  vertical-align: middle;
+  margin: 8%;
+  
+  img {
+    min-width:100%; 
+    min-height:100%;
+    max-height: 100%;
+    max-width: 100%;
+    height:auto;
+    margin:auto;
+    display:block;
+    vertical-align: middle;
+  }
+}
+
+.edit-image {
+  visibility: hidden;
+}
+
+.box-upload {
+  display: inline-block;
+  margin: 2%;
+}
+
+.box-crop {
+  /*display: inline-block;*/
+  display: none;
+  border: 2px solid #CCCCCC;
+  height: 200px;
+  width: 250px;
+}
+
+.dropzone {
+  border: 2px solid #CCCCCC;
+  height: 200px;
+  width: 250px;
+  cursor: pointer;
+  input {
+    visibility: hidden;  
+  }
+  .dz-message {
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+  }
+}
+
+.panel-education, .panel-experience {
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
+.av-panel {
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
+.exp_year_month {
+  
+  select.form-control {
+    display: inline-block;
+    width: 20%;
+  }
+}
+
+#fl-tt-exprience {
+  font-weight: bold;
+}

@@ -1,0 +1,11 @@
+div class="panel-footer"
+  div class="row"
+    div clsss="col-sm-12"
+      table style="width:100%"
+        tr
+          td
+            span
+              | Version #{Rails.application.config.app_version}            
+          td class="text-right"
+            span
+              = [browser.name,browser.full_version].join(" ")

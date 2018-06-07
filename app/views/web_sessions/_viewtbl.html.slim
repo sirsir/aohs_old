@@ -1,0 +1,39 @@
+= panel_tableview do
+  - unless @unlock_users.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :username
+          = th_tag :name
+          = th_tag :group
+          = th_tag :role
+          = th_tag :last_login, label: 'Last Login'
+          = th_tag :last_lock, label: 'Last Locked'
+          = th_tag :lock_expire, label: 'Lock Expire'
+          = th_tag :unlock
+      tbody
+        - @unlock_users.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td
+              = r.login
+            td
+              = r.display_name
+            td
+              = r.group_name
+            td
+              = r.role_name
+            td class="text-center"
+              = r.current_sign_in_at.to_formatted_s(:web) rescue ""
+            td class="text-center"
+              = r.locked_at.to_formatted_s(:web) rescue ""
+            td class="text-center"
+              = r.lock_expire_at.to_formatted_s(:web) rescue ""
+            td class="text-center"
+              button type="button" class="btn btn-xs btn-unlock btn-primary" data-user-id="#{r.id}"
+                = icon 'unlock-alt'
+                |  Unlock
+  - else
+    = no_record_tag

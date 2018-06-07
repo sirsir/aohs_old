@@ -1,0 +1,3 @@
+= "[#{@conf.session_name}]\r\n"
+- @confs.each do |conf|
+  = "#{conf.variable}=#{conf.get_value.to_s.strip}\r\n"

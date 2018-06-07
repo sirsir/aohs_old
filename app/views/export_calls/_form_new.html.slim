@@ -1,0 +1,14 @@
+= panel_form do
+  = form_for(@task, layout: :horizontal, errors: { icons: false }) do |f|
+    
+    = f.legend 'Detail'
+    
+    = f.text_field :name, label: "Name", placeholder: '', required: true
+
+    = f.text_field :category, label: "Category", placeholder: '', required: true
+    
+    = f.select :schedule_type, ExportTask.schedule_type_options, label: "Schedule Type", disabled: true, help: "'Ad Hoc' is perform export within one hour. 'Daily' is perform export at night."
+              
+    = f.text_area :desc, label: "Description", placeholder: ''
+    
+    = f.submit "OK", class: "submit" 

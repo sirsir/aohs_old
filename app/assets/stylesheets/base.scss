@@ -1,0 +1,503 @@
+@import "custom_variables";
+
+body, html, * {
+  font-size: $font-size-base;
+}
+
+body {
+  background-color: #FFFFFF;
+}
+
+/*
+ * application header
+*/
+
+div#panel-app-header {
+  background-color: $brand-default;
+  position: fixed;
+  top: 0em;
+  height: 2.6em;
+  width: 100%;
+  color: #FFFFFF;
+  z-index: 99999;
+  
+  div.block-left-side, div.block-right-side {
+    display: inline-block;
+    min-height: 2.6em;
+    min-width: 1em;
+    
+    ul {
+      list-style: none !important;
+      margin: 0em;
+      padding-left: 0em;
+      li {
+        margin: 0em;
+        display: inline-block;
+        line-height: 2.6em;
+      }
+    }
+  }
+  
+  ul {
+    li.block-web-title {
+      padding-left: 0.5em;
+      span.logo-amivoice {
+        img {
+          width: 1.8em; 
+        }
+      }
+      span.text-app-desc {
+        display: inline-block;
+        font-weight: bold;
+        font-size: 1.25em;
+        padding-left: 0.4em;
+        padding-right: 0.25em;
+        color: #F2F2F2;
+      }
+      span.webapp-version {
+        display: block;
+        position: absolute;
+        font-family: sans-serif;
+        font-size: 0.5em !important;
+        font-style: italic;
+        line-height: normal;
+        top: 2.2em;
+        margin-left: 1.8em;
+        padding-left: 0.2em;
+        padding-right: 0.2em;
+        color: $brand-default;
+      }
+    }
+    li.top-menu {
+      div.mn-link {
+        font-family: "Verdana";
+        cursor: pointer;
+        padding-left: 0.6em;
+        padding-right: 0.6em;
+        a {
+          color: #FFFFFF;
+        }
+        &:hover {
+          background-color: #135a9f;
+        }
+        &.mn-selected {
+          background-color: #135a9f;
+        }
+        img {
+          width: 1.6em;
+        }
+      }
+    }
+  }
+  
+  li#link-sites-to {
+    div#block-site-redirect-to {
+      display: none;
+    }
+    &:hover {
+      div#block-site-redirect-to {
+        display: block;
+      }
+    }
+  }
+  
+  div#block-site-redirect-to {
+    ul > li {
+      display: block !important;
+      padding: 0.3em;
+      padding-left: 1em;
+      padding-right: 1em;
+      background-color: rgba(119,136,153,0.9);
+      a {
+        color: #FFFFFF;
+      }
+    }
+  }
+}
+
+/*
+ * login/logout page
+*/
+
+div.panel-site-info {
+  margin-top: 0.5em;
+  margin-left: 0.5em;
+  
+  img {
+    margin-right: 1em;
+    width: 9em;
+  }
+  
+  h3, h4 {
+    text-shadow: 2px 2px #F2F2F2;
+  }
+}
+
+div.panel-login {
+  margin-top: 4%;
+  padding-top: 8em;
+  background-repeat: no-repeat;
+  background-image: asset-url('amivoiceth-logo.png');
+  background-position: center top;
+  background-size: 9em;
+  
+  .apptitle {
+    width: 100%;
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: bold;
+    margin-top: .5em;
+    margin-bottom: 1.5em;
+    text-shadow: 4px 4px #F0F0F0;
+    letter-spacing: 1px;
+  }
+  
+  #btn-login {
+    width: 100%;
+  }
+}
+
+.web-info {
+  border: 1px solid #CCCCCC;
+  border-radius: 4px;
+  position: absolute;
+  display: block;
+  right: 0;
+  margin-top: 0.25em;
+  margin-right: 0.25em;
+  padding: 0.4em;
+  font-weight: bold;
+}
+
+/*
+ * footer
+ */
+
+.panel-footer {
+  float: left;
+  left: 0em;
+  right: 0em;
+  position: fixed;
+  bottom: 0px;
+  width: 99.5%;
+}
+
+/*
+ * application main body
+ */
+
+div#panel-app-body {
+  border-top: 1px solid #FCFCFC;
+}
+
+div#panel-app-body.margin-top-menu {
+  margin-top: 2.6em;
+}
+
+/* button */
+
+.btn-hidden {
+  display: none;
+}
+
+.btn-marg-l {
+  margin-left: 0.2em;  
+}
+
+.btn-marg-r {
+  margin-right: 0.2em;  
+}
+
+/* select2 */
+
+.hide-select2 {
+  .select2 {
+    visibility: hidden;
+    height: 0em;
+    padding: 0em;
+  }
+}
+
+/* modal and dialogs */
+
+.modal {
+  .modal-content {
+    min-height: 100%;
+  }  
+}
+
+.modal.modal-list-large {
+  padding: 4em;
+}
+
+div.dialog-audiofile-select {
+  width: 100%;
+  
+  button.btn {
+    width: 100%;
+    margin: 0.2em;
+  }
+}
+
+/* reports menu */
+
+.menu-for-reports {
+  position: absolute;
+  margin-top: 0.8em;
+  left: 1em;
+  width: 60em;
+  height: auto;
+  display: none;
+  border: 1px solid #CCCCCC;
+  border-radius: 4px;
+  background-color: #FCFCFC;
+  
+  .panel-reports-sm {
+    .menu-group {
+      border-radius: 5px;
+      background-color: transparent;
+      padding: 1em;
+      padding-left: 2em;
+      h4 {
+        color: #000000;
+        font-size: 1.2em;
+        font-weight: 500;
+      }
+      
+      .report-group-title {
+        
+      }
+      
+      .report-link {
+        padding: 0.5em;
+        padding-left: 1.3em;
+      }
+    }    
+  }
+}
+
+/* background bg- */
+
+.bg-active, .bg-enabled {
+  background-color: #90EE90;
+}
+
+.bg-inactive, .bg-disabled {
+  background-color: #D3D3D3;
+}
+
+.progress-bar-disabled {
+  background-color: #CCCCCC;
+}
+
+.btn-gap-r, .btn-mar-right {
+  margin-right: 0.75em;
+}
+
+.btn-mar-left {
+  margin-left: 0.75em;
+}
+
+/* processing, waiting dialog for all */
+
+#box-processing-all {
+  z-index: 9999;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(245, 245, 245, 0.5);
+  display: none;
+  top: 0;
+  bottom: 0;
+  
+  .box-msg {
+    background-color: #F5F5F5;
+    position: absolute;
+    top: 35%;
+    text-align: center;
+    padding: 1.0em;
+    left: 47%;
+    .wait-ico {
+      img {
+        width: 4.0em;
+      }
+    }
+    .wait-msg {
+      color: #4D4D4D;
+      font-size: 1.4em;
+      font-weight: bold;
+      margin-top: 0.6em;
+    }
+  }
+}
+
+.panel-errors, .panel-error {
+  margin-top: 5em;
+  text-align: center;
+  border: 1px solid #CD5C5C;
+  border-radius: 0.3em;
+  background-color: #FFF0F5;
+  padding: 1em;
+  span {
+    color: red;
+  }
+}
+
+.horizontal-line {
+  border-bottom: 1px solid #E8E8E8;
+  height: 1px;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.flash-message {
+  display: none;
+}
+
+.row-top-gap {
+  margin-top: 0.5em;
+}
+
+.ico-btn-info {
+  background-repeat: no-repeat;
+  background-image: asset-url('info1.png');
+  background-position: center;
+  background-size: contain;
+}
+
+.ico-btn-edit {
+  background-repeat: no-repeat;
+  background-image: asset-url('edit1.png');
+  background-position: center;
+  background-size: contain;
+}
+
+.ico-btn-delete {
+  background-repeat: no-repeat;
+  background-image: asset-url('delete2.png');
+  background-position: center;
+  background-size: contain;
+}
+
+.ico-btn-blank {
+  background-repeat: no-repeat;
+  background-image: asset-url('blank1.png');
+  background-position: center;
+  background-size: contain;
+}
+
+.ico-btn-undelete {
+  background-repeat: no-repeat;
+  background-image: asset-url('update6.png');
+  background-position: center;
+  background-size: contain;
+}
+
+.form-group  {
+  
+  input[required="required"] {
+    background-image: asset-url('icon_required.gif');
+    background-repeat: no-repeat;
+    background-position: right;
+  }  
+}
+
+/* file type button */
+
+.btn-fileformat-xlsx, .btn-fileformat-pdf {
+  
+  div {
+    display: inline-block;
+    height: 1.5em;
+    vertical-align: middle;
+  }
+  
+  .ico-file-type {
+    width: 1.5em;
+    margin-right: 0.5em;
+    background-repeat: no-repeat;
+    background-image: asset-url('mimetypes/xlsx.png');
+    background-size: contain;
+  }
+}
+
+.btn-fileformat-xlsx {
+  .ico-file-type {
+    background-image: asset-url('mimetypes/xlsx.png');
+  }
+}
+
+.btn-fileformat-pdf {
+  .ico-file-type {
+    background-image: asset-url('mimetypes/pdf.png');
+  }
+}
+
+/* manual */
+#block-manual-side {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  height: 92%;
+  margin-bottom: 0px;
+  min-width: 20%;
+  background-color: #F0F8FF;
+  border-left: 1px solid #CCCCCC;
+  z-index: 99999;
+  display: none;
+  
+  iframe {
+    height: 100%;
+    overflow-x: hidden;
+    margin-left: 0.2em;
+  }
+}
+
+div.hide-block {
+  display: none !important;
+}
+
+div.panel-not-available {
+  margin-top: 2em;
+  margin-right: 2em;
+  margin-left: 2em;
+  padding: 1em;
+  border: 1px solid #FFE4B5;
+  background-color: #FFF8DC;
+  text-align: center;
+}
+
+div#password-expiry-dialog {
+  display: block;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  position: absolute;
+  z-index: 999;
+  background-color: rgba(229, 231, 233, 0.5);
+  
+  div.block-inner {
+    display: block;
+    position: absolute;
+    background-color: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    top: 10%;
+    right: 20%;
+    left: 20%;
+    height: 30em;
+    z-index: 1100;
+  }
+  
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  
+  div.expiry-message-block {
+    padding: 1em;
+    color: red;
+  }
+}

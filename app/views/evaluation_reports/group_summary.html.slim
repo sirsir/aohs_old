@@ -1,0 +1,40 @@
+= render partial: 'reports/default'
+
+div class="panel-evaluation-reports"
+
+  - if params[:col_by] == "group_question"
+    h3 Group Summary Report by Group Question
+  - else
+    h3 Group Summary Report by Question
+    
+  div class="row"
+    div class="col-sm-10"
+      form class="form-inline" action="javascript:void(0);"
+        
+        = hidden_field_tag 'fl-col-by', params[:col_by]
+        = hidden_field_tag 'fl-calc', params[:calc]
+        
+        div class="form-group"
+          = label_tag 'Call Date Range', nil, class: "label-control text-space"
+          = text_field_tag 'fl-date-range', nil, class: 'form-control', "data-default-daterange": default_input_date_range(:this_month, false)                       
+        
+        div class="form-group"
+          = label_tag 'Form', nil, class: "label-control text-space"
+        div class="form-group"
+          = select_tag 'fl-evaluation-form', nil, class: 'form-control'
+          
+        div class="form-group"
+          = label_tag "Group Name", nil, class: "label-control text-space"
+        div class="form-group"  
+          = text_field_tag 'fl-group-name', nil, class: 'form-control'
+
+        div class="form-group"
+          = label_tag "Agent Name", nil, class: "label-control text-space"
+        div class="form-group"  
+          = text_field_tag 'fl-user-name', nil, class: 'form-control'
+          
+    div class="col-sm-2 text-right"  
+      = render partial: 'buttons'
+  
+  div class="row"
+    = render partial: 'table_template'

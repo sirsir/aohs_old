@@ -1,0 +1,88 @@
+= render partial: 'detection_settings'
+
+= html_template 'keyword-type-template' do
+  div class="form-group"
+    label class="form-label"
+      | Keyword Type
+    input type="text" name="type-name" maxlength="50" class="form-control" required="required"
+    
+= panel_form
+  = hidden_field_tag "current_user_name", @current_user.login
+  = form_for(@keyword, layout: :horizontal, errors: { icons: false }) do |f|
+    
+    = f.legend 'Detail'
+    
+    = f.text_field :name, label: "Keyword", placeholder: '', required: true
+    
+    = f.select :keyword_type_id, KeywordType.type_options, { label: "Keyword Group" }
+    = hidden_field_tag :selected_keyword_type
+    
+    div class="form-group"
+      div class="col-sm-3"
+      div class="col-sm-9"
+        button type="button" class="btn btn-primary" id="btn-new-keyword-type"
+          | New Group
+    
+    div class="form-group"
+      label class="control-label col-sm-3"
+        | Type
+      div class="col-sm-9"
+        - SystemConst.options_for(:keyword_type).each do |kt|
+          label class="lb-keyword-stype"
+            = radio_button_tag "keyword[subtype]", kt[1], @keyword.subtype.to_s == kt[1]
+            = kt[0]
+            
+    = f.color_field :bg_color, label: "Background Color", placeholder: '', help: 'highlight color for transcriptions.'
+    
+    - if ["edit", "update"].include?(params[:action])
+      div class="form-group keyword-list"
+        div class="col-sm-3 text-right"
+          label class="form-label"
+            | Similar Keywords
+        div class="col-sm-5"
+          div id="keyword-list-block"
+            - @keyword.words_error.each do |l|
+              input type="text" name="word_list[]" class="form-control has-error" value="#{l[:text]}"
+              span class="has-error help-block"
+                = l[:error_message]
+            - @keyword.word_list_form.each do |l|
+              input type="text" name="word_list[]" class="form-control" value="#{l[:text]}"
+          div
+            button type="button" class="btn btn-primary" id="btn-add-word"
+              | Add
+    
+    div class="form-group"
+      label class="control-label col-sm-3"
+        | Detection Settings
+      div class="col-sm-9"
+        = f.hidden_field :detection_settings
+        button type="button" class="btn btn-primary" id="btn-change-detection"
+          | Change detection settings
+          
+    = f.legend 'Notification Detail'
+    
+    div class="form-group"
+      label class="control-label col-sm-3" Desktop Notification
+      div class="col-sm-9"
+        = check_box_tag "notify[desktop_alert]", "default", @keyword.notification_default?, { 'data-toggle':'toggle', 'data-on':'Default', 'data-off':'Disabled', 'data-size':'normal', 'data-height':'30', 'data-width':'90' }
+        button type="button" id="btn-try-alert" class="btn btn-default"
+          = icon 'bell-o'
+          span class="text-marg-l"
+            = "Send Test Notification to '#{@current_user.login}'" 
+        span class="help-block"
+          | Disable to turn off notification.
+
+    div class="form-group" id="fd-content"
+      label class="control-label col-sm-3" Contents or Messages
+      div class="col-sm-9"
+        div class="help-block"
+          | Type a suggestion or message that need notify to agent when system detected those keywords. 
+        - Keyword::MAX_NOTIFY_CONTENT.times do |t|
+          label #{(t+1).ordinalize}
+          input type="hidden" id="notify_message_#{t}" name="notify[contents][]" value="#{@keyword.notification_template[t]}"
+          div class="fd-content" data-input-content-id="#{t}"
+            = @keyword.notification_template[t].to_s.html_safe
+        div class="help-block"
+          | Content will be display on the notification viewer.
+          
+    = f.submit "OK", class: "submit" 

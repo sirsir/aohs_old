@@ -1,0 +1,17 @@
+= content_for :header do
+  = tag_stylesheets_link
+  = content_stylesheets_link('emotion')
+  = content_stylesheets_link('call_category')
+  = content_stylesheets_link('telephone')
+  
+div id="panel-call-histories" class="panel-call-histories"
+
+  = render 'call_histories/export_call_dialog'
+  
+  = render 'call_histories/search_panel'
+    
+  = render 'call_histories/viewtbl_info'
+
+  = render 'call_histories/viewtbl'
+
+  = render 'call_histories/call_details'

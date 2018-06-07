@@ -1,0 +1,2 @@
+module CallCategoriesHelper
+end

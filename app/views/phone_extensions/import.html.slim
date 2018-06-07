@@ -1,0 +1,55 @@
+div class="mnt-menu"
+  = render 'phone_extensions/submenu'
+  = horizontal_bar
+  
+div class="mnt-cont mnt-upload"
+  div class="panel panel-default"
+    
+    div class="panel-import-h"
+      h3 Import Extension Data
+    
+    - case @step
+    - when :verify
+      = render 'phone_extensions/import_preview'
+    - else
+      = render 'shares/upload_file'
+      
+  div class="panel panel-default"
+    div class="panel-heading"
+      h4
+        | How to import.    
+    div class="panel-body"
+      ol
+        li
+          | Prepare list of user as below structure in spreadsheet.
+          p
+            table class="table table-default-all"
+              tr
+                th Name
+                th Column's Name
+              tr
+                td
+                  | Extension
+                td
+                  | ext, extension
+              tr
+                td
+                  | Computer IP
+                td
+                  | ip, ip_address
+              tr
+                td
+                  | Computer Name
+                td
+                  | computer_name
+          p
+            | For update existing record, system will use "Extension" as key.
+          p
+            
+        li
+          | Save file in CSV format and UTF-8.
+        li
+          | Start an import by click button "Select File"
+          
+
+      

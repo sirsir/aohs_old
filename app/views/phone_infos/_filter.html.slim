@@ -1,0 +1,5 @@
+= panel_filter do
+  = form_filter_tag :telephone_infos, action: "index" do
+    
+    = field_group_inline_tag :number, "Number" do
+      = text_field_tag :number, params[:number], class: "form-control"

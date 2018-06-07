@@ -1,0 +1,198 @@
+= render partial: 'evaluation_plans/items'
+
+div class="row"
+  div class="col-sm-12x"
+    div id="dialog-addcate"
+      iframe width="100%" height="100%" frameborder="0"
+
+= panel_form do
+  = form_for(@evaluation_plan, layout: :horizontal, errors: {icons: false}) do |f|
+
+    = f.legend 'Detail'
+    
+    = f.text_field :name, label: "Title", placeholder: '', required: true
+    
+    = f.text_field :description, label: "Description", placeholder: '', maxlegth: 200
+    
+    = f.select :evaluation_grade_setting_id, EvaluationGradeSetting.select_options, label: "Grading"
+    
+    = f.text_field :order_no, label: "Priority Key", placeholder: '', maxlegth: 3, pattern: "[0-9]{3}", help: 'between 000-999. 999 is highest priority'
+    
+    = f.legend 'Criteria', class: 'block-legend'
+    
+    div class="row"
+      div class="col-sm-5"
+        h4 Categories
+        div id="block-category" class="block-category"
+          table
+            thead
+              tr
+                th colspan="2" Title
+                th Item(s)
+                th Max Score
+                th Action
+            tbody
+              - @question_groups.each do |qg|
+                tr id="rw-group-id-#{qg[:id]}" data-group-id="#{qg[:id]}" class="#{qg[:deleted_css]}"
+                  td class="td-checkbox"
+                    input type="hidden" name="question_group_orderno[#{qg[:id]}]" class="quest_group_orderno" value="#{qg[:order_no]}"
+                    input type="hidden" name="question_group_select[#{qg[:id]}]" class="quest_group_select" value="#{qg[:selected]}"
+                    button type="button" class="btn btn-xs btn-success btn-selected btn-hide"
+                      = icon 'check'
+                    button type="button" class="btn btn-xs btn-default btn-unselect btn-hide"
+                      = icon 'check'
+                  td
+                    a href="javascript:void(0);" class="btn-show-question"
+                      = qg[:title]
+                  td class="text-center" 
+                    span class="fd-item-cnt"
+                  td class="text-center"
+                    span class="fd-item-max-score"
+                  td class="td-act"
+                    div class="btn-group"
+                      button type="button" class="btn btn-xs btn-default btn-move-up"
+                       = icon 'chevron-up'
+                      button type="button" class="btn btn-xs btn-default btn-move-down"
+                       = icon 'chevron-down'
+            tfoot
+              tr
+                td class="text-center"
+                  span id="fd-cate-count-seleted"
+                td
+                td class="text-center"
+                  span id="fd-items-count-seleted"
+                td class="text-center"
+                  span id="fd-items-total-score"
+                td
+        div
+          button id="btn-add-category" class="btn btn-primary" type="button"
+            = icon 'plus'
+      div class="col-sm-7"
+        h4 Questions
+        div id="block-question" class="block-question"
+          - @question_groups.each do |qg|
+            div id="question-group-id-#{qg[:id]}" data-group-id="#{qg[:id]}" class="block-question-answer"
+              table
+                thead
+                  tr
+                    th colspan="2" Title
+                    th Type
+                    th Max Score
+                    th Action
+                tbody     
+                  - qg[:questions].each do |q|
+                    tr id="rw-question-id-#{q[:id]}" data-code="#{q[:code]}" data-question-id="#{q[:id]}" class="#{q[:deleted_css]}"
+                      td class="td-checkbox"
+                        input type="hidden" name="question_orderno[#{q[:id]}]" class="quest_orderno" value="#{q[:order_no]}"
+                        input type="hidden" name="question_select[#{q[:id]}]" class="quest_select" value="#{q[:selected]}"
+                        button type="button" class="btn btn-xs btn-success btn-selected btn-hide"
+                          = icon 'check'
+                        button type="button" class="btn btn-xs btn-default btn-unselect btn-hide"
+                          = icon 'check'
+                      td class="td-title"
+                        = q[:title]
+                        - unless q[:code].blank?
+                          = " (#{q[:code]})"
+                      td class="td-ans-type"
+                        = q[:answer_type]
+                      td class="td-score"
+                        = q[:max_score]
+                      td class="td-act"
+                        div class="btn-group"
+                          button type="button" class="btn btn-xs btn-default btn-move-up"
+                           = icon 'chevron-up'
+                          button type="button" class="btn btn-xs btn-default btn-move-down"
+                           = icon 'chevron-down'
+                          button type="button" class="btn btn-xs btn-default btn-quest-edit"
+                           = icon 'pencil'
+
+    = f.legend 'Rule', class: 'block-legend'
+    
+    div class="row"
+      div class="col-sm-2"
+      div class="col-sm-10"
+        div class="form-group"
+          select id="form_rule" class="form-control"
+            option
+            - EvaluationPlan.rule_options.each do |group_opt|
+              optgroup label="#{group_opt[0]}"
+                - group_opt[1].each do |opx|
+                  option value="#{opx[:value]}"
+                    | #{opx[:text]}
+
+          button type="button" id="btn-add-rule" class="btn btn-primary" Add
+    div class="row"
+      div class="col-sm-12"
+        table class="table table-default" id="rule-list"
+          thead
+            tr
+              th Rule/Action
+              th When/If
+              th Remove
+          tbody
+            - @form_actions.each do |r|
+              tr
+                td
+                  input type="hidden" name="rule_name[]" value="#{ [r["action"],r["target_id"]].join("||") }"
+                  = r["title"]
+                td
+                  input type="text" name="rule_condition[]" class="form-control" value="#{r["condition"]}"
+                td
+                  button type="button" class="btn btn-danger btn-remove-rule"
+                    = icon 'minus'
+          tfoot
+            tr
+              td
+              td
+                div class="help-block"
+                  = "Format: <code> <operator> <value>. Operators as '>', '<' or '='"
+                  
+    = f.legend 'Call Details', class: 'block-legend'
+    
+    div class="row"
+
+      div class="form-group"
+        label class="control-label col-sm-2" Call Direction
+        div class="col-sm-10"
+          = select_tag "asst[call_direction]", options_for_select(SystemConst.call_direction_options, @asst_settings["call_direction"]), { include_blank: true, class: "form-control" }
+
+      div class="form-group"
+        label class="control-label col-sm-2" Minimum Duration
+        div class="col-sm-10"
+          = number_field_tag "asst[min_duration]", @asst_settings["min_duration"], class: 'form-control'
+          div class="help-block"
+            | Unit: second
+  
+      - CallCategory.category_types.each do |cate_type|
+        div class="form-group"
+          label class="control-label col-sm-2"
+            = cate_type
+          div class="col-sm-10"
+            = select_tag "asst[category][#{cate_type}][]", options_for_select(CallCategory.options_select(cate_type),EvaluationPlan.get_category_from_params(@asst_settings)), { include_blank: false, class: "select-call-cate form-control", multiple: true }
+
+    = f.legend 'Options', class: 'block-legend'
+    
+    div class="row"
+    
+      div class="form-group"
+        label class="control-label col-sm-2"
+        div class="col-sm-10"
+          label
+            = check_box_tag "asst[enable_auto_asst]", "enable", @asst_settings["enable_auto_asst"]
+            |  Enable Auto Assessment
+
+      div class="form-group"
+        label class="control-label col-sm-2"
+        div class="col-sm-10"
+          label
+            = check_box_tag "other[show_group_flag]", "show", @evaluation_plan.show_group_question?
+            |  Show group question in form
+
+      div class="form-group"
+        label class="control-label col-sm-2"
+        div class="col-sm-10"
+          label
+            = check_box_tag "other[comment_flag]", "yes", @evaluation_plan.use_only_comment_summary?
+            |  Use only summary comment
+
+    = f.submit "OK", class: "submit"

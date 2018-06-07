@@ -1,0 +1,149 @@
+= hbs_template "template-example"
+  = hb 'this' do
+  	div title="#{ hb 'some' }"
+      = hb 'some'
+
+= hbs_template "template-message_open"
+  = hb 'this' do
+    i class="fa fa-envelope-open"
+
+= hbs_template "template-topic"
+  = hb 'this' do
+    div class='item' data-idx="#{ hb 'idx' }" data-alreadyRead="false" data-content-type="#{ hb 'dataContentType' }"
+      div class='head'
+        div class='icon'
+          i class="fa fa-icon"
+        div class='caption caption-color'
+          span
+            = "#{hb 'title'}"
+        div class="dummy"
+        /div class='icon-new'
+          i class="fa fa-envelope"
+        div class='timestamp'
+          = "#{hb 'timestamp'}"
+        /div class='delete'
+          a
+            i class="fa fa-times"
+      div class='body'
+        div class="body-content"
+          = hb 'body'
+= hbs_template "template-block-recommendation"
+  = hb 'this' do
+    div
+      span
+        = hb 'title'
+
+= hbs_template "template-content-demo"
+  = hb 'this' do
+    div
+      span
+        | 'This is content from server'
+      
+= hbs_template "template-color-buttons"
+  = hb 'this' do
+    a class="btn" href="#" data-theme-name="#{ hb 'id' }" id="#{ hb 'id' }"
+      i class="fa fa-font"    
+
+div#wc-notification.theme-black.wc-font-normal
+  div.title-row
+    div.window-title.title.padding-leftmost
+      / | Amivoice Assistant
+      | Amivoice
+    div#connection_status
+      div.connecting
+        i class="fa fa-spinner fa-pulse" title="Trying to connect."
+      div.connected
+        i class="fa fa-dot-circle-o" title="Client connected and ready."
+      / div.disconnected
+      /   i class="fa fa-exclamation-circle"
+    div#total-messages
+      .total-messages
+        | 0
+    div#search-button
+      i class="fa fa-search"
+    div#setting-button
+      i class="fa fa-cog" title="Appearance setting"
+    div#minimize-button
+      i class="fa fa-window-minimize" title="Minimize window."
+    div#maximize-button
+      i class="fa fa-window-maximize" title="Maximize window."
+  div#setting
+    div.title.padding-leftmost
+      | Setting
+    div.setting-title.padding-leftmost
+      | Theme
+    form.padding-leftmost action=""
+      div#select-theme
+    br
+    div.setting-title.padding-leftmost
+      | Transparency
+    div#transparencyInput
+      div.inputContainer
+        div
+          input id="sliderOpacity" type="range" min="0" max="0.2" step="0.02" value="0"
+    div.setting-title.padding-leftmost
+      | Font-Size
+    div#selectFontsize
+      div class="decrease-size"
+        i class="fa fa-font"
+      div class="default-size"
+        i class="fa fa-font"
+      div class="increase-size"
+        i class="fa fa-font"
+    div#normalizedfontSize
+      input type="checkbox" name="normalize-font-size" value="false"
+        | Normalize font-size
+    div.setting-title.padding-leftmost
+      span Taskbar
+    div#blinkTaskbar
+      input type="checkbox" name="blink" value="true"
+        / | Blink if there are any unread message
+        | Blink for unread messages.
+    / div#hideTaskbar
+    /   input type="checkbox" name="hideIfAllReadd" value="hideIfAllRead"
+    /     | Hide if all messages are read(TO IMPLEMENT)
+  div#log
+    div.title.padding-leftmost
+      section.log
+        div
+          textarea
+  div#search
+    div.title.padding-leftmost
+      section#searchbox
+        / div#searchbox-search-icon
+        /   div.table
+        /     a#search-clear.fa.fa-times-circle aria-hidden="true" href="#" 
+        /       span.sr-only Clear search
+            / label for="search-input" 
+            /   i.fa.fa-search aria-hidden="true" 
+            /   span.sr-only Search icons
+        div#searchbox-box
+          input#search-input.form-control.input-lg autocomplete="off" autocorrect="off" placeholder="Type in keyword here"spellcheck="false" tabindex="1" /
+        div#searchbox-search-icon
+          div.table
+            a#search-clear.fa.fa-search aria-hidden="true" href="#" 
+              span.sr-only Search
+        div#searchbox-clear-icon
+          div.table
+            a#search-clear.fa.fa-times-circle aria-hidden="true" href="#" 
+              span.sr-only Clear search
+  div.errorbox#connectionError
+    div
+      div.head
+        i class="fa fa-exclamation-triangle" 
+        |  Connection Error
+      div.body
+        | Trying to connect to server...
+  div#wc-topic_list.wc-messages
+    div.title-row
+      div.title.padding-leftmost
+  	   / | Timeline
+      div class='delete'
+          a 
+            | clear all 
+	div.items.height100
+  /div#wc-assistant
+    div.title
+	    | Assistant
+    div.detail
+  

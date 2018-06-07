@@ -1,0 +1,12 @@
+script id="data-question-groups" type="text/json"
+  = @question_groups.to_json.html_safe
+  
+div class="mnt-menu"
+  = render 'evaluation_questions/submenu'
+  = horizontal_bar
+
+div class="mnt-cont mnt-filter"
+  = render 'evaluation_questions/filter'
+
+div class="mnt-cont mnt-tbl"
+  = render 'evaluation_questions/viewtbl'

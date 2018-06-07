@@ -1,0 +1,24 @@
+div class="row"
+  div class="col-sm-12"
+    - if not @group_member_hist.nil? and not @group_member_hist.empty?
+      = table_tag :mnt do
+        thead
+          tr
+            = th_tag :no
+            = th_tag :group_name, label: 'Group', order: false
+            = th_tag :beginning_date, order: false
+            = th_tag :end_date, order: false
+        tbody
+          - @group_member_hist.each_with_index do |mh,i|
+            tr
+              td
+                = i + 1
+              td
+                = mh.group.display_name
+              td class="text-center"
+                = mh.created_date.to_formatted_s(:web)
+              td class="text-center"
+                - unless mh.deleted_date > Time.now
+                  = mh.deleted_date.to_formatted_s(:web)
+                - else
+                  | -

@@ -1,0 +1,46 @@
+div id="box-calendar-widget"
+  input type="hidden" name="calendar_fr_d" id="calendar_fr_d" value="#{@calendar_sdate.to_formatted_s(:web)}"
+  input type="hidden" name="calendar_to_d" id="calendar_to_d" value="#{@calendar_edate.to_formatted_s(:web)}"
+  input type="hidden" name="calendar_view_type" id="calendar_view_type" value="#{@select_type}"
+  
+  div class="calendar-header"
+    div class="btn-group"
+      
+      button class="btn btn-xs btn-prev-month"
+        a href="#{url_for({ month: @calendar_prev_date.month, year: @calendar_prev_date.year })}" 
+          = icon 'arrow-left'
+      
+      button  class="btn btn-xs btn-current-month"
+        a href="#{url_for({ month: @calendar_selected_date.month, year: @calendar_selected_date.year })}" 
+          = @calendar_selected_date.strftime("%B, %Y")
+      button class="btn btn-xs dropdown-toggle" data-toggle="dropdown"
+        a href="#"
+          = icon 'angle-down'
+      
+      ul class="dropdown-menu"
+        - @calendar_months_pick.each do |dm|
+          li class="btn-go-month"
+            a href="#{url_for({ month: dm.month, year: dm.year })}"
+              = dm.strftime("%B, %Y")
+      
+      button class="btn btn-xs btn-next-month"
+        a href="#{url_for({ month: @calendar_next_date.month, year: @calendar_next_date.year })}" 
+          = icon 'arrow-right'
+
+  div class="calendar-dow"
+    div class="calendar-row calendar-row-head"
+      - ['W', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].each do |dow|
+        div
+          = dow
+  
+    - @calendar_data.each do |r|
+      div class="calendar-row"
+        - r.each do |r2|
+          - if r2[:type] == 'week'
+            div class="btn-go-week #{ ((params[:week].present? and params[:week].to_i == r2[:title].to_i) ? "week-current" : "") }" data-week="#{r2[:title]}" data-year="#{r2[:year]}"
+              a href="#{url_for({ week: r2[:title], year: r2[:year] })}"
+                = r2[:title]
+          - else
+            div class="btn-go-day #{ ((params[:day].present? and params[:day].to_i == r2[:title].to_i and params[:month].to_i == r2[:month].to_i) ? "day-current" : "") } #{ ((params[:week].present? and params[:week].to_i == r2[:week].to_i) ? "week-current" : "") }" data-day="#{r2[:title]}" data-year="#{r2[:year]}" data-month="#{r2[:month]}"
+              a href="#{url_for({ day: r2[:title], month: r2[:month], year: r2[:year] })}"
+                = r2[:title]

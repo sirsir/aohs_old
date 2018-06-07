@@ -1,0 +1,53 @@
+div class="tab-question-group"
+  ul class="nav nav-tabs" role="tablist"
+    - @question_groups.each do |grp|
+      - next if grp.question_count <= 0
+      li role="presentation" class="#{((grp.id == params[:question_group_id].to_i) ? "active" : "")}"
+        a href="#{url_for(action: 'index', question_group_id: grp.id)}"
+          | #{grp.title} 
+          span class="badge" #{grp.question_count}
+
+= panel_tableview do
+  - if params[:question_group_id].present?
+    div class="pull-right" style="padding:0.5em;"
+      button type="button" class="btn btn-primary btn-marg-r" id="btn-change-group-title"
+        | Change group title
+      / button type="button" class="btn btn-danger" id="btn-delete-group"
+        | Remove group
+        
+  - unless @questions.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :title, label: "Question"
+          = th_tag :code, label: "Code"
+          = th_tag :type, label: "Type"
+          = th_tag :score, label: "Max Score"
+          = th_tag :group, label: "Category"
+          = th_tag :in_use, label: "Number of Form(s)"
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @questions.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td
+              = r.title
+            td
+              = r.code_name.to_s.upcase
+            td class="text-center"
+              = r.evaluation_answers.last_version.first.display_answer_type rescue nil
+            td class="text-right"
+              = r.evaluation_answers.last_version.first.max_score.to_i rescue nil
+            td
+              = r.evaluation_question_group.title rescue nil
+            td class="text-center"
+              - if r.have_dependency_forms?
+                = r.dependency_forms.count(0)
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(r,'ed')
+  - else
+    = no_record_tag

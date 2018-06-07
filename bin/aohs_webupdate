@@ -1,0 +1,12 @@
+#!/bin/sh
+
+APP_ROOT="$(dirname $(readlink -f $0))/.."
+cd $APP_ROOT
+APP_ROOT="$(pwd)"
+
+echo "Executing in ... $APP_ROOT"
+thor appl:install:compile_assets
+thor appl:install:compile_assets
+
+./bin/aohs_webserver stop
+./bin/aohs_webserver start

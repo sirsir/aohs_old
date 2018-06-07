@@ -1,0 +1,44 @@
+div id="panel-tbl-info" class="panel-tbl-info"
+  div class="row"
+  
+    div class="col-sm-4 total-info"
+      - if Settings.callsearch.show_favourite
+        span id="btn-only-fav" class="btn-only-fav" title="Only favourited call"
+      
+      span class="text-inbound"
+        span In:
+        span id="pg-total-in" 0
+        span id="pg-total-in-length"
+      span class="text-outbound"
+        span Out:
+        span id="pg-total-out" 0
+        span id="pg-total-out-length"
+      span
+        span Total:
+        span id="pg-total-call" 0
+        span id="pg-total-length"
+    
+    div class="col-sm-8 page-info"
+      form class="form-inline" action="#{js_void}"
+        span
+          span id="pg-r-from" 0
+          span -
+          span id="pg-r-to" 0
+        
+        button type="button" id="pg-first-page" class="btn btn-xs btn-default"
+          = icon 'angle-double-left', class: 'strong'
+        button id="pg-prev-page" class="btn btn-xs btn-default"
+          = icon 'angle-left', class: 'strong'
+        input type="text" value="0 of 0" id="pg-pages" class="form-control input-sm show-tooltip" data-tooltip="No page for select."
+        button id="pg-next-page" class="btn btn-xs btn-default"
+          = icon 'angle-right', class: 'strong'
+        button id="pg-last-page" class="btn btn-xs btn-default"
+          = icon 'angle-double-right', class: 'strong'
+   
+        span
+          span Per
+        input type="text" value="0" id="pg-perpage" class="form-control input-sm show-tooltip" data-tooltip="Must be between #{Settings.pagination.voicelog.permin} and #{Settings.pagination.voicelog.permax}"
+        
+        - if can_do?(:voice_logs,:export) and not @qa_enable
+          button type="button" id="bt-export-call" class="btn btn-xs btn-default"
+            = icon 'download', class: 'strong'

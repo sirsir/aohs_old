@@ -1,0 +1,27 @@
+doctype html
+html
+  head
+    title #{Settings.site.title} Maintenance - #{controller.controller_name.gsub("_"," ").capitalize}
+    link rel="shortcut icon" href="#{image_url("favicon.gif")}"
+    meta charset="UTF-8"
+    meta name="author" content="AmiVoice(TH)"
+    meta name="copyright" content="AmiVoice Thai Co.Ltd."
+    meta http-equiv="X-UA-Compatible" content="IE=edge"
+    = javascript_include_tag \
+      "application"
+    = controller_javascript_tags
+    == yield :javascript
+    = stylesheet_link_tag \
+      "application"
+    = controller_stylesheet_tags
+    == yield :stylesheet
+    == yield :header
+    = include_token
+    = include_gon
+  body
+    = render "shares/dialogs"
+    = render "shares/flash_message"
+    = render "shares/application_header"
+    = render "shares/maintenance_menu"
+    div class="panel-maintenance"
+      == yield

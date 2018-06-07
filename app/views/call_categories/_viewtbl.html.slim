@@ -1,0 +1,27 @@
+= panel_tableview do
+  - unless @call_categories.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :title, label: "Title", order: true
+          = th_tag :category_type, order: true
+          = th_tag :n_of_call, label: "Number of Calls (30 days ago)"
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @call_categories.each_with_index do |r,i|
+          tr
+            td.no
+              = i+1
+            td
+              = r.title
+            td
+              = r.category_type
+            td class="text-right"
+              = r.number_of_calls
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(r,'ed')
+  - else
+    = no_record_tag

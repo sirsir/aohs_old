@@ -1,0 +1,12 @@
+div class="mnt-menu"
+  = render 'tags/submenu'
+  = horizontal_bar
+  
+div class="mnt-cont mnt-filter"
+  = render 'tags/filter'
+  
+div class="mnt-cont mnt-tbl"
+  - if defined?(@sub_tags)
+    = render 'tags/viewtbl_withsub'
+  - else
+    = render 'tags/viewtbl'

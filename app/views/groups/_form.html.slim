@@ -1,0 +1,26 @@
+= panel_form do
+  = form_for(@group, layout: :horizontal, errors: {icons: false}) do |f|
+
+    = f.legend 'Details'
+    
+    = f.text_field :short_name, label: "Name", placeholder: '', required: true, disabled: @group.is_locked?
+    
+    = f.select :group_type, SystemConst.group_type_options, { include_blank: true, label: "Type" }
+    
+    = f.text_field :description, label: "Description", placeholder: ''
+    
+    = f.text_field :ldap_dn, label: "Group DN (LDAP)", placeholder: ''
+
+    = f.select :parent_id, @group.parent_group_options, { include_blank: true, label: "Subgroup of" }, disabled: @group.is_locked?
+
+    div class="form-group"
+      label class="col-sm-3 control-label"
+      
+    - @leaders.each do |leader|
+      div class="form-group"
+        label class="col-sm-3 control-label"
+          = leader.type_name
+        div class="col-sm-9"
+          = select_tag "group_leaders[#{leader.member_type}]", options_for_select(User.user_options({role: :staff_and_upper}), leader.user_id), { include_blank: true, class: 'form-control', disabled: @group.is_locked? } 
+
+    = f.submit "OK", class: "submit"

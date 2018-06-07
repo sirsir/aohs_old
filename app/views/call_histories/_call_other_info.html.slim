@@ -1,0 +1,57 @@
+= hbs_template "template-speech-recg-info" do
+  div class="row"
+    div class="col-sm-12"
+      = hb 'this' do
+        label
+          | Audio Channel: #{ hb 'channel_name' }
+        table class="table table-borderless"
+          tr
+            td style="width: 25%;" class="text-right" Recognition Time
+            td style="width: 25%;"
+              = hb 'start_recognize_at'
+            td style="width: 25%;" class="text-right" Engine
+            td style="width: 25%;"
+              = hb 'dsr_grammar_fname'
+          tr
+            td class="text-right" N of Utterances
+            td
+              = hb 'utterances_count'
+            td class="text-right" Profile
+            td
+              = hb 'dsr_profile_id'
+          tr
+            td class="text-right" RealTime Rate (RT)
+            td
+              = hb 'rt'
+            td
+            td
+
+= hbs_template "template-call-stats-info" do
+  div class="row"
+    div class="col-sm-12"
+      table class="table table-borderless"
+        tr
+          td style="width: 25%;" class="text-right" Call ID
+          td style="width: 25%;"
+            = hb 'call_id'
+            |  [#{ hb 'voice_log_id' }]
+          td style="width: 25%;" class="text-right" SSDC
+          td style="width: 25%;"
+            = hb 'ssdc'
+        tr
+          td class="text-right" File
+          td
+            = hb 'filename'
+          td class="text-right"
+          td
+            
+div class="row"
+
+  div class="col-sm-12"  
+    h4 Related Detail
+    div id="block-voicestats-info"
+
+  div class="col-sm-12"
+    h4 Speech Recognition
+    div id="block-speech-recg-info"
+    

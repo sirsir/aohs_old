@@ -1,0 +1,100 @@
+script type="text/template" id="user-list-template"
+  table class="table table-striped table-bordered table-hover table-default-all" cellspacing="0"
+    thead
+      tr
+        th rowspan="2"
+        th rowspan="2"
+          | Status
+        th rowspan="2"
+          | Name
+        th rowspan="2"
+          | Work
+        th rowspan="2"
+          | Group
+        th rowspan="2"
+          | Ext.
+        th colspan="5"
+          | Current Call
+        th colspan="4"
+          | Inbound
+        th colspan="4"
+          | Outbound
+      tr
+        th
+          | Time
+        th
+          | Caller
+        th
+          | Dialed
+        th
+          | Direction
+        th
+          | Duration
+          span.text-unit
+            | (mm:ss)
+        th
+          | Total Calls
+        th
+          | Max
+          span.text-unit
+            | (mm:ss)
+        th
+          | Total
+          span.text-unit
+            | (mm:ss)
+        th
+          | Avg
+          span.text-unit
+            | (mm:ss)
+        th
+          | Total Calls
+        th
+          | Max
+          span.text-unit
+            | (mm:ss)
+        th
+          | Total
+          span.text-unit
+            | (mm:ss)
+        th
+          | Avg
+          span.text-unit
+            | (mm:ss)
+    tbody
+      = hb 'users' do
+        tr id="user_#{hb 'id'}" data-userid="#{hb 'id'}" data-isactive="#{ hb 'is_logged_comp' }"
+          td class="bx-avatar text-center"
+            div class="avatar-box"
+              div class="islistening"
+              img src="#{url_for(controller: 'users')}/#{ hb 'id' }/avatar"
+          td class="bx-call-status fd-callsts text-center"
+          td class="bx-opname fd-opname"
+            = hb 'name'
+            = hb 'if is_leader'
+              br
+              span
+                | (#{ hb 'role_name' })
+          td class="fd-word-years"
+            = hb 'work_years'
+          td class="fd-group"
+            = hb 'group_name'
+          td class="fd-extno text-center"
+            = hb 'ext_no'
+          td class="fd-calltime text-center"
+            = hb 'current_call.start_time'
+          td class="bx-caller fd-caller"
+            = hb 'current_call.ani'
+          td class="bx-dialed fd-dialed"
+            = hb 'current_call.dnis'
+          td class="fd-dirname text-center"
+            = hb 'current_call.direction'
+          td class="bx-duration fd-duration text-center"
+            = hb 'current_call.duration'
+          td class="bx-inbound text-inbound fd-inbound text-right"
+          td class="text-right"
+          td class="text-right"
+          td class="text-right"
+          td class="bx-outbound text-outbound fd-outbound text-right"
+          td class="text-right"
+          td class="text-right"
+          td class="text-right"

@@ -1,0 +1,61 @@
+#box-calendar-widget {
+  
+  .calendar-header {
+    margin-top: 0.25em;
+    text-align: center;
+    
+    button {
+      background-color: #FFFFFF;
+    }
+  }
+
+  .calendar-row-head {
+    margin-top: 0.2em;
+    
+    div {
+      font-size: 0.8em;
+      font-weight: bold;
+      width: 1.7em !important;
+      border-bottom: 1px solid #CCCCCC;
+    }
+  }
+  
+  .calendar-dow {
+    text-align: center;  
+  }
+  
+  .calendar-row {
+    display: inline-block;
+    width: 100%;
+    
+    div {
+      display: inline-block;
+      padding-bottom: 0.1em;
+      padding-top: 0.1em;
+      padding-right: 0.1em;
+      width: 1.6em;
+      text-align: right;
+      font-size: 0.8em;
+      
+      &:hover {
+        background-color: #CCCCCC;
+      }
+    }
+    
+    .week-current, .day-current {
+      background-color: #1E90FF;
+      a {
+        color: #FFFFFF !important;
+      }
+    }
+  }
+  
+  .btn-go-week {
+    background-color: #F5F5F5;
+    cursor: pointer;
+  }
+  
+  .btn-go-day {
+    cursor: pointer;
+  }
+}

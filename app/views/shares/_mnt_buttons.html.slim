@@ -1,0 +1,16 @@
+- if opt.include?('s')
+  div class="detail ico-btn-info" act="show" href="#{url_for(action: 'show', id: mo.id)}"
+  
+- if opt.include?('e')
+  div class="edit ico-btn-edit" act="edit" href="#{url_for(action: 'edit', id: mo.id)}"
+
+- if opt.include?('d')
+  - is_disabled = (defined?(mo.flag) and mo.flag == DB_LOCKED_FLAG)
+  - is_disabled = (defined?(mo.can_delete?) ? !mo.can_delete? : is_disabled)
+  - if not is_disabled
+    div class="delete ico-btn-delete" act="delete" href="#{url_for(action: 'destroy', id: mo.id, authenticity_token: form_authenticity_token)}"
+  - else
+    div class="notdelete ico-btn-blank" act="notdelete" href="#"
+
+- if opt.include?('u')
+    div class="undelete ico-btn-undelete" act="undelete" href="#{url_for(action: 'undelete', id: mo.id, authenticity_token: form_authenticity_token)}"

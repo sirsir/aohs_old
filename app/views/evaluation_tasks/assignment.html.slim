@@ -1,0 +1,11 @@
+div class="mnt-menu"
+  = render partial: 'submenu'
+  = horizontal_bar
+
+div class="mnt-cont mnt-form"
+  - if unassign_mode?
+    h3 Unassignment
+  - else
+    h3 Reassignment
+  
+  = render partial: 'form_assigned'

@@ -1,0 +1,45 @@
+.fileinput-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.fileinput-button input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  opacity: 0;
+  -ms-filter: 'alpha(opacity=0)';
+  font-size: 200px;
+  direction: ltr;
+  cursor: pointer;
+}
+
+.mnt-upload {
+  
+  .panel-uploadfile, .panel-import-options {
+    margin: 1em;
+    
+    .form-import-options {
+      margin-top: 1em;
+    }
+  }
+  
+  #import-options {
+    margin-top: 1em;
+    display: none;
+  }
+  
+  #import-logs {
+    margin-top: 2em;
+    display: none;
+  }
+  
+  .btn-upload {
+    margin-left: 1em;
+  }
+  
+  .progress {
+    margin-top: 1em;
+  }
+}

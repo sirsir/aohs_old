@@ -1,0 +1,12 @@
+div class="mnt-menu"
+  = render 'export_calls/submenu'
+  = horizontal_bar
+
+div class="mnt-cont mnt-form"
+  - if @task.in_progress?
+    div class="alert alert-danger"
+      | This task is still under processing. Not allow to modify any details.
+  - elsif @task.finished?
+    div class="alert alert-success"
+      | This task has been processed. Not allow to modify any details.
+  = render 'export_calls/form_edit'

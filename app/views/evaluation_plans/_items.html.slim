@@ -1,0 +1,68 @@
+script id="template-cate-row" type="text/x-handlebars"
+  tr id="rw-group-id-#{ hb 'id' }" data-group-id="#{ hb 'id' }" class="#{ hb 'deleted_css' }"
+    td class="td-checkbox"
+      input type="hidden" name="question_group_orderno[#{ hb 'id' }]" class="quest_group_orderno" value="#{ hb 'order_no' }"
+      input type="hidden" name="question_group_select[#{ hb 'id' }]" class="quest_group_select" value="#{ hb 'selected' }"
+      button type="button" class="btn btn-xs btn-success btn-selected btn-hide"
+        = icon 'check'
+      button type="button" class="btn btn-xs btn-default btn-unselect btn-hide"
+        = icon 'check'
+    td
+      a href="javascript:void(0);" class="btn-show-question"
+        = hb 'title'
+    td class="text-center"
+      span class="fd-item-cnt"
+    td class="text-center"
+      span class="fd-item-max-score"
+    td class="td-act"
+      div class="btn-group"
+        button type="button" class="btn btn-xs btn-default btn-move-up"
+         = icon 'chevron-up'
+        button type="button" class="btn btn-xs btn-default btn-move-down"
+         = icon 'chevron-down'
+
+script id="template-quest-parent" type="text/x-handlebars"
+  div id="question-group-id-#{ hb 'id' }" data-group-id="#{ hb 'id' }" class="block-question-answer"
+    table
+      thead
+        tr
+          th colspan="2" Title
+          th Type
+          th Max Score
+          th Action
+      tbody
+
+script id="template-quest-row" type="text/x-handlebars"
+  tr id="rw-question-id-#{ hb 'id' }" data-code="#{ hb 'code' }" data-question-id="#{ hb 'id' }" class="#{ hb 'deleted_css' }"
+    td class="td-checkbox"
+      input type="hidden" name="question_orderno[#{ hb 'id' }]" class="quest_orderno" value="#{ hb 'order_no' }"
+      input type="hidden" name="question_select[#{ hb 'id' }]" class="quest_select" value="#{ hb 'selected' }"
+      button type="button" class="btn btn-xs btn-success btn-selected btn-hide"
+        = icon 'check'
+      button type="button" class="btn btn-xs btn-default btn-unselect btn-hide"
+        = icon 'check'
+    td class="td-title"
+      = hb 'title'
+    td class="td-ans-type"
+      = hb 'answer_type'
+    td class="td-score"
+      = hb 'max_score'
+    td class="td-act"
+      div class="btn-group"
+        button type="button" class="btn btn-xs btn-default btn-move-up"
+         = icon 'chevron-up'
+        button type="button" class="btn btn-xs btn-default btn-move-down"
+         = icon 'chevron-down'
+        button type="button" class="btn btn-xs btn-default btn-quest-edit"
+         = icon 'pencil'
+
+script id="template-rule-row" type="text/x-handlebars"
+  tr
+    td
+      input type="hidden" name="rule_name[]" value="#{ hb 'value' }"
+      = hb 'title'
+    td
+      input type="text" name="rule_condition[]" class="form-control"
+    td
+      button type="button" class="btn btn-danger btn-remove-rule"
+        = icon 'minus'

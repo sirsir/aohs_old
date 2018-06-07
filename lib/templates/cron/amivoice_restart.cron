@@ -1,0 +1,6 @@
+# cron task
+# auto restart task trigger
+# 30 21 * * * root /bin/bash -l -c '/home/ball/workspace/dev/aohs.r4.dev/bin/aohs_analytic_trigger restart'
+# auto restart streaming server
+# 30 21 * * * root /bin/bash -l -c '/home/ball/workspace/dev/aohs.r4.dev/service/qlogger_streaming/bin/voice_streaming restart'
+#

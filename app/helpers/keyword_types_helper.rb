@@ -1,0 +1,2 @@
+module KeywordTypesHelper
+end

@@ -1,0 +1,52 @@
+div class="mnt-menu"
+  = render 'users/submenu'
+  = horizontal_bar
+  
+div class="mnt-cont mnt-form"
+  div role="tabpanel"
+  
+    ul class="nav nav-tabs nav-user-edit" role="tablist"
+      li role="presentation" class="active"
+        a href="#general" aria-controls="general" role="tab" data-toggle="tab" General
+      li role="presentation"
+        a href="#avatar" aria-controls="avatar" role="tab" data-toggle="tab" Avatar
+      li role="presentation"
+        a href="#eduhist" aria-controls="general" role="tab" data-toggle="tab" Education
+      li role="presentation"
+        a href="#wrkhist" aria-controls="general" role="tab" data-toggle="tab" Work Experience
+      - if can_doact?(:permission) and can_do?("voice_logs","not_only_own_call")
+        li role="presentation"
+          a href="#groupfollower" aria-controls="general" role="tab" data-toggle="tab" Access Control
+      li role="presentation"
+        a href="#grouphist" aria-controls="general" role="tab" data-toggle="tab" Group History
+      - if display_for?(:aeoncol)
+        li role="presentation"
+          a href="#atlattrs" aria-controls="general" role="tab" data-toggle="tab" ATL Detail
+
+    -if @is_suspended
+      div class="alert alert-danger"
+        | This account has been suspended.          
+ 
+    div class="tab-content"
+
+      div role="tabpanel" class="tab-pane active" id="general"
+        = render 'users/form'
+        div class="row"
+          div class="col-sm-12"
+            label
+              | Last updated:
+            span class="text-space"
+              = @user.updated_at.to_formatted_s(:web)
+            
+      div role="tabpanel" class="tab-pane" id="avatar"
+        = render 'users/user_avatar'
+      div role="tabpanel" class="tab-pane" id="groupfollower"
+        = render 'users/group_member'
+      div role="tabpanel" class="tab-pane" id="grouphist"
+        = render 'users/group_hist'
+      div role="tabpanel" class="tab-pane" id="eduhist"
+        = render 'users/education'
+      div role="tabpanel" class="tab-pane" id="wrkhist"
+        = render 'users/work_experience'
+      div reole="tabpanel" class="tab-pane" id="atlattrs"
+        = render partial: 'atl_attrs'

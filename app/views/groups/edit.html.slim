@@ -1,0 +1,22 @@
+div class="mnt-menu"
+  = render 'groups/submenu'
+  = horizontal_bar
+  
+div class="mnt-cont mnt-form"
+  div role="tabpanel"
+
+    ul class="nav nav-tabs nav-user-edit" role="tablist"
+      li role="presentation" class="active"
+        a href="#block-edit" aria-controls="block-edit" role="tab" data-toggle="tab" General
+      li role="presentation"
+        a href="#block-member" aria-controls="block-member" role="tab" data-toggle="tab" Member
+      li role="presentation"
+        a href="#block-leader" aria-controls="block-leader" role="tab" data-toggle="tab" Leader History
+
+    div class="tab-content"
+      div role="tabpanel" class="tab-pane active" id="block-edit"
+        = render partial: 'form'
+      div role="tabpanel" class="tab-pane" id="block-member"
+        = render partial: 'member'
+      div role="tabpanel" class="tab-pane" id="block-leader"
+        = render partial: 'lead_hist'

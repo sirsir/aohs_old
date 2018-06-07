@@ -1,0 +1,27 @@
+= panel_tableview do
+  - unless @words.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :word, label: "Word", order: true
+          = th_tag :spoken_word, label: "Spoken Word", order: true
+          = th_tag :type, label: "Type", order: true
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @words.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td
+              = r.word
+            td
+              = r.spoken_word
+            td
+              = r.class_map
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(r,'ed')
+  - else
+    = no_record_tag

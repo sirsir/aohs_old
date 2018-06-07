@@ -1,0 +1,16 @@
+# elasticsearch configuration
+default: &default
+  host: '<%= Settings.server.es.host %>'
+  prefix: '<%= Settings.server.es.prefix %>'
+  
+development:
+  host: '<%= Settings.server.es.host %>'
+  prefix: '<%= Settings.server.es.prefix %>'
+  
+test:
+  host: '<%= Settings.server.es.host %>'
+  prefix: '<%= Settings.server.es.prefix %>'
+  
+production:
+  host: '<%= Settings.server.es.host %>'
+  prefix: '<%= Settings.server.es.prefix %>'

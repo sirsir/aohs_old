@@ -1,0 +1,31 @@
+= panel_tableview do
+  - unless @computer_logs.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :remote_ip, order: true
+          = th_tag :check_time, label: "Last Updated", order: true
+          = th_tag :computer_name, order: true
+          = th_tag :login_name, label: "Login", order: true
+          = th_tag :os_version, label: "OS Version", order: true
+          = th_tag :watcher_version, order: true
+      tbody
+        - @computer_logs.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td.remote_ip
+              = r.remote_ip              
+            td.check_time
+              = r.check_time.to_formatted_s(:web)
+            td.computer_name
+              = r.computer_name
+            td.login_name
+              = r.login_name
+            td.os_version
+              = r.os_version
+            td.watcher_version
+              = r.watcher_version
+  - else
+    = no_record_tag

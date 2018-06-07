@@ -1,0 +1,56 @@
+div class="mnt-menu"
+  = render 'phone_extensions/submenu'
+  = horizontal_bar
+  
+div class="row"
+  div class="col-sm-12"
+    / div class="row form-inline" style="padding: 1em;"
+      div class="form-group col-sm-4"
+        label class="text-space-r" Date
+        input type="text" class="form-control date-picker" name="log_date" value="#{params[:log_date]}"
+        button id="btn-search-log" class="btn btn-primary"
+          | Go
+          
+    div class="mnt-cont mnt-tbl"    
+      = table_tag :mnt do
+        thead
+          tr
+            th Location
+            th Extension
+            th DIDs
+            th Ip
+            th Computer
+            th User
+            th Timestamp
+            th Call Count
+            th Matched Count
+            th Unmatched Count
+            th Remark
+        tbody
+          - @watcher_logs.each_with_index do |r,i|
+            
+            tr class="#{r['result_class']}"
+              td
+                = r['location_name']
+              td class="text-center"
+                = r['number']
+              td
+                = r['dids']
+              td class="text-center"
+                = r['ip_address']
+              td
+                = r['computer_name']
+              td
+                = r['users']
+              td class="text-center"
+                = r['logdate']
+              td class="text-right"
+                = r['call_count']
+              td class="text-right"
+                = r['mapped_count']
+              td class="text-right"
+                = r['call_count'] - r['mapped_count'] rescue ""
+              td
+                - unless r['remarks'].nil?
+                  = r['remarks'].join(", ")
+              

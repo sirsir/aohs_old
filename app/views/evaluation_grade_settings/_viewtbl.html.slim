@@ -1,0 +1,25 @@
+= panel_tableview do
+  - unless @grade_settings.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :title, label: "Title"
+          = th_tag :form_count, label: "Number of Forms"
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @grade_settings.each_with_index do |t,i|
+          tr
+            td.no
+              = i+1
+            td
+              = t.title
+            td class="text-right"
+              = t.form_count
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(t,'ed')
+  - else
+    = no_record_tag
+    

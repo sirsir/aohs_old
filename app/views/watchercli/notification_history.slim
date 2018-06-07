@@ -1,0 +1,11 @@
+div.search data-content-type="faq0" 
+  div
+    / .block-left customer said: #{recommendations[:question]}
+    / .block-right
+    ul
+        - for r in recommendations[:answers]
+            li data-action-url="" data-item-type="btn"  =r.to_s.html_safe
+    /== Adding New Answere
+    / .block-comment
+    /   input type="text" name="comment"
+    /   button data-action-url="watchercli/log/1711-o5KuQjZVS9A/6?read=true" data-item-type="btn" type="button"  Submit

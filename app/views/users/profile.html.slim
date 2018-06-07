@@ -1,0 +1,33 @@
+div class="mnt-profile"
+
+  div class="text-profile"
+    h3 My Profile
+
+  div role="tabpanel"
+
+    ul class="nav nav-tabs nav-user-edit" role="tablist"
+      li role="presentation" class="active"
+        a href="#general" aria-controls="general" role="tab" data-toggle="tab" General
+      li role="presentation"
+        a href="#authentication" id="tab-authentication" aria-controls="general" role="tab" data-toggle="tab" Change Password
+      li role="presentation"
+        a href="#group" aria-controls="general" role="tab" data-toggle="tab" Group
+      li role="presentation"
+        a href="#login-hist" aria-controls="general" role="tab" data-toggle="tab" Login History
+      
+    div class="tab-content"
+      div role="tabpanel" class="tab-pane active" id="general"
+        div class="mnt-cont mnt-form"
+          = render partial: 'form_prof'
+          
+      div role="tabpanel" class="tab-pane" id="authentication"
+        div class="mnt-cont mnt-form"
+          = render partial: 'change_password'
+
+      div role="tabpanel" class="tab-pane" id="group"
+        div class="mnt-cont mnt-tbl"
+          = render partial: 'viewtbl_members'
+        
+      div role="tabpanel" class="tab-pane" id="login-hist"
+        div class="mnt-cont mnt-tbl"
+          = render partial: 'viewtbl_logs'

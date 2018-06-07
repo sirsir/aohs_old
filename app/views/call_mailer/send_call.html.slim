@@ -1,0 +1,33 @@
+div class="eml-message"
+  p
+    = @msg
+  p
+    table 
+      tr
+        td
+          label
+            | Time
+        td
+          = @voice_log.start_time.to_formatted_s(:web)
+      tr
+        td
+          label
+            | Caller No.
+        td
+          = @voice_log.ani
+      tr
+        td
+          label
+            | Dialed No.
+        td
+          = @voice_log.dnis
+      tr
+        td
+          label
+            | Extension
+        td
+          = @voice_log.extension
+  p
+    | Please click 
+    = link_to "this", { controller: 'call_histories', action: 'show', id: @voice_log.id, t: @st_sec }
+    | to see more information.

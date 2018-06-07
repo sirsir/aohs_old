@@ -1,0 +1,24 @@
+h4 Subtags of #{@tag.name}
+  
+= panel_tableview do
+  
+  - unless @sub_tags.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :name, order: true
+          - if can_manage?
+            = th_tag :action
+      tbody
+        - @sub_tags.each_with_index do |t,i|
+          tr
+            td.no
+              = row_no(i)
+            td.tag_name
+              = link_to_if(t.got_more_tags?,t.name,{tag_id: t.id})
+            - if can_manage?
+              td.doact
+                = rowmnt_button_tag(t,'ed')
+  - else
+    = no_record_tag 

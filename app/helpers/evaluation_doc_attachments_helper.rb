@@ -1,0 +1,2 @@
+module EvaluationDocAttachmentsHelper
+end

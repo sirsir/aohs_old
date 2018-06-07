@@ -1,0 +1,63 @@
+#block-portal {
+  max-width: 80em;
+  
+  div.block-group-menu {
+    vertical-align: top;
+    padding-bottom: 0em;
+    padding-top: 1em;
+    white-space: nowrap;
+    
+    div.block-group-icon {
+      display: inline-block;
+      vertical-align: top;
+      img {
+        margin-top: 0.6em;
+        width: 3.5em;
+        margin-right: 1.25em;
+      }
+    }
+    
+    div.block-group-links {
+      display: inline-block;
+      white-space: normal;
+      padding-right: 2em;
+      width: 100%;
+
+      h4 {
+        font-weight: bold;
+        font-size: 1.5em;
+      }
+      
+      div.block-note {
+        margin-bottom: 0.2em;
+        font-style: italic;
+        display: inline-block;
+      }
+      
+      ul {
+        padding: 0em;
+        list-style: none;
+        
+        li {
+          padding-top: 0.3em;
+          padding-bottom: 0.3em;
+          padding-left: 1em;
+          border: 1px solid #FFFFFF;
+          border-radius: 0.3em;
+          
+          &:hover {
+            border: 1px solid #CCCCCC;  
+          }
+        }
+        a > span {
+          font-size: 1.05em;
+          margin-right: 0.5em;  
+        }
+      }
+      
+      span {
+        display: inline-block;
+      }
+    }
+  }
+}

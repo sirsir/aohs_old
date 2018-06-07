@@ -1,0 +1,30 @@
+div class="row"
+  div class="col-sm-12"
+    - unless @members.empty?
+      = table_tag :mnt do
+        thead
+          tr
+            = th_tag :no
+            = th_tag :employee_id, label: "Employee ID", order: false
+            = th_tag :citizen_id, label: "Citizen ID", order: false
+            = th_tag :login, label: "Username", order: false
+            = th_tag :name, label: "Name", order: false
+            = th_tag :role, label: "Role", oorder: false
+            = th_tag :action, label: "Action", order: false
+        tbody
+          - @members.each_with_index do |mh,i|
+            tr
+              td
+                = row_no(i)
+              td
+                = mh.user.employee_id
+              td
+                = mh.user.citizen_id
+              td
+                = mh.user.login
+              td
+                = mh.user.display_name
+              td class="text-center"
+                = mh.user.role_name
+              td.text-center
+                = link_to "Edit", edit_user_path(mh.user), target: '_blank'

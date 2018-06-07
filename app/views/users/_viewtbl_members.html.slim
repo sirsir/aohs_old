@@ -1,0 +1,19 @@
+= panel_tableview do
+  - unless @group_members.empty?
+    = table_tag :mnt do
+      thead
+        tr
+          = th_tag :no
+          = th_tag :name, label: "Name"
+          = th_tag :member_type, label: "Member Type"
+      tbody
+        - @group_members.each_with_index do |r,i|
+          tr
+            td.no
+              = row_no(i)
+            td
+              = r.group.name
+            td
+              = r.type_name
+  - else
+    = no_record_tag

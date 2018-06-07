@@ -1,0 +1,16 @@
+source "http://rubygems.org"
+
+gem 'require_all'
+gem "config"
+gem 'workers'
+gem 'sinatra'
+gem 'sinatra-contrib'
+gem 'sinatra-cross_origin'
+#gem 'sinatra-websocket'
+gem 'logging'
+gem 'puma'
+gem 'hashie'
+
+gem 'activerecord-jdbc-adapter'
+gem 'activerecord-jdbcmysql-adapter'
+gem 'activerecord'

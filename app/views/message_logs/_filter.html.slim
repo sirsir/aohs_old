@@ -1,0 +1,8 @@
+= panel_filter do
+  = form_filter_tag :computer_log, action: "index" do
+  
+    = field_group_inline_tag :log_date, "Date" do
+      = text_field_tag :created_date, params[:created_date], class: "form-control input-date-rank"
+      
+    = field_group_inline_tag :receiver_name, "User" do
+      = text_field_tag :receiver_name, params[:receiver_name], class: "form-control"

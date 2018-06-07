@@ -1,0 +1,8 @@
+= panel_form do
+  = form_for(@template, layout: :horizontal, errors: {icons: false}) do |f|
+
+    = f.legend 'Detail'
+    
+    = f.text_field :title, label: "Title", placeholder: ''
+    
+    = f.submit "OK", class: "submit" 

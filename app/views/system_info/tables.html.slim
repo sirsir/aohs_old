@@ -1,0 +1,41 @@
+div class="mnt-menu"
+  = render partial: 'menu'
+  
+div class="mnt-cont"
+  = panel_tableview do
+    - unless @tbl_infos.empty?
+      = table_tag :mnt do
+        thead
+          tr
+            = th_tag :no
+            = th_tag :table
+            = th_tag :rows_count
+            = th_tag :data_size
+            = th_tag :index_size
+            = th_tag :total_size
+            = th_tag :data_free
+            = th_tag :avg_row_size
+            = th_tag :idxfrac, label: 'idxfrac (index/data)'
+        tbody
+          - @tbl_infos.each_with_index do |r,i|
+            tr
+              td.no
+                = row_no(i)
+              td
+                = r.tbl_name
+              td.text-numeric
+                = number_to_human(r.rows_count.to_i)
+              td.text-numeric
+                = number_to_human_size(r.data_length)
+              td.text-numeric
+                = number_to_human_size(r.index_length)
+              td.text-numeric
+                = number_to_human_size(r.total_size)
+              td.text-numeric
+                = number_to_human_size(r.data_free)
+              td.text-numeric
+                = number_to_human_size(r.total_size.to_i/r.rows_count.to_i) rescue "-"
+              td.text-center
+                = r.idxfrac
+    - else
+      = no_record_tag

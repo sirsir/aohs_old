@@ -1,0 +1,19 @@
+script id="table_template" type="text/x-handlebars"
+  thead
+    = hb 'headers' do
+      tr
+        = hb 'this' do
+          th rowspan="#{hb 'rowspan'}" colspan="#{hb 'colspan'}" data-clickable="#{hb 'clickable'}" data-searchkey="#{ hb 'searchkey'}"
+            | #{hb 'reportThCell title' }
+  tfoot
+    = hb 'if footer' do
+      tr
+        = hb 'footer.data' do
+          td
+            = hb 'this'
+
+div class="panel-tbl-report row"
+  div class="col-sm-12"
+    table id="call_report" class="table table-striped table-bordered table-hover table-default-all"
+      thead
+      tfoot

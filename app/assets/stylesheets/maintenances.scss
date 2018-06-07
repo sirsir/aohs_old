@@ -1,0 +1,51 @@
+@import 'charts';
+
+.panel-dashboard {
+  margin: 1em;
+  margin-left: 2em;
+  margin-right: 2em;
+}
+
+div.block-widget-1 {
+  border: 1px solid #CCCCCC;
+  border-radius: 0.3em;
+  width: 100%;
+  min-height: 6.5em;
+  padding: 0.6em;
+  color: #FFFFFF;
+  
+  table {
+    width: 100%;
+    
+    td {
+      vertical-align: top;
+      padding-bottom: 0.2em;
+    }
+    
+    td.td-sparkline {
+      vertical-align: bottom;
+    }
+  }
+  
+  .text-t1 {
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+  
+  .text-t2 {
+    font-weight: bold;
+    font-size: 2.5em;
+  }
+}
+
+div.block-agent {
+  background-color: #5D6D7E;
+}
+
+div.block-inbound {
+  background-color: #52BE80;
+}
+
+div.block-outbound {
+  background-color: #2E86C1;
+}
