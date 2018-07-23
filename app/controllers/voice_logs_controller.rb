@@ -553,6 +553,13 @@ class VoiceLogsController < ApplicationController
      voice_log_id = params[:voice_log_id].to_i
        
      transfer_voice_logs = find_transfer_calls(voice_log_id)
+
+     transfer_voice_logs.each {|vl|        
+        if (not vl.nil?) and (not vl[:path].nil?) and (not vl[:id].nil?)
+          vl[:path] = Base64.encode64(vl[:path])
+          vl[:path] = encrypt(vl[:path], vl[:id])
+        end
+      }
      
      render :json => transfer_voice_logs, :layout => false
      
